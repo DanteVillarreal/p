@@ -7,7 +7,7 @@
 
 1.  Initialize neural network using rule-of-thumb methods.
 2.  get parsed input from WebSocket APIs.
-2a. normalize data. Then standardize data https://www.youtube.com/watch?v=dXB-KQYkzNU&list=PLZbbT5o_s2xq7LwI2y8_QtvuXZedL6tQU&index=39 . Then input data into layer1 of neural network.
+2a. normalize data. Then input data into layer1 of neural network.
 3.  Connect rand crate to get random number functionality.
 4.  Initialize network weights with random numbers that have mean 0 and standard deviation 1, then multiply each weight by sqrt(2/n).
 5.  Initialize biases using values around 0.01.             ///////-----////           need to see if stochastic gradient descent also updates biases
@@ -22,7 +22,10 @@
 13. Update network weights and biases using stochastic gradient descent to minimize (current_q_value - target_q_value)^2.
 14. Establish decay rate of epsilon.
 15. Figure out how to connect all DQN outputs to arbitrage actions.
-16. Figure out when to add regularization techniques.
+16. add regularization techniques when establishing loss before doing the stochastic gradient Use L2 regularization: loss = (current_q_value - target_q_value)^2 + λ * sum(weights[i]^2)
+16a.sum(weights[i]^2) is the sum of ALL my weights in the ENTIRE network squared.
+16.5Figure out how to add experience replay. 
+16.6Figure out how to give the network a batch at one time, if I should even do that.
 17. Add hyperparameter tuning.
 18. Training: add random number as input for trading fee schedule.
 19. Connect DQN output to functions that buy and sell on other APIs.
@@ -46,3 +49,4 @@ Logging and Monitoring: Implement logging of relevant metrics (like loss, reward
 //---------------------AFTER PROTOTYPE--------------------//
 
 13. optimize matrix multiplication aspect of feed_forward with intel -xml or whatever it's called
+14. standardize input data using historical data I have collected. 

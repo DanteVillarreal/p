@@ -3,7 +3,7 @@ use rand_distr::{StandardNormal, Normal, Distribution};
 use rand::Rng;
 pub mod network;
 
-//---step 5 below----///////
+//---step 3 below----///////
     fn generate_random_number () {
             //generates random number between 0 and 100 including both 0 and 100
             rand::thread_rng().gen_range(0..=100);
@@ -35,10 +35,13 @@ pub mod network;
             println!("{} is from a standard normal distribution. {} is too",
                     standard_distributed_number, distributed_number);
     }
-///--step 5 above----////////  
+///--step 3 above----////////  
 
 
 fn main() {
     println!("Hello, world!");
+    
+    //step 3 implementation. but obviously dont put it here//
     generate_random_number();
+    //step 3 above//
 }

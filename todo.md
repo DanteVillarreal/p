@@ -8,7 +8,7 @@
 1.  Initialize neural network using rule-of-thumb methods.
 2.  get parsed input from WebSocket APIs.
 2a. normalize data. Then input data into layer1 of neural network.
-3.  Connect rand crate to get random number functionality.
+{}3.  Connect rand crate to get random number functionality.
 4.  Initialize network weights with random numbers that have mean 0 and standard deviation 1, then multiply each weight by sqrt(2/n).
 5.  Initialize biases using values around 0.01.             ///////-----////           need to see if stochastic gradient descent also updates biases
 6.  Implement feed-forward functionality: multiply current network layer by weight layer and add next layer’s biases.
@@ -50,3 +50,14 @@ Logging and Monitoring: Implement logging of relevant metrics (like loss, reward
 
 13. optimize matrix multiplication aspect of feed_forward with intel -xml or whatever it's called
 14. standardize input data using historical data I have collected. 
+
+
+
+
+//--------------------After AFTER PROTOTYPE ------------------//
+15.     introduce functionality for arbitrage on the same platform itself. 
+                so say someone wants to buy 1 btc at 20000
+                and someone wants to sell 1 btc at 19900
+                    I would:
+                        I would step in and buy 2nd guy's btc for 1990
+                        then sell it to the 1st guy for 20000

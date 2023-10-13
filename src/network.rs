@@ -37,7 +37,7 @@ pub mod network{
 		pub fn print_weight_layer(&self) {
 			for i in 0..self.rows {
 				for j in 0..self.columns {
-					println!("{:?} ", &self.data[i]);
+					println!("{:?} ", &self.data[i][j]);
 				}
 				println!("\n");
 			}
@@ -102,14 +102,14 @@ pub mod network{
 		sum //this is the value returned. aka the matrix returned
 	}
 
-	pub fn matrix_add (mut layer: Vec<Vec<f64>>, biases: &Vec<Vec<f64>>) -> Vec<Vec<f64>> {
-		
+	pub fn matrix_add (layer: &Vec<Vec<f64>>, biases: &Vec<Vec<f64>>) -> Vec<Vec<f64>> {
+		let mut resulting_matrix = layer.clone();
 		for i in 0..layer.len() {
 			for j in 0..layer[0].len() {
-				layer[i][j] += biases[0][j];
+				resulting_matrix[i][j] += biases[0][j];
 			}
 		}
-		layer   //creates a matrix of 1 row
+		resulting_matrix   //creates a matrix of 1 row
 	}
 
 
@@ -149,10 +149,10 @@ pub mod network{
 				let biases = &self.biases[i-1].data;
 
 				self.layers[i].data = matrix_multiply(previous_activations, weights);
-				self.layers[i].data = matrix_add(self.layers[i].data, biases);
+				self.layers[i].data = matrix_add(&self.layers[i].data, biases);
 
 				//this fn below changes the layer itself. so it doesn't need to equal anything.
-				apply_activation_function(& mut self.layers[i].data);
+				apply_activation_function(&mut self.layers[i].data);
 				
 
 			}

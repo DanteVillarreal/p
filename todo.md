@@ -55,7 +55,7 @@ Logging and Monitoring: Implement logging of relevant metrics (like loss, reward
 13. optimize matrix multiplication aspect of feed_forward with intel -xml or whatever it's called
 14. standardize input data using historical data I have collected. 
 15. optimize structs of network and bias layer by deleting row data
-16. optimize matrix_add. I don't think the upper for loop is necessary
+16. optimize matrix_add. I don't think the upper for loop is necessary. Also, need to remove the clone function. that's probably a few ms just on its own
 
 
 

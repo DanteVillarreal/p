@@ -13,9 +13,9 @@
 {}3.  Connect rand crate to get random number functionality.
 4.  Initialize network weights with random numbers that have mean 0 and standard deviation 1, then multiply each weight by sqrt(2/n).
 5.  Initialize biases using values around 0.01.             ///////-----////           need to see if stochastic gradient descent also updates biases
-6.  Implement feed-forward functionality: multiply current network layer by weight layer and add next layer’s biases.
-6a. Introduce batch normalization after each layer. using z = (x-m)/s ?
-7.  Implement Leaky ReLU activation function for each layer except for output layer.
+{}6.  Implement feed-forward functionality: multiply current network layer by weight layer and add next layer’s biases.
+//////////////6a. Introduce batch normalization after each layer. using z = (x-m)/s ?
+{}7.  Implement Leaky ReLU activation function for each layer except for output layer.
 8.  Implement Softmax activation function for output layer.
 9.  Implement functionality to calculate Q-values from network output.
 10. Implement epsilon-greedy strategy for exploration vs exploitation.
@@ -31,6 +31,12 @@
 17. Add hyperparameter tuning.
 18. Training: add random number as input for trading fee schedule.
 18.5Figure out how to get more than 1 output from DQN. aka buy  AND  sell. not just buy
+18.6Think I figured it out: my output layer will consist of 37 neurons. I want a (nada) neuron, then I want 36 neurons each with different information:
+        Buy form A, B, or C                                     3   
+        Discrete percentages floored: 2, 3, 4, 5, 6, 7         *6
+        Sell to: if chose A, then B or C                        *2 (i think, since you can't sell to same place)
+                 if chose B, then A or C                    =  36
+                 if chose C, then A or B
 19. Connect DQN output to functions that buy and sell on other APIs.
 20. implement ability to save a state of the neural network and load it
 

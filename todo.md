@@ -6,6 +6,8 @@
         The number of hidden neurons should be less than twice the size of the input layer.
 
 1.  Initialize neural network using rule-of-thumb methods.
+1a. initialize input layer as 1 row
+1b. initialzie bias layer as 1 column
 2.  get parsed input from WebSocket APIs.
 2a. normalize data. Then input data into layer1 of neural network.
 {}3.  Connect rand crate to get random number functionality.
@@ -28,7 +30,9 @@
 16.6Figure out how to give the network a batch at one time, if I should even do that.
 17. Add hyperparameter tuning.
 18. Training: add random number as input for trading fee schedule.
+18.5Figure out how to get more than 1 output from DQN. aka buy  AND  sell. not just buy
 19. Connect DQN output to functions that buy and sell on other APIs.
+20. implement ability to save a state of the neural network and load it
 
 
 
@@ -50,6 +54,14 @@ Logging and Monitoring: Implement logging of relevant metrics (like loss, reward
 
 13. optimize matrix multiplication aspect of feed_forward with intel -xml or whatever it's called
 14. standardize input data using historical data I have collected. 
+15. optimize structs of network and bias layer by deleting row data
+16. optimize matrix_add. I don't think the upper for loop is necessary
+
+
+
+/////----------------NEXT PROTOTYPE-----------------------//
+15. maybe turn input layer to 2D layer to get batches. look this up.
+15a. I think this would mean keeping network layers as 2D
 
 
 

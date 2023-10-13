@@ -3,13 +3,28 @@ use rand_distr::{StandardNormal, Normal, Distribution};
 use rand::Rng;
 pub mod network;
 
+
+
+
+//-----step 1 below-----///
+    //when initializing input layer. keep it as 1 row for ez matrix multiplication
+
+
+
+
+
+
+
+
+//----step 1 above----//
+
 //---step 3 below----///////
     fn generate_random_number () {
             //generates random number between 0 and 100 including both 0 and 100
             rand::thread_rng().gen_range(0..=100);
 
             //generate random numbr between 0 and 100 excluding 100
-            rand::thread_rng().gen_range(0..=00);
+            rand::thread_rng().gen_range(0..=100);
             
 
             //generate random number with mean 0 and std dev of 1

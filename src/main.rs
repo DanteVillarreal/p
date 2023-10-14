@@ -24,7 +24,7 @@ pub mod network;
             rand::thread_rng().gen_range(0..=100);
 
             //generate random numbr between 0 and 100 excluding 100
-            rand::thread_rng().gen_range(0..=100);
+            rand::thread_rng().gen_range(0..100);
             
 
             //generate random number with mean 0 and std dev of 1
@@ -36,7 +36,7 @@ pub mod network;
             let distributed_number = distribution_type.sample(&mut rand::thread_rng());
             println!("{} is from a standard normal distribution. {} is too",
                     standard_distributed_number, distributed_number);
-
+            //or//
             //--dont like unwrap();
             let desired_mean = 0.0;
             let desired_std_dev = 1.0;

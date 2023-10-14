@@ -16,17 +16,69 @@
 {}6.  Implement feed-forward functionality: multiply current network layer by weight layer and add next layer’s biases.
 //////////////6a. Introduce batch normalization after each layer. using z = (x-m)/s ?
 {}7.  Implement Leaky ReLU activation function for each layer except for output layer.
-8.  Implement Softmax activation function for output layer.
-9.  Implement functionality to calculate Q-values from network output.
+//////////////8.  Implement Softmax activation function for output layer.
+{}9.  Implement functionality to calculate Q-values from network output.     ::::::::::The output of the networks are the q-values themselves
 10. Implement epsilon-greedy strategy for exploration vs exploitation.
 11. Define reward function for arbitrage task (consider using scaled profit-based reward).
+11a.    I also want the losses to be counted exponentially. As a 50% increase in money is then worth way less
+                if you just lost 50%, then if you had the OG 50% and got 50% more.
+                option a:
+                        start:          100
+                        gained 50% =    150
+                option b:
+                        start:          100
+                        lost 50% =      50
+                        gained 50% =    75
+                option c:
+                        start:          100
+                        lost 50% =      50
+                        gained 200% =   150
+                As you can see, I would have to gain 200% to get to where option a ended
+                And 100% !!! just to get back to starting point
+
 12. Implement functionality to calculate target Q-values using Bellman Optimality Equation: target_q_value = reward + gamma * next_q_value.
 13. Update network weights and biases using stochastic gradient descent to minimize (current_q_value - target_q_value)^2.
 14. Establish decay rate of epsilon.
 15. Figure out how to connect all DQN outputs to arbitrage actions.
 16. add regularization techniques when establishing loss before doing the stochastic gradient Use L2 regularization: loss = (current_q_value - target_q_value)^2 + λ * sum(weights[i]^2)
 16a.sum(weights[i]^2) is the sum of ALL my weights in the ENTIRE network squared.
-16.5Figure out how to add experience replay. 
+16.5Figure out how to add experience replay. implement strategy to choose which experiences get place in memory based on whether the agent lost money. if it lost, it's valuable
+16.5aand if it didn't gain money, it might be valuable too. 
+16.5b introduce "prioritized experience replay" as it can help
+Understand Temporal-Difference (TD) Learning:
+
+        Learn the basics of TD learning.
+        Understand how TD error is calculated.
+        Implement TD learning in your DQN.
+        Implement Experience Replay:
+
+        Set up a replay memory to store experiences.
+        Sample experiences uniformly from the replay memory during training.
+        Understand Prioritized Experience Replay (PER):
+
+        Learn how PER modifies the sampling process to prioritize important experiences.
+        Understand how the importance of an experience is measured (typically by the magnitude of its TD error).
+        Implement Prioritized Experience Replay:
+
+        Modify your replay memory to store the TD error of each experience.
+        Adjust your sampling process to sample experiences based on their importance.
+        Understand Stochastic Prioritization:
+
+        Learn how stochastic prioritization maintains diversity in the sampled experiences.
+        Implement Stochastic Prioritization:
+
+        Modify your sampling process to use stochastic prioritization.
+        Understand Importance Sampling:
+
+        Learn how importance sampling is used to correct the bias introduced by prioritized sampling.
+        Implement Importance Sampling:
+
+        Adjust your learning update to use importance sampling weights.
+        Test and Debug Your Implementation:
+
+        Ensure that your DQN is learning effectively with the new modifications.
+        Debug any issues that arise.
+
 16.6Figure out how to give the network a batch at one time, if I should even do that.
 17. Add hyperparameter tuning.
 18. Training: add random number as input for trading fee schedule.

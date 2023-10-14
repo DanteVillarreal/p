@@ -1,4 +1,4 @@
-pub mod network{
+pub mod Network{
 	use rand::Rng;
 
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
@@ -190,7 +190,8 @@ pub mod network{
 			}
 		}
 
-		pub fn exploration_or_exploitation(&mut self, epsilon: &mut f64) {
+		//this will just return the index of the largest_q_value if exploit, or just a random q value of explore
+		pub fn exploration_or_exploitation(&self, epsilon: &mut f64) -> usize {
 			let i = self.layers.len();	//i want to get to the output layer
 
 			//then want to see if epsilon greedy returns true or not. I have to call it on epsilon
@@ -200,33 +201,66 @@ pub mod network{
 			//establishes values to work with for-loop
 			let mut index_of_largest_qvalue;
 			let mut largest_qvalue_so_far = f64::MIN;
+			let mut index_number: usize = 0;
 
 			if exploit_or_explore == true {
-				//then choose top q value. this would then call another function that
-				//		executes the task
+				//Below: I will choose top q value. this would then call another function
+				//		 that executes the task
 
-				//run for loop for last ouput layer. I want the index and the number
-				//		associated with it for each iteration
-				//
-				for (index, &qvalue_of_neuron) in self.layers[i-1].data.iter().enumerate() {
-					if qvalue_of_neuron > largest_qvalue_so_far {
-						largest_qvalue_so_far = qvalue_of_neuron;
-						index_of_largest_qvalue = index;
+				//the for loop below is used to find which column in the output layer has
+				//		the highest q value.
+				//this is a fuckfest and I'm not sure if it'll even work. 
+				//nevertheless:
+				//		The struct this method will go into is a Vector of vectors of vectors
+				//			Think of it as a list of matrices. The matrix I want to go into
+				//			is the last of these matrices. I want to go into the output layer.
+				//			This is why I did self.layers[i-1]...
+				//					The self.layers is the list of matrices, and I want
+				//					to index the last list. Aka, the output layer.
+				//		this is the data structure for self.layers[i-1]:
+				//		vec![
+				//				vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+				//		]
+				//		(or at least it should be. if it isn't we are fucked)
+				//		in the first for loop i am iterating over the "rows" in the self.layers
+				//		this, unfortunately, gives me a vector of f64. aka Vec<f64>
+				//				aka, it gives me each row in the layer. so I called the var
+				//				first_row because there's only one row
+				//		So:
+				//				I need to iterate over each "column" in the Vec<f64> to 
+				//				actually get each "neuron"
+				//				so this is where the 2nd for loop comes in
+				//		But:
+				//				I cannot index the Vec<f64> with the variable called
+				//				index_of_the_first_row  because this is of type f64
+				//		So:
+				//				I introduced a variable above called index_number 
+				//				which is of type usize, aka the type needed to index
+
+				for first_row in self.layers[i-1].data.iter() {
+					for index_of_the_first_row in first_row.iter() {
+						if first_row[index_number] > largest_qvalue_so_far  {
+								largest_qvalue_so_far = first_row[index_number];
+								index_of_largest_qvalue = index_number;
+						}
+						index_number += 1;
 					}
 				}
 
 				//i now have the index of the largest q value. I must then choose the
-				//		next action based on which index it was. 
-				//do I do a binary search to match the index to the action?
-				//		if so, how would I do it.
+				//		function that corresponds to said q value
+				//I will do that in another funciton. I might even make an entire 
+				//		module just for that function
 
 
 				//
+				index_of_largest_qvalue
 			}
 			else {
 				//choose one of the outputs randomly. the specific output would then
 				//		call another function to execute said task
 			}
+			
 		}
 	}
 

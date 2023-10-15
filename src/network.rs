@@ -199,9 +199,10 @@ pub mod Network{
 
 			//if exploit, run tuple for-loop through output layer. 
 			//establishes values to work with for-loop
-			let mut index_of_largest_qvalue;
+			let mut index_of_largest_qvalue: Option<usize> = None;
 			let mut largest_qvalue_so_far = f64::MIN;
 			let mut index_number: usize = 0;
+			let mut index_of_random_qvalue :usize;
 
 			if exploit_or_explore == true {
 				//Below: I will choose top q value. this would then call another function
@@ -247,6 +248,25 @@ pub mod Network{
 					}
 				}
 
+				//what if I just did
+				let mut indexx: usize = 0;
+				if let Some(last_layer) = self.layers.last() {
+					for value in &last_layer.data[0] {
+						if value > &largest_qvalue_so_far {
+							largest_qvalue_so_far = *value;		//just to document that we hit a new max
+							index_of_largest_qvalue = Some(indexx);	//to know where the new max was
+							indexx += 1;						//to iterate the index value
+
+						}
+						else {
+							indexx+=1;
+						}
+					}
+				}
+				else {
+					panic!("last_layer.data is empty. this is in fn exploration_or_exploration when exploit_or_explore == true");
+				}
+
 				//i now have the index of the largest q value. I must then choose the
 				//		function that corresponds to said q value
 				//I will do that in another funciton. I might even make an entire 
@@ -254,11 +274,34 @@ pub mod Network{
 
 
 				//
-				index_of_largest_qvalue
+
+
+				//this deals wtih returning the index_of_largest_qvalue value
+				//basically "match" is saying "let's look at the value of 
+				//		index_of_largest_qvalue, and do different things depending on what it is"
+				//the 	Some(index) => index,	means if index_of_largest_qvalue contains
+				//		 a usize value, (usize is the type of variable indexes are)
+				//		then return the value that index_of_largest_qvalue holds
+				//the	None => panic!("index_of_largest_qvalue was never initialized"), 
+				//		means: if there is no value inside index_of_largest_qvalue, then
+				//		quit the program and display the following message.
+				match index_of_largest_qvalue {
+					Some(index) => index,
+					None => panic!("index_of_largest_qvalue was never initialized"),
+				}
+				
 			}
 			else {
 				//choose one of the outputs randomly. the specific output would then
 				//		call another function to execute said task
+				//I need to fix the else and make it output a random number between 
+				//		0 and a variable inclusive. This variable will be created 
+				//		indexing the output layer and finiding how long it is and 
+				//		subtracting 1.
+
+
+
+				index_of_random_qvalue
 			}
 			
 		}

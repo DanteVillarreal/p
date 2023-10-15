@@ -190,7 +190,7 @@ pub mod network{
 			}
 		}
 
-		//this will just return the index of the largest_q_value if exploit, or just a random q value of explore
+		//this will just return the index of the largest_q_value if exploit, or just a random q value if explore
 		pub fn exploration_or_exploitation(&self, epsilon: &mut f64) -> usize {
 			
 			// want to see if epsilon greedy returns true or not so that I explore or exploit
@@ -207,8 +207,14 @@ pub mod network{
 				//Below: I will choose the neuron with the top q value.
 				//		this would then call another function that executes the specific task
 
-				//what if I just did
 
+
+				//let Some(last_layer) = self.layers.last()		means set last_layer 
+				//		equal to self.layers.last() aka the last layer aka the output layer.
+				//The reason we have the	"if"	is because we want to handle errors
+				//		like if somehow there weren't any layers in the first place
+				//		Then it would go to the corresponding else block and tell us the error
+				//The more error checking the better
 				if let Some(last_layer) = self.layers.last() {
 					for value in &last_layer.data[0] {
 						if value > &largest_qvalue_so_far {
@@ -218,11 +224,12 @@ pub mod network{
 
 						}
 						else {		//this block executes only if the value isn't bigger
-									//		than the largest qvalue we have so far
-									//So:	we dont care about storing the index 
-									//		of a smaller q value.
-									//		we jsut want to show we visited another value
-									//We do this by incrementing the index
+									//		than the largest qvalue we have so far.
+									//Because:	we dont care about storing the index 
+									//		of a smaller q value,
+									//		and instead we jsut want to show we visited 
+									//		another value, then We do this by 
+									//		just incrementing the index
 							indexx+=1;		
 						}
 					}
@@ -241,13 +248,17 @@ pub mod network{
 				//the	None => panic!("index_of_largest_qvalue was never initialized"), 
 				//		means: if there is no value inside index_of_largest_qvalue, then
 				//		quit the program and display the following message.
+				//We need to do a match because the variable
+				//		index_of_largest_qvalue is of type Option<usize>
 				match index_of_largest_qvalue {
 					Some(index) => index,
 					None => panic!("index_of_largest_qvalue was never initialized"),
 				}
 
 				//in this point in the code, i now have the index of the largest q value.
-				//		I must then choose the function that corresponds to said q value
+				//This value is now returned.
+				//In the next function or module, I must then choose the function
+				//		that corresponds to said q value.
 				//I will do that in another funciton. I might even make an entire 
 				//		module just for that function
 				
@@ -268,6 +279,12 @@ pub mod network{
 				}
 			}
 			
+		}
+
+
+
+		pub fn initialization(&mut self) {
+			/*intiialization of weights and biases and what not */
 		}
 	}
 

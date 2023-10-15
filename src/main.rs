@@ -1,7 +1,10 @@
 use rand_distr::{StandardNormal, Normal, Distribution};
 
 use rand::Rng;
-pub mod network;
+
+use crate::network::Network::NeuralNetwork;
+//use mod network;
+use mod actions;
 
 
 
@@ -56,7 +59,6 @@ pub mod network;
 fn main() {
     println!("Hello, world!");
     
-    //step 3 implementation. but obviously dont put it here//
-    generate_random_number();
-    //step 3 above//
+    //run code to initialize the neural network
+    let mut neural_network = NeuralNetwork./*some initialization method here */()
 }

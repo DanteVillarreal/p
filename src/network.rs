@@ -1,4 +1,4 @@
-pub mod Network{
+pub mod network{
 	use rand::Rng;
 
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
@@ -192,64 +192,23 @@ pub mod Network{
 
 		//this will just return the index of the largest_q_value if exploit, or just a random q value of explore
 		pub fn exploration_or_exploitation(&self, epsilon: &mut f64) -> usize {
-			let i = self.layers.len();	//i want to get to the output layer
-
-			//then want to see if epsilon greedy returns true or not. I have to call it on epsilon
+			
+			// want to see if epsilon greedy returns true or not so that I explore or exploit
 			let exploit_or_explore: bool = epsilon_greedy(epsilon);
 
-			//if exploit, run tuple for-loop through output layer. 
+			//True = exploit
 			//establishes values to work with for-loop
 			let mut index_of_largest_qvalue: Option<usize> = None;
 			let mut largest_qvalue_so_far = f64::MIN;
-			let mut index_number: usize = 0;
-			let mut index_of_random_qvalue :usize;
+			let mut index_of_random_qvalue :Option<usize> = None;
+			let mut indexx: usize = 0;		//this will function as the index in the for loop below
 
 			if exploit_or_explore == true {
-				//Below: I will choose top q value. this would then call another function
-				//		 that executes the task
-
-				//the for loop below is used to find which column in the output layer has
-				//		the highest q value.
-				//this is a fuckfest and I'm not sure if it'll even work. 
-				//nevertheless:
-				//		The struct this method will go into is a Vector of vectors of vectors
-				//			Think of it as a list of matrices. The matrix I want to go into
-				//			is the last of these matrices. I want to go into the output layer.
-				//			This is why I did self.layers[i-1]...
-				//					The self.layers is the list of matrices, and I want
-				//					to index the last list. Aka, the output layer.
-				//		this is the data structure for self.layers[i-1]:
-				//		vec![
-				//				vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
-				//		]
-				//		(or at least it should be. if it isn't we are fucked)
-				//		in the first for loop i am iterating over the "rows" in the self.layers
-				//		this, unfortunately, gives me a vector of f64. aka Vec<f64>
-				//				aka, it gives me each row in the layer. so I called the var
-				//				first_row because there's only one row
-				//		So:
-				//				I need to iterate over each "column" in the Vec<f64> to 
-				//				actually get each "neuron"
-				//				so this is where the 2nd for loop comes in
-				//		But:
-				//				I cannot index the Vec<f64> with the variable called
-				//				index_of_the_first_row  because this is of type f64
-				//		So:
-				//				I introduced a variable above called index_number 
-				//				which is of type usize, aka the type needed to index
-
-				for first_row in self.layers[i-1].data.iter() {
-					for index_of_the_first_row in first_row.iter() {
-						if first_row[index_number] > largest_qvalue_so_far  {
-								largest_qvalue_so_far = first_row[index_number];
-								index_of_largest_qvalue = index_number;
-						}
-						index_number += 1;
-					}
-				}
+				//Below: I will choose the neuron with the top q value.
+				//		this would then call another function that executes the specific task
 
 				//what if I just did
-				let mut indexx: usize = 0;
+
 				if let Some(last_layer) = self.layers.last() {
 					for value in &last_layer.data[0] {
 						if value > &largest_qvalue_so_far {
@@ -258,8 +217,13 @@ pub mod Network{
 							indexx += 1;						//to iterate the index value
 
 						}
-						else {
-							indexx+=1;
+						else {		//this block executes only if the value isn't bigger
+									//		than the largest qvalue we have so far
+									//So:	we dont care about storing the index 
+									//		of a smaller q value.
+									//		we jsut want to show we visited another value
+									//We do this by incrementing the index
+							indexx+=1;		
 						}
 					}
 				}
@@ -267,21 +231,13 @@ pub mod Network{
 					panic!("last_layer.data is empty. this is in fn exploration_or_exploration when exploit_or_explore == true");
 				}
 
-				//i now have the index of the largest q value. I must then choose the
-				//		function that corresponds to said q value
-				//I will do that in another funciton. I might even make an entire 
-				//		module just for that function
-
-
-				//
-
 
 				//this deals wtih returning the index_of_largest_qvalue value
 				//basically "match" is saying "let's look at the value of 
 				//		index_of_largest_qvalue, and do different things depending on what it is"
 				//the 	Some(index) => index,	means if index_of_largest_qvalue contains
 				//		 a usize value, (usize is the type of variable indexes are)
-				//		then return the value that index_of_largest_qvalue holds
+				//		then return the value that index_of_largest_qvalue holds.
 				//the	None => panic!("index_of_largest_qvalue was never initialized"), 
 				//		means: if there is no value inside index_of_largest_qvalue, then
 				//		quit the program and display the following message.
@@ -289,19 +245,27 @@ pub mod Network{
 					Some(index) => index,
 					None => panic!("index_of_largest_qvalue was never initialized"),
 				}
+
+				//in this point in the code, i now have the index of the largest q value.
+				//		I must then choose the function that corresponds to said q value
+				//I will do that in another funciton. I might even make an entire 
+				//		module just for that function
 				
 			}
 			else {
 				//choose one of the outputs randomly. the specific output would then
 				//		call another function to execute said task
-				//I need to fix the else and make it output a random number between 
-				//		0 and a variable inclusive. This variable will be created 
-				//		indexing the output layer and finiding how long it is and 
-				//		subtracting 1.
 
+				//attaches a random value between 0 and the last neuron to index_of_random_qvalue
+				//		because we want to return a random "neuron" because we're doing
+				//		explore. explore means do some random shit, so we can then document
+				//		if it was good or not
+				index_of_random_qvalue = Some(rand::thread_rng().gen_range(0..=indexx));
 
-
-				index_of_random_qvalue
+				match index_of_random_qvalue {
+					Some(index) => index,
+					None => panic!("index_of_random_qvalue was never initialized"),
+				}
 			}
 			
 		}

@@ -37,8 +37,8 @@ pub mod action_functions {
             None => panic!("how_much_2nd_wallet_changed    is none"),
         }
 
-        //can't directly subtract Option types. So I need to handle the possiblity that either of
-        //how_much_i_spent    and    how_much_2nd_wallet_changed    could carry no value
+        //can't directly subtract Option types. So I need to handle the possiblity that
+        //how_much_i_spent    and/or    how_much_2nd_wallet_changed    could carry no value
         //adds another layer of redundancy, which is always good
         let total_gained = match(how_much_i_spent, how_much_2nd_wallet_changed) {
             (Some(spent), Some(gained)) => Some(gained-spent),

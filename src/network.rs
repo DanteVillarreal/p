@@ -1,5 +1,6 @@
 pub mod network{
 	use rand::Rng;
+	use crate::action_functions::{/*insert all the action functions */}
 
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
 	pub struct NetworkLayer {
@@ -167,6 +168,12 @@ pub mod network{
 		}
 	}
 
+	pub fn reward_function(balance: f64, change: f64) -> f64 {
+		let new_balance = 
+		//I need to figure out where I would get the balance from. Do I make an entire function just to return a balance
+		//or can I return two f64 from 1 function
+	}
+
 	impl NeuralNetwork {
 		
 		pub fn feed_forward(&mut self) {
@@ -286,6 +293,8 @@ pub mod network{
 		pub fn initialization(&mut self) {
 			/*intiialization of weights and biases and what not */
 		}
+
+		
 	}
 
 }

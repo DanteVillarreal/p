@@ -18,7 +18,7 @@
 {}7.  Implement Leaky ReLU activation function for each layer except for output layer.
 //////////////8.  Implement Softmax activation function for output layer.
 {}9.  Implement functionality to calculate Q-values from network output.     ::::::::::The output of the networks are the q-values themselves
-10. Implement epsilon-greedy strategy for exploration vs exploitation.
+{}10. Implement epsilon-greedy strategy for exploration vs exploitation.
 11. Define reward function for arbitrage task (consider using scaled profit-based reward).
 11a.    I also want the losses to be counted exponentially. As a 50% increase in money is then worth way less
                 if you just lost 50%, then if you had the OG 50% and got 50% more.

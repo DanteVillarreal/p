@@ -11,6 +11,7 @@ pub mod action_functions {
     pub fn eos_two_coinbase_kraken () -> f64 {
         //this will go to the [coinbase] api, get how much [2%] of my total usd is in it, buy [eos] from there
         //transfer it to [kraken] wallet api, and immediately sell all of it
+        //
 
 
 

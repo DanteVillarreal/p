@@ -322,7 +322,11 @@ pub mod network{
 
 			//---------------------Hidden layers----------------------//
 		//--first hidden layer--//
-			for _ in 0..number_of_hidden_layers {
+			//for loop removed because I'm only making one layer 
+				
+				/*pushhing NetworkLayer first because each layer needs to be initialized
+					before establish weights and baises
+				*/
 				self.layers.push(NetworkLayer {
 					rows: 1,
 					columns: hidden_size,
@@ -354,7 +358,7 @@ pub mod network{
 																.sqrt())
 					.collect()
 				}).collect();
-				
+
 				self.weights.push(WeightLayer {
 					rows: input_size,
 					columns: hidden_size,
@@ -366,7 +370,7 @@ pub mod network{
 					columns: hidden_size,
 					data: vec![vec![0.01; hidden_size]],
 				});
-			}
+			
 
 		//----rest of hidden layers ---//
 			/*only difference is:
@@ -378,6 +382,7 @@ pub mod network{
 				instead of rows: input_size above
 			*/
 
+			//starting at 1 because we already established the first hidden layer
 			for _ in 1..number_of_hidden_layers {
 				self.layers.push(NetworkLayer {
 					rows: 1,
@@ -389,6 +394,8 @@ pub mod network{
 				let weights: Vec<Vec<f64>> = (0..hidden_size).map(|_| {
 					(0..hidden_size).map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64)).sqrt()).collect()
 				}).collect();
+
+				//each layer contains this amount. 
 				self.weights.push(WeightLayer {
 					rows: hidden_size,
 					columns: hidden_size,
@@ -407,9 +414,10 @@ pub mod network{
 
 
 			// Output layer
+			//no for loop because just doing 1 layer
 			self.layers.push(NetworkLayer {
 				rows: 1,
-				columns: output_size,
+				columns: output_size,		//only difference
 				data: vec![vec![0.0; output_size]],
 			});
 

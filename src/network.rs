@@ -130,7 +130,7 @@ pub mod network{
 	}
 
 	//no return necessary because i'm passing in the "matrix" by mut reference
-	//  so any changes I make will be refleted in original "matrix" i pass in
+	//  so any changes I make will be refleted in original "matrix" i pass in.
 	//we are doing &mut because we want to be able to modify it w/o taking ownership
 	//  if we take ownership, then the origianl variable will not be able to be used
 	//  again after this function is done
@@ -144,8 +144,8 @@ pub mod network{
 
 		//this determines if neural network will take random action or if it will take
 		//	what it thinks is the best action.
-		//a return of false means perform exploration
-		//a return of true means perform exploitation
+		//a return of false means perform exploration.
+		//a return of true means perform exploitation.
 		//remember to check if epsilon is initialized in main and it is initialized to 1. 
 	pub fn epsilon_greedy(epsilon: &mut f64) -> bool {
 		let is_epsilon_bigger: bool;
@@ -153,7 +153,7 @@ pub mod network{
 
 		// *epsilon is used instead of just epsilon because in order to change epsilon
 		//		i have to say: dereference epsilon to get the f64 value it points to
-		//		and then subtract .0001 from it
+		//		and then subtract .0001 from it.
 		// just epsilon would be like saying, go to this address in memory, and 
 		//		subtract 0.0001 from it. NANI?? ARE YOU SURE YOU WANT TO DO THAT
 		*epsilon -= 0.0001;

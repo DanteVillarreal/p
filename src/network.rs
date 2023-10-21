@@ -169,13 +169,63 @@ pub mod network{
 		}
 	}
 
-	/*
-	pub fn reward_function(balance: f64, change: f64) -> f64 {
-		let new_balance = 
+	
+	pub fn reward_function() -> f64 {
+		//let new_balance = 
 		//I need to figure out where I would get the balance from. Do I make an entire function just to return a balance
 		//or can I return two f64 from 1 function
+
+
+/*HOW I WILL STRUCTURE THIS FUNCTION*&*&*&*&(*(*(&*&*------------------------------------:
+		this function will get information from the REST APIs of giver and recipient, 
+			how_much_i_spent 	will equal how much I spent buying crypto from giver
+			balance				will equal how much recipient wallet was at before crypto transfer
+			new_balance			will equal how much recipient wallet was at after  crypto transfer
+			change				will equal new_balance minus balance
+			updated_balance		will equal balance * (1.0 + change);
+			then return updated_balance.ln()
+
+
+			why 1.0 + change?	so that if change was .05, multiplying it by balance
+				would mean losing money. I'm trying to find the gain here, so balance*1.05.
+			why ln?				to account for greater loss.
+					absolute value of  ln(1-x) is greater than ln(1+x). this is good so our
+					DQN will weigh losses as heavier than "equivalent" gain
+ */
+
+
+
+
+
+		//the reason I made it type    Option<f64> is because I don't want to prematurely
+        //    assign a value to it, so if somehow it never gets assigned a value,
+        //    I can then handle the situation.
+        let how_much_i_spent: Option<f64>;
+        match how_much_i_spent {
+            Some(_) => (),
+            None => panic!("how_much_i_spent   is none"),
+        }
+        let how_much_2nd_wallet_changed: Option<f64>;           //same thing as above^^
+        match how_much_2nd_wallet_changed {
+            Some(_) => (),
+            None => panic!("how_much_2nd_wallet_changed    is none"),
+        }
+
+        //can't directly subtract Option types. So I need to handle the possiblity that
+        //how_much_i_spent    and/or    how_much_2nd_wallet_changed    could carry no value
+        //adds another layer of redundancy, which is always good
+        let total_gained = match(how_much_i_spent, how_much_2nd_wallet_changed) {
+            (Some(spent), Some(gained)) => Some(gained-spent),
+            _ => None,
+        }.expect("No value found");
+
+
+
+
+
+
 	}
-	*/
+	
 
 	impl NeuralNetwork {
 		

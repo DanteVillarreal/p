@@ -1,7 +1,8 @@
 pub mod execute_action_functions {
 
-    use crate::action_functions::{/*insert all the action functions */}
-    use crate::network::NeuralNetwork;
+    use crate::action_functions::{/*insert all the action functions */};
+    //use crate::network::NeuralNetwork;
+    use crate::network::network::NeuralNetwork;
     
     pub fn execute_function(epsilon: usize) {
         

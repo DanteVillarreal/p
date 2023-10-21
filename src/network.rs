@@ -1,7 +1,7 @@
 pub mod network{
 	use rand::Rng;
-	use crate::action_functions::{/*insert all the action functions */}
-	use rand_distr::{StandardNormal, Normal, Distribution};
+	use crate::action_functions::{/*insert all the action functions */};
+	use rand_distr::{Normal, Distribution};
 
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
 	pub struct NetworkLayer {
@@ -169,11 +169,13 @@ pub mod network{
 		}
 	}
 
+	/*
 	pub fn reward_function(balance: f64, change: f64) -> f64 {
 		let new_balance = 
 		//I need to figure out where I would get the balance from. Do I make an entire function just to return a balance
 		//or can I return two f64 from 1 function
 	}
+	*/
 
 	impl NeuralNetwork {
 		
@@ -208,7 +210,7 @@ pub mod network{
 			//establishes values to work with for-loop
 			let mut index_of_largest_qvalue: Option<usize> = None;
 			let mut largest_qvalue_so_far = f64::MIN;
-			let mut index_of_random_qvalue :Option<usize> = None;
+
 			let mut indexx: usize = 0;		//this will function as the index in the for loop below
 
 			if exploit_or_explore == true {
@@ -258,7 +260,7 @@ pub mod network{
 				//		quit the program and display the following message.
 				//We need to do a match because the variable
 				//		index_of_largest_qvalue is of type Option<usize>
-				match index_of_largest_qvalue {
+				return match index_of_largest_qvalue {
 					Some(index) => index,
 					None => panic!("index_of_largest_qvalue was never initialized"),
 				}
@@ -279,9 +281,10 @@ pub mod network{
 				//		because we want to return a random "neuron" because we're doing
 				//		explore. explore means do some random shit, so we can then document
 				//		if it was good or not
+				let mut index_of_random_qvalue :Option<usize> = None;
 				index_of_random_qvalue = Some(rand::thread_rng().gen_range(0..=indexx));
 
-				match index_of_random_qvalue {
+				return match index_of_random_qvalue {
 					Some(index) => index,
 					None => panic!("index_of_random_qvalue was never initialized"),
 				}
@@ -437,6 +440,24 @@ pub mod network{
 				data: vec![vec![0.01; output_size]],
 			});
     	}
+
+		//prints out bias and weight layers
+		pub fn print_network(&self) {
+			for i in 0..self.layers.len() {
+				println!("Layer {}:", i+1);
+				for j in 0..self.biases[i].data[0].len() {
+					println!("Node {}: {:.2}", j+1, self.biases[i].data[0][j]);
+				}
+		
+				if i < self.weights.len() {
+					println!("Weights to next layer:");
+					for row in &self.weights[i].data {
+						let weights: Vec<String> = row.iter().map(|&x| format!("{:.2}", x)).collect();
+						println!("{}", weights.join("\t"));
+					}
+				}
+			}
+		}
 	}
 }
 

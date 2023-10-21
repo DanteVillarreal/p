@@ -11,8 +11,8 @@
 2.  get parsed input from WebSocket APIs.
 2a. normalize data. Then input data into layer1 of neural network.
 {}3.  Connect rand crate to get random number functionality.
-4.  Initialize network weights with random numbers that have mean 0 and standard deviation 1, then multiply each weight by sqrt(2/n).
-5.  Initialize biases using values around 0.01.             ///////-----////           need to see if stochastic gradient descent also updates biases
+{}4.  Initialize network weights with random numbers that have mean 0 and standard deviation 1, then multiply each weight by sqrt(2/n). n being number of neurons in previous layer
+{}5.  Initialize biases using values around 0.01.             ///////-----////           need to see if stochastic gradient descent also updates biases
 {}6.  Implement feed-forward functionality: multiply current network layer by weight layer and add next layer’s biases.
 //////////////6a. Introduce batch normalization after each layer. using z = (x-m)/s ?
 {}7.  Implement Leaky ReLU activation function for each layer except for output layer.

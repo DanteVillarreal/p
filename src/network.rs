@@ -187,15 +187,12 @@ pub mod network{
 
 
 			why 1.0 + change?	so that if change was .05, multiplying it by balance
-				would mean losing money. I'm trying to find the gain here, so balance*1.05.
+				would mean losing money. I'm trying to find the gain here, so it would be 
+				balance*1.05.
 			why ln?				to account for greater loss.
 					absolute value of  ln(1-x) is greater than ln(1+x). this is good so our
 					DQN will weigh losses as heavier than "equivalent" gain
  */
-
-
-
-
 
 		//the reason I made it type    Option<f64> is because I don't want to prematurely
         //    assign a value to it, so if somehow it never gets assigned a value,
@@ -218,11 +215,6 @@ pub mod network{
             (Some(spent), Some(gained)) => Some(gained-spent),
             _ => None,
         }.expect("No value found");
-
-
-
-
-
 
 	}
 	
@@ -249,6 +241,8 @@ pub mod network{
 				}
 			}
 		}
+
+
 
 		//this will just return the index of the largest_q_value if exploit, or just a random q value if explore
 		pub fn exploration_or_exploitation(&self, epsilon: &mut f64) -> usize {
@@ -344,6 +338,8 @@ pub mod network{
 
 
 
+
+
 		pub fn initialization(&mut self, input_size: usize, output_size: usize, number_of_hidden_layers: usize) {
 			/*intiialization of weights and biases and what not */
 			/*initialization rule I'm following:
@@ -409,7 +405,7 @@ pub mod network{
 					(0..hidden_size)
 					.map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64))
 																.sqrt())
-					.collect()
+																.collect()
 				}).collect();
 
 				self.weights.push(WeightLayer {
@@ -445,7 +441,9 @@ pub mod network{
 	
 				let normal_distr = Normal::new(0.0, 1.0).unwrap();
 				let weights: Vec<Vec<f64>> = (0..hidden_size).map(|_| {
-					(0..hidden_size).map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64)).sqrt()).collect()
+					(0..hidden_size).map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64))
+																				.sqrt())
+																				.collect()
 				}).collect();
 
 				//each layer contains this amount. 
@@ -462,10 +460,6 @@ pub mod network{
 				});
 			}
 
-
-
-
-
 			// Output layer
 			//no for loop because just doing 1 layer
 			self.layers.push(NetworkLayer {
@@ -476,7 +470,9 @@ pub mod network{
 
 			let normal_distr = Normal::new(0.0, 1.0).unwrap();
 			let weights: Vec<Vec<f64>> = (0..hidden_size).map(|_| {
-				(0..output_size).map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64)).sqrt()).collect()
+				(0..output_size).map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64))
+																			.sqrt())
+																			.collect()
 			}).collect();
 			self.weights.push(WeightLayer {
 				rows: hidden_size,
@@ -491,7 +487,13 @@ pub mod network{
 			});
     	}
 
+
+
+
+
+
 		//prints out bias and weight layers
+		//I DONT THINK THIS WORKS. IT PRODUCED AN ERROR WHEN I PUT IT IN TO RUST PLAYGROUND
 		pub fn print_network(&self) {
 			for i in 0..self.layers.len() {
 				println!("Layer {}:", i+1);
@@ -502,12 +504,18 @@ pub mod network{
 				if i < self.weights.len() {
 					println!("Weights to next layer:");
 					for row in &self.weights[i].data {
-						let weights: Vec<String> = row.iter().map(|&x| format!("{:.2}", x)).collect();
+						let weights: Vec<String> = row.iter().map(|&x| format!("{:.2}", x))
+													.collect();
 						println!("{}", weights.join("\t"));
 					}
 				}
 			}
 		}
+
+
+
+
+
 	}
 }
 

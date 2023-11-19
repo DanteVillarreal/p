@@ -492,6 +492,21 @@ pub mod network{
 
 
 
+		pub fn update_input(&mut self, indices: &[usize], new_values: &[f64]) {
+			// Check that indices and new_values have the same length
+			//EXPLAIN THIS LATER
+			assert_eq!(indices.len(), new_values.len());
+	
+			// Update the specified inputs
+			//EXPLAIN THIS LATER
+			for (index, &new_value) in indices.iter().zip(new_values) {
+				self.layers[0].data[0][*index] = new_value;
+			}
+		}
+
+
+
+
 		//prints out bias and weight layers
 		//I DONT THINK THIS WORKS. IT PRODUCED AN ERROR WHEN I PUT IT IN TO RUST PLAYGROUND
 		pub fn print_network(&self) {

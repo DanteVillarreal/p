@@ -143,8 +143,42 @@ fn handle_kraken(message: &str) {
     }
     //put the entire message into a different var type that is easier to handle
     let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
+
+    //variable initialization
+    //AFTER PROTOTYPE: CHANGE THESE TO OPTION<F64> for better error handling and error detection
+    let mut a_price = 0.0;
+    let mut a_whole_lot_volume: i64 = 0;
+    let mut a_lot_volume = 0.0;
+
+    let b_price = 0.0;
+    let b_whole_lot_volume: i64 = 0;
+    let b_lot_vlume = 0.0;
+
+    let c_price = 0.0;
+    let c_lot_volume = 0.0;
+
+    let v_today = 0.0;
+    let v_last24hours = 0.0;
+
+    let p_today = 0.0;
+    let p_last24hours = 0.0;
+
+    let t_today: i64 = 0;
+    let t_last24hours: i64 = 0;
+
+    let l_today = 0.0;
+    let l_last24hours = 0.0;
+
+    let h_today = 0.0;
+    let h_last24hours = 0.0;
+
+    let o_today = 0.0;
+    let o_last24hours = 0.0;
+
     //handle errors if any are present during parsing
     match data {
+        
+        
         Ok(value) => {
             //check if the entire message is an array (remember this is JSON format), it should be.
             if let Value::Array(array) = &value {

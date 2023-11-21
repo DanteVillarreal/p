@@ -82,6 +82,9 @@ fn handle_coinbase(message: &str) {
     }
     let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
+    //variable declaration so I can have a larger scope
+    
+
     match data {
         Ok(value) => {
             // Check if the payload is an object
@@ -194,10 +197,10 @@ fn handle_kraken(message: &str) {
                         //              so I need to first use it as such and then change it
                         //               to an f64
                         //              this is why we have the .parse::<f64>().unwrap(); part
-                        let a_price = a_values[0].as_str().unwrap().parse::<f64>().unwrap();
+                        a_price = a_values[0].as_str().unwrap().parse::<f64>().unwrap();
                         //why as_i64()      because this pre-formatted from the server as an int 64
-                        let a_whole_lot_volume = a_values[1].as_i64().unwrap();
-                        let a_lot_volume = a_values[2].as_str().unwrap().parse::<f64>().unwrap();
+                        a_whole_lot_volume = a_values[1].as_i64().unwrap();
+                        a_lot_volume = a_values[2].as_str().unwrap().parse::<f64>().unwrap();
 
                         println!("Kraken: a_values {:?}\na_price: {}\na_whole_lot_volume: {}\na_lot_volume: {}", 
                                 &a_values, &a_price, &a_whole_lot_volume, &a_lot_volume);
@@ -212,9 +215,9 @@ fn handle_kraken(message: &str) {
                     //b values
                     if let Some(Value::Array(b_values)) = map.get("b") {
                         // Extract the values
-                        let b_price = b_values[0].as_str().unwrap().parse::<f64>().unwrap();
-                        let b_whole_lot_volume = b_values[1].as_i64().unwrap();
-                        let b_lot_volume = b_values[2].as_str().unwrap().parse::<f64>().unwrap();
+                        b_price = b_values[0].as_str().unwrap().parse::<f64>().unwrap();
+                        b_whole_lot_volume = b_values[1].as_i64().unwrap();
+                        b_lot_volume = b_values[2].as_str().unwrap().parse::<f64>().unwrap();
 
                         println!("Kraken: b_values:{:?}\nb_price: {}\nb_whole_lot_volume: {}\nb_lot_volume: {}", 
                         &b_values, &b_price, &b_whole_lot_volume, &b_lot_volume);
@@ -227,8 +230,8 @@ fn handle_kraken(message: &str) {
 
                     //c values
                     if let Some(Value::Array(c_values)) = map.get("c") {
-                        let c_price = c_values[0].as_str().unwrap().parse::<f64>().unwrap();
-                        let c_lot_volume = c_values[1].as_str().unwrap().parse::<f64>().unwrap();
+                        c_price = c_values[0].as_str().unwrap().parse::<f64>().unwrap();
+                        c_lot_volume = c_values[1].as_str().unwrap().parse::<f64>().unwrap();
 
                         println!("Kraken: c_values: {:?}\nc_price: {}\nc_lot_volume: {}", &c_values, 
                         &c_price, &c_lot_volume);
@@ -241,8 +244,8 @@ fn handle_kraken(message: &str) {
 
                     //v values
                     if let Some(Value::Array(v_values)) = map.get("v") {
-                        let v_today = v_values[0].as_str().unwrap().parse::<f64>().unwrap();
-                        let v_last24hours = v_values[1].as_str().unwrap().parse::<f64>().unwrap();
+                        v_today = v_values[0].as_str().unwrap().parse::<f64>().unwrap();
+                        v_last24hours = v_values[1].as_str().unwrap().parse::<f64>().unwrap();
 
                         println!("Kraken:v_values: {:?}\nv_today: {}\nv_last24hours: {}", &v_values, &v_today, &v_last24hours);
                     }
@@ -254,8 +257,8 @@ fn handle_kraken(message: &str) {
 
                     //p values
                     if let Some(Value::Array(p_values)) = map.get("p") {
-                        let p_today = p_values[0].as_str().unwrap().parse::<f64>().unwrap();
-                        let p_last24hours = p_values[1].as_str().unwrap().parse::<f64>().unwrap();
+                        p_today = p_values[0].as_str().unwrap().parse::<f64>().unwrap();
+                        p_last24hours = p_values[1].as_str().unwrap().parse::<f64>().unwrap();
 
                         println!("Kraken:p_values: {:?}\np_today: {}\np_last24hours: {}", &p_values, &p_today, &p_last24hours);
                     }
@@ -267,8 +270,8 @@ fn handle_kraken(message: &str) {
                     
                     //t values
                     if let Some(Value::Array(t_values)) = map.get("t") {
-                        let t_today = t_values[0].as_i64().unwrap();
-                        let t_last24hours = t_values[1].as_i64().unwrap();
+                        t_today = t_values[0].as_i64().unwrap();
+                        t_last24hours = t_values[1].as_i64().unwrap();
 
                         println!("Kraken: t_values: {:?}\nt_today: {}\nt_last24hours: {}", &t_values, &t_today, &t_last24hours);
                     }
@@ -280,8 +283,8 @@ fn handle_kraken(message: &str) {
 
                     //l values
                     if let Some(Value::Array(l_values)) = map.get("l") {
-                        let l_today = l_values[0].as_str().unwrap().parse::<f64>().unwrap();
-                        let l_last24hours = l_values[1].as_str().unwrap().parse::<f64>().unwrap();
+                        l_today = l_values[0].as_str().unwrap().parse::<f64>().unwrap();
+                        l_last24hours = l_values[1].as_str().unwrap().parse::<f64>().unwrap();
 
                         println!("Kraken: l_values: {:?}\nl_today: {}\nl_last24hours: {}", &l_values, &l_today, &l_last24hours);
                     }
@@ -293,8 +296,8 @@ fn handle_kraken(message: &str) {
 
                     //h values
                     if let Some(Value::Array(h_values)) = map.get("h") {
-                        let h_today = h_values[0].as_str().unwrap().parse::<f64>().unwrap();
-                        let h_last24hours = h_values[1].as_str().unwrap().parse::<f64>().unwrap();
+                        h_today = h_values[0].as_str().unwrap().parse::<f64>().unwrap();
+                        h_last24hours = h_values[1].as_str().unwrap().parse::<f64>().unwrap();
                         println!("Kraken: h_values: {:?}\nh_today: {}\nh_last24hours: {}", &h_values, &h_today, &h_last24hours);
                     }
                     else {
@@ -305,8 +308,8 @@ fn handle_kraken(message: &str) {
 
                     //o values
                     if let Some(Value::Array(o_values)) = map.get("o") {
-                        let o_today = o_values[0].as_str().unwrap().parse::<f64>().unwrap();
-                        let o_last24hours = o_values[1].as_str().unwrap().parse::<f64>().unwrap();
+                        o_today = o_values[0].as_str().unwrap().parse::<f64>().unwrap();
+                        o_last24hours = o_values[1].as_str().unwrap().parse::<f64>().unwrap();
 
                         println!("Kraken: o_values: {:?}\no_today: {}\no_last24hours: {}", &o_values, &o_today, &o_last24hours);
                     }

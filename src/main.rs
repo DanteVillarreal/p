@@ -117,12 +117,12 @@ fn handle_coinbase(message: &str) {
 
             //just for debugging
             println!("coinbase_price: {}\ncoinbase_open_24h: {}\ncoinbase_volume_24h: {}
-            \ncoinbase_low_24h: {}\ncoinbase_high_24h: {}\ncoinbase_volume_30d: {}
-            \ncoinbase_best_bid: {}\ncoinbase_best_bid_size: {}\ncoinbase_best_ask: {}
-            \ncoinbase_best_ask_size: {}\ncoinbase_side: {}\ncoinbase_last_size: {}", 
-            &coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
-            &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
-            &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size);
+                \ncoinbase_low_24h: {}\ncoinbase_high_24h: {}\ncoinbase_volume_30d: {}
+                \ncoinbase_best_bid: {}\ncoinbase_best_bid_size: {}\ncoinbase_best_ask: {}
+                \ncoinbase_best_ask_size: {}\ncoinbase_side: {}\ncoinbase_last_size: {}", 
+                &coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
+                &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
+                &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size);
 
 
 
@@ -182,8 +182,8 @@ fn handle_coinbase(message: &str) {
     //NEED TO SEE IF i HAVE TO NORMALIZE THIS DATA FIRST
     let indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
     let new_values = [&coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
-    &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
-    &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
+                &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
+                &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
     neural_network.update_input(&indices, &new_values);
 
 
@@ -257,14 +257,16 @@ fn handle_kraken(message: &str) {
                         a_whole_lot_volume = a_values[1].as_i64().unwrap();
                         a_lot_volume = a_values[2].as_str().unwrap().parse::<f64>().unwrap();
 
-                        println!("Kraken: a_values {:?}\na_price: {}\na_whole_lot_volume: {}\na_lot_volume: {}", 
+                        println!("Kraken: a_values {:?}\na_price: {}\na_whole_lot_volume: {}
+                                \na_lot_volume: {}", 
                                 &a_values, &a_price, &a_whole_lot_volume, &a_lot_volume);
                     }
                     else {
                         //just in case
                         println!("****\t'a' VALUE did not exist\n 
                                     be careful with this input\n
-                                    maybe you have to change how you are parsing the input from now on..");
+                                    maybe you have to change how you are parsing the input
+                                    from now on..");
                     }
 
                     //b values
@@ -274,13 +276,15 @@ fn handle_kraken(message: &str) {
                         b_whole_lot_volume = b_values[1].as_i64().unwrap();
                         b_lot_volume = b_values[2].as_str().unwrap().parse::<f64>().unwrap();
 
-                        println!("Kraken: b_values:{:?}\nb_price: {}\nb_whole_lot_volume: {}\nb_lot_volume: {}", 
+                        println!("Kraken: b_values:{:?}\nb_price: {}\nb_whole_lot_volume: {}
+                                \nb_lot_volume: {}", 
                         &b_values, &b_price, &b_whole_lot_volume, &b_lot_volume);
                     }
                     else {
                         println!("****\t'b' VALUE did not exist\n 
                                     be careful with this input\n
-                                    maybe you have to change how you are parsing the input from now on..");
+                                    maybe you have to change how you are parsing the input 
+                                    from now on..");
                     }
 
                     //c values
@@ -294,7 +298,8 @@ fn handle_kraken(message: &str) {
                     else {
                         println!("****\t'c' VALUE did not exist\n 
                                     be careful with this input\n
-                                    maybe you have to change how you are parsing the input from now on..");
+                                    maybe you have to change how you are parsing the input 
+                                    from now on..");
                     }
 
                     //v values
@@ -302,12 +307,14 @@ fn handle_kraken(message: &str) {
                         v_today = v_values[0].as_str().unwrap().parse::<f64>().unwrap();
                         v_last24hours = v_values[1].as_str().unwrap().parse::<f64>().unwrap();
 
-                        println!("Kraken:v_values: {:?}\nv_today: {}\nv_last24hours: {}", &v_values, &v_today, &v_last24hours);
+                        println!("Kraken:v_values: {:?}\nv_today: {}\nv_last24hours: {}", &v_values, 
+                        &v_today, &v_last24hours);
                     }
                     else {
                         println!("****\t'v' VALUE did not exist\n 
                                     be careful with this input\n
-                                    maybe you have to change how you are parsing the input from now on..");
+                                    maybe you have to change how you are parsing the input 
+                                    from now on..");
                     }
 
                     //p values
@@ -315,12 +322,14 @@ fn handle_kraken(message: &str) {
                         p_today = p_values[0].as_str().unwrap().parse::<f64>().unwrap();
                         p_last24hours = p_values[1].as_str().unwrap().parse::<f64>().unwrap();
 
-                        println!("Kraken:p_values: {:?}\np_today: {}\np_last24hours: {}", &p_values, &p_today, &p_last24hours);
+                        println!("Kraken:p_values: {:?}\np_today: {}\np_last24hours: {}", &p_values, 
+                        &p_today, &p_last24hours);
                     }
                     else {
                         println!("****\t'v' VALUE did not exist\n 
                                     be careful with this input\n
-                                    maybe you have to change how you are parsing the input from now on..");
+                                    maybe you have to change how you are parsing the input 
+                                    from now on..");
                     }
                     
                     //t values
@@ -328,12 +337,14 @@ fn handle_kraken(message: &str) {
                         t_today = t_values[0].as_i64().unwrap();
                         t_last24hours = t_values[1].as_i64().unwrap();
 
-                        println!("Kraken: t_values: {:?}\nt_today: {}\nt_last24hours: {}", &t_values, &t_today, &t_last24hours);
+                        println!("Kraken: t_values: {:?}\nt_today: {}\nt_last24hours: {}", &t_values, 
+                        &t_today, &t_last24hours);
                     }
                     else {
                         println!("****\t't' VALUE did not exist\n 
                                     be careful with this input\n
-                                    maybe you have to change how you are parsing the input from now on..");
+                                    maybe you have to change how you are parsing the input 
+                                    from now on..");
                     }
 
                     //l values
@@ -341,24 +352,28 @@ fn handle_kraken(message: &str) {
                         l_today = l_values[0].as_str().unwrap().parse::<f64>().unwrap();
                         l_last24hours = l_values[1].as_str().unwrap().parse::<f64>().unwrap();
 
-                        println!("Kraken: l_values: {:?}\nl_today: {}\nl_last24hours: {}", &l_values, &l_today, &l_last24hours);
+                        println!("Kraken: l_values: {:?}\nl_today: {}\nl_last24hours: {}", &l_values, 
+                        &l_today, &l_last24hours);
                     }
                     else {
                         println!("****\t'l' VALUE did not exist\n 
                                     be careful with this input\n
-                                    maybe you have to change how you are parsing the input from now on..");
+                                    maybe you have to change how you are parsing the input 
+                                    from now on..");
                     }
 
                     //h values
                     if let Some(Value::Array(h_values)) = map.get("h") {
                         h_today = h_values[0].as_str().unwrap().parse::<f64>().unwrap();
                         h_last24hours = h_values[1].as_str().unwrap().parse::<f64>().unwrap();
-                        println!("Kraken: h_values: {:?}\nh_today: {}\nh_last24hours: {}", &h_values, &h_today, &h_last24hours);
+                        println!("Kraken: h_values: {:?}\nh_today: {}\nh_last24hours: {}", &h_values, 
+                        &h_today, &h_last24hours);
                     }
                     else {
                         println!("****\t'h' VALUE did not exist\n 
                                     be careful with this input\n
-                                    maybe you have to change how you are parsing the input from now on..");
+                                    maybe you have to change how you are parsing the input 
+                                    from now on..");
                     }
 
                     //o values
@@ -366,12 +381,14 @@ fn handle_kraken(message: &str) {
                         o_today = o_values[0].as_str().unwrap().parse::<f64>().unwrap();
                         o_last24hours = o_values[1].as_str().unwrap().parse::<f64>().unwrap();
 
-                        println!("Kraken: o_values: {:?}\no_today: {}\no_last24hours: {}", &o_values, &o_today, &o_last24hours);
+                        println!("Kraken: o_values: {:?}\no_today: {}\no_last24hours: {}", &o_values, 
+                        &o_today, &o_last24hours);
                     }
                     else {
                         println!("****\t'o' VALUE did not exist\n 
                                     be careful with this input\n
-                                    maybe you have to change how you are parsing the input from now on..");
+                                    maybe you have to change how you are parsing the input 
+                                    from now on..");
                     }
 
                 }
@@ -382,7 +399,14 @@ fn handle_kraken(message: &str) {
         },
     }
 
-
+    let indices: [usize; 20] = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 
+                                28, 29, 30, 31];
+    let new_values = [&a_price, &a_whole_lot_volume, &a_lot_volume, &b_price, 
+                                &b_whole_lot_volume, &b_lot_vlume, &c_price, &c_lot_volume, 
+                                &v_today, &v_last24hours, &p_today, &p_last24hours, &t_today, 
+                                &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
+                                &o_today, &o_last24hours];
+    neural_network.update_input(&indices, &new_values);
 
 
 

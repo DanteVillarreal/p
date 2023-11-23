@@ -466,6 +466,9 @@ fn handle_gemini(message: &str) {
     }
     let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
+    let mut amount = 0.0;
+    let mut maker_side = "pppp";
+    let mut price = 0.0;
 
     match data {
         Ok(value) => {
@@ -476,9 +479,9 @@ fn handle_gemini(message: &str) {
                     // Check if the first element of the array is an object
                     if let Some(Value::Object(event)) = events.get(0) {
                         // Extract the values
-                        let amount = event.get("amount").and_then(Value::as_str).unwrap();
-                        let maker_side = event.get("makerSide").and_then(Value::as_str).unwrap();
-                        let price = event.get("price").and_then(Value::as_str).unwrap();
+                        amount = event.get("amount").and_then(Value::as_f64).unwrap();
+                        maker_side = event.get("makerSide").and_then(Value::as_str).unwrap();
+                        price = event.get("price").and_then(Value::as_f64).unwrap();
                         
                         println!("gemini:\namount: {}\nmaker_side: {}\nprice: {}\n\n\n", &amount, 
                                 &maker_side, &price);
@@ -490,6 +493,11 @@ fn handle_gemini(message: &str) {
             println!("Failed to parse JSON Gemini message\nError: {}\nMessage: {}", e, message);
         },
     }
+
+    let indices = [34, 35, 36];
+    let new_values = [&amount, &maker_side, &price];
+    neural_network.update_input(&indices, &new_values);
+
 }
 //-----ALL-FOR-PARSING-ABOVE-THIS//
 

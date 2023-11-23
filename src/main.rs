@@ -426,14 +426,17 @@ fn handle_bitstamp(message: &str) {
 
     let v: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
+    let mut amount = 0.0;
+    let mut price:i64 = 0;
+
     match v {
         Ok(value) => {
             if let Value::Object(map) = &value {
                 // Check if the object has a key "data" whose value is an object
                 if let Some(Value::Object(data)) = map.get("data") {
                     // Extract the values
-                    let amount = data.get("amount").and_then(Value::as_f64).unwrap();
-                    let price = data.get("price").and_then(Value::as_i64).unwrap();
+                    amount = data.get("amount").and_then(Value::as_f64).unwrap();
+                    price = data.get("price").and_then(Value::as_i64).unwrap();
 
                     println!("Bitstamp:\namount: {}\nprice: {}\n\n\n", &amount, &price);
         
@@ -444,6 +447,12 @@ fn handle_bitstamp(message: &str) {
             println!("Failed to parse JSON Bitstamp message\nError: {}\nMessage: {}", e, message);
         },
     }
+
+
+    let indices: [usize; 2] = [32, 33];
+    let new_values = [&amount, &price];
+    neural_network.update_input(&indices, &new_values);
+
 }
 
 fn handle_gemini(message: &str) {

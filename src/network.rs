@@ -180,7 +180,7 @@ pub mod network{
 		this function will get information from the REST APIs of giver and recipient, 
 			how_much_i_spent 	will equal how much I spent buying crypto from giver
 			balance				will equal how much recipient wallet was at before crypto transfer
-			new_balance			will equal how much recipient wallet was at after  crypto transfer
+			new_balance			will equal how much recipient wallet was at after+  crypto transfer
 			change				will equal new_balance minus balance
 			updated_balance		will equal balance * (1.0 + change);
 			then return updated_balance.ln()
@@ -215,6 +215,51 @@ pub mod network{
             (Some(spent), Some(gained)) => Some(gained-spent),
             _ => None,
         }.expect("No value found");
+
+
+
+
+		//12/14/23: Im thinking of making this as my reward function but Im not sure what 
+		//	the best course of action is.
+		//nah, you know what, FUCK ITTTTTT. Im using this for now, and if "oh no, im losing
+		//	money in sandbox mode", then Ill change it later
+
+		//self needs to be changed to the porfolio's worth
+		fn reward(&self, previous_value: f64) -> f64 {
+			let multiplier = 1.3;
+			let absolute_change = self.value - previous_value;
+			let relative_change = absolute_change / previous_value;
+			let reward = if absolute_change > 0.0 {
+				absolute_change
+			} else {
+			//why 1 / (1-relative_change)?
+			//so imagine I lost 1 dollars from 100 originally. So the relative change would be 0.01
+			//		if I did just 1/relative chnage, I would have 1/.01 = 100
+			//now imagine if I lost 10 dollars from 100. Relative change would be 0.1
+			//		if I did just 1/relative change, I would have 1/.1 = 10.
+			//so basically I'm having less penalty for a worse loss. This is why I'm doing 
+			//		1 - relative change. Now let's do the same scenarios but with 1-relative_change
+			//1 lost from 100. relative_change = 0.01. 1-relative_change = .99.
+			//		 1/(1-relative_change)= 1.010101...
+			//10 lost from 100. relative_change = 0.1. 1-relative_change = .9.
+			//		 1/(1-relative_change) = 1.11.
+			//so a larger weight for a larger loss.
+			//why 1 / (1-relative_change)*absolute)_change?
+			//The idea with that is so that the same loss is now weighed heavier than the same gain.
+			//AND it's weight is scaled in accordance with how much you lost percentage wise.
+			//But if I lost 10 percent of my entire portfolio, then I would want it to be worse than
+			//		just weighted 1.11 times more
+			//so why dont we multiply it by like 1.3 or some constant 
+				-1.0 *multiplier* (1.0 / (1.0 - relative_change.abs())) * absolute_change.abs()
+			};
+			return reward;
+		}
+
+
+
+
+
+
 
 	}
 	
@@ -370,8 +415,9 @@ pub mod network{
 			});
 
 			//---------------------Hidden layers----------------------//
-		//--first hidden layer--//
-			//for loop removed because I'm only making one layer 
+
+			//--first hidden layer--//
+				//for loop removed because I'm only making one layer 
 				
 				/*pushhing NetworkLayer first because each layer needs to be initialized
 					before establish weights and baises
@@ -421,70 +467,70 @@ pub mod network{
 				});
 			
 
-		//----rest of hidden layers ---//
-			/*only difference is:
-			self.weights.push(WeightLayer {
-				rows: hidden_size,
-				columns: hidden_size,
-				data: weights,
-			});
-				instead of rows: input_size above
-			*/
-
-			//starting at 1 because we already established the first hidden layer
-			for _ in 1..number_of_hidden_layers {
-				self.layers.push(NetworkLayer {
-					rows: 1,
-					columns: hidden_size,
-					data: vec![vec![0.0; hidden_size]],
-				});
-	
-				let normal_distr = Normal::new(0.0, 1.0).unwrap();
-				let weights: Vec<Vec<f64>> = (0..hidden_size).map(|_| {
-					(0..hidden_size).map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64))
-																				.sqrt())
-																				.collect()
-				}).collect();
-
-				//each layer contains this amount. 
+			//----rest of hidden layers ---//
+				/*only difference is:
 				self.weights.push(WeightLayer {
 					rows: hidden_size,
 					columns: hidden_size,
 					data: weights,
 				});
-	
-				self.biases.push(BiasLayer {
-					rows: 1,
-					columns: hidden_size,
-					data: vec![vec![0.01; hidden_size]],
-				});
-			}
+					instead of rows: input_size above
+				*/
+
+				//starting at 1 because we already established the first hidden layer
+				for _ in 1..number_of_hidden_layers {
+					self.layers.push(NetworkLayer {
+						rows: 1,
+						columns: hidden_size,
+						data: vec![vec![0.0; hidden_size]],
+					});
+		
+					let normal_distr = Normal::new(0.0, 1.0).unwrap();
+					let weights: Vec<Vec<f64>> = (0..hidden_size).map(|_| {
+						(0..hidden_size).map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64))
+																					.sqrt())
+																					.collect()
+					}).collect();
+
+					//each layer contains this amount. 
+					self.weights.push(WeightLayer {
+						rows: hidden_size,
+						columns: hidden_size,
+						data: weights,
+					});
+		
+					self.biases.push(BiasLayer {
+						rows: 1,
+						columns: hidden_size,
+						data: vec![vec![0.01; hidden_size]],
+					});
+				}
 
 			// Output layer
-			//no for loop because just doing 1 layer
-			self.layers.push(NetworkLayer {
-				rows: 1,
-				columns: output_size,		//only difference
-				data: vec![vec![0.0; output_size]],
-			});
+				//no for loop because just doing 1 layer
+				self.layers.push(NetworkLayer {
+					rows: 1,
+					columns: output_size,		//only difference
+					data: vec![vec![0.0; output_size]],
+				});
 
-			let normal_distr = Normal::new(0.0, 1.0).unwrap();
-			let weights: Vec<Vec<f64>> = (0..hidden_size).map(|_| {
-				(0..output_size).map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64))
-																			.sqrt())
-																			.collect()
-			}).collect();
-			self.weights.push(WeightLayer {
-				rows: hidden_size,
-				columns: output_size,
-				data: weights,
-			});
+				let normal_distr = Normal::new(0.0, 1.0).unwrap();
+				let weights: Vec<Vec<f64>> = (0..hidden_size).map(|_| {
+					(0..output_size).map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64))
+																				.sqrt())
+																				.collect()
+				}).collect();
+				self.weights.push(WeightLayer {
+					rows: hidden_size,
+					columns: output_size,
+					data: weights,
+				});
 
-			self.biases.push(BiasLayer {
-				rows: 1,
-				columns: output_size,
-				data: vec![vec![0.01; output_size]],
-			});
+				self.biases.push(BiasLayer {
+					rows: 1,
+					columns: output_size,
+					data: vec![vec![0.01; output_size]],
+				});
     	}
 
 

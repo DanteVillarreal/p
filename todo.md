@@ -23,16 +23,16 @@
 11a.    I also want the losses to be counted exponentially. As a 50% increase in money is then worth way less
                 if you just lost 50%, then if you had the OG 50% and got 50% more.
                 option a:
-                        start:          100
-                        gained 50% =    150
+                        start:                          100
+                        gained 50% =                    150
                 option b:
-                        start:          100
-                        lost 50% =      50
-                        gained 50% =    75
+                        start:                          100
+                        lost 50% =                      50
+                        gained 50% after loss=          75
                 option c:
-                        start:          100
-                        lost 50% =      50
-                        gained 200% =   150
+                        start:                          100
+                        lost 50% =                      50
+                        gained 200% after loss =        150
                 As you can see, I would have to gain 200% to get to where option a ended
                 And 100% !!! just to get back to starting point
 
@@ -131,3 +131,12 @@ Logging and Monitoring: Implement logging of relevant metrics (like loss, reward
                     I would:
                         I would step in and buy 2nd guy's btc for 1990
                         then sell it to the 1st guy for 20000
+
+
+
+
+
+
+
+Log of what I've done:
+12/14/23 - Well that took quite a while. Im talking about the previous commit where it said Im going to actually do the functions themselves. In this commit I added a reward function that answers all of the things I wanted it to answer. I wanted the losses to be heavier. I wanted the losses to be scaled. This honestly is a super simple function but it was honestly much harder to come up with how it worked with the genius idea of the reciprocal than it seems. Next step is to get the Bellman Optimality Equation. I got this!

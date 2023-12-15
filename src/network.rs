@@ -130,6 +130,19 @@ pub mod network{
 		}
 	}
 
+
+	//this is for the back propagation to update the weights
+	//why is the leaky_relu_derivative important?
+	//	helps us understand how much a change in the input to the activation function
+	//	(leakyRelu) would affect its output. In backpropagation, we're trying to figure
+	//	out how much each neuron contributed to the final error or loss
+	pub fn leaky_relu_derivative(x: f64) -> f64 {
+		if x >= 0.0 {
+			1.0
+		} else {
+			0.01
+		}
+	}
 	//no return necessary because i'm passing in the "matrix" by mut reference
 	//  so any changes I make will be refleted in original "matrix" i pass in.
 	//we are doing &mut because we want to be able to modify it w/o taking ownership
@@ -717,17 +730,57 @@ pub mod network{
 
 
 
-	//this is used to actually IMPROVE the neural network
-	pub fn update_weights(&mut self, index: usize, q_value: f64, target_q_value: f64) {
-		// Calculate the TD error
-		let td_error = target_q_value- q_value;
-		
-		// Update the weights using SGD
-		// Here, you would need to implement the SGD update rule
-		// This is a simplified example and assumes you have a method `sgd_update`
-		self.sgd_update(index, td_error);
+
+
+
+	//for back propagation to update weights.
+	//Gives us a measure of how well we're doing. 
+	//	The lower the loss the better the network's predictions
+	pub fn calculate_loss(&self, current_q_value: f64, target_q_value: f64) -> f64 {
+		(current_q_value - target_q_value).powi(2)
+	}
+	//This tells us how much the loss's output would change if we made a small change
+	//  to its input. If the derivative is positive, it means increasing the weight 
+	//	would increase the loss. So to minimize the loss, we should decrease the weight.
+	//  If the derivative is negative, increasing the weight would decrease the loss, 
+	//	so we should increase the weight. 
+	pub fn calculate_loss_derivative(&self, current_q_value: f64, target_q_value: f64) -> f64 {
+		2.0 * (current_q_value - target_q_value)
 	}
 
+	//This is probably the hardest part to understand. But think of a 2d graph and the
+	//	 gradient is just the slope of the graph. We're basically seeing which nudges
+	//	 to the weights and biases cause the fastest change to the local minimum
+	//Aka which changes to which weights matter the most
+	pub fn backpropagate(&mut self, loss_derivative: f64) -> Vec<Vec<f64>> {
+		let mut gradients = vec![vec![0.0; self.weights[0].data[0].len()]; self.weights.len()];
+	
+		for i in (0..self.layers.len()).rev() {
+			let activations = &self.layers[i].data;
+			let weights = &self.weights[i].data;
+	
+			for j in 0..activations.len() {
+				for k in 0..activations[j].len() {
+					let activation_derivative = leaky_relu_derivative(activations[j][k]);
+					gradients[i][j] = loss_derivative * activation_derivative * weights[j][k];
+				}
+			}
+		}
+	
+		gradients
+	}
+
+	//this is used to actually IMPROVE the neural network
+	pub fn update_weights(&mut self, gradients: &Vec<Vec<f64>>) {
+		let learning_rate = 0.001;
+		for i in 0..self.weights.len() {
+			for j in 0..self.weights[i].data.len() {
+				for k in 0..self.weights[i].data[j].len() {
+					self.weights[i].data[j][k] -= learning_rate * gradients[i][j];
+				}
+			}
+		}
+	}
 
 
 	}

@@ -42,6 +42,7 @@
 15. Figure out how to connect all DQN outputs to arbitrage actions.
 16. add regularization techniques when establishing loss before doing the stochastic gradient Use L2 regularization: loss = (current_q_value - target_q_value)^2 + λ * sum(weights[i]^2)
 16a.sum(weights[i]^2) is the sum of ALL my weights in the ENTIRE network squared.
+12/15/23 update: I wont actually add L2 regularization yet because it may actually lead to underfitting.
 16.5Figure out how to add experience replay. implement strategy to choose which experiences get place in memory based on whether the agent lost money. if it lost, it's valuable
 16.5aand if it didn't gain money, it might be valuable too. 
 16.5b introduce "prioritized experience replay" as it can help
@@ -128,6 +129,7 @@ Make sure that each input from the parsing program is at the last moment stored 
 17. optimize "Make it so after every sell order executes from the buy/sell pair, I also execute requests for all the account balances." so that I keep the information from the
         unchanged balances and only do 2 requests instead of 4.
 18. Optimize gamma value
+19. Add L2 regularization
 
 
 
@@ -156,3 +158,4 @@ Log of what I've done:
 12/14/23 - Well that took quite a while. Im talking about the previous commit where it said Im going to actually do the functions themselves. In this commit I added a reward function that answers all of the things I wanted it to answer. I wanted the losses to be heavier. I wanted the losses to be scaled. This honestly is a super simple function but it was honestly much harder to come up with how it worked with the genius idea of the reciprocal than it seems. Next step is to get the Bellman Optimality Equation. I got this!
 12/15/23 - This is an interlude commit. I just made a few small changes and I want to introduce that as a commit before I make a big change right after this. I got this!
 12/15/23 - Made some changes to the exploration funciton to return an index as well. Then I added a new function to calculate the target_q_value. Next step is to do stochastic gradient descent. I got this!
+12/15/23 - Added an update_weights function that calculates the temporal difference and of course updates the weights. It incorporates the stochastic gradient descent function that I have not made yet though. Next step is to make this. I got this!

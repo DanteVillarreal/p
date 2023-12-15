@@ -647,8 +647,8 @@ pub mod network{
 			//		if I want to change it, I'll change it later.
 			let gamma = 0.9;
 			//initialize the largest Q-value so far and its index
-			let mut index_of_largest_qvalue: Option<usize> = None;
-			let mut largest_qvalue_so_far = f64::MIN;
+			let mut index_of_largest_qvalue_in_next_state: Option<usize> = None;
+			let mut largest_qvalue_so_far_in_next_state = f64::MIN;
 
 			//I want to feed forward so I have a new set of q_values that will serve as my
 			//	 "next_q_value"
@@ -688,9 +688,9 @@ pub mod network{
 			//then the inner "if" is just standard for finding the maximum value in a vec or array.
 			if let Some(last_layer) = self.layers.last() {
 				for (index, &value) in last_layer.data[0].iter().enumerate() {
-					if value > largest_qvalue_so_far {
-						largest_qvalue_so_far = value;
-						index_of_largest_qvalue = Some(index);
+					if value > largest_qvalue_so_far_in_next_state {
+						largest_qvalue_so_far_in_next_state = value;
+						index_of_largest_qvalue_in_next_state = Some(index);
 					}
 				}
 			}
@@ -701,7 +701,7 @@ pub mod network{
 			}
 			// Calculate the target Q-value
 			//this is the Bellman Optimality equation.
-			let target_q_value = reward + gamma * largest_qvalue_so_far;
+			let target_q_value = reward + gamma * largest_qvalue_so_far_in_next_state;
 
 			target_q_value
 
@@ -709,6 +709,24 @@ pub mod network{
 
 
 
+
+
+
+
+
+
+
+
+	//this is used to actually IMPROVE the neural network
+	pub fn update_weights(&mut self, index: usize, q_value: f64, target_q_value: f64) {
+		// Calculate the TD error
+		let td_error = target_q_value- q_value;
+		
+		// Update the weights using SGD
+		// Here, you would need to implement the SGD update rule
+		// This is a simplified example and assumes you have a method `sgd_update`
+		self.sgd_update(index, td_error);
+	}
 
 
 

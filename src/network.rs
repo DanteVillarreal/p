@@ -218,13 +218,15 @@ pub mod network{
 
 
 
-
+//-----------------MY ACTUAL REWARD FUNCITON------------------------------------------//
 		//12/14/23: Im thinking of making this as my reward function but Im not sure what 
 		//	the best course of action is.
 		//nah, you know what, FUCK ITTTTTT. Im using this for now, and if "oh no, im losing
 		//	money in sandbox mode", then Ill change it later
 
 		//self needs to be changed to the porfolio's worth
+		//need to REMOVE the parameters, and just input function calls into this function itself 
+		//	that get the total portfolio size and 
 		fn reward(&self, previous_value: f64) -> f64 {
 			let multiplier = 1.3;
 			let absolute_change = self.value - previous_value;
@@ -269,8 +271,8 @@ pub mod network{
 		pub fn feed_forward(&mut self) {
 			for i in 1..self.layers.len() {
 
-				//i REALLY NEED to understand this part more. I need to know what's being multiplied
-				//		and when and what's being added and when.
+				//i REALLY NEED to understand this part more. I need to know what's being
+				//	 multiplied and when and what's being added and when.
 				
 				let previous_activations = &self.layers[i-1].data;
 				let weights = &self.weights[i-1].data;
@@ -289,7 +291,11 @@ pub mod network{
 
 
 
-		//this will just return the index of the largest_q_value if exploit, or just a random q value if explore
+		//this will just return the index of the largest_q_value if exploit, or just a random
+		//	 index if explore
+		//12/15/23 update:
+		//I want it to also return the actual q value so that we can use it to update our
+		//		 "current Q-value estimate" in the "temporal difference error"
 		pub fn exploration_or_exploitation(&self, epsilon: &mut f64) -> usize {
 			
 			// want to see if epsilon greedy returns true or not so that I explore or exploit
@@ -538,6 +544,10 @@ pub mod network{
 
 
 
+
+
+
+
 		pub fn update_input(&mut self, indices: &[usize], new_values: &[f64]) {
 			// Check that indices and new_values have the same length
 			//EXPLAIN THIS LATER
@@ -549,6 +559,11 @@ pub mod network{
 				self.layers[0].data[0][*index] = new_value;
 			}
 		}
+
+
+
+
+
 
 
 
@@ -572,6 +587,19 @@ pub mod network{
 				}
 			}
 		}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

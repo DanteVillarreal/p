@@ -498,6 +498,8 @@ fn handle_gemini(message: &str) {
     let new_values = [&amount, &maker_side, &price];
     neural_network.update_input(&indices, &new_values);
 
+    //counting the neurons for the the amount in each wallet, I will have 40 input neurons.
+
 }
 //-----ALL-FOR-PARSING-ABOVE-THIS//
 
@@ -584,7 +586,8 @@ fn main() {
                 
                 //line.splintn(2, ':'): iterates over the line and splits it at  ":".
                 //.collect()            collects the 2 substrings and puts it into a
-                //                  Vec<&str>   which is a vector of substrings.
+                //                  Vec<&str>   which is a vector of substrings. 
+                //                  Aka an array of substrings
                 //parts now contains the 2 substrings split at the  :
                 let parts: Vec<&str> = line_being_read.splitn(2, ':').collect();
 
@@ -608,7 +611,7 @@ fn main() {
                 let message = parts[1].trim();
 
                 //this is operating as an if statement of if: "coinbase received"
-                //  go to handle_coinbase(message)
+                //  go to handle_coinbase(message) function
                 //else if "kraken received"...
                 //and if it's none of them, print that it's unknown and panic
                 match prefix {

@@ -19,8 +19,8 @@
 //////////////8.  Implement Softmax activation function for output layer.
 {}9.  Implement functionality to calculate Q-values from network output.     ::::::::::The output of the networks are the q-values themselves
 {}10. Implement epsilon-greedy strategy for exploration vs exploitation.
-11. Define reward function for arbitrage task (consider using scaled profit-based reward).
-11a.    I also want the losses to be counted exponentially. As a 50% increase in money is then worth way less
+{}11. Define reward function for arbitrage task (consider using scaled profit-based reward).
+{}11a.    I also want the losses to be counted exponentially. As a 50% increase in money is then worth way less
                 if you just lost 50%, then if you had the OG 50% and got 50% more.
                 option a:
                         start:                          100
@@ -38,7 +38,7 @@
 
 12. Implement functionality to calculate target Q-values using Bellman Optimality Equation: target_q_value = reward + gamma * next_q_value.
 13. Update network weights and biases using stochastic gradient descent to minimize (current_q_value - target_q_value)^2.
-14. Establish decay rate of epsilon.
+{}14. Establish decay rate of epsilon.
 15. Figure out how to connect all DQN outputs to arbitrage actions.
 16. add regularization techniques when establishing loss before doing the stochastic gradient Use L2 regularization: loss = (current_q_value - target_q_value)^2 + λ * sum(weights[i]^2)
 16a.sum(weights[i]^2) is the sum of ALL my weights in the ENTIRE network squared.
@@ -94,7 +94,7 @@ Understand Temporal-Difference (TD) Learning:
 
 
 
-//////-----------------THINGS I NEED TO ADD--------------------///////
+//////-----------------THINGS I NEED TO ADD Before I can begin--------------------///////
 Experience Replay: DQNs typically use a technique called experience replay, where past experiences are stored and then a batch of experiences is sampled to train the network. This helps to break the correlation between experiences and stabilize training.
 
 Target Network: In addition to the main DQN, a target network (which is a copy of the main network) is often used to calculate the target Q-values during learning. The weights of the target network are updated less frequently than those of the main network, which can help stabilize learning.
@@ -103,9 +103,20 @@ Evaluation: It’s important to periodically evaluate your DQN on a separate val
 
 Stopping Criteria: Define a stopping criteria for when to stop training. This could be based on the performance on a validation environment or when the change in performance is no longer significant.
 
-Saving and Loading Models: Implement functionality to save and load your model. This allows you to stop and restart training, and also to keep the best performing models.
+Saving and Loading Models: Implement functionality to save and load your model. This allows you to stop and restart training, and also to keep the best performing models. Make it so that the loading of the model also executes request to obtain "previous" account balances.
 
 Logging and Monitoring: Implement logging of relevant metrics (like loss, rewards, etc.) during training. Visualizing these metrics can help understand how your DQN is learning over time.
+
+I need to add timers for shit so that I can then optimize it.
+
+I need to add sandbox mode before I can even run it
+
+Make it so after every sell order executes from the buy/sell pair, I also execute requests for all the account balances. This information will be fed into the reward function as the previous value. Then once the new trade executes and the account balances request execute, I will have the new account balances so that I can actually calculate the reward. After the reward is calculated, the new account balance will be stored as previous account balance.
+
+Make sure that each input from the parsing program is at the last moment stored as f64. Why? I dont think I can multiply f64 by ints unless I do "as" f64. Also, change the string to zero for 1 thing and 1 for the other
+
+
+
 
 
 //---------------------AFTER PROTOTYPE--------------------//
@@ -114,6 +125,9 @@ Logging and Monitoring: Implement logging of relevant metrics (like loss, reward
 14. standardize input data using historical data I have collected. 
 15. optimize structs of network and bias layer by deleting row data
 16. optimize matrix_add. I don't think the upper for loop is necessary. Also, need to remove the clone function. that's probably a few ms just on its own
+17. optimize "Make it so after every sell order executes from the buy/sell pair, I also execute requests for all the account balances." so that I keep the information from the
+        unchanged balances and only do 2 requests instead of 4.
+18. Optimize gamma value
 
 
 
@@ -140,3 +154,4 @@ Logging and Monitoring: Implement logging of relevant metrics (like loss, reward
 
 Log of what I've done:
 12/14/23 - Well that took quite a while. Im talking about the previous commit where it said Im going to actually do the functions themselves. In this commit I added a reward function that answers all of the things I wanted it to answer. I wanted the losses to be heavier. I wanted the losses to be scaled. This honestly is a super simple function but it was honestly much harder to come up with how it worked with the genius idea of the reciprocal than it seems. Next step is to get the Bellman Optimality Equation. I got this!
+12/15/23 - This is an interlude commit. I just made a few small changes and I want to introduce that as a commit before I make a big change right after this. I got this!

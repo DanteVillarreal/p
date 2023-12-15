@@ -176,49 +176,49 @@ pub mod network{
 		//or can I return two f64 from 1 function
 
 
-/*HOW I WILL STRUCTURE THIS FUNCTION*&*&*&*&(*(*(&*&*------------------------------------:
-		this function will get information from the REST APIs of giver and recipient, 
-			how_much_i_spent 	will equal how much I spent buying crypto from giver
-			balance				will equal how much recipient wallet was at before crypto transfer
-			new_balance			will equal how much recipient wallet was at after+  crypto transfer
-			change				will equal new_balance minus balance
-			updated_balance		will equal balance * (1.0 + change);
-			then return updated_balance.ln()
+	/*HOW I WILL STRUCTURE THIS FUNCTION*&*&*&*&(*(*(&*&*------------------------------------:
+			this function will get information from the REST APIs of giver and recipient, 
+				how_much_i_spent 	will equal how much I spent buying crypto from giver
+				balance				will equal how much recipient wallet was at before crypto transfer
+				new_balance			will equal how much recipient wallet was at after+  crypto transfer
+				change				will equal new_balance minus balance
+				updated_balance		will equal balance * (1.0 + change);
+				then return updated_balance.ln()
 
 
-			why 1.0 + change?	so that if change was .05, multiplying it by balance
-				would mean losing money. I'm trying to find the gain here, so it would be 
-				balance*1.05.
-			why ln?				to account for greater loss.
-					absolute value of  ln(1-x) is greater than ln(1+x). this is good so our
-					DQN will weigh losses as heavier than "equivalent" gain
- */
+				why 1.0 + change?	so that if change was .05, multiplying it by balance
+					would mean losing money. I'm trying to find the gain here, so it would be 
+					balance*1.05.
+				why ln?				to account for greater loss.
+						absolute value of  ln(1-x) is greater than ln(1+x). this is good so our
+						DQN will weigh losses as heavier than "equivalent" gain
+	*/
 
-		//the reason I made it type    Option<f64> is because I don't want to prematurely
-        //    assign a value to it, so if somehow it never gets assigned a value,
-        //    I can then handle the situation.
-        let how_much_i_spent: Option<f64>;
-        match how_much_i_spent {
-            Some(_) => (),
-            None => panic!("how_much_i_spent   is none"),
-        }
-        let how_much_2nd_wallet_changed: Option<f64>;           //same thing as above^^
-        match how_much_2nd_wallet_changed {
-            Some(_) => (),
-            None => panic!("how_much_2nd_wallet_changed    is none"),
-        }
+			//the reason I made it type    Option<f64> is because I don't want to prematurely
+			//    assign a value to it, so if somehow it never gets assigned a value,
+			//    I can then handle the situation.
+			let how_much_i_spent: Option<f64>;
+			match how_much_i_spent {
+				Some(_) => (),
+				None => panic!("how_much_i_spent   is none"),
+			}
+			let how_much_2nd_wallet_changed: Option<f64>;           //same thing as above^^
+			match how_much_2nd_wallet_changed {
+				Some(_) => (),
+				None => panic!("how_much_2nd_wallet_changed    is none"),
+			}
 
-        //can't directly subtract Option types. So I need to handle the possiblity that
-        //how_much_i_spent    and/or    how_much_2nd_wallet_changed    could carry no value
-        //adds another layer of redundancy, which is always good
-        let total_gained = match(how_much_i_spent, how_much_2nd_wallet_changed) {
-            (Some(spent), Some(gained)) => Some(gained-spent),
-            _ => None,
-        }.expect("No value found");
+			//can't directly subtract Option types. So I need to handle the possiblity that
+			//how_much_i_spent    and/or    how_much_2nd_wallet_changed    could carry no value
+			//adds another layer of redundancy, which is always good
+			let total_gained = match(how_much_i_spent, how_much_2nd_wallet_changed) {
+				(Some(spent), Some(gained)) => Some(gained-spent),
+				_ => None,
+			}.expect("No value found");
 
 
 
-//-----------------MY ACTUAL REWARD FUNCITON------------------------------------------//
+	//-----------------MY ACTUAL REWARD FUNCITON------------------------------------------//
 		//12/14/23: Im thinking of making this as my reward function but Im not sure what 
 		//	the best course of action is.
 		//nah, you know what, FUCK ITTTTTT. Im using this for now, and if "oh no, im losing
@@ -296,7 +296,7 @@ pub mod network{
 		//12/15/23 update:
 		//I want it to also return the actual q value so that we can use it to update our
 		//		 "current Q-value estimate" in the "temporal difference error"
-		pub fn exploration_or_exploitation(&self, epsilon: &mut f64) -> usize {
+		pub fn exploration_or_exploitation(&self, epsilon: &mut f64) -> (usize, f64) {
 			
 			// want to see if epsilon greedy returns true or not so that I explore or exploit
 			let exploit_or_explore: bool = epsilon_greedy(epsilon);
@@ -321,27 +321,51 @@ pub mod network{
 				//		Then it would go to the corresponding else block and tell us the error
 				//The more error checking the better
 				if let Some(last_layer) = self.layers.last() {
+					//aka interate over the data in the last layer. aka over the values of the
+					//		neurons of the last layer. aka over the Q_VALUES of the last layer
+					//all my neuron  are stored in the first inner vector of each layer,
+					//		hence the .data[0]
 					for value in &last_layer.data[0] {
 						if value > &largest_qvalue_so_far {
-							largest_qvalue_so_far = *value;		//just to document that we hit a new max
+							largest_qvalue_so_far = *value;	//just to document that we hit a new max
 							index_of_largest_qvalue = Some(indexx);	//to know where the new max was
-							indexx += 1;						//to iterate the index value
+						}
 
-						}
-						else {		//this block executes only if the value isn't bigger
-									//		than the largest qvalue we have so far.
-									//Because:	we dont care about storing the index 
-									//		of a smaller q value,
-									//		and instead we jsut want to show we visited 
-									//		another value, then We do this by 
-									//		just incrementing the index
-							indexx+=1;		
-						}
+						indexx += 1;					//to iterate the index value NO MATTER WHAT
 					}
 				}
 				else {
-					panic!("last_layer.data is empty. this is in fn exploration_or_exploration when exploit_or_explore == true");
+					panic!("last_layer.data is empty. this is in fn exploration_or_exploration when
+					 exploit_or_explore == true");
 				}
+
+				//-----the original of the above-----//
+						//if let Some(last_layer) = self.layers.last() {
+						//	for value in &last_layer.data[0] {
+						//		if value > &largest_qvalue_so_far {
+						//			largest_qvalue_so_far = *value;		//just to document that we hit a new max
+						//			index_of_largest_qvalue = Some(indexx);	//to know where the new max was
+						//			indexx += 1;						//to iterate the index value
+						//
+						//		}
+						//		else {		//this block executes only if the value isn't bigger
+						//					//		than the largest qvalue we have so far.
+						//					//Because:	we dont care about storing the index 
+						//					//		of a smaller q value,
+						//					//		and instead we jsut want to show we visited 
+						//					//		another value, then We do this by 
+						//					//		just incrementing the index
+						//			indexx+=1;		
+						//		}
+						//	}
+						//}
+						//else {
+						//	panic!("last_layer.data is empty. this is in fn exploration_or_exploration when exploit_or_explore == true");
+						//}
+				//------end of the original---------//
+
+
+
 
 
 				//this deals wtih returning the index_of_largest_qvalue value
@@ -355,11 +379,16 @@ pub mod network{
 				//		quit the program and display the following message.
 				//We need to do a match because the variable
 				//		index_of_largest_qvalue is of type Option<usize>
-				return match index_of_largest_qvalue {
+				let index = match index_of_largest_qvalue {
 					Some(index) => index,
 					None => panic!("index_of_largest_qvalue was never initialized"),
-				}
-
+				};
+				//this returns both the index and the largest_q_value_so_far.
+				//why no semicolon?
+				//		(index, largest_qvalue_so_far) is an expression, aka it returns a value.
+				//		 if you add a semicolon, it makes it a statement and doesn't return
+				//		 a value
+				(index, largest_qvalue_so_far)
 				//in this point in the code, i now have the index of the largest q value.
 				//This value is now returned.
 				//In the next function or module, I must then choose the function
@@ -379,10 +408,18 @@ pub mod network{
 				let mut index_of_random_qvalue :Option<usize> = None;
 				index_of_random_qvalue = Some(rand::thread_rng().gen_range(0..=indexx));
 
-				return match index_of_random_qvalue {
+				//not even sure if this is needed. I think I can just delete this and in the
+				//	 bottom do index_of_random_qvalue instead of index
+				let index = match index_of_random_qvalue {
 					Some(index) => index,
 					None => panic!("index_of_random_qvalue was never initialized"),
+				};
+
+				match self.layers.last() {
+					Some(last_layer) => return (index, last_layer.data[0][index]),
+					None => panic!("No layers in the network!"),
 				}
+
 			}
 			
 		}
@@ -598,7 +635,77 @@ pub mod network{
 
 
 
+		pub fn calculate_target_q_value(&self, reward: f64) -> f64
+		{
+			//gamma is basically a numerical representation of how much I value future states
+			//	 and their corresponding q_values.
+			//		it's value is from 0 to 1. 0 means I dont value the next state at all
+			//		1 is excluded because it diverges: 
+			//https://ai.stackexchange.com/questions/11708/can-gamma-be-greater-than-1-in-a-dqn 
+			//		The higher the gamma the more I value the future rewards
+			//0.9 is standard and I wasnt sure what to pick, so I just picked it. 
+			//		if I want to change it, I'll change it later.
+			let gamma = 0.9;
+			//initialize the largest Q-value so far and its index
+			let mut index_of_largest_qvalue: Option<usize> = None;
+			let mut largest_qvalue_so_far = f64::MIN;
 
+			//I want to feed forward so I have a new set of q_values that will serve as my
+			//	 "next_q_value"
+			self.feed_forward();
+
+
+
+
+			//the "if let Some(..."  is saying if the last layer exists, then perform
+			//	 the rest of the calculations
+			//self.layers.last() is just the las layer in the neural network, which is the output
+			//	 layer. the data in it contains the "next" q_values thanks to the 
+			//	 feed_forward() from before.
+			//for (index, &value) in last_layer.data[0].iter().enumerate() {
+			//		it's a for loop and it is looking in last_layer.data[0] for the q_values.
+			//why?
+			//because the neural network is structured like this
+			//	pub struct NeuralNetwork {
+			//	layers: Vec<NetworkLayer>,
+			//	weights: Vec<WeightLayer>,
+			//	biases: Vec<BiasLayer>,
+			//so the layers is really an "array" or a Vec of network layers.
+			//network layer is structured like this:
+			//pub struct NetworkLayer {
+			//	rows: usize,
+			//	columns: usize,
+			//	data: Vec<Vec<f64>>, 
+			//}
+			//with columns actually being 0. So last_layer.data[0] is structured like this:
+			//	vec![
+			//    	vec![0.0, 1.0],   //row 0
+			//  ]
+			//so iterating through .data[0] because i'm iterating through the first row because
+			//	 each actual network layer of the neural network only has 1 row.
+			//.iter() means to iterate through it
+			//.enumerate() means that it will get the value AND the index.
+			//then the inner "if" is just standard for finding the maximum value in a vec or array.
+			if let Some(last_layer) = self.layers.last() {
+				for (index, &value) in last_layer.data[0].iter().enumerate() {
+					if value > largest_qvalue_so_far {
+						largest_qvalue_so_far = value;
+						index_of_largest_qvalue = Some(index);
+					}
+				}
+			}
+			else {
+				//NEED TO PERFORM A SAVE BEFORE THIS PANIC. HAVENT IMPLEMENTED THAT YET THOUGH
+				//NEED to do it before v1 launches
+				panic!("Warning: self.layers is empty!");
+			}
+			// Calculate the target Q-value
+			//this is the Bellman Optimality equation.
+			let target_q_value = reward + gamma * largest_qvalue_so_far;
+
+			target_q_value
+
+		}
 
 
 

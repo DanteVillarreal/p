@@ -86,7 +86,7 @@ pub mod network{
 			//the above creates a vector the number of elements being number_of_elements
 			//all initialized to  what_i_want_each_element_to_be
 			//so if I did this:
-			//vec![  vec![what_i_want_each_element_to_be;number_of_elements] ; number];
+			//vec![  vec![what_i_want_each_element_to_be;number_of_elements] ; number_of_vectors];
 			//	this would generate number number of vectors all initialized to 
 			//	vec![what_i_want_each_element_to_be;number_of_elements]
 			//NEED TO DO *MUT* because i'm changing sum later.
@@ -489,7 +489,7 @@ pub mod network{
 
 
 				/*
-				(0..hidden_size).map(|_| {...}).collect()	this is creating a new Vec
+				(0..hidden_size).map(|_| {...})...collect()	this is creating a new Vec
 						with hidden_size # of elements.
 						For each element it applies this function: 
 						normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64)).sqrt()
@@ -733,54 +733,114 @@ pub mod network{
 
 
 
-	//for back propagation to update weights.
-	//Gives us a measure of how well we're doing. 
-	//	The lower the loss the better the network's predictions
-	pub fn calculate_loss(&self, current_q_value: f64, target_q_value: f64) -> f64 {
-		(current_q_value - target_q_value).powi(2)
-	}
-	//This tells us how much the loss's output would change if we made a small change
-	//  to its input. If the derivative is positive, it means increasing the weight 
-	//	would increase the loss. So to minimize the loss, we should decrease the weight.
-	//  If the derivative is negative, increasing the weight would decrease the loss, 
-	//	so we should increase the weight. 
-	pub fn calculate_loss_derivative(&self, current_q_value: f64, target_q_value: f64) -> f64 {
-		2.0 * (current_q_value - target_q_value)
-	}
+		//for back propagation to update weights.
+		//Gives us a measure of how well we're doing. 
+		//	The lower the loss the better the network's predictions
+		pub fn calculate_loss(&self, current_q_value: f64, target_q_value: f64) -> f64 {
+			(current_q_value - target_q_value).powi(2)
+		}
+		//This tells us how much the loss's output would change if we made a small change
+		//  to its input. If the derivative is positive, it means increasing the weight 
+		//	would increase the loss. So to minimize the loss, we should decrease the weight.
+		//  If the derivative is negative, increasing the weight would decrease the loss, 
+		//	so we should increase the weight. 
+		pub fn calculate_loss_derivative(&self, current_q_value: f64, target_q_value: f64) -> f64 {
+			2.0 * (current_q_value - target_q_value)
+		}
 
-	//This is probably the hardest part to understand. But think of a 2d graph and the
-	//	 gradient is just the slope of the graph. We're basically seeing which nudges
-	//	 to the weights and biases cause the fastest change to the local minimum
-	//Aka which changes to which weights matter the most
-	pub fn backpropagate(&mut self, loss_derivative: f64) -> Vec<Vec<f64>> {
-		let mut gradients = vec![vec![0.0; self.weights[0].data[0].len()]; self.weights.len()];
+		//This is probably the hardest part to understand. But think of a 2d graph and the
+		//	 gradient is just the slope of the graph. We're basically seeing which nudges
+		//	 to the weights and biases cause the fastest change to the local minimum
+		//Aka which changes to which weights matter the most
+		//returns a Vec<Vec<f64>> why?
+		//		it's a 2D vector of the gradients, which basically tells the weight how much it 
+		//		 was off by and whether to increase or decrease the weight
+		//so this function computes the gradient of the loss function with respect to the
+		//		 weights of the network
+		pub fn backpropagate(&mut self, loss_derivative: f64) -> Vec<Vec<Vec<f64>>> {
+			//vec![  vec![what_i_want_each_element_to_be;number_of_elements] ; number_of_vectors];
+			//gradients   will mimic the WeightLayer but instead the numbers will represent how
+			//			   far the weight is from where it thinks it should go.
+			//why self.weights[0].data[0].len() as the number_of_elements?
+			//		self.weights is a vector of WeightLayer struct. Goto line 27,13.
+			//		self.weights[0] accesses the first WeightLayer. Goto line 27.
+			//		self.weights[0].data is a 2D vector representing the weights themselves in
+			//		 the WeightLayer. Goto line 16. Lines 14 and 15 just represent how to
+			//		 index/count them.
+			//		self.weights[0].data[0] accesses the first row of weights in the first WeightLayer
+			//		self.weights[0].data[0].len() returns number of elements in this first row.
+			//		 This represents the number of weights connected out from the first neuron
+			//		 in the first layer.
+			//why just the first neuron though?
+			//		Because the neural network is fully connected. So each neuron in a row has a
+			//		 weight to each neuron in the row after it. So, each neuron in 1 layer has
+			//		 the same number of weights as each other neuron in that layer/row.
+			//why self.weights.len() as the number of vectors?
+			//		this represents the number of WeightLayers themselves.
+			//let mut gradients = vec![vec![0.0; self.weights[0].data[0].len()]; self.weights.len()];
+
+			let mut gradients = Vec::new();
+			//So the issue we encountered before is that if we did this:
+			//let mut gradients = vec![vec![0.0; self.weights[0].data[0].len()]; self.weights.len()];
+			//Then		each layer of the gradients would be the exact same, so it wouldn't mimic
+			//			 the weightsLayer which aren't perfectly uniform in each layer.
+			//So in the for loop below we're going through each weight layer, 
+			//			AND THEN we are copying the structure of this layer, except for the gradients
+			//			 themselves which are set to 0 for now.
+			//in hte code comments above let mut gradients ..., it goes into some more detail.
+			//.push(layer_gradients) is basically like "append" whatever's in the ( ) to be a part of
+			//			 gradients.
+			for i in 0..self.weights.len() {
+				let layer_gradients = vec![vec![0.0; self.weights[i].data[0].len()]; self.weights[i].data.len()];
+				gradients.push(layer_gradients);
+			}
+		
+			//....rev() this iterates it in reverse starting from the weights connecting to
+			//		 the output layer going to the first input layer. The last layer is not
+			//		 included because there are no weights extending FROM the output layer
+			//why in reverse?
+			//		Because the error of the output layer is calculated directly from the
+			//		 loss function. then this error is propagated backwards to calculate 
+			//		 the error of each preceding layer
+			for i in (0..self.layers.len()).rev() {
+				//self.layers[i].data refers to the outputs of the neurons in each layer,
+				//		 aka the activations
+				let activations = &self.layers[i].data;
+				let weights = &self.weights[i].data;
+
+				//outer j loop iterates over each neuron/"output of the neuron" in the current layer
+				for j in 0..activations.len() {
+					//activations[j].len is the number of neurons in the next layer
+					//		 because activations[j] represents the activations of the neurons
+					//		 in the next layer that are connected to the j-th neuron in the current layer.
+					//		 So these 2 loops im itering over each neuron, and then for each
+					//		  neuron im iterating over all the neurons in the next layer and
+					//		  then finding the corresponding gradient
+					for k in 0..activations[j].len() {
+						//im not exactly sure how the derivative comes into play but the
+						//		 derivative is used to help us
+						let activation_derivative = leaky_relu_derivative(activations[j][k]);
+						gradients[i][j][k] = loss_derivative * activation_derivative * weights[j][k];
+					}
+				}
+			}
+
+			gradients
+		}
 	
-		for i in (0..self.layers.len()).rev() {
-			let activations = &self.layers[i].data;
-			let weights = &self.weights[i].data;
-	
-			for j in 0..activations.len() {
-				for k in 0..activations[j].len() {
-					let activation_derivative = leaky_relu_derivative(activations[j][k]);
-					gradients[i][j] = loss_derivative * activation_derivative * weights[j][k];
+
+		//once the gradients are established, we just go through the weights and update them as quickly
+		//		 as the learning_rate allows us
+		pub fn update_weights(&mut self, gradients: &Vec<Vec<Vec<f64>>>) {
+			let learning_rate = 0.001;
+			for i in 0..self.weights.len() {
+				for j in 0..self.weights[i].data.len() {
+					for k in 0..self.weights[i].data[j].len() {
+						self.weights[i].data[j][k] -= learning_rate * gradients[i][j][k];
+					}
 				}
 			}
 		}
-	
-		gradients
-	}
-
-	//this is used to actually IMPROVE the neural network
-	pub fn update_weights(&mut self, gradients: &Vec<Vec<f64>>) {
-		let learning_rate = 0.001;
-		for i in 0..self.weights.len() {
-			for j in 0..self.weights[i].data.len() {
-				for k in 0..self.weights[i].data[j].len() {
-					self.weights[i].data[j][k] -= learning_rate * gradients[i][j];
-				}
-			}
-		}
-	}
 
 
 	}

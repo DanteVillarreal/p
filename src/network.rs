@@ -810,15 +810,8 @@ pub mod network{
 
 				//outer j loop iterates over each neuron/"output of the neuron" in the current layer
 				for j in 0..activations.len() {
-					//activations[j].len is the number of neurons in the next layer
-					//		 because activations[j] represents the activations of the neurons
-					//		 in the next layer that are connected to the j-th neuron in the current layer.
-					//		 So these 2 loops im itering over each neuron, and then for each
-					//		  neuron im iterating over all the neurons in the next layer and
-					//		  then finding the corresponding gradient
+
 					for k in 0..activations[j].len() {
-						//im not exactly sure how the derivative comes into play but the
-						//		 derivative is used to help us
 						let activation_derivative = leaky_relu_derivative(activations[j][k]);
 						gradients[i][j][k] = loss_derivative * activation_derivative * weights[j][k];
 					}
@@ -842,6 +835,45 @@ pub mod network{
 			}
 		}
 
+
+
+
+//new because functions above didn't make sense. will code comment these later-------------.------------------------//
+		pub fn backpropagate(&mut self, loss_derivative: f64) -> Vec<Vec<Vec<f64>>> {
+			let mut gradients = Vec::new();
+		
+			for (i, layer) in self.layers.iter().enumerate().rev() {
+				let mut layer_gradients = vec![vec![0.0; layer.data[0].len()]; layer.data.len()];
+		
+				for (j, neuron) in layer.data.iter().enumerate() {
+					for (k, activation) in neuron.iter().enumerate() {
+						let activation_derivative = leaky_relu_derivative(*activation);
+						let weight = self.weights[i].data[j][k];
+						layer_gradients[j][k] = loss_derivative * activation_derivative * weight;
+					}
+				}
+		
+				gradients.push(layer_gradients);
+			}
+		
+			gradients.reverse();
+			gradients
+		}
+		
+		pub fn update_weights(&mut self, gradients: &Vec<Vec<Vec<f64>>>) {
+			let learning_rate = 0.001;
+		
+			for (i, layer) in self.weights.iter_mut().enumerate() {
+				for (j, neuron) in layer.data.iter_mut().enumerate() {
+					for (k, weight) in neuron.iter_mut().enumerate() {
+						*weight -= learning_rate * gradients[i][j][k];
+					}
+				}
+			}
+		}
+
+
+//---------------------------above needs to be code commented-----------------------------------------------------//
 
 	}
 }

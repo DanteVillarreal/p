@@ -161,3 +161,4 @@ Log of what I've done:
 12/15/23 - Added an update_weights function that calculates the temporal difference and of course updates the weights. It incorporates the stochastic gradient descent function that I have not made yet though. Next step is to make this. I got this!
 12/15/23 - Added leaky_relu derivative, added loss function, added loss function derivative, added backpropagation, added update weights. Next step is to actually code comment it more. I got this!
 12/16/23 - Added a lot of code comments and updated the backpropagation function itself. Next step is to really evaluate if its correct or not. After that is to figure out how to save and load the state or do experience replay. I got this!
+12/17/23 - Added new versions of backpropagate and update_weights. The lower half of backpropagate didnt make sense before so Im going to see if this one does. I will code comment it and revise it after I eat. I got this!

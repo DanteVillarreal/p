@@ -840,9 +840,21 @@ pub mod network{
 
 //new because functions above didn't make sense. will code comment these later-------------.------------------------//
 		pub fn backpropagate(&mut self, loss_derivative: f64) -> Vec<Vec<Vec<f64>>> {
+			//initializes a NEW empty VECtor to store the gradients
 			let mut gradients = Vec::new();
-		
+			//for (i, layer) in self.layers.iter().enumerate().rev() {
+			//		ITERates over self.layers in REVerse order and returns the i(index) and value (layer)
+			//why reverse order?
+			//		because that's how you find the gradients. you find the error starting from the output
 			for (i, layer) in self.layers.iter().enumerate().rev() {
+				//vec![  vec![what_i_want_each_element_to_be;number_of_elements] ; number_of_vectors];
+				//layer.data[0]len()		so the data in each layer is a 2D vector and we want to
+				//		 access the first row, well because that's how I structured it:
+				//		 all the neurons in the layer are in the first row.
+				//		So we can just find the length of the first row and find how many gradients
+				//		 we need to have.
+				//Then we want the big vector to be just however big the whole vector for the layer was
+				//		That's the layer.data.len() 	part
 				let mut layer_gradients = vec![vec![0.0; layer.data[0].len()]; layer.data.len()];
 		
 				for (j, neuron) in layer.data.iter().enumerate() {

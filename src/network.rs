@@ -87,7 +87,10 @@ pub mod network{
 			//all initialized to  what_i_want_each_element_to_be
 			//so if I did this:
 			//vec![  vec![what_i_want_each_element_to_be;number_of_elements] ; number_of_vectors];
-			//	this would generate number number of vectors all initialized to 
+			//	this would generate number_of_vectors number of vectors all initialized to 
+			//	with each inner vector's number of elements being how many weights are connected to the first neuron.
+			//why first neuron?
+			//		because every neuron in the same layer has the same number of weights
 			//	vec![what_i_want_each_element_to_be;number_of_elements]
 			//NEED TO DO *MUT* because i'm changing sum later.
 			let mut sum = vec![vec![0.0; weights[0].len()] ; layer.len()];
@@ -282,11 +285,17 @@ pub mod network{
 	impl NeuralNetwork {
 		
 		pub fn feed_forward(&mut self) {
+			//starting at 1 because all the layers rely on the layer before it, 
+			//		and the input layer is just the input itself so I dont have
+			//		 to compute anything for it
 			for i in 1..self.layers.len() {
 
 				//i REALLY NEED to understand this part more. I need to know what's being
 				//	 multiplied and when and what's being added and when.
-				
+				//
+				//I actually understand it now
+				//so the previous activation is just the output of the neuron in the previous layer
+				//and weights is just the weights extending FROM the previous layer.
 				let previous_activations = &self.layers[i-1].data;
 				let weights = &self.weights[i-1].data;
 				let biases = &self.biases[i-1].data;
@@ -452,7 +461,8 @@ pub mod network{
 			*/
 
 			/*hidden_size is usize because i cant have a fraction of a neuron, nor a negative size.*/
-			let hidden_size = (2.0 / 3.0 * (input_size + output_size) as f64) as usize;
+			//let hidden_size = (2.0 / 3.0 * (input_size + output_size) as f64) as usize;
+			let hidden_size = 2/3 * (input_size + output_size);
 			/*this creates the random number generator */
     		let mut rng = rand::thread_rng();
 
@@ -883,6 +893,23 @@ pub mod network{
 				}
 			}
 		}
+
+
+
+		pub fn backpropagation(&mut self, loss_derivative: f64) {
+			//the purpose of this function is to find the gradient (aka derivative)
+			//		 of the loss funciton with respect to each weight.
+			// der. loss (w/ respect to weights) = der. loss (w/ respect to output)  x  der. out (w/ respect to weights).
+			//step 1:
+			//		find the derivative of the loss function with respect to the output.
+			//		 output = q_pred.
+			//		 This is just the loss derivative
+			//step 2:
+			//		find the derivative of the output with respect to the weights
+			let derivative_of_loss_wrespect_to_weights = loss_derivative * 
+		}
+
+
 
 
 //---------------------------above needs to be code commented-----------------------------------------------------//

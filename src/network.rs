@@ -69,7 +69,7 @@ pub mod network{
 			let weights_rows = weights.len();       //we are looking for number of vectors in 
 													//  the weights array.
 													//  say weights is vec![
-													//    vec![0.0, 1.0],   //row 0
+													//    vec![0.0, 1.0],   //row 0. these should be all the weights for the 1st/0th neuron
 													//    vec![2.0, 3.0],   //row 1
 													//    vec![4.0, 5.0],   //row 2
 													//    ];
@@ -450,6 +450,15 @@ pub mod network{
 
 
 
+
+
+
+
+
+
+
+
+
 		pub fn initialization(&mut self, input_size: usize, output_size: usize, number_of_hidden_layers: usize) {
 			/*intiialization of weights and biases and what not */
 			/*initialization rule I'm following:
@@ -586,6 +595,11 @@ pub mod network{
 																				.sqrt())
 																				.collect()
 				}).collect();
+
+				//I THINK THIS SHOULD BE DELETED BECAUSE EVERYTIME I PUSH a weight layer
+				//		 I am establishing weights connecting FROM the neurons of the same layer.
+				//		 So why would I make weights connecting FROM the output layer. Also, why would my output layer need BIASES?
+				//if I delete the things below this, I need to delete the things ABOVE this too because they establish the weights
 				self.weights.push(WeightLayer {
 					rows: hidden_size,
 					columns: output_size,
@@ -597,7 +611,36 @@ pub mod network{
 					columns: output_size,
 					data: vec![vec![0.01; output_size]],
 				});
+			
+			//representation of how shit is initialized in each layer:
+			//key word search: how everything is initialized in each layer,
+			//		 how each layer is initialized, how weights are initialized, 
+			//		 how neurons are initialized, how biases are initalized,
+			//neurons:
+			// vec![
+  			//	vec![Na, Nb, Nc, Nd, Ne, ...]
+  			// ]
+			//weights:
+			// vec![
+  			//	vec![wa1, wa2, wa3, wa4, ...],
+  			//	vec![wb1, wb2, wb3, wb4, ...],
+  			//	vec![wc1, wc2, wc3, wc4, ...],
+  			//	...
+			// ]
+			//biases:
+			// vec![
+  			//	 vec![Ba, Bb, Bc, Bd, Be, Bf, ...]
+  			// ]
+
+
+
     	}
+
+
+
+
+
+
 
 
 
@@ -746,7 +789,7 @@ pub mod network{
 		//for back propagation to update weights.
 		//Gives us a measure of how well we're doing. 
 		//	The lower the loss the better the network's predictions
-		pub fn calculate_loss(&self, current_q_value: f64, target_q_value: f64) -> f64 {
+		pub fn calculate_loss(&self, &current_q_value: f64, &target_q_value: f64) -> f64 {
 			(current_q_value - target_q_value).powi(2)
 		}
 		//This tells us how much the loss's output would change if we made a small change
@@ -754,7 +797,7 @@ pub mod network{
 		//	would increase the loss. So to minimize the loss, we should decrease the weight.
 		//  If the derivative is negative, increasing the weight would decrease the loss, 
 		//	so we should increase the weight. 
-		pub fn calculate_loss_derivative(&self, current_q_value: f64, target_q_value: f64) -> f64 {
+		pub fn calculate_loss_derivative(&self, &current_q_value: f64, &target_q_value: f64) -> f64 {
 			2.0 * (current_q_value - target_q_value)
 		}
 
@@ -885,7 +928,7 @@ pub mod network{
 		pub fn update_weights(&mut self, gradients: &Vec<Vec<Vec<f64>>>) {
 			let learning_rate = 0.001;
 		
-			for (i, layer) in self.weights.iter_mut().enumerate() {
+			for (i, layer) in self.weights.iter_mut().enumerate()  {
 				for (j, neuron) in layer.data.iter_mut().enumerate() {
 					for (k, weight) in neuron.iter_mut().enumerate() {
 						*weight -= learning_rate * gradients[i][j][k];
@@ -896,7 +939,17 @@ pub mod network{
 
 
 
-		pub fn backpropagation(&mut self, loss_derivative: f64) {
+
+
+
+
+
+
+
+
+
+
+		pub fn backpropagation(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) {
 			//the purpose of this function is to find the gradient (aka derivative)
 			//		 of the loss funciton with respect to each weight.
 			// der. loss (w/ respect to weights) = der. loss (w/ respect to output)  x  der. out (w/ respect to weights).
@@ -905,8 +958,74 @@ pub mod network{
 			//		 output = q_pred.
 			//		 This is just the loss derivative
 			//step 2:
-			//		find the derivative of the output with respect to the weights
+			//		a. find the derivative of the output with respect to the weights
+			//			i.  aka the derivative of activation function AT each weight connected
+			//				 to q_value chosen.
+			//				 why? 	because we only want to change the weights that
+			//				 contributed to the q_value chosen
+			//				 how?
+			//				 a. find the weights connected to the current_q_value_index
+			//					how?
+			//					i. weights initialized like so where the letters are the
+			//						 associated neurons that the weights are connected FROM
+			//						 and the numbers are the neurons they are connected TO:
+			//						 vec![
+			//							vec![wa1, wa2, wa3, wa4, ...],
+			//							vec![wb1, wb2, wb3, wb4, ...],
+			//							vec![wc1, wc2, wc3, wc4, ...],
+			//							...
+			//						 ]
+			//					ii. so if we wanted weights connected to index 3, we would iterate through each layer,
+			//						 and then through the rows of the last layer
+			//						 and add the 3rd column to our list until we iterated through every row
+			//
+			//
+			//
+			//
+			//
+			//we want a gradients vector because gradients are the slopes of the loss function with
+			//		respect to each weight. My plan is to put the gradients into a vec<vec<vec<f64>>>
+			//why?
+			//		Most outer vec will serve as the encapsulater. The first inner vec will serve
+			//		 as which WeightLayer it corresponds to. The most inner vectors will serve as
+			//		 the rows whose elements are the gradients that correspond with the weights
+			//		  in the exact same position
+			let mut gradients = Vec::new();
+				//to think about: how do I establish the gradients?
+			let last_layer_to_contain_weights = self.layers.len() - 2;
+			//if last_layer_to_contain_weights < 2 {
+			//	panic!("last_layer_to_contain_weights is:\n{}", last_layer_to_contain_weights);
+			//}
+
+			//first we are going to go to the last WeightLayer
+			if let Some(last_layer) = self.weights.last() {
+				//then we will iterate through the rows of the last layer and get the index as well.
+				//remember: .enumerate() creates an iterator that tracks the index
+				//		 and the value at that index
+				for(i, row) in &last_layer.data.iter().enumerate() {
+					//FINALLY: gradient calculation for the weight connecting to the current_q_value_index
+					let gradient = loss_derivative * leaky_relu_derivative(self.layers.last().unwrap().data[i][current_q_value_index]) * 
+													self.layers[last_layer_to_contain_weights].data[i][current_q_value_index];
+					gradients.push(gradient);
+				}
+			}
+			else {
+				panic!("for some reason last layer of WeightLayer does not exist?");
+			}
+
+
+
+			/*
+			let weights_of_last_layer = &self.weights[last_layer_to_contain_weights].data;
+			//need to make a new vector and then we are going to push our values into it
+			let mut list_of_weights_connected_to_current_q_value = Vec::new();
+			//iterates over each row of weights in the last hidden layer
+			for weights in weights_of_last_layer.iter() {
+				//(weights[current_q_value_index]) 
+				list_of_weights_connected_to_current_q_value.push(weights[current_q_value_index]);
+			}
 			let derivative_of_loss_wrespect_to_weights = loss_derivative * 
+			*/
 		}
 
 

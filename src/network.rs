@@ -1001,9 +1001,22 @@ pub mod network{
 			if let Some(last_layer) = self.weights.last() {
 				//then we will iterate through the rows of the last layer and get the index as well.
 				//remember: .enumerate() creates an iterator that tracks the index
-				//		 and the value at that index
+				//		 and the value at that index.
 				for(i, row) in &last_layer.data.iter().enumerate() {
 					//FINALLY: gradient calculation for the weight connecting to the current_q_value_index
+					//gradient is the product of three terms: the derivative of the loss function, 
+					//		the derivative of the activation function at the output of the neuron connected *TO* the weight,
+					//		and the output of the neuron that the weight connects *FROM*
+					//leaky_relu_derivative(self.layers.last().unwrap().data[i][current_q_value_index])
+					//		this is this finds the derivative of the activation function at: 
+					//		 self.layers.last().unwrap().data[i][current_q_value_index]
+					//self.layers.last().unwrap()		this is just going to the last layer because it's the output
+					//									of the neuron connected *TO* the weight
+					//...data[i][current_q_value_index]		so i is always 0 since my neurons are
+					//										only in 1 row, so this still works,
+					//										 and then it's going into 0th row and then going
+					//										 to the index of the q value and getting the q value itself
+					//										 and then getting applying the leaky_relu_derivative to it.
 					let gradient = loss_derivative * leaky_relu_derivative(self.layers.last().unwrap().data[i][current_q_value_index]) * 
 													self.layers[last_layer_to_contain_weights].data[i][current_q_value_index];
 					gradients.push(gradient);

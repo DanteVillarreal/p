@@ -1027,21 +1027,41 @@ pub mod network{
 				//		 the last weight layer because we only care about the weights connecting to
 				//		 the output neuron
 				for j in 0..weight_layer.data[0].len() {
-					// Skip the calculation if layer_index is 0
+					// Skip the calculation if layer_index is 0 because how can you index something at -1
 					if layer_index > 0 {
 						// Calculate the derivative of the activation function for the current neuron
+						//why the if statement here?
+						//		because if we're in the last weight layer, we want the derivative of
+						//		 output to only be 1 value for the whole layer
 						let derivative_of_neuron = 
 							if layer_index == self.weights.len() - 1 {
 								derivative_of_output_neuron
 							} else {
+								//why [0][j] ?
+								//		the first [] represents which row you are indexing
+								//		the secon [] represents which element you are getting from said row
+								//And, all of my neurons are in the first row of their respective layers,
+								//		 so no point of varying the first [] because then we wont be
+								//		 accessing neurons. we will be accessing a new dimension that
+								//		 could unleash the spirit realm
+								//so [0][j] represents which neuron we're accessing
+								//and layer_index represents which layer we're at presently
 								leaky_relu_derivative(self.layers[layer_index].data[0][j])
 							};
 						// Calculate the gradient for the weight connecting neuron i to neuron j
+						//gradient is the product of three terms: the derivative of the loss function, 
+						//		the derivative of the activation function at the output of the neuron connected *TO* the weight,
+						//		and the output of the neuron that the weight connects *FROM*
+						//why [layer_index-1] ?
+						//		the answer to that is in the answer to this:
+						//		which part of the above is self.layers[layer_index - 1].data[0][j] calculating?
+						//spoiler alert: -1 because it's the from neuron
 						let gradient = loss_derivative * derivative_of_neuron * self.layers[layer_index - 1].data[0][j];
 						gradients.push(gradient);
 					}
 				}
 			}
+			//so this for loop 
 		}
 
 

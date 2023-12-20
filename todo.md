@@ -169,3 +169,4 @@ Log of what I've done:
 12/20/23 - I added new code comments to the code. This is an interlude commit because in the next one Im going to change up the code so I want to be able to go back to it. I got this!
 12/20/23 - I think Im finally starting to crack at the backrpgopagation function. Next step is to properly exmaine it and see if I need an update_weights function and then wrok on that if I do. I got this!
 12/20/23 - Updated backpropagation a little more. Im getting closer and closer to the correct backpropagation function. Next step is to finish examining the function and code commenting it. I got this!
+12/20/23 - Updated backpropagation more and I think it's done. Also added code comments in it. next step is to do the update_weights function. I got this!

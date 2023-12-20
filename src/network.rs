@@ -997,6 +997,9 @@ pub mod network{
 				//gradient is the product of three terms: the derivative of the loss function, 
 				//		the derivative of the activation function at the output of the neuron connected *TO* the weight,
 				//		and the output of the neuron that the weight connects *FROM*
+				//what does this do?
+				//it tells us how the loss function changes as the output of the neurons connected by the weight change.
+				//		 And since we cant change the output of the neuron directly, we change the weights
 				//leaky_relu_derivative(self.layers.last().unwrap().data[i][current_q_value_index])
 				//		this is this finds the derivative of the activation function at: 
 				//		 self.layers.last().unwrap().data[i][current_q_value_index]
@@ -1013,14 +1016,28 @@ pub mod network{
 													.unwrap()
 													.data[0][current_q_value_index]);
 
-			//first we are going to go through each weight layer
+			//first we are going to go through each weight layer from the 2nd last one
+			//why 2nd last?		output layer doesn't have weights coming *FROM* it
 			for layer_index in (0..self.weights.len()).rev() {
 				let weight_layer = &self.weights[layer_index];
 				// Iterate over all weights connected to the current neuron
+				//we dont actaully care about the weights themselves, but we just care about which
+				//		 layer we're in and this helps us track it. What we actually care about is
+				//		 what the weights connect to and from. and this is especially important in
+				//		 the last weight layer because we only care about the weights connecting to
+				//		 the output neuron
 				for j in 0..weight_layer.data[0].len() {
-					// Calculate the gradient for the weight connecting neuron i to neuron j
+					// Skip the calculation if layer_index is 0
 					if layer_index > 0 {
-						let gradient = loss_derivative * derivative_of_output_neuron * self.layers[layer_index - 1].data[0][j];
+						// Calculate the derivative of the activation function for the current neuron
+						let derivative_of_neuron = 
+							if layer_index == self.weights.len() - 1 {
+								derivative_of_output_neuron
+							} else {
+								leaky_relu_derivative(self.layers[layer_index].data[0][j])
+							};
+						// Calculate the gradient for the weight connecting neuron i to neuron j
+						let gradient = loss_derivative * derivative_of_neuron * self.layers[layer_index - 1].data[0][j];
 						gradients.push(gradient);
 					}
 				}
@@ -1040,14 +1057,13 @@ pub mod network{
 			}
 			let derivative_of_loss_wrespect_to_weights = loss_derivative * 
 			*/
-		}
+	}
 
 
 
 
 //---------------------------above needs to be code commented-----------------------------------------------------//
 
-	}
 }
 
 

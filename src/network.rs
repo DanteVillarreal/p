@@ -949,7 +949,7 @@ pub mod network{
 
 
 
-		pub fn backpropagation(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) {
+		pub fn el_backpropagation(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) {
 			//the purpose of this function is to find the gradient (aka derivative)
 			//		 of the loss funciton with respect to each weight.
 			// der. loss (w/ respect to weights) = der. loss (w/ respect to output)  x  der. out (w/ respect to weights).
@@ -1066,17 +1066,19 @@ pub mod network{
 
 
 
-			/*
-			let weights_of_last_layer = &self.weights[last_layer_to_contain_weights].data;
-			//need to make a new vector and then we are going to push our values into it
-			let mut list_of_weights_connected_to_current_q_value = Vec::new();
-			//iterates over each row of weights in the last hidden layer
-			for weights in weights_of_last_layer.iter() {
-				//(weights[current_q_value_index]) 
-				list_of_weights_connected_to_current_q_value.push(weights[current_q_value_index]);
+		pub fn el_update_los_weights(&mut self, gradients: &Vec<f64>, learning_rate: f64) {
+			// Iterate over all WeightLayers
+			for layer_index in 0..self.weights.len() {
+				let weight_layer = &mut self.weights[layer_index];
+				// Iterate over all weights in the current layer
+				for i in 0..weight_layer.data.len() {
+					for j in 0..weight_layer.data[i].len() {
+						// Update the weight by subtracting the gradient times the learning rate
+						weight_layer.data[i][j] -= learning_rate * gradients[layer_index * i + j];
+					}
+				}
 			}
-			let derivative_of_loss_wrespect_to_weights = loss_derivative * 
-			*/
+		}
 	}
 
 

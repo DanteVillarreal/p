@@ -172,3 +172,4 @@ Log of what I've done:
 12/20/23 - Updated backpropagation more and I think its done. Also added code comments in it. next step is to do the update_weights function. I got this!
 12/20/23 - Added update_weights function. Updated name of backpropagation function. Next step is to evaluate the el_update_los_weights function. I got this!
 12/21/23 - Overhalled backpropagation function because of some issues it would have in update_weights. Then looked at issues the new backpropagation function would have and fixed those. Next step is to add the update_weights function. I got this!
+12/21/23 - Added Update_weights and updated backpropagation again. There was an issue with how it connected to update_weights so I think I fixed that. Next step is to look over backpropagation and update_weights and see if there are any issues. If no issues. Next step is to add save/load states. I got this!

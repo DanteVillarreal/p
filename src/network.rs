@@ -789,7 +789,7 @@ pub mod network{
 		//for back propagation to update weights.
 		//Gives us a measure of how well we're doing. 
 		//	The lower the loss the better the network's predictions
-		pub fn calculate_loss(&self, &current_q_value: f64, &target_q_value: f64) -> f64 {
+		pub fn calculate_loss(&self, current_q_value: &f64, target_q_value: &f64) -> f64 {
 			(current_q_value - target_q_value).powi(2)
 		}
 		//This tells us how much the loss's output would change if we made a small change
@@ -797,7 +797,7 @@ pub mod network{
 		//	would increase the loss. So to minimize the loss, we should decrease the weight.
 		//  If the derivative is negative, increasing the weight would decrease the loss, 
 		//	so we should increase the weight. 
-		pub fn calculate_loss_derivative(&self, &current_q_value: f64, &target_q_value: f64) -> f64 {
+		pub fn calculate_loss_derivative(&self, current_q_value: &f64, target_q_value: &f64) -> f64 {
 			2.0 * (current_q_value - target_q_value)
 		}
 
@@ -892,7 +892,7 @@ pub mod network{
 
 
 //new because functions above didn't make sense. will code comment these later-------------.------------------------//
-		pub fn backpropagate(&mut self, loss_derivative: f64) -> Vec<Vec<Vec<f64>>> {
+		pub fn backpropagatey(&mut self, loss_derivative: f64) -> Vec<Vec<Vec<f64>>> {
 			//initializes a NEW empty VECtor to store the gradients
 			let mut gradients = Vec::new();
 			//for (i, layer) in self.layers.iter().enumerate().rev() {
@@ -925,7 +925,7 @@ pub mod network{
 			gradients
 		}
 		
-		pub fn update_weights(&mut self, gradients: &Vec<Vec<Vec<f64>>>) {
+		pub fn update_yweights(&mut self, gradients: &Vec<Vec<Vec<f64>>>) {
 			let learning_rate = 0.001;
 		
 			for (i, layer) in self.weights.iter_mut().enumerate()  {
@@ -949,7 +949,7 @@ pub mod network{
 
 
 
-		pub fn el_backpropagation(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) {
+		pub fn backpropagationy(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) {
 			//the purpose of this function is to find the gradient (aka derivative)
 			//		 of the loss funciton with respect to each weight.
 			// der. loss (w/ respect to weights) = der. loss (w/ respect to output)  x  der. out (w/ respect to weights).
@@ -1067,7 +1067,7 @@ pub mod network{
 
 
 
-		pub fn el_update_los_weights(&mut self, gradients: &Vec<f64>, learning_rate: f64) {
+		pub fn update_weightsy(&mut self, gradients: &Vec<f64>, learning_rate: f64) {
 			// Iterate over all WeightLayers
 			for layer_index in 0..self.weights.len() {
 				let weight_layer = &mut self.weights[layer_index];
@@ -1124,7 +1124,7 @@ pub mod network{
 			//vec![
 			//	vec![N1, N2, N3]
 			//]
-		//pub fn backpropagation(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+		//pub fn _backpropagation_v4(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
 		//	let mut gradients = Vec::new();
 		//	let mut indices = Vec::new();
 		//	let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][current_q_value_index]);
@@ -1160,21 +1160,96 @@ pub mod network{
 
 		//after changes described in the code comments above. the only thing changed is the j in : self.layers[layer_index - 1].data[0][j];
 		//	changed to i
-		pub fn backpropagation(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+		//The concern I have now:
+		//		1. Because I said i to be input neuron and j to be output, does that change how it updates the weights?
+		//			I think it will correspond correctly because it's still increasing the gradient_index even if it's not iterating i, but only iterating j at the moment
+		//		2. what about iterating all the weights, even the ones it didn't update
+		//			I think I will need to change the j index to k and iterate k at the end of the j loop and make it k = index of output neuron before the j for loop begins
+		//			 and then set k = index of output neuron if I use derivative_of_output_neuron
+
+		//THIS FUNCTION IS UNUSED
+		//THIS FUNCTION IS UNUSED
+		//THIS FUNCTION IS UNUSED
+		//THIS FUNCTION IS UNUSED
+		//IF FUNCTION HAS _ IN FRONT OF IT IT MEANS IT IS UNUSED
+		pub fn _backpropagation_v5(&mut self, loss_derivative: &f64, current_q_value: &f64, current_q_value_index: &usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+						//the purpose of this function is to find the gradient (aka derivative)
+			//		 of the loss funciton with respect to each weight.
+			// der. loss (w/ respect to weights) = der. loss (w/ respect to output)  x  der. out (w/ respect to weights).
+			//step 1:
+			//		find the derivative of the loss function with respect to the output.
+			//		 output = q_pred.
+			//		 This is just the loss derivative
+			//step 2:
+			//		a. find the derivative of the output with respect to the weights
+			//			i.  aka the derivative of activation function AT each weight connected
+			//				 to q_value chosen.
+			//				 why? 	because we only want to change the weights that
+			//				 contributed to the q_value chosen
+			//				 how?
+			//				 a. find the weights connected to the current_q_value_index
+			//					how?
+			//					i. weights initialized like so where the letters are the
+			//						 associated neurons that the weights are connected FROM
+			//						 and the numbers are the neurons they are connected TO:
+			//						 vec![
+			//							vec![wa1, wa2, wa3, wa4, ...],
+			//							vec![wb1, wb2, wb3, wb4, ...],
+			//							vec![wc1, wc2, wc3, wc4, ...],
+			//							...
+			//						 ]
+			//					ii. so if we wanted weights connected to index 3, we would iterate through each layer,
+			//						 and then through the rows of the last layer
+			//						 and add the 3rd column to our list until we iterated through every row
+			//
+			//
+			//
+			//
+			//
+			//we want a gradients vector because gradients are the slopes of the loss function with
+			//		respect to each weight. My plan is to put the gradients into a vec<vec<vec<f64>>>
+			//why?
+			//		Most outer vec will serve as the encapsulater. The first inner vec will serve
+			//		 as which WeightLayer it corresponds to. The most inner vectors will serve as
+			//		 the rows whose elements are the gradients that correspond with the weights
+			//		  in the exact same position
 			let mut gradients = Vec::new();
+			//why indices? because I need to track what I'm changing for the update_weights function
 			let mut indices = Vec::new();
-			let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][current_q_value_index]);
+				//gradient is the product of three terms: 1. the derivative of the loss function, 
+				//		2. the derivative of the activation function at the output of the neuron connected *TO* the weight,
+				//		3. and the output of the neuron that the weight connects *FROM*
+				//what does this do?
+				//it tells us how the loss function changes as the output of the neurons connected by the weight change.
+				//		 And since we cant change the output of the neuron directly, we change the weights
+				//leaky_relu_derivative(self.layers.last().unwrap().data[i][current_q_value_index])
+				//		this is this finds the derivative of the activation function at: 
+				//		 self.layers.last().unwrap().data[i][current_q_value_index]
+				//self.layers.last().unwrap()		this is just going to the last layer because it's the output
+				//									of the neuron connected *TO* the weight
+				//...data[i][current_q_value_index]		so i is always 0 since my neurons are
+				//										only in 1 row, so this still works,
+				//										 and then it's going into 0th row and then going
+				//										 to the index of the q value and getting the q value itself
+				//										 and then getting applying the leaky_relu_derivative to it.
+			let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
 			// Iterate over all WeightLayers in reverse order
 			for layer_index in (0..self.weights.len()).rev() {
 				let weight_layer = &mut self.weights[layer_index];
-				// Iterate over all rows in the current layer, how do I know this? because it's iterating over the LENgth of weight_layer, aka the number of rows
+				// Iterates over all rows in the current layer, how do I know this? because it's iterating over the LENgth of weight_layer, aka the number of rows
+				//is it fine to be 0..weight and not 0..=weight? yes because it's the index so the index starts at 0 and ends 1 before length which is perfect.
+				//	Same goes for other for loop too
 				for i in 0..weight_layer.data.len() {
-					//iterate over all the weights in row i, how do I know this? because it's iterating over the LENgth of row i
+					//iterates over all the weights in row i, how do I know this? because it's iterating over the LENgth of row i
 					for j in 0..weight_layer.data[i].len() {
 						// Skip the calculation if layer_index is 0
+						//why? Because it's already calculated all the From neurons from layer_index 0 corresponding to the layer after it.
+						//how do I know?
+						//		TO neuron derivative (look at layer_index): leaky_relu_derivative(self.layers[layer_index].data[0][j])
+						//		From neuron derivative:                                       self.layers[layer_index - 1].data[0][i]
 						if layer_index > 0 {
 							// Calculate the derivative of the activation function for the current neuron
-							let derivative_of_output_nimrod = 
+							let derivative_of_to_neuron = 
 								if layer_index == self.weights.len() - 1 {
 									derivative_of_output_neuron
 								} 
@@ -1183,7 +1258,7 @@ pub mod network{
 									leaky_relu_derivative(self.layers[layer_index].data[0][j])
 								};
 							// Calculate the gradient for the weight connecting neuron i to neuron j
-							let gradient = loss_derivative * derivative_of_output_nimrod * self.layers[layer_index - 1].data[0][i];
+							let gradient = loss_derivative * derivative_of_to_neuron * self.layers[layer_index - 1].data[0][i];
 							gradients.push(gradient);
 							indices.push((layer_index, i, j));
 						}
@@ -1194,7 +1269,115 @@ pub mod network{
 		}
 
 
+		pub fn el_backpropagation(&mut self, loss_derivative: &f64, current_q_value: &f64, current_q_value_index: &usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+			//the purpose of this function is to find the gradient (aka derivative)
+			//		 of the loss funciton with respect to each weight.
+			// der. loss (w/ respect to weights) = der. loss (w/ respect to output)  x  der. out (w/ respect to weights).
+			//step 1:
+			//		find the derivative of the loss function with respect to the output.
+			//		 output = q_pred.
+			//		 This is just the loss derivative
+			//step 2:
+			//		a. find the derivative of the output with respect to the weights
+			//			i.  aka the derivative of activation function AT each weight connected
+			//				 to q_value chosen.
+			//				 why? 	because we only want to change the weights that
+			//				 contributed to the q_value chosen
+			//				 how?
+			//				 a. find the weights connected to the current_q_value_index
+			//					how?
+			//					i. weights initialized like so where the letters are the
+			//						 associated neurons that the weights are connected FROM
+			//						 and the numbers are the neurons they are connected TO:
+			//						 vec![
+			//							vec![wa1, wa2, wa3, wa4, ...],
+			//							vec![wb1, wb2, wb3, wb4, ...],
+			//							vec![wc1, wc2, wc3, wc4, ...],
+			//							...
+			//						 ]
+			//					ii. so if we wanted weights connected to index 3, we would iterate through each layer,
+			//						 and then through the rows of the last layer
+			//						 and add the 3rd column to our list until we iterated through every row
+			//
+			//
+			//
+			//
+			//
+			//we want a gradients vector because gradients are the slopes of the loss function with
+			//		respect to each weight. My plan is to put the gradients into a vec<vec<vec<f64>>>
+			//why?
+			//		Most outer vec will serve as the encapsulater. The first inner vec will serve
+			//		 as which WeightLayer it corresponds to. The most inner vectors will serve as
+			//		 the rows whose elements are the gradients that correspond with the weights
+			//		  in the exact same position
+			let mut gradients = Vec::new();
+			//why indices? because I need to track what I'm changing for the update_weights function
+			let mut indices = Vec::new();
+			//gradient is the product of three terms: 1. the derivative of the loss function, 
+			//		2. the derivative of the activation function at the output of the neuron connected *TO* the weight,
+			//		3. and the output of the neuron that the weight connects *FROM*
+			//what does this do?
+			//it tells us how the loss function changes as the output of the neurons connected by the weight change.
+			//		 And since we cant change the output of the neuron directly, we change the weights
+			//leaky_relu_derivative(self.layers.last().unwrap().data[i][current_q_value_index])
+			//		this is this finds the derivative of the activation function at: 
+			//		 self.layers.last().unwrap().data[i][current_q_value_index]
+			//self.layers.last().unwrap()		this is just going to the last layer because it's the output
+			//									of the neuron connected *TO* the weight
+			//...data[i][current_q_value_index]		so i is always 0 since my neurons are
+			//										only in 1 row, so this still works,
+			//										 and then it's going into 0th row and then going
+			//										 to the index of the q value and getting the q value itself
+			//										 and then getting applying the leaky_relu_derivative to it.
+			let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
+			let mut derivative_of_to_neuron = 0.0;
+			// Iterate over all WeightLayers in reverse order
+			for layer_index in (0..self.weights.len()).rev() {
+				let weight_layer = &mut self.weights[layer_index];
+				// Iterates over all rows in the current layer, how do I know this? because it's iterating over the LENgth of weight_layer, aka the number of rows
+				//is it fine to be 0..weight and not 0..=weight? yes because it's the index so the index starts at 0 and ends 1 before length which is perfect.
+				//	Same goes for other for loop too
+				for i in 0..weight_layer.data.len() {
+					//iterates over all the weights in row i, how do I know this? because it's iterating over the LENgth of row i
+					let mut k: usize = 0;
+					for j in 0..weight_layer.data[i].len() {
+						// Skip the calculation if layer_index is 0
+						//why? Because it's already calculated all the From neurons from layer_index 0 corresponding to the layer after it.
+						//how do I know?
+						//		TO neuron derivative (look at layer_index): leaky_relu_derivative(self.layers[layer_index].data[0][j])
+						//		From neuron derivative:                                       self.layers[layer_index - 1].data[0][i]
+						if layer_index > 0 {
+							// Calculate the derivative of the activation function for the current neuron
+								if layer_index == self.weights.len() - 1 {
+									derivative_of_to_neuron = derivative_of_output_neuron;
+									k = *current_q_value_index;
+								} 
+								else {
+									//this is the output neuron's derivative
+									derivative_of_to_neuron = leaky_relu_derivative(self.layers[layer_index].data[0][j]);
+								};
+							// Calculate the gradient for the weight connecting neuron i to neuron j
+							let gradient = loss_derivative * derivative_of_to_neuron * self.layers[layer_index - 1].data[0][i];
+							gradients.push(gradient);
+							indices.push((layer_index, i, k));
+							k+=1;
+						}
+					}
+				}
+			}
+			(gradients, indices)
+		}
 
+
+
+
+		pub fn el_update_weights(&mut self, gradients: &Vec<f64>, indices: &Vec<(usize, usize, usize)>, learning_rate: f64) {
+			// Iterate over all gradients and their corresponding indices
+			for (gradient_index, (layer_index, i, j)) in indices.iter().enumerate() {
+				// Update the corresponding weight by subtracting the gradient times the learning rate
+				self.weights[*layer_index].data[*i][*j] -= learning_rate * gradients[gradient_index];
+			}
+		}
 
 
 

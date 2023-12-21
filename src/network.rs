@@ -877,7 +877,12 @@ pub mod network{
 
 		//once the gradients are established, we just go through the weights and update them as quickly
 		//		 as the learning_rate allows us
-		pub fn update_weights(&mut self, gradients: &Vec<Vec<Vec<f64>>>) {
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//IF FUNCTION HAS _ IN FRONT OF IT IT MEANS IT IS UNUSED
+		pub fn _update_weights(&mut self, gradients: &Vec<Vec<Vec<f64>>>) {
 			let learning_rate = 0.001;
 			for i in 0..self.weights.len() {
 				for j in 0..self.weights[i].data.len() {
@@ -892,7 +897,12 @@ pub mod network{
 
 
 //new because functions above didn't make sense. will code comment these later-------------.------------------------//
-		pub fn backpropagatey(&mut self, loss_derivative: f64) -> Vec<Vec<Vec<f64>>> {
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//IF FUNCTION HAS _ IN FRONT OF IT IT MEANS IT IS UNUSED
+		pub fn _backpropagatey(&mut self, loss_derivative: f64) -> Vec<Vec<Vec<f64>>> {
 			//initializes a NEW empty VECtor to store the gradients
 			let mut gradients = Vec::new();
 			//for (i, layer) in self.layers.iter().enumerate().rev() {
@@ -924,8 +934,12 @@ pub mod network{
 			gradients.reverse();
 			gradients
 		}
-		
-		pub fn update_yweights(&mut self, gradients: &Vec<Vec<Vec<f64>>>) {
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//IF FUNCTION HAS _ IN FRONT OF IT IT MEANS IT IS UNUSED
+		pub fn _update_yweights(&mut self, gradients: &Vec<Vec<Vec<f64>>>) {
 			let learning_rate = 0.001;
 		
 			for (i, layer) in self.weights.iter_mut().enumerate()  {
@@ -948,8 +962,12 @@ pub mod network{
 
 
 
-
-		pub fn backpropagationy(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) {
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//IF FUNCTION HAS _ IN FRONT OF IT IT MEANS IT IS UNUSED
+		pub fn _backpropagationy(&mut self, loss_derivative: &f64, current_q_value: &f64, current_q_value_index: &usize) {
 			//the purpose of this function is to find the gradient (aka derivative)
 			//		 of the loss funciton with respect to each weight.
 			// der. loss (w/ respect to weights) = der. loss (w/ respect to output)  x  der. out (w/ respect to weights).
@@ -1014,7 +1032,7 @@ pub mod network{
 													.layers
 													.last()
 													.unwrap()
-													.data[0][current_q_value_index]);
+													.data[0][*current_q_value_index]);
 
 			//first we are going to go through each weight layer from the 2nd last one
 			//why 2nd last?		output layer doesn't have weights coming *FROM* it
@@ -1124,38 +1142,44 @@ pub mod network{
 			//vec![
 			//	vec![N1, N2, N3]
 			//]
-		//pub fn _backpropagation_v4(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
-		//	let mut gradients = Vec::new();
-		//	let mut indices = Vec::new();
-		//	let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][current_q_value_index]);
-		//	// Iterate over all WeightLayers in reverse order
-		//	for layer_index in (0..self.weights.len()).rev() {
-		//		let weight_layer = &mut self.weights[layer_index];
-		//		// Iterate over all rows in the current layer, how do I know this? because it's iterating over the LENgth of weight_layer, aka the number of rows
-		//		for i in 0..weight_layer.data.len() {
-		//			//iterate over all the weights in row i, how do I know this? because it's iterating over the LENgth of row i
-		//			for j in 0..weight_layer.data[i].len() {
-		//				// Skip the calculation if layer_index is 0
-		//				if layer_index > 0 {
-		//					// Calculate the derivative of the activation function for the current neuron
-		//					let derivative_of_output_nimrod = 
-		//						if layer_index == self.weights.len() - 1 {
-		//							derivative_of_output_neuron
-		//						} 
-		//						else {
-		//							//this is the output neuron's derivative
-		//							leaky_relu_derivative(self.layers[layer_index].data[0][j])
-		//						};
-		//					// Calculate the gradient for the weight connecting neuron i to neuron j
-		//					let gradient = loss_derivative * derivative_of_output_nimrod * self.layers[layer_index - 1].data[0][j];
-		//					gradients.push(gradient);
-		//					indices.push((layer_index, i, j));
-		//				}
-		//			}
-		//		}
-		//	}
-		//	(gradients, indices)
-		//}
+
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//IF FUNCTION HAS _ IN FRONT OF IT IT MEANS IT IS UNUSED
+		pub fn _backpropagation_v4(&mut self, loss_derivative: &f64, current_q_value: &f64, current_q_value_index: &usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+			let mut gradients = Vec::new();
+			let mut indices = Vec::new();
+			let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
+			// Iterate over all WeightLayers in reverse order
+			for layer_index in (0..self.weights.len()).rev() {
+				let weight_layer = &mut self.weights[layer_index];
+				// Iterate over all rows in the current layer, how do I know this? because it's iterating over the LENgth of weight_layer, aka the number of rows
+				for i in 0..weight_layer.data.len() {
+					//iterate over all the weights in row i, how do I know this? because it's iterating over the LENgth of row i
+					for j in 0..weight_layer.data[i].len() {
+						// Skip the calculation if layer_index is 0
+						if layer_index > 0 {
+							// Calculate the derivative of the activation function for the current neuron
+							let derivative_of_output_nimrod = 
+								if layer_index == self.weights.len() - 1 {
+									derivative_of_output_neuron
+								} 
+								else {
+									//this is the output neuron's derivative
+									leaky_relu_derivative(self.layers[layer_index].data[0][j])
+								};
+							// Calculate the gradient for the weight connecting neuron i to neuron j
+							let gradient = loss_derivative * derivative_of_output_nimrod * self.layers[layer_index - 1].data[0][j];
+							gradients.push(gradient);
+							indices.push((layer_index, i, j));
+						}
+					}
+				}
+			}
+			(gradients, indices)
+		}
 
 
 		//after changes described in the code comments above. the only thing changed is the j in : self.layers[layer_index - 1].data[0][j];
@@ -1371,8 +1395,9 @@ pub mod network{
 
 
 
-		pub fn el_update_weights(&mut self, gradients: &Vec<f64>, indices: &Vec<(usize, usize, usize)>, learning_rate: f64) {
+		pub fn el_update_weights(&mut self, gradients: &Vec<f64>, indices: &Vec<(usize, usize, usize)>) {
 			// Iterate over all gradients and their corresponding indices
+			let learning_rate = 0.001;
 			for (gradient_index, (layer_index, i, j)) in indices.iter().enumerate() {
 				// Update the corresponding weight by subtracting the gradient times the learning rate
 				self.weights[*layer_index].data[*i][*j] -= learning_rate * gradients[gradient_index];

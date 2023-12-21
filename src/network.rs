@@ -1054,7 +1054,8 @@ pub mod network{
 						//		and the output of the neuron that the weight connects *FROM*
 						//why [layer_index-1] ?
 						//		the answer to that is in the answer to this:
-						//		which part of the above is self.layers[layer_index - 1].data[0][j] calculating?
+						//		which part of the 3 part gradient calculation corresponds to
+						//		 self.layers[layer_index - 1].data[0][j] ?
 						//spoiler alert: -1 because it's the from neuron
 						let gradient = loss_derivative * derivative_of_neuron * self.layers[layer_index - 1].data[0][j];
 						gradients.push(gradient);
@@ -1079,6 +1080,126 @@ pub mod network{
 				}
 			}
 		}
+
+
+
+
+			//issues that I think are in the function below:
+			//		1. we aren't going to the last weight layer in 
+			//				for layer_index in (0..self.weights.len()).rev() {
+			//			because it's 0..self not 0..=self
+			//			this is an issue because we wont be able to access the last weight layer 
+			//		number 1 rescinded because it's the length, not the index. so it does go to the last layer.
+			//		
+			//		2. We can't iterate over layer_index 0 because of 
+			//				if layer_index > 0 {
+			//			why is it there? Because layer_index - 1 in self.layers[layer_index - 1].data[0][j].
+			//			this is needed because it corresponds to the from neuron. 
+			//		number 2 rescinded because it will still iterate over the neurons in the 0th layer because of the layer_index-1.
+			//			We dont need to make the 0th layer be the *TO* neuron because no weights coming in to 0th layer, duh.
+			//		3. the *TO* and *FROM* neurons are always going to be in the same column:
+			//			TO: leaky_relu_derivative(self.layers[layer_index].data[0][j])
+			//		  FROM: self.layers[layer_index - 1].data[0][j]
+			//			If you don't see it, the issue is in the .data[0][j]. 
+			//			The *FROM* neuron should iterate over every neuron and calculate a value after every iteration before the *TO* neuron is iterated.
+			//			What if I change output to i?
+			//				wont work because it'll correspond incorrectly because i signifies change in input neuron.
+			//			What if I change input to i and output stays j?
+			//				wont work because i only iterates after j has finished looping through the columns.
+			//				Actually will work as long as it's still hitting all the weights.
+			//				 It doesn't matter if it's iterating the output neurons for every input instead of iterating the input neurons for every output neuron
+			//				 if it's still hitting all the weights.
+			//*FROM* neurons:
+			//vec![
+			//	vec![Na, Nb, Nc, Nd]
+			//]
+			//weights:
+			//vec![
+			//	vec![Wa1, Wa2, Wa3]
+			//	vec![Wb1, Wb2, Wb3]
+			//	vec![Wc1, Wc2, Wc3]
+			//	vec![Wd1, Wd2, Wd3]
+			//]
+			//*TO* neurons:
+			//vec![
+			//	vec![N1, N2, N3]
+			//]
+		//pub fn backpropagation(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+		//	let mut gradients = Vec::new();
+		//	let mut indices = Vec::new();
+		//	let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][current_q_value_index]);
+		//	// Iterate over all WeightLayers in reverse order
+		//	for layer_index in (0..self.weights.len()).rev() {
+		//		let weight_layer = &mut self.weights[layer_index];
+		//		// Iterate over all rows in the current layer, how do I know this? because it's iterating over the LENgth of weight_layer, aka the number of rows
+		//		for i in 0..weight_layer.data.len() {
+		//			//iterate over all the weights in row i, how do I know this? because it's iterating over the LENgth of row i
+		//			for j in 0..weight_layer.data[i].len() {
+		//				// Skip the calculation if layer_index is 0
+		//				if layer_index > 0 {
+		//					// Calculate the derivative of the activation function for the current neuron
+		//					let derivative_of_output_nimrod = 
+		//						if layer_index == self.weights.len() - 1 {
+		//							derivative_of_output_neuron
+		//						} 
+		//						else {
+		//							//this is the output neuron's derivative
+		//							leaky_relu_derivative(self.layers[layer_index].data[0][j])
+		//						};
+		//					// Calculate the gradient for the weight connecting neuron i to neuron j
+		//					let gradient = loss_derivative * derivative_of_output_nimrod * self.layers[layer_index - 1].data[0][j];
+		//					gradients.push(gradient);
+		//					indices.push((layer_index, i, j));
+		//				}
+		//			}
+		//		}
+		//	}
+		//	(gradients, indices)
+		//}
+
+
+		//after changes described in the code comments above. the only thing changed is the j in : self.layers[layer_index - 1].data[0][j];
+		//	changed to i
+		pub fn backpropagation(&mut self, &loss_derivative: f64, &current_q_value: f64, &current_q_value_index: usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+			let mut gradients = Vec::new();
+			let mut indices = Vec::new();
+			let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][current_q_value_index]);
+			// Iterate over all WeightLayers in reverse order
+			for layer_index in (0..self.weights.len()).rev() {
+				let weight_layer = &mut self.weights[layer_index];
+				// Iterate over all rows in the current layer, how do I know this? because it's iterating over the LENgth of weight_layer, aka the number of rows
+				for i in 0..weight_layer.data.len() {
+					//iterate over all the weights in row i, how do I know this? because it's iterating over the LENgth of row i
+					for j in 0..weight_layer.data[i].len() {
+						// Skip the calculation if layer_index is 0
+						if layer_index > 0 {
+							// Calculate the derivative of the activation function for the current neuron
+							let derivative_of_output_nimrod = 
+								if layer_index == self.weights.len() - 1 {
+									derivative_of_output_neuron
+								} 
+								else {
+									//this is the output neuron's derivative
+									leaky_relu_derivative(self.layers[layer_index].data[0][j])
+								};
+							// Calculate the gradient for the weight connecting neuron i to neuron j
+							let gradient = loss_derivative * derivative_of_output_nimrod * self.layers[layer_index - 1].data[0][i];
+							gradients.push(gradient);
+							indices.push((layer_index, i, j));
+						}
+					}
+				}
+			}
+			(gradients, indices)
+		}
+
+
+
+
+
+
+
+
 	}
 
 

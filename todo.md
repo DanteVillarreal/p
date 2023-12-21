@@ -171,3 +171,4 @@ Log of what I've done:
 12/20/23 - Updated backpropagation a little more. Im getting closer and closer to the correct backpropagation function. Next step is to finish examining the function and code commenting it. I got this!
 12/20/23 - Updated backpropagation more and I think its done. Also added code comments in it. next step is to do the update_weights function. I got this!
 12/20/23 - Added update_weights function. Updated name of backpropagation function. Next step is to evaluate the el_update_los_weights function. I got this!
+12/21/23 - Overhalled backpropagation function because of some issues it would have in update_weights. Then looked at issues the new backpropagation function would have and fixed those. Next step is to add the update_weights function. I got this!

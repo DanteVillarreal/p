@@ -618,7 +618,7 @@ pub mod network{
 			//		 how neurons are initialized, how biases are initalized,
 			//neurons:
 			// vec![
-  			//	vec![Na, Nb, Nc, Nd, Ne, ...]
+  			//	vec![Na, Nb, Nc, ...]
   			// ]
 			//weights:
 			// vec![
@@ -627,9 +627,9 @@ pub mod network{
   			//	vec![wc1, wc2, wc3, wc4, ...],
   			//	...
 			// ]
-			//biases:
+			//neurons:
 			// vec![
-  			//	 vec![Ba, Bb, Bc, Bd, Be, Bf, ...]
+  			//	 vec![N1, N2, N3, N4,...]
   			// ]
 
 
@@ -801,6 +801,33 @@ pub mod network{
 			2.0 * (current_q_value - target_q_value)
 		}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		//This is probably the hardest part to understand. But think of a 2d graph and the
 		//	 gradient is just the slope of the graph. We're basically seeing which nudges
 		//	 to the weights and biases cause the fastest change to the local minimum
@@ -810,7 +837,12 @@ pub mod network{
 		//		 was off by and whether to increase or decrease the weight
 		//so this function computes the gradient of the loss function with respect to the
 		//		 weights of the network
-		pub fn backpropagate(&mut self, loss_derivative: f64) -> Vec<Vec<Vec<f64>>> {
+					//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//THIS VERSION IS UNUSED
+			//IF FUNCTION HAS _ IN FRONT OF IT IT MEANS IT IS UNUSED
+		pub fn _backpropagate(&mut self, loss_derivative: f64) -> Vec<Vec<Vec<f64>>> {
 			//vec![  vec![what_i_want_each_element_to_be;number_of_elements] ; number_of_vectors];
 			//gradients   will mimic the WeightLayer but instead the numbers will represent how
 			//			   far the weight is from where it thinks it should go.
@@ -870,11 +902,8 @@ pub mod network{
 					}
 				}
 			}
-
 			gradients
 		}
-	
-
 		//once the gradients are established, we just go through the weights and update them as quickly
 		//		 as the learning_rate allows us
 			//THIS VERSION IS UNUSED
@@ -892,10 +921,6 @@ pub mod network{
 				}
 			}
 		}
-
-
-
-
 //new because functions above didn't make sense. will code comment these later-------------.------------------------//
 			//THIS VERSION IS UNUSED
 			//THIS VERSION IS UNUSED
@@ -930,7 +955,6 @@ pub mod network{
 		
 				gradients.push(layer_gradients);
 			}
-		
 			gradients.reverse();
 			gradients
 		}
@@ -950,18 +974,6 @@ pub mod network{
 				}
 			}
 		}
-
-
-
-
-
-
-
-
-
-
-
-
 			//THIS VERSION IS UNUSED
 			//THIS VERSION IS UNUSED
 			//THIS VERSION IS UNUSED
@@ -1033,7 +1045,6 @@ pub mod network{
 													.last()
 													.unwrap()
 													.data[0][*current_q_value_index]);
-
 			//first we are going to go through each weight layer from the 2nd last one
 			//why 2nd last?		output layer doesn't have weights coming *FROM* it
 			for layer_index in (0..self.weights.len()).rev() {
@@ -1083,8 +1094,6 @@ pub mod network{
 			//so this for loop 
 		}
 
-
-
 		pub fn update_weightsy(&mut self, gradients: &Vec<f64>, learning_rate: f64) {
 			// Iterate over all WeightLayers
 			for layer_index in 0..self.weights.len() {
@@ -1098,10 +1107,6 @@ pub mod network{
 				}
 			}
 		}
-
-
-
-
 			//issues that I think are in the function below:
 			//		1. we aren't going to the last weight layer in 
 			//				for layer_index in (0..self.weights.len()).rev() {
@@ -1142,7 +1147,6 @@ pub mod network{
 			//vec![
 			//	vec![N1, N2, N3]
 			//]
-
 			//THIS VERSION IS UNUSED
 			//THIS VERSION IS UNUSED
 			//THIS VERSION IS UNUSED
@@ -1180,8 +1184,6 @@ pub mod network{
 			}
 			(gradients, indices)
 		}
-
-
 		//after changes described in the code comments above. the only thing changed is the j in : self.layers[layer_index - 1].data[0][j];
 		//	changed to i
 		//The concern I have now:
@@ -1225,11 +1227,7 @@ pub mod network{
 			//					ii. so if we wanted weights connected to index 3, we would iterate through each layer,
 			//						 and then through the rows of the last layer
 			//						 and add the 3rd column to our list until we iterated through every row
-			//
-			//
-			//
-			//
-			//
+
 			//we want a gradients vector because gradients are the slopes of the loss function with
 			//		respect to each weight. My plan is to put the gradients into a vec<vec<vec<f64>>>
 			//why?
@@ -1291,6 +1289,30 @@ pub mod network{
 			}
 			(gradients, indices)
 		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 		pub fn el_backpropagation(&mut self, loss_derivative: &f64, current_q_value: &f64, current_q_value_index: &usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
@@ -1406,6 +1428,81 @@ pub mod network{
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		pub fn save(&self) -> std::path::PathBuf {
+			// Create path for saving file
+			let path = std::path::PathBuf::from("model.h5");
+	
+			// Create file with write mode
+			let mut file = std::fs::File::create(&path).unwrap();
+	
+			// Serialize neural network object into binary format
+			serde_json::to_writer(&mut file).unwrap();
+	
+			// Return path
+			path
+		}
+	
+		pub fn load(&self) -> Self {
+			// Load state from file
+			let path = std::path::PathBuf::from("model.h5");
+	
+			// Open file with read mode
+			let mut file = std::fs::File::open(&path).unwrap();
+	
+			// Deserialize binary format into neural network object
+			let mut data = Vec::<Vec<f64>>::new();
+			serde_json::from_reader(&mut file).unwrap().into_iter().map(|layer| {
+				vec![(layer.rows * layer.columns), layer.data]
+					.into_iter()
+					.map(|row| row.iter().map(|x| x.to_f64()).collect::<Vec<_>>())
+					.collect()
+			}).collect();
+	
+			// Deserialize binary format into neural network object
+			let mut model = NeuralNetwork {
+				layers: vec![],
+				weights: vec![],
+				biases: vec![],
+			};
+			
+			// Deserialize each layer into model.layers vector
+			for (i, row) in data.iter().enumerate() {
+				model.layers[i].rows = row.len();
+				model.layers[i].columns = row[0].len();
+				model.layers[i].data = row.iter().cloned().collect::<Vec<_>>();
+			}
+	
+			// Deserialize each weight into model.weights vector
+			for (i, row) in data.iter().enumerate() {
+				model.weights[i].rows = row.len();
+				model.weights[i].columns = row[0].len();
+				model.weights[i].data = row.iter().cloned().collect::<Vec<_>>();
+			}
+	
+			// Deserialize each bias into model.biases vector
+			for (i, row) in data.iter().enumerate() {
+				model.biases[i].rows = row.len();
+				model.biases[i].columns = 1;
+				model.biases[i].data = row.iter().cloned().collect::<Vec<_>>();
+			}
+	
+			return model;
+		}
 
 
 	}

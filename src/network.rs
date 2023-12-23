@@ -1,10 +1,12 @@
 pub mod network{
 	use rand::Rng;															//to generate random numbers
-	use crate::action_functions::{/*insert all the action functions */};
+	//use crate::action_functions::{/*insert all the action functions */};
 	use rand_distr::{Normal, Distribution};									//to generate different dist. of random numbers
 	use serde::{Serialize, Deserialize};									//to save/load my neural network
 	use std::fs::File;
 	use std::io::{BufReader, BufWriter};
+	use chrono::Utc;														//for timestamp
+	use std::path::Path;													//for help in representing file paths
 
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
 	
@@ -54,11 +56,11 @@ pub mod network{
 	
 	impl NetworkLayer {
 		pub fn print_network_layer( &self) {
-			//this isn't even complete. if I truly want to see the structure,
-			//	 make it so it prints the rows out too and to validate the structure is correct,
-			//	 it should only print out 1 row
-			for i in 0..self.columns {
-				println!("{:?}\n", &self.data[i]);
+			for j in 0..self.rows {
+				for i in 0..self.columns {
+					println!("{:?} ", &self.data[j][i]);
+				}
+				println!("\n");
 			}
 		}
 	}
@@ -76,11 +78,11 @@ pub mod network{
 
 	impl BiasLayer {
 		pub fn print_bias_layer( &self) {
-			//this isn't even complete. if I truly want to see the structure,
-			//	 make it so it prints the rows out too and to validate the structure is correct,
-			//	 it should only print out 1 row
-			for i in 0..self.columns {
-				println!("{:?}\n", &self.data[i]);
+			for j in 0..self.rows {
+				for i in 0..self.columns {
+					println!("{:?} ", &self.data[j][i]);
+				}
+				println!("\n");
 			}
 		}
 	}
@@ -215,30 +217,31 @@ pub mod network{
 		}
 	}
 
-	
+	/*CODE COMMENTED THIS OUT FOR NOW. THIS IS 100% NECESSARY FOR THE PROPER
+	//		 FUNCTIONALITY OF THE NEURAL NETWORK. BUT IT NEEDS PARTS THAT ARENT
+	//		 DONE YET AND I WANT TO RUN MY SAVE AND LOAD STATES
 	pub fn reward_function() -> f64 {
 		//let new_balance = 
 		//I need to figure out where I would get the balance from. Do I make an entire function just to return a balance
 		//or can I return two f64 from 1 function
 
 
-	/*HOW I WILL STRUCTURE THIS FUNCTION*&*&*&*&(*(*(&*&*------------------------------------:
-			this function will get information from the REST APIs of giver and recipient, 
-				how_much_i_spent 	will equal how much I spent buying crypto from giver
-				balance				will equal how much recipient wallet was at before crypto transfer
-				new_balance			will equal how much recipient wallet was at after+  crypto transfer
-				change				will equal new_balance minus balance
-				updated_balance		will equal balance * (1.0 + change);
-				then return updated_balance.ln()
-
-
-				why 1.0 + change?	so that if change was .05, multiplying it by balance
-					would mean losing money. I'm trying to find the gain here, so it would be 
-					balance*1.05.
-				why ln?				to account for greater loss.
-						absolute value of  ln(1-x) is greater than ln(1+x). this is good so our
-						DQN will weigh losses as heavier than "equivalent" gain
-	*/
+	//HOW I WILL STRUCTURE THIS FUNCTION*&*&*&*&(*(*(&*&*------------------------------------:
+	//		this function will get information from the REST APIs of giver and recipient, 
+	//			how_much_i_spent 	will equal how much I spent buying crypto from giver
+	//			balance				will equal how much recipient wallet was at before crypto transfer
+	//			new_balance			will equal how much recipient wallet was at after+  crypto transfer
+	//			change				will equal new_balance minus balance
+	//			updated_balance		will equal balance * (1.0 + change);
+	//			then return updated_balance.ln()
+	//
+	//				why 1.0 + change?	so that if change was .05, multiplying it by balance
+	//					would mean losing money. I'm trying to find the gain here, so it would be 
+	//					balance*1.05.
+	//				why ln?				to account for greater loss.
+	//						absolute value of  ln(1-x) is greater than ln(1+x). this is good so our
+	//						DQN will weigh losses as heavier than "equivalent" gain
+	
 
 			//the reason I made it type    Option<f64> is because I don't want to prematurely
 			//    assign a value to it, so if somehow it never gets assigned a value,
@@ -302,7 +305,7 @@ pub mod network{
 			};
 			return reward;
 		}
-
+		
 
 
 
@@ -310,7 +313,7 @@ pub mod network{
 
 
 	}
-	
+	*/
 
 	impl NeuralNetwork {
 		
@@ -490,19 +493,22 @@ pub mod network{
 
 
 		pub fn initialization(&mut self, input_size: usize, output_size: usize, number_of_hidden_layers: usize) {
-			/*intiialization of weights and biases and what not */
-			/*initialization rule I'm following:
-        		The number of hidden neurons should be 2/3 the size of the input layer, 
-					plus the size of the output layer.
-			*/
-			/*it will make the hidden layers each the same size.
-			  NEED TO ADD ANOTHER PARAMETER FOR IF I WANT PYRAMID, REVERSE PYRAMID, OR NORMAL 
-			*/
+			//intiialization of weights and biases and what not */
+			//initialization rule I'm following:
+        	//	The number of hidden neurons should be 2/3 the size of the input layer, 
+			//		plus the size of the output layer.
+			//
+			//it will make the hidden layers each the same size.
+			//  NEED TO ADD ANOTHER PARAMETER FOR IF I WANT PYRAMID, REVERSE PYRAMID, OR NORMAL 
+			
 
-			/*hidden_size is usize because i cant have a fraction of a neuron, nor a negative size.*/
-			//let hidden_size = (2.0 / 3.0 * (input_size + output_size) as f64) as usize;
-			let hidden_size = 2/3 * (input_size + output_size);
-			/*this creates the random number generator */
+			//hidden_size is usize because i cant have a fraction of a neuron, nor a negative size.
+			//why as f64 and then as usize?
+			//		because if I did 2/3 * (input + output), the 2/3 would be rounded to an int,
+			//		 and the result is 0.
+			let hidden_size = (2.0 / 3.0 * (input_size + output_size) as f64) as usize;
+			//let hidden_size = 2/3 * (input_size + output_size);
+			//this creates the random number generator 
     		let mut rng = rand::thread_rng();
 
 			// Input layer
@@ -731,8 +737,7 @@ pub mod network{
 
 
 
-		pub fn calculate_target_q_value(&self, reward: f64) -> f64
-		{
+		pub fn calculate_target_q_value(&mut self, reward: f64) -> f64{
 			//gamma is basically a numerical representation of how much I value future states
 			//	 and their corresponding q_values.
 			//		it's value is from 0 to 1. 0 means I dont value the next state at all
@@ -951,7 +956,7 @@ pub mod network{
 				}
 			}
 		}
-//new because functions above didn't make sense. will code comment these later-------------.------------------------//
+		//new because functions above didn't make sense. will code comment these later-------------.------------------------//
 			//THIS VERSION IS UNUSED
 			//THIS VERSION IS UNUSED
 			//THIS VERSION IS UNUSED
@@ -1551,12 +1556,18 @@ pub mod network{
 		//		 Ok(()) if no errors and Err with error information if errors.
 		//Ok(())
 		//		it's like void, there's nothing actually returned
-		pub fn save_v2(&self, path: &str) -> std::io::Result<()> {
-			//will need to change the path later to an actual path
+		pub fn save_v2(&self) -> std::io::Result<()> {
+			let base_path = "D:\\Downloads\\PxOmni\\rust_save_states";
+			//this is used to create the timestamp. it doesnt represent the time today, 
+			//		it represents time in ms since Unix epoch
+			let now = Utc::now();
+			let timestamp = now.timestamp_millis().to_string();
+			//this adds the timestamp to the file path so that each file is different
+			let file_path = Path::new(base_path).join(timestamp);
 			//this literally creates the file. the ? allows the line of code
 			//		 to return early if an error was encountered anywhere in
 			//		 the line it's in.
-			let file = File::create(path)?;
+			let file = File::create(file_path)?;
 			//this creates the writer so that the next line of code can actually write to the file
 			//why BufWriter? because it means less writing calls and improves performance.
 			//how does it improve performance and less writing calls?
@@ -1568,19 +1579,14 @@ pub mod network{
 			Ok(())
 		}
 		
-		pub fn load_v2(path: &str) -> std::io::Result<Self> {
-			//will need to change the path later to an actual path
-			//this "opens" the path to the file
+
+		
+		pub fn load(path: &str) -> std::io::Result<Self> {
 			let file = File::open(path)?;
-			//this creates the buffered reader to be read by the line below. why the line below,
-			//		 because it's in JSON format so the line below needs to deserialize it
 			let reader = BufReader::new(file);
-			//it deserializes the JSOn data form the file into a NeuralNetwork instance.
 			let network = serde_json::from_reader(reader)?;
 			Ok(network)
 		}
-		
-
 
 
 

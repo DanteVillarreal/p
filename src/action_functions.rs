@@ -1,5 +1,5 @@
 pub mod action_functions {
-
+/*
     pub fn nothing() {
         //runs the action according to the index
         //i need to make this wait until the next state begins and then give it a reward?
@@ -82,7 +82,7 @@ pub mod action_functions {
 
 
 
-
+*/
 
 
 

@@ -736,7 +736,7 @@ pub mod network{
 
 
 
-
+		//12/23/23 changed function to not use index because it's not being returned and never used
 		pub fn calculate_target_q_value(&mut self, reward: f64) -> f64{
 			//gamma is basically a numerical representation of how much I value future states
 			//	 and their corresponding q_values.
@@ -748,7 +748,7 @@ pub mod network{
 			//		if I want to change it, I'll change it later.
 			let gamma = 0.9;
 			//initialize the largest Q-value so far and its index
-			let mut index_of_largest_qvalue_in_next_state: Option<usize> = None;
+			//let mut index_of_largest_qvalue_in_next_state: Option<usize> = None;
 			let mut largest_qvalue_so_far_in_next_state = f64::MIN;
 
 			//I want to feed forward so I have a new set of q_values that will serve as my
@@ -788,10 +788,10 @@ pub mod network{
 			//.enumerate() means that it will get the value AND the index.
 			//then the inner "if" is just standard for finding the maximum value in a vec or array.
 			if let Some(last_layer) = self.layers.last() {
-				for (index, &value) in last_layer.data[0].iter().enumerate() {
+				for  &value in last_layer.data[0].iter() {
 					if value > largest_qvalue_so_far_in_next_state {
 						largest_qvalue_so_far_in_next_state = value;
-						index_of_largest_qvalue_in_next_state = Some(index);
+						//index_of_largest_qvalue_in_next_state = Some(index);
 					}
 				}
 			}
@@ -862,7 +862,7 @@ pub mod network{
 
 
 
-
+		//code commenting all of the previous versions out.
 		//This is probably the hardest part to understand. But think of a 2d graph and the
 		//	 gradient is just the slope of the graph. We're basically seeing which nudges
 		//	 to the weights and biases cause the fastest change to the local minimum
@@ -877,6 +877,7 @@ pub mod network{
 			//THIS VERSION IS UNUSED
 			//THIS VERSION IS UNUSED
 			//IF FUNCTION HAS _ IN FRONT OF IT IT MEANS IT IS UNUSED
+		/*
 		pub fn _backpropagate(&mut self, loss_derivative: f64) -> Vec<Vec<Vec<f64>>> {
 			//vec![  vec![what_i_want_each_element_to_be;number_of_elements] ; number_of_vectors];
 			//gradients   will mimic the WeightLayer but instead the numbers will represent how
@@ -1167,7 +1168,7 @@ pub mod network{
 			//				Actually will work as long as it's still hitting all the weights.
 			//				 It doesn't matter if it's iterating the output neurons for every input instead of iterating the input neurons for every output neuron
 			//				 if it's still hitting all the weights.
-			//*FROM* neurons:
+			// *FROM* neurons:
 			//vec![
 			//	vec![Na, Nb, Nc, Nd]
 			//]
@@ -1178,7 +1179,7 @@ pub mod network{
 			//	vec![Wc1, Wc2, Wc3]
 			//	vec![Wd1, Wd2, Wd3]
 			//]
-			//*TO* neurons:
+			// *TO* neurons:
 			//vec![
 			//	vec![N1, N2, N3]
 			//]
@@ -1262,7 +1263,6 @@ pub mod network{
 			//					ii. so if we wanted weights connected to index 3, we would iterate through each layer,
 			//						 and then through the rows of the last layer
 			//						 and add the 3rd column to our list until we iterated through every row
-
 			//we want a gradients vector because gradients are the slopes of the loss function with
 			//		respect to each weight. My plan is to put the gradients into a vec<vec<vec<f64>>>
 			//why?
@@ -1324,7 +1324,7 @@ pub mod network{
 			}
 			(gradients, indices)
 		}
-
+	*/
 
 
 

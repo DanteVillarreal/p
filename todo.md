@@ -179,3 +179,4 @@ Log of what I've done:
 12/23/23 - Created new save and load functions. Code commented them too. Will need to see if it works next. I got this!
 12/23/23 - Added Utc::chrono in Cargo.toml
 12/23/23 - Interlude commit. I made tiny modifications and code commented some action and execute functions. But Im about to change initialization function.
+12/23/23 - changed calculate_target_q_value

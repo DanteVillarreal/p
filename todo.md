@@ -180,3 +180,4 @@ Log of what I've done:
 12/23/23 - Added Utc::chrono in Cargo.toml
 12/23/23 - Interlude commit. I made tiny modifications and code commented some action and execute functions. But Im about to change initialization function.
 12/23/23 - changed calculate_target_q_value
+12/23/23 - changed el_backpropagation and code commented out the other variants. Next step is to review the code and then do the save and load. Then print both. I also need to make a print function. I got this!

@@ -1350,7 +1350,7 @@ pub mod network{
 
 
 		//Most updated version
-		pub fn el_backpropagation(&mut self, loss_derivative: &f64, current_q_value: &f64, current_q_value_index: &usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+		pub fn el_backpropagation(&mut self, loss_derivative: &f64, current_q_value_index: &usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
 			//the purpose of this function is to find the gradient (aka derivative)
 			//		 of the loss funciton with respect to each weight.
 			// der. loss (w/ respect to weights) = der. loss (w/ respect to output)  x  der. out (w/ respect to weights).
@@ -1411,10 +1411,10 @@ pub mod network{
 			//										 to the index of the q value and getting the q value itself
 			//										 and then getting applying the leaky_relu_derivative to it.
 			let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
-			let mut derivative_of_to_neuron = 0.0;
+			let mut derivative_of_to_neuron: Option<f64>;
 			// Iterate over all WeightLayers in reverse order
 			for layer_index in (0..self.weights.len()).rev() {
-				let weight_layer = &mut self.weights[layer_index];
+				let weight_layer = &self.weights[layer_index];
 				// Iterates over all rows in the current layer, how do I know this? because it's iterating over the LENgth of weight_layer, aka the number of rows
 				//is it fine to be 0..weight and not 0..=weight? yes because it's the index so the index starts at 0 and ends 1 before length which is perfect.
 				//	Same goes for other for loop too
@@ -1429,19 +1429,21 @@ pub mod network{
 						//		From neuron derivative:                                       self.layers[layer_index - 1].data[0][i]
 						if layer_index > 0 {
 							// Calculate the derivative of the activation function for the current neuron
-								if layer_index == self.weights.len() - 1 {
-									derivative_of_to_neuron = derivative_of_output_neuron;
+								if layer_index == &self.weights.len() - 1 {
+									derivative_of_to_neuron = Some(derivative_of_output_neuron);
 									k = *current_q_value_index;
 								} 
 								else {
 									//this is the output neuron's derivative
-									derivative_of_to_neuron = leaky_relu_derivative(self.layers[layer_index].data[0][j]);
+									derivative_of_to_neuron = Some(leaky_relu_derivative(self.layers[layer_index].data[0][j]));
 								};
 							// Calculate the gradient for the weight connecting neuron i to neuron j
-							let gradient = loss_derivative * derivative_of_to_neuron * self.layers[layer_index - 1].data[0][i];
-							gradients.push(gradient);
-							indices.push((layer_index, i, k));
-							k+=1;
+							if let Some(derivativeoftoneuron) = derivative_of_to_neuron{
+								let gradient = loss_derivative * derivativeoftoneuron * self.layers[layer_index - 1].data[0][i];
+								gradients.push(gradient);
+								indices.push((layer_index, i, k));
+								k+=1;
+							}
 						}
 					}
 				}

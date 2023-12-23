@@ -1,19 +1,19 @@
-use rand_distr::{StandardNormal, Normal, Distribution};
+//use rand_distr::{StandardNormal, Normal, Distribution};
 
-use rand::Rng;
+//use rand::Rng;
 
-use crate::network::Network::NeuralNetwork;
+use p::network::NeuralNetwork;
 //use mod network;
 //use mod actions;
 
 
 
 ///-----FOR PARSING-----////
-use std::env;
-use std::process::{Command, Stdio};
-use serde_json::Value;          //good for parsing intput in JSON format
+//use std::env;
+//use std::process::{Command, Stdio};
+//use serde_json::Value;          //good for parsing intput in JSON format
                                 //  aka what the messages are in
-use std::io::{BufRead, BufReader};//this is to help us read from stdin
+//use std::io::{BufRead, BufReader};//this is to help us read from stdin
 
 //---step 3 below----///////
 /*
@@ -68,7 +68,7 @@ use std::io::{BufRead, BufReader};//this is to help us read from stdin
 
 
 
-
+/*
 //-----ALL-FOR-PARSING-UNDER-THIS//
 fn handle_coinbase(message: &str) {
     //if the message contains the word "heartbeat", ignore the entire message basically
@@ -503,6 +503,7 @@ fn handle_gemini(message: &str) {
 }
 //-----ALL-FOR-PARSING-ABOVE-THIS//
 
+*/
 
 
 
@@ -520,9 +521,9 @@ fn handle_gemini(message: &str) {
 
 
 
-
-
-fn main() {
+//12/23/23 code commented everything, added the new lines of code labelled below then added the return to fn main()
+fn main() -> std::io::Result<()> {
+    /*
 //-----ALL-FOR-PARSING-UNDER-THIS//
     env::set_var("RUST_BACKTRACE", "1");
     //why do I preface the "" with r?
@@ -639,4 +640,31 @@ fn main() {
         }
     }
 //-----ALL-FOR-PARSING-ABOVE-THIS//
+
+*/
+
+
+    let mut network = NeuralNetwork {
+        layers: Vec::new(),
+        weights: Vec::new(),
+        biases: Vec::new(),
+    };
+    network.initialization(10, 10, 2); // Initialize with your parameters
+
+    // Print the network
+    network.print_layers();
+
+    // Save the network
+    network.save_v2()?;
+
+    // Load the network
+    //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\your_file_name"; // Replace with your file path
+    //let loaded_network = NeuralNetwork::load(path)?;
+
+    // Print the loaded network
+    //loaded_network.print();
+
+    Ok(())
+
+
 }

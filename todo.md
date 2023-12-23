@@ -181,3 +181,4 @@ Log of what I've done:
 12/23/23 - Interlude commit. I made tiny modifications and code commented some action and execute functions. But Im about to change initialization function.
 12/23/23 - changed calculate_target_q_value
 12/23/23 - changed el_backpropagation and code commented out the other variants. Next step is to review the code and then do the save and load. Then print both. I also need to make a print function. I got this!
+12/23/23 - removed old and added new print functions. code commented out all of main. added code in main to initialize, print, save, load, then print. Then I changed up the main.rs, lib.rs, network.rs and it finally worked. Made many many changes. Next step is to fix any errors. I got this!

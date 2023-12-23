@@ -1,4 +1,4 @@
-pub mod network{
+
 	use rand::Rng;															//to generate random numbers
 	//use crate::action_functions::{/*insert all the action functions */};
 	use rand_distr::{Normal, Distribution};									//to generate different dist. of random numbers
@@ -25,33 +25,33 @@ pub mod network{
 	//why is serialization necessary?
 	//		Because for some reason you can't just save the data as is. 
 	//		 You need to change it to a format that can be saved.
-
+	#[derive(Debug)]
 	#[derive(Serialize, Deserialize)]
 	pub struct NetworkLayer {
-		rows: usize,
-		columns: usize,
-		data: Vec<Vec<f64>>,        //need Vec<Vec   because we want the same format as WeightLayer   (i think)
+		pub rows: usize,
+		pub columns: usize,
+		pub data: Vec<Vec<f64>>,        //need Vec<Vec   because we want the same format as WeightLayer   (i think)
 	}
-	
+	#[derive(Debug)]
 	#[derive(Serialize, Deserialize)]
 	pub struct WeightLayer {
-		rows: usize,
-		columns: usize,
-		data: Vec<Vec<f64>>,
+		pub rows: usize,
+		pub columns: usize,
+		pub data: Vec<Vec<f64>>,
 	}
-	
+	#[derive(Debug)]
 	#[derive(Serialize, Deserialize)]
 	pub struct BiasLayer {
-		rows: usize,
-		columns: usize,
-		data: Vec<Vec<f64>>,        //same as up top^^
+		pub rows: usize,
+		pub columns: usize,
+		pub data: Vec<Vec<f64>>,        //same as up top^^
 	}
-	
+	#[derive(Debug)]
 	#[derive(Serialize, Deserialize)]
 	pub struct NeuralNetwork {
-		layers: Vec<NetworkLayer>,
-		weights: Vec<WeightLayer>,
-		biases: Vec<BiasLayer>,
+		pub layers: Vec<NetworkLayer>,
+		pub weights: Vec<WeightLayer>,
+		pub biases: Vec<BiasLayer>,
 	}
 	
 	impl NetworkLayer {
@@ -460,18 +460,19 @@ pub mod network{
 				//		because we want to return a random "neuron" because we're doing
 				//		explore. explore means do some random shit, so we can then document
 				//		if it was good or not
-				let mut index_of_random_qvalue :Option<usize> = None;
-				index_of_random_qvalue = Some(rand::thread_rng().gen_range(0..=indexx));
+				let index_of_random_qvalue = rand::thread_rng().gen_range(0..=indexx);
 
 				//not even sure if this is needed. I think I can just delete this and in the
 				//	 bottom do index_of_random_qvalue instead of index
-				let index = match index_of_random_qvalue {
-					Some(index) => index,
-					None => panic!("index_of_random_qvalue was never initialized"),
-				};
+				//let index = match index_of_random_qvalue {
+				//	Some(index) => index,
+				//	None => panic!("index_of_random_qvalue was never initialized"),
+				//};
 
 				match self.layers.last() {
-					Some(last_layer) => return (index, last_layer.data[0][index]),
+					Some(last_layer) =>  {
+						return (index_of_random_qvalue, last_layer.data[0][index_of_random_qvalue]);
+					},
 					None => panic!("No layers in the network!"),
 				}
 
@@ -709,23 +710,59 @@ pub mod network{
 
 		//prints out bias and weight layers
 		//I DONT THINK THIS WORKS. IT PRODUCED AN ERROR WHEN I PUT IT IN TO RUST PLAYGROUND
-		pub fn print_network(&self) {
+		//12/23/23 code commented this out and added a better one
+		//pub fn print_network(&self) {
+		//	for i in 0..self.layers.len() {
+		//		println!("Layer {}:", i+1);
+		//		for j in 0..self.biases[i].data[0].len() {
+		//			println!("Node {}: {:.2}", j+1, self.biases[i].data[0][j]);
+		//		}
+		//
+		//		if i < self.weights.len() {
+		//			println!("Weights to next layer:");
+		//			for row in &self.weights[i].data {
+		//				let weights: Vec<String> = row.iter().map(|&x| format!("{:.2}", x))
+		//											.collect();
+		//				println!("{}", weights.join("\t"));
+		//			}
+		//		}
+		//	}
+		//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+		//added 12/23/23
+		//pub fn print_layers(&self) {
+		//	for (i, layer) in self.layers.iter().enumerate() {
+		//		println!("Layer {}:", i);
+		//		for row in &layer.data {
+		//			for item in row {
+		//				print!("{}, ", item);
+		//			}
+		//			println!();
+		//		}
+		//	}
+		//}
+		pub fn print_layers(&self) {
 			for i in 0..self.layers.len() {
-				println!("Layer {}:", i+1);
-				for j in 0..self.biases[i].data[0].len() {
-					println!("Node {}: {:.2}", j+1, self.biases[i].data[0][j]);
-				}
-		
-				if i < self.weights.len() {
-					println!("Weights to next layer:");
-					for row in &self.weights[i].data {
-						let weights: Vec<String> = row.iter().map(|&x| format!("{:.2}", x))
-													.collect();
-						println!("{}", weights.join("\t"));
-					}
-				}
+				println!("Layer {}", i + 1);
+				println!("Network Layer: {:?}", self.layers[i]);
+				println!("Weight Layer: {:?}", self.weights[i]);
+				println!("Bias Layer: {:?}", self.biases[i]);
 			}
 		}
+
+
 
 
 
@@ -1605,7 +1642,7 @@ pub mod network{
 
 //---------------------------above needs to be code commented-----------------------------------------------------//
 
-}
+
 
 
 

@@ -175,3 +175,5 @@ Log of what I've done:
 12/21/23 - Added Update_weights and updated backpropagation again. There was an issue with how it connected to update_weights so I think I fixed that. Next step is to look over backpropagation and update_weights and see if there are any issues. If no issues. Next step is to add save/load states. I got this!
 12/21/23 - Updated update_weights and added new code comments to signify which functions are unused. Next step is to look over backpropagation and update_weights and see if there are any issues. If no issues. Next step is to add save/load states. I got this!
 12/22/23 - Started Save and Load functions. Will need to THOROUGHLY REVIEW them. Next step is to review them and add code comments. I got this
+12/23/23 - Added Serde to Cargo.toml
+12/23/23 - Created new save and load functions. Code commented them too. Will need to see if it works next. I got this!

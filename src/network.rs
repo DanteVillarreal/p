@@ -1,27 +1,51 @@
 pub mod network{
-	use rand::Rng;
+	use rand::Rng;															//to generate random numbers
 	use crate::action_functions::{/*insert all the action functions */};
-	use rand_distr::{Normal, Distribution};
+	use rand_distr::{Normal, Distribution};									//to generate different dist. of random numbers
+	use serde::{Serialize, Deserialize};									//to save/load my neural network
+	use std::fs::File;
+	use std::io::{BufReader, BufWriter};
 
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
+	
+	//why #[derive(Serialize, Deserialize)] ?
+	//		this is an attribute in Rust that is used to automatically generate the ncessary
+	//		 code to convert a data structure to and from a serialized format
+	//why do we want a serialized format?
+	//		So we can save the neural network and then load it
+	//what is a serialized format?
+	//		a format that allows for serialization
+	//what is serialization?
+	//		the process of converting data to a series of bytes. So below,
+	//		 the structs are in terms of data I'm making called rows, 
+	//		columns and data. Serialization will convert this to bytes. 
+	//		Then deserialization will convert this back to the structs.
+	//why is serialization necessary?
+	//		Because for some reason you can't just save the data as is. 
+	//		 You need to change it to a format that can be saved.
+
+	#[derive(Serialize, Deserialize)]
 	pub struct NetworkLayer {
 		rows: usize,
 		columns: usize,
 		data: Vec<Vec<f64>>,        //need Vec<Vec   because we want the same format as WeightLayer   (i think)
 	}
 	
+	#[derive(Serialize, Deserialize)]
 	pub struct WeightLayer {
 		rows: usize,
 		columns: usize,
 		data: Vec<Vec<f64>>,
 	}
 	
+	#[derive(Serialize, Deserialize)]
 	pub struct BiasLayer {
 		rows: usize,
 		columns: usize,
 		data: Vec<Vec<f64>>,        //same as up top^^
 	}
 	
+	#[derive(Serialize, Deserialize)]
 	pub struct NeuralNetwork {
 		layers: Vec<NetworkLayer>,
 		weights: Vec<WeightLayer>,
@@ -30,6 +54,9 @@ pub mod network{
 	
 	impl NetworkLayer {
 		pub fn print_network_layer( &self) {
+			//this isn't even complete. if I truly want to see the structure,
+			//	 make it so it prints the rows out too and to validate the structure is correct,
+			//	 it should only print out 1 row
 			for i in 0..self.columns {
 				println!("{:?}\n", &self.data[i]);
 			}
@@ -49,6 +76,9 @@ pub mod network{
 
 	impl BiasLayer {
 		pub fn print_bias_layer( &self) {
+			//this isn't even complete. if I truly want to see the structure,
+			//	 make it so it prints the rows out too and to validate the structure is correct,
+			//	 it should only print out 1 row
 			for i in 0..self.columns {
 				println!("{:?}\n", &self.data[i]);
 			}
@@ -1314,7 +1344,7 @@ pub mod network{
 
 
 
-
+		//Most updated version
 		pub fn el_backpropagation(&mut self, loss_derivative: &f64, current_q_value: &f64, current_q_value_index: &usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
 			//the purpose of this function is to find the gradient (aka derivative)
 			//		 of the loss funciton with respect to each weight.
@@ -1434,6 +1464,19 @@ pub mod network{
 
 
 
+		//how to save my neural network. Aka, how do I keep all the biases and weights stored 
+		//		so that I can easily load the neural network to get new inputs and begin running it
+		//there seem to be 2 methods to saving the neural network. Serialization and checkpointing.
+		//Serialization:
+		//		translating a data structure or object state into a format that can be stored and
+		//		 reconstructed later.
+		//Checkpointing:
+		//		saves a snapshot of the application's sate so that applications can restart from 
+		//		that point.
+		//Difference:
+		//		honestly not sure. They both save the state. I think checkpointing is just used
+		//		 for fault tolerance and serialization is a more general term for saving and
+		//		 loading a state.
 
 
 
@@ -1441,68 +1484,110 @@ pub mod network{
 
 
 
+		//save version 1. weird and complicated
+		//had to comment them out because they had too many errors
+		//pub fn _savev1(&self) -> std::path::PathBuf {
+		//	// Create path for saving file
+		//	let path = std::path::PathBuf::from("model.h5");
+		//	// Create file with write mode
+		//	let mut file = std::fs::File::create(&path).unwrap();
+		//	// Serialize neural network object into binary format
+		//	serde_json::to_writer(&mut file).unwrap();
+		//	// Return path
+		//	path
+		//}
+		//load version 1. weird and very complicated. Let's see if we can simplify it
+		//pub fn _loadv1(&self) -> Self {
+		//	// Load state from file
+		//	let path = std::path::PathBuf::from("model.h5");
+		//	// Open file with read mode
+		//	let mut file = std::fs::File::open(&path).unwrap();
+		//	// Deserialize binary format into neural network object
+		//	let mut data = Vec::<Vec<f64>>::new();
+		//	serde_json::from_reader(&mut file).unwrap().into_iter().map(|layer| {
+		//		vec![(layer.rows * layer.columns), layer.data]
+		//			.into_iter()
+		//			.map(|row| row.iter().map(|x| x.to_f64()).collect::<Vec<_>>())
+		//			.collect()
+		//	}).collect();
+		//	// Deserialize binary format into neural network object
+		//	let mut model = NeuralNetwork {
+		//		layers: vec![],
+		//		weights: vec![],
+		//		biases: vec![],
+		//	};	
+		//	// Deserialize each layer into model.layers vector
+		//	for (i, row) in data.iter().enumerate() {
+		//		model.layers[i].rows = row.len();
+		//		model.layers[i].columns = row[0].len();
+		//		model.layers[i].data = row.iter().cloned().collect::<Vec<_>>();
+		//	}
+		//	// Deserialize each weight into model.weights vector
+		//	for (i, row) in data.iter().enumerate() {
+		//		model.weights[i].rows = row.len();
+		//		model.weights[i].columns = row[0].len();
+		//		model.weights[i].data = row.iter().cloned().collect::<Vec<_>>();
+		//	}
+		//	// Deserialize each bias into model.biases vector
+		//	for (i, row) in data.iter().enumerate() {
+		//		model.biases[i].rows = row.len();
+		//		model.biases[i].columns = 1;
+		//		model.biases[i].data = row.iter().cloned().collect::<Vec<_>>();
+		//	}
+		//	return model;
+		//}
 
 
-		pub fn save(&self) -> std::path::PathBuf {
-			// Create path for saving file
-			let path = std::path::PathBuf::from("model.h5");
-	
-			// Create file with write mode
-			let mut file = std::fs::File::create(&path).unwrap();
-	
-			// Serialize neural network object into binary format
-			serde_json::to_writer(&mut file).unwrap();
-	
-			// Return path
-			path
+
+
+
+		//this seems to save the entire NeuralNetwork, which Im not sure I want. If I understand
+		//		 correctly, to save the neural network is to save all the functions too. But I
+		//		 just want to save the structs and their corresponding data
+
+		//very simple. new versions
+		//why std::io::Restul<()>
+		//		when you see Result<()> that means the function will either return
+		//		 Ok(()) if no errors and Err with error information if errors.
+		//Ok(())
+		//		it's like void, there's nothing actually returned
+		pub fn save_v2(&self, path: &str) -> std::io::Result<()> {
+			//will need to change the path later to an actual path
+			//this literally creates the file. the ? allows the line of code
+			//		 to return early if an error was encountered anywhere in
+			//		 the line it's in.
+			let file = File::create(path)?;
+			//this creates the writer so that the next line of code can actually write to the file
+			//why BufWriter? because it means less writing calls and improves performance.
+			//how does it improve performance and less writing calls?
+			//		Because no buffer means it writing small pieces of data one at a time.
+			//this part doesn't actually write yet. It makes the buffer first, so it can write to the file
+			let writer = BufWriter::new(file);
+			//this is the actual writer. and it writes the stuff in JSON format to the file. 
+			serde_json::to_writer(writer, &self)?;
+			Ok(())
 		}
-	
-		pub fn load(&self) -> Self {
-			// Load state from file
-			let path = std::path::PathBuf::from("model.h5");
-	
-			// Open file with read mode
-			let mut file = std::fs::File::open(&path).unwrap();
-	
-			// Deserialize binary format into neural network object
-			let mut data = Vec::<Vec<f64>>::new();
-			serde_json::from_reader(&mut file).unwrap().into_iter().map(|layer| {
-				vec![(layer.rows * layer.columns), layer.data]
-					.into_iter()
-					.map(|row| row.iter().map(|x| x.to_f64()).collect::<Vec<_>>())
-					.collect()
-			}).collect();
-	
-			// Deserialize binary format into neural network object
-			let mut model = NeuralNetwork {
-				layers: vec![],
-				weights: vec![],
-				biases: vec![],
-			};
-			
-			// Deserialize each layer into model.layers vector
-			for (i, row) in data.iter().enumerate() {
-				model.layers[i].rows = row.len();
-				model.layers[i].columns = row[0].len();
-				model.layers[i].data = row.iter().cloned().collect::<Vec<_>>();
-			}
-	
-			// Deserialize each weight into model.weights vector
-			for (i, row) in data.iter().enumerate() {
-				model.weights[i].rows = row.len();
-				model.weights[i].columns = row[0].len();
-				model.weights[i].data = row.iter().cloned().collect::<Vec<_>>();
-			}
-	
-			// Deserialize each bias into model.biases vector
-			for (i, row) in data.iter().enumerate() {
-				model.biases[i].rows = row.len();
-				model.biases[i].columns = 1;
-				model.biases[i].data = row.iter().cloned().collect::<Vec<_>>();
-			}
-	
-			return model;
+		
+		pub fn load_v2(path: &str) -> std::io::Result<Self> {
+			//will need to change the path later to an actual path
+			//this "opens" the path to the file
+			let file = File::open(path)?;
+			//this creates the buffered reader to be read by the line below. why the line below,
+			//		 because it's in JSON format so the line below needs to deserialize it
+			let reader = BufReader::new(file);
+			//it deserializes the JSOn data form the file into a NeuralNetwork instance.
+			let network = serde_json::from_reader(reader)?;
+			Ok(network)
 		}
+		
+
+
+
+
+
+
+
+
 
 
 	}

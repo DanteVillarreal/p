@@ -626,6 +626,7 @@
 					data: vec![vec![0.0; output_size]],
 				});
 
+				
 				let normal_distr = Normal::new(0.0, 1.0).unwrap();
 				let weights: Vec<Vec<f64>> = (0..hidden_size).map(|_| {
 					(0..output_size).map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64))
@@ -753,12 +754,24 @@
 		//		}
 		//	}
 		//}
+		//pub fn print_layers(&self) {
+		//	for i in 0..self.layers.len() {
+		//		println!("Layer {}", i + 1);
+		//		println!("Network Layer: {:?}", self.layers[i]);
+		//		println!("Weight Layer: {:?}", self.weights[i]);
+		//		println!("Bias Layer: {:?}", self.biases[i]);
+		//	}
+		//}
+
+		//added 12/24/23 the previous print_layers produced an error
 		pub fn print_layers(&self) {
 			for i in 0..self.layers.len() {
 				println!("Layer {}", i + 1);
 				println!("Network Layer: {:?}", self.layers[i]);
-				println!("Weight Layer: {:?}", self.weights[i]);
-				println!("Bias Layer: {:?}", self.biases[i]);
+				if i < self.weights.len() {
+					println!("Weight Layer: {:?}", self.weights[i]);
+					println!("Bias Layer: {:?}", self.biases[i]);
+				}
 			}
 		}
 

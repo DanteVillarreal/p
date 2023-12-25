@@ -644,25 +644,25 @@ fn main() -> std::io::Result<()> {
 */
 
 
-    let mut network = NeuralNetwork {
-        layers: Vec::new(),
-        weights: Vec::new(),
-        biases: Vec::new(),
-    };
-    network.initialization(10, 10, 2); // Initialize with your parameters
+    //let mut network = NeuralNetwork {
+    //    layers: Vec::new(),
+    //    weights: Vec::new(),
+    //    biases: Vec::new(),
+    //};
+    //network.initialization(10, 10, 2); // Initialize with your parameters
 
     // Print the network
-    network.print_layers();
+    //network.print_layers();
 
     // Save the network
-    network.save_v2()?;
+    //network.save_v2()?;
 
     // Load the network
-    //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\your_file_name"; // Replace with your file path
-    //let loaded_network = NeuralNetwork::load(path)?;
+    let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1703492925570"; // Replace with your file path
+    let loaded_network = NeuralNetwork::load(path)?;
 
     // Print the loaded network
-    //loaded_network.print();
+    loaded_network.print_layers();
 
     Ok(())
 

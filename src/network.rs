@@ -53,7 +53,75 @@
 		pub weights: Vec<WeightLayer>,
 		pub biases: Vec<BiasLayer>,
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//added 12/25/23
+	#[derive(Debug)]
+	#[derive(Serialize, Deserialize)]
+	pub struct Transition {
+		pub state: NetworkLayer,
+		pub action: usize,
+		pub reward: f64,
+		pub next_state: NetworkLayer,
+	}
+
+	#[derive(Debug)]
+	#[derive(Serialize, Deserialize)]
+	pub struct ReplayBuffer {
+		pub capacity: usize,
+		pub buffer: Vec<Transition>,
+	}
+
+	impl ReplayBuffer {
+		pub fn new(capacity: usize) -> ReplayBuffer {
+			ReplayBuffer {
+				capacity,
+				buffer: Vec::with_capacity(capacity),
+			}
+		}
+
+		pub fn push(&mut self, transition: Transition) {
+			if self.buffer.len() == self.capacity {
+				self.buffer.remove(0);
+			}
+			self.buffer.push(transition);
+		}
+
+		pub fn sample(&self, batch_size: usize) -> Vec<Transition> {
+			let mut rng = rand::thread_rng();
+			self.buffer.choose_multiple(&mut rng, batch_size).cloned().collect()
+		}
+	}
 	
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
 	impl NetworkLayer {
 		pub fn print_network_layer( &self) {
 			for j in 0..self.rows {

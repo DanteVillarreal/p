@@ -184,3 +184,4 @@ Log of what I've done:
 12/23/23 - removed old and added new print functions. code commented out all of main. added code in main to initialize, print, save, load, then print. Then I changed up the main.rs, lib.rs, network.rs and it finally worked. Made many many changes. Next step is to fix any errors. I got this!
 12/24/23 - added new print function because old one produced errors. Next step is to see if it works. If it does, next step is to load it then print it. I got this!
 12/25/23 - Load works. Added new structs for experience replay and also a method. Will need to fix errors and code comment it next. I got this!
+12/26/23 - Added save and load for experience replay. Next step is to see if it works. Maybe before I do that I have to create all the methods for the REST API. I got this!

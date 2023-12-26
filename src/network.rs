@@ -105,6 +105,28 @@
 			let mut rng = rand::thread_rng();
 			self.buffer.choose_multiple(&mut rng, batch_size).cloned().collect()
 		}
+
+		//added 12/26/23
+		//why? because they would save to RAM instead if we didnt do this.
+		pub fn save_to_file(&self, filename: &str) -> std::io::Result<()> {
+			let file = File::create(filename)?;
+			let writer = BufWriter::new(file);
+			serde_json::to_writer(writer, &self)?;
+			Ok(())
+		}
+		//added 12/26/23
+		//why? to load from disk instead of clogging up ram
+		pub fn load_from_file(filename: &str) -> std::io::Result<Self> {
+			let file = File::open(filename)?;
+			let reader = BufReader::new(file);
+			let replay_buffer = serde_json::from_reader(reader)?;
+			Ok(replay_buffer)
+		}
+
+
+
+
+
 	}
 	
 

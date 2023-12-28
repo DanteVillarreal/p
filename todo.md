@@ -191,3 +191,4 @@ Log of what I've done:
 12/25/23 - Load works. Added new structs for experience replay and also a method. Will need to fix errors and code comment it next. I got this!
 12/26/23 - Added save and load for experience replay. Next step is to see if it works. Maybe before I do that I have to create all the methods for the REST API. I got this!
 12/27/23 - Changed reward function. Added some shit in main. Did a lot of planning on what Im going to do next. Next step is to figure out how to give value_prior as a parameter for the functions at the same time as executing the functions based on the index.
+12/28/23 - updated action_functions.rs and added updated main with parameterized function. Next step is to complete all the sandbox functions. I got this!

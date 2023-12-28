@@ -1,8 +1,11 @@
+use p::action_functions::s_i0_do_nothing;
 use rand_distr::{StandardNormal, Normal, Distribution};
 
 use rand::Rng;
 
 use p::network::NeuralNetwork;
+use p::action_functions;
+use p::execute_action_functions;
 //use mod network;
 //use mod actions;
 
@@ -667,8 +670,12 @@ fn main()  {
     Ok(())
 
     */
+
+
+
+    
     //added 12/27/23 - this shit does NOT work. need to look at it later
-    let functions: Vec<fn(f64) -> f64> = vec![function1, function2, function3, ...];
+    let functions: Vec<fn(f64) -> f64> = vec![s_i0_do_nothing(value_prior)];
 
     loop {
         let (index, _) = self.exploration_or_exploitation(&mut epsilon);

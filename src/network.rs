@@ -379,11 +379,12 @@
 		//So the action functions 
 		fn reward(value_prior: f64, value_after: f64 ) -> f64 {
 			let multiplier = 1.3;
-			let absolute_change = self.value - previous_value;
-			let relative_change = absolute_change / previous_value;
+			let absolute_change = value_after - value_prior;
+			let relative_change = absolute_change / value_prior;
 			let reward = if absolute_change > 0.0 {
 				absolute_change
-			} else {
+			} 
+			else {
 			//why 1 / (1-relative_change)?
 			//so imagine I lost 1 dollars from 100 originally. So the relative change would be 0.01
 			//		if I did just 1/relative chnage, I would have 1/.01 = 100

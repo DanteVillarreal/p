@@ -1,4 +1,4 @@
-pub mod action_functions {
+
 /*
     pub fn nothing() {
         //runs the action according to the index
@@ -88,8 +88,7 @@ pub mod action_functions {
     //i# = index followed by the number
     //then what the function does and what percentage
 
-    pub fn s_i0_do_nothing() {
-        //make it so it returns amount of money in account immediately
+    pub fn s_i0_do_nothing(value_prior: &f64) -> f64{
+        *value_prior
     }
 
-}

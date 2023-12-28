@@ -193,3 +193,5 @@ Log of what I've done:
 12/27/23 - Changed reward function. Added some shit in main. Did a lot of planning on what Im going to do next. Next step is to figure out how to give value_prior as a parameter for the functions at the same time as executing the functions based on the index.
 12/28/23 - updated action_functions.rs and added updated main with 0th function. Next step is to parse the text from the function. But I need to know how it outputs. So next step is to make an environment o it can run, and then run it. 
 12/28/23 - added reqwest/hmac/sha2.
+12/28/23 - completely updated action function. Got information just for SOL. Got it to run! Thats what we are going to use. Next step is to parse the output. I got this!
+12/28/23 - added hex/tokio/dotenv

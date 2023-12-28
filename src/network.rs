@@ -100,11 +100,11 @@
 			}
 			self.buffer.push(transition);
 		}
-
-		pub fn sample(&self, batch_size: usize) -> Vec<Transition> {
-			let mut rng = rand::thread_rng();
-			self.buffer.choose_multiple(&mut rng, batch_size).cloned().collect()
-		}
+		//12/28/23 CODE COMMENTED SO i CAN RUN IT
+		//pub fn sample(&self, batch_size: usize) -> Vec<Transition> {
+		//	let mut rng = rand::thread_rng();
+		//	self.buffer.choose_multiple(&mut rng, batch_size).cloned().collect()
+		//}
 
 		//added 12/26/23
 		//why? because they would save to RAM instead if we didnt do this.

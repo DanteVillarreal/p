@@ -1,4 +1,8 @@
 use chrono::Utc;            //to get time
+use hmac::{Hmac, Mac,};	                            //so I can do the signature stuff
+use sha2::{Sha256, Sha384, Sha512, Digest};	        //so I can do signature stuff
+use hex;
+use reqwest::Client;                                //to actually make the request itself
 /*
     pub fn nothing() {
         //runs the action according to the index
@@ -96,7 +100,7 @@ use chrono::Utc;            //to get time
     }
 
     pub async fn s_i1_sol_1_coinbase_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-                                             gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client ) -> f64 {
+                                             gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client )-> Result<(), reqwest::Error> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -114,10 +118,11 @@ use chrono::Utc;            //to get time
         let now = Utc::now();
         let time_stamp = now.timestamp().to_string();
         let method = "GET";
-        let request_path = "api/v3/brokerage/best_bid_ask";
+        let request_path = "/api/v3/brokerage/best_bid_ask";
         let body = "";
         let message = format!("{}{}{}{}", &time_stamp, 
         &method, &request_path, &body);
+        type HmacSha256 = Hmac<Sha256>;
         fn sign(message: &str, coinbase_secret: &str) -> String {
             let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
                                                     .expect("HMAC can take key of any size");
@@ -128,8 +133,8 @@ use chrono::Utc;            //to get time
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/accounts")
-        .header("CB-ACCESS-KEY", &coinbase_api_key)
+        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        .header("CB-ACCESS-KEY", coinbase_api_key)
     	.header("CB-ACCESS-SIGN", &coinbase_signature)
     	.header("CB-ACCESS-TIMESTAMP", &time_stamp)
     	.build();
@@ -138,32 +143,34 @@ use chrono::Utc;            //to get time
             Ok(req) => req,
             Err(e) => {
                 eprintln!("Failed to build request: \n{}", e);
-                return;
+                return Err(e);
             }
         };
 
-        let response = client.execute(request).await;
-        let response = match response {
-            Ok(resp) => resp,
-            Err(e) => {
-                eprintln!("Failed to execute request: \n{}", e);
-                return;
-            }
-        };
+        let response = client.execute(request).await?;
+        //let response = match response {
+        //    Ok(resp) => resp,
+        //    Err(e) => {
+        //        eprintln!("Failed to execute request: \n{}", e);
+        //        return Err(e);
+        //    }
+        //};
 
 
-        let response_text = response.text().await;
+        let response_text = response.text().await?;
 
         //manages any errors from line above
-        let response_text = match response_text {
-            Ok(t) => t,
-            Err(e) => {
-                eprintln!("Failed to read response text: \n{}", e);
-                return;
-            }
-        };
+        //let response_text = match response_text {
+        //    Ok(t) => t,
+        //    Err(e) => {
+        //        eprintln!("Failed to read response text: \n{}", e);
+        //        return;
+        //    }
+        //};
     
         //prints the actual response
         println!("list accounts response\n{:?}", &response_text);
+        return Ok(())
+        
     }
 

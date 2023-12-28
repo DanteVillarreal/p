@@ -9,17 +9,18 @@ use p::network::NeuralNetwork;
 use p::action_functions;
 use p::execute_action_functions;
 use tokio;                                          //so I can do async
+use dotenv::dotenv;
 //use mod network;
 //use mod actions;
 
 
 
 ///-----FOR PARSING-----////
-use std::env;
-use std::process::{Command, Stdio};
-use serde_json::Value;          //good for parsing intput in JSON format
+//use std::env;
+//use std::process::{Command, Stdio};
+//use serde_json::Value;          //good for parsing intput in JSON format
                                 //  aka what the messages are in
-use std::io::{BufRead, BufReader};//this is to help us read from stdin
+//use std::io::{BufRead, BufReader};//this is to help us read from stdin
 
 //---step 3 below----///////
 /*
@@ -76,6 +77,7 @@ use std::io::{BufRead, BufReader};//this is to help us read from stdin
 
 
 //-----ALL-FOR-PARSING-UNDER-THIS//
+/*/
 fn handle_coinbase(message: &str) {
     //if the message contains the word "heartbeat", ignore the entire message basically
     if message.contains("heartbeat") {
@@ -507,6 +509,7 @@ fn handle_gemini(message: &str) {
     //counting the neurons for the the amount in each wallet, I will have 40 input neurons.
 
 }
+*/
 //-----ALL-FOR-PARSING-ABOVE-THIS//
 
 
@@ -539,6 +542,7 @@ fn handle_gemini(message: &str) {
 async fn main()  {
     
 //-----ALL-FOR-PARSING-UNDER-THIS//
+/*
     env::set_var("RUST_BACKTRACE", "1");
     //why do I preface the "" with r?
     //                  because this tells Rust that it is a string literal and the
@@ -654,6 +658,7 @@ async fn main()  {
         }
     }
 //-----ALL-FOR-PARSING-ABOVE-THIS//
+*/
 
 
 
@@ -686,8 +691,10 @@ async fn main()  {
 
     
     //added 12/27/23 - this shit does NOT work. need to look at it later
-    let functions: Vec<fn(f64) -> f64> = vec![s_i0_do_nothing(value_prior)];
+    //let functions: Vec<fn(f64) -> f64> = vec![s_i0_do_nothing(value_prior), s_i1_sol_1_coinbase_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    //    gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client)];
 
+    /*
     loop {
         let (index, _) = self.exploration_or_exploitation(&mut epsilon);
         let value_prior = amount_of_money;
@@ -713,7 +720,7 @@ async fn main()  {
             break;
         }
     }
-
+    */
 
 
 
@@ -728,10 +735,19 @@ async fn main()  {
     //---------beginning of code so I can execute functions----------//
     
     dotenv().expect("Failed to load .env file");
-    let coinbase_secret = env::var("SECRET_KEY").expect("SECRET_KEY must be set. check if even have .env file and if that is in it");
-	let coinbase_api_key = env::var("API_KEY").expect("API_KEY must be set. check if even have .env file and if that is in it");
-    type HmacSha256 = Hmac<Sha256>;
+    let coinbase_secret = env::var("COINBASE_SECRET_KEY").expect("SECRET_KEY must be set. check if even have .env file and if that is in it");
+	let coinbase_api_key = env::var("COINBASE_API_KEY").expect("API_KEY must be set. check if even have .env file and if that is in it");
     let client = reqwest::Client::new();
+
+    //test variables
+    let mut value_prior = 2000.0;
+    let mut coinbase_wallet = 500.0;
+    let mut bitstamp_wallet = 500.0;
+    let mut kraken_wallet = 500.0;
+    let mut gemini_wallet = 500.0;
+    let unused_var = action_functions::s_i1_sol_1_coinbase_kraken(&value_prior, &coinbase_wallet, &kraken_wallet, &bitstamp_wallet,
+        &gemini_wallet, &coinbase_secret, &coinbase_api_key, client ).await;
+
 
 
 }

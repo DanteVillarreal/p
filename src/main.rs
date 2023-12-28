@@ -1,11 +1,14 @@
 use p::action_functions::s_i0_do_nothing;
 use rand_distr::{StandardNormal, Normal, Distribution};
-
+use reqwest::Client;                                //to actually make the request itself
+use std::env;                                       //so I can use .env files and I dont have to put key details on github
 use rand::Rng;
-
+use hmac::{Hmac, Mac,};	                            //so I can do the signature stuff
+use sha2::{Sha256, Sha384, Sha512, Digest};	        //so I can do signature stuff
 use p::network::NeuralNetwork;
 use p::action_functions;
 use p::execute_action_functions;
+use tokio;                                          //so I can do async
 //use mod network;
 //use mod actions;
 
@@ -524,8 +527,16 @@ fn handle_gemini(message: &str) {
 
 
 
+
+
+
+
+
+
+
 //12/23/23 code commented everything, added the new lines of code labelled below then added the return to fn main()
-fn main()  {
+#[tokio::main]
+async fn main()  {
     
 //-----ALL-FOR-PARSING-UNDER-THIS//
     env::set_var("RUST_BACKTRACE", "1");
@@ -704,6 +715,23 @@ fn main()  {
     }
 
 
+
+
+
+
+
+
+
+
+
+
+    //---------beginning of code so I can execute functions----------//
+    
+    dotenv().expect("Failed to load .env file");
+    let coinbase_secret = env::var("SECRET_KEY").expect("SECRET_KEY must be set. check if even have .env file and if that is in it");
+	let coinbase_api_key = env::var("API_KEY").expect("API_KEY must be set. check if even have .env file and if that is in it");
+    type HmacSha256 = Hmac<Sha256>;
+    let client = reqwest::Client::new();
 
 
 }

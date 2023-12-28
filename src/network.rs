@@ -307,10 +307,10 @@
 		}
 	}
 
-	/*CODE COMMENTED THIS OUT FOR NOW. THIS IS 100% NECESSARY FOR THE PROPER
+	//CODE COMMENTED THIS OUT FOR NOW. THIS IS 100% NECESSARY FOR THE PROPER
 	//		 FUNCTIONALITY OF THE NEURAL NETWORK. BUT IT NEEDS PARTS THAT ARENT
 	//		 DONE YET AND I WANT TO RUN MY SAVE AND LOAD STATES
-	pub fn reward_function() -> f64 {
+	//pub fn reward_function() -> f64 {
 		//let new_balance = 
 		//I need to figure out where I would get the balance from. Do I make an entire function just to return a balance
 		//or can I return two f64 from 1 function
@@ -336,24 +336,24 @@
 			//the reason I made it type    Option<f64> is because I don't want to prematurely
 			//    assign a value to it, so if somehow it never gets assigned a value,
 			//    I can then handle the situation.
-			let how_much_i_spent: Option<f64>;
-			match how_much_i_spent {
-				Some(_) => (),
-				None => panic!("how_much_i_spent   is none"),
-			}
-			let how_much_2nd_wallet_changed: Option<f64>;           //same thing as above^^
-			match how_much_2nd_wallet_changed {
-				Some(_) => (),
-				None => panic!("how_much_2nd_wallet_changed    is none"),
-			}
+			//let how_much_i_spent: Option<f64>;
+			//match how_much_i_spent {
+			//	Some(_) => (),
+			//	None => panic!("how_much_i_spent   is none"),
+			//}
+			//let how_much_2nd_wallet_changed: Option<f64>;           //same thing as above^^
+			//match how_much_2nd_wallet_changed {
+			//	Some(_) => (),
+			//	None => panic!("how_much_2nd_wallet_changed    is none"),
+			//}
 
 			//can't directly subtract Option types. So I need to handle the possiblity that
 			//how_much_i_spent    and/or    how_much_2nd_wallet_changed    could carry no value
 			//adds another layer of redundancy, which is always good
-			let total_gained = match(how_much_i_spent, how_much_2nd_wallet_changed) {
-				(Some(spent), Some(gained)) => Some(gained-spent),
-				_ => None,
-			}.expect("No value found");
+			//let total_gained = match(how_much_i_spent, how_much_2nd_wallet_changed) {
+			//	(Some(spent), Some(gained)) => Some(gained-spent),
+			//	_ => None,
+			//}.expect("No value found");
 
 
 
@@ -366,7 +366,18 @@
 		//self needs to be changed to the porfolio's worth
 		//need to REMOVE the parameters, and just input function calls into this function itself 
 		//	that get the total portfolio size and 
-		fn reward(&self, previous_value: f64) -> f64 {
+
+		//changed 12/27/23:
+//HOW TO USE THIS FUNCTION:
+		//have it in main where you have two variables: value_after/prior. and value prior is set at a value. 
+		//		Then have mut index, current_q_value initialized to exploration_or_exploitation and its parameters.
+		//		Then put connect it to execute_functions so it picks which function to execute based on the index from before, and SOMEHOW give the value_prior as a parameter
+		//		Then value_after = action_function(value_prior);
+		//		Then reward = reward(value_prior, value_after);
+		//		Then value_prior = value_after;
+		//		Then the rest.
+		//So the action functions 
+		fn reward(value_prior: f64, value_after: f64 ) -> f64 {
 			let multiplier = 1.3;
 			let absolute_change = self.value - previous_value;
 			let relative_change = absolute_change / previous_value;
@@ -401,9 +412,7 @@
 
 
 
-
-	}
-	*/
+	
 
 	impl NeuralNetwork {
 		
@@ -1735,6 +1744,22 @@
 
 
 
+		//12/27/23 - 
+		//		by this point I have to create a training environment to integrate with the neural network.
+		//what parts will be faked:
+		//		the time for the order
+		//		the actual order
+		//		the money I  have
+		//
+		//what parts will not be faked:
+		//		the input data
+		//		the calculations of money: how much I lost and gained in a transaction, therefore how much shit costs at time of transaction
+		//		how the money relates to fees
+		//				
+		//first smallest step:
+		//		create new functions in action_functions.rs that fake shit. so it will get all the data that it needs to get and then output the necessary data.
+
+
 
 
 
@@ -1743,7 +1768,7 @@
 
 
 
-//---------------------------above needs to be code commented-----------------------------------------------------//
+
 
 
 

@@ -93,6 +93,9 @@ Understand Temporal-Difference (TD) Learning:
 19. Connect DQN output to functions that buy and sell on other APIs.
 20. implement ability to save a state of the neural network and load it
 
+21. //added 12/27/23 -  need to make an environment that seamlessly connects with the neural network and the activation functions so that it can perform training.
+
+
 
 
 //////-----------------THINGS I NEED TO ADD Before I can begin--------------------///////
@@ -115,6 +118,8 @@ I need to add sandbox mode before I can even run it
 Make it so after every sell order executes from the buy/sell pair, I also execute requests for all the account balances. This information will be fed into the reward function as the previous value. Then once the new trade executes and the account balances request execute, I will have the new account balances so that I can actually calculate the reward. After the reward is calculated, the new account balance will be stored as previous account balance.
 
 Make sure that each input from the parsing program is at the last moment stored as f64. Why? I dont think I can multiply f64 by ints unless I do "as" f64. Also, change the string to zero for 1 thing and 1 for the other
+
+Make it so there are functions built into 1 function so that it does the initialization, then it loops through the functions that do feed forward and backpropagation and do "x" number of loops and save it and load it and do exp. replay and what not.
 
 
 
@@ -185,3 +190,4 @@ Log of what I've done:
 12/24/23 - added new print function because old one produced errors. Next step is to see if it works. If it does, next step is to load it then print it. I got this!
 12/25/23 - Load works. Added new structs for experience replay and also a method. Will need to fix errors and code comment it next. I got this!
 12/26/23 - Added save and load for experience replay. Next step is to see if it works. Maybe before I do that I have to create all the methods for the REST API. I got this!
+12/27/23 - Changed reward function. Added some shit in main. Did a lot of planning on what Im going to do next. Next step is to figure out how to give value_prior as a parameter for the functions at the same time as executing the functions based on the index.

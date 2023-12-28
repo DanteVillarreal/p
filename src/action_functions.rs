@@ -83,7 +83,13 @@ pub mod action_functions {
 
 
 */
+    //function format:
+    //s = sandbox
+    //i# = index followed by the number
+    //then what the function does and what percentage
 
-
+    pub fn s_i0_do_nothing() {
+        //make it so it returns amount of money in account immediately
+    }
 
 }

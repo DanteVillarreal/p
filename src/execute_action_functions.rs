@@ -4,7 +4,7 @@ pub mod execute_action_functions {
     //use crate::network::NeuralNetwork;
     use crate::network::network::NeuralNetwork;
     
-    pub fn execute_function(epsilon: usize) {
+    pub fn execute_function(index: usize) {
         
         //this gives us the index of the q_value we will then use to determine which action_function to execute
         let action_index = neural_network.exploration_or_exploitation(&mut epsilon);

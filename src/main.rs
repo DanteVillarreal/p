@@ -1,6 +1,6 @@
-//use rand_distr::{StandardNormal, Normal, Distribution};
+use rand_distr::{StandardNormal, Normal, Distribution};
 
-//use rand::Rng;
+use rand::Rng;
 
 use p::network::NeuralNetwork;
 //use mod network;
@@ -9,11 +9,11 @@ use p::network::NeuralNetwork;
 
 
 ///-----FOR PARSING-----////
-//use std::env;
-//use std::process::{Command, Stdio};
-//use serde_json::Value;          //good for parsing intput in JSON format
+use std::env;
+use std::process::{Command, Stdio};
+use serde_json::Value;          //good for parsing intput in JSON format
                                 //  aka what the messages are in
-//use std::io::{BufRead, BufReader};//this is to help us read from stdin
+use std::io::{BufRead, BufReader};//this is to help us read from stdin
 
 //---step 3 below----///////
 /*
@@ -68,7 +68,7 @@ use p::network::NeuralNetwork;
 
 
 
-/*
+
 //-----ALL-FOR-PARSING-UNDER-THIS//
 fn handle_coinbase(message: &str) {
     //if the message contains the word "heartbeat", ignore the entire message basically
@@ -210,7 +210,7 @@ fn handle_kraken(message: &str) {
 
     let b_price = 0.0;
     let b_whole_lot_volume: i64 = 0;
-    let b_lot_vlume = 0.0;
+    let b_lot_volume = 0.0;
 
     let c_price = 0.0;
     let c_lot_volume = 0.0;
@@ -402,7 +402,7 @@ fn handle_kraken(message: &str) {
     let indices: [usize; 20] = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 
                                 28, 29, 30, 31];
     let new_values = [&a_price, &a_whole_lot_volume, &a_lot_volume, &b_price, 
-                                &b_whole_lot_volume, &b_lot_vlume, &c_price, &c_lot_volume, 
+                                &b_whole_lot_volume, &b_lot_volume, &c_price, &c_lot_volume, 
                                 &v_today, &v_last24hours, &p_today, &p_last24hours, &t_today, 
                                 &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
                                 &o_today, &o_last24hours];
@@ -503,7 +503,7 @@ fn handle_gemini(message: &str) {
 }
 //-----ALL-FOR-PARSING-ABOVE-THIS//
 
-*/
+
 
 
 
@@ -522,8 +522,8 @@ fn handle_gemini(message: &str) {
 
 
 //12/23/23 code commented everything, added the new lines of code labelled below then added the return to fn main()
-fn main() -> std::io::Result<()> {
-    /*
+fn main()  {
+    
 //-----ALL-FOR-PARSING-UNDER-THIS//
     env::set_var("RUST_BACKTRACE", "1");
     //why do I preface the "" with r?
@@ -641,9 +641,9 @@ fn main() -> std::io::Result<()> {
     }
 //-----ALL-FOR-PARSING-ABOVE-THIS//
 
-*/
 
 
+/*this is just example code to evaluate if save and load of network works and it does  
     //let mut network = NeuralNetwork {
     //    layers: Vec::new(),
     //    weights: Vec::new(),
@@ -665,6 +665,38 @@ fn main() -> std::io::Result<()> {
     loaded_network.print_layers();
 
     Ok(())
+
+    */
+    //added 12/27/23 - this shit does NOT work. need to look at it later
+    let functions: Vec<fn(f64) -> f64> = vec![function1, function2, function3, ...];
+
+    loop {
+        let (index, _) = self.exploration_or_exploitation(&mut epsilon);
+        let value_prior = amount_of_money;
+        
+        // Ensure the index is within the range of available functions
+        if index < functions.len() {
+            // Execute the selected function
+            amount_of_money = functionsindex;
+        } else {
+            // Handle the case where the index is out of range
+            println!("Index out of range");
+            break;
+        }
+        
+        let value_after = amount_of_money;
+        let reward_value = reward(value_prior, value_after);
+        
+        // You can then use the reward_value for further computations
+        // ...
+        
+        // Break condition for the loop
+        if some_condition {
+            break;
+        }
+    }
+
+
 
 
 }

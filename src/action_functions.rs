@@ -2,7 +2,11 @@ use chrono::Utc;            //to get time
 use hmac::{Hmac, Mac,};	                            //so I can do the signature stuff
 use sha2::{Sha256, Sha384, Sha512, Digest};	        //so I can do signature stuff
 use hex;
-use reqwest::Client;                                //to actually make the request itself
+//use reqwest::Client;                                //to actually make the request itself
+//use serde_json::Result;                             //for parsing
+//use serde::{Deserialize, Serialize};                //for the deserialization/serialization that I need
+use serde_json::Value;
+use std::error::Error;
 /*
     pub fn nothing() {
         //runs the action according to the index
@@ -100,7 +104,7 @@ use reqwest::Client;                                //to actually make the reque
     }
 
     pub async fn s_i1_sol_1_coinbase_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-                                             gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client )-> Result<(), reqwest::Error> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client )-> Result<(), Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -124,28 +128,28 @@ use reqwest::Client;                                //to actually make the reque
         &method, &request_path, &body);
         type HmacSha256 = Hmac<Sha256>;
         fn sign(message: &str, coinbase_secret: &str) -> String {
-            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-                                                    .expect("HMAC can take key of any size");
-            mac.update(message.as_bytes());
-            let result = mac.finalize();
-            let code_bytes = result.into_bytes();
-            hex::encode(code_bytes)
+        let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                    .expect("HMAC can take key of any size");
+        mac.update(message.as_bytes());
+        let result = mac.finalize();
+        let code_bytes = result.into_bytes();
+        hex::encode(code_bytes)
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
         let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
-    	.header("CB-ACCESS-SIGN", &coinbase_signature)
-    	.header("CB-ACCESS-TIMESTAMP", &time_stamp)
-    	.build();
-	//manages the error I described above
-        let request = match request {
-            Ok(req) => req,
-            Err(e) => {
-                eprintln!("Failed to build request: \n{}", e);
-                return Err(e);
-            }
-        };
+        .header("CB-ACCESS-SIGN", &coinbase_signature)
+        .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+        .build()?;
+        //manages the error I described above
+        //let request = match request {
+        //Ok(req) => req,
+        //Err(e) => {
+        //eprintln!("Failed to build request: \n{}", e);
+        //return Err(e);
+        //}
+        //};
 
         let response = client.execute(request).await?;
         //let response = match response {
@@ -159,6 +163,30 @@ use reqwest::Client;                                //to actually make the reque
 
         let response_text = response.text().await?;
 
+        //added 12/29/23
+        let v: Value = serde_json::from_str(&response_text)?;
+
+        // Access the pricebooks array
+        if let Some(pricebooks) = v["pricebooks"].as_array() {
+            // Iterate over each pricebook
+            for pricebook in pricebooks {
+                // Access the product_id, bids, and asks
+                let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                let bids = &pricebook["bids"][0];
+                let asks = &pricebook["asks"][0];
+        
+                // Access the price and size of the bids and asks
+                let bid_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                let ask_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+        
+                println!("Product ID: {}", product_id);
+                println!("Best bid: {} (size: {})", bid_price, bid_size);
+                println!("Best ask: {} (size: {})", ask_price, ask_size);
+            }
+        }
+
         //manages any errors from line above
         //let response_text = match response_text {
         //    Ok(t) => t,
@@ -167,10 +195,10 @@ use reqwest::Client;                                //to actually make the reque
         //        return;
         //    }
         //};
-    
+
         //prints the actual response
-        println!("list accounts response\n{:?}", &response_text);
+        //println!("list accounts response\n{:?}", &response_text);
         return Ok(())
-        
-    }
+
+        }
 

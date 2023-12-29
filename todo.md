@@ -195,3 +195,4 @@ Log of what I've done:
 12/28/23 - added reqwest/hmac/sha2.
 12/28/23 - completely updated action function. Got information just for SOL. Got it to run! Thats what we are going to use. Next step is to parse the output. I got this!
 12/28/23 - added hex/tokio/dotenv
+12/29/23 - successfully parsed the input. Next step is to make it so it returns the f64. I got this! 

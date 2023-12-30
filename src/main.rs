@@ -747,7 +747,7 @@ async fn main()  {
     let mut bitstamp_wallet = 500.0;
     let mut kraken_wallet = 500.0;
     let mut gemini_wallet = 500.0;
-    let unused_var = action_functions::s_i1_sol_1_coinbase_kraken(&value_prior, &coinbase_wallet, &kraken_wallet, &bitstamp_wallet,
+    let value_after = action_functions::s_i1_sol_1_coinbase_kraken(&value_prior, &mut coinbase_wallet, &mut kraken_wallet, &bitstamp_wallet,
         &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key  ).await;
 
 

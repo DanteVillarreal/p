@@ -106,8 +106,8 @@ use base64::encode;
         *value_prior
     }
 
-    pub async fn s_i1_sol_1_coinbase_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<(), Box<dyn Error>> {
+    pub async fn s_i1_sol_1_coinbase_kraken(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -229,105 +229,125 @@ use base64::encode;
 
         //---KRAKEN--//
 
-	//basically Kraken requires a value that is always increasing to be in each request.
-	//I didnt use now.timestamp().to_string()  because just in case I have 2 
-	//	requests in a second I dont want to be penalized.
-	//if no "now" in scope when moving file, 
-	//	the code is this:
-	////returns current time. MAY NEED TO USE LOCAL TIME
-    //		let now = Utc::now();
-	let nonce = now.timestamp_millis().to_string();
-	let data = vec![
-        ("nonce", &nonce),
-        // Add more parameters as needed
-    ];
-	//let post_data: String = form_urlencoded::Serializer::new(String::new())
-    //    .extend_pairs(data)
-    //    .finish();
-	
-	let url_path = "/0/public/Ticker?pair=SOLUSD";
-	//let message = format!("{}{}{}", url_path, nonce, post_data);
-
-	fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
-	-> String {
-        // Create the post data
-        let post_data: String = form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(data)
-            .finish();
-		//FOR DEBUGGING
-        //println!("Private key:\n{}", secret);
-        println!("Nonce:\n{}", nonce_str);
-        println!("Encoded payload:\n{}", post_data);
-        println!("URI Path:\n{}", url_path);
-    
-        // Create the encoded string (nonce + post data) and hash it
-        let encoded = format!("{}{}", nonce_str, post_data);
-        let mut hasher = sha2::Sha256::new();
-        hasher.update(encoded);
-        let encoded_hash = hasher.finalize();
-    
-        // Create the message (url_path + encoded_hash as bytes)
-        let mut message = url_path.as_bytes().to_vec();
-        message.extend_from_slice(&encoded_hash);
-    
-        // Create a HMAC-SHA512 object with the base64-decoded secret
-        let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
-        let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
-            .expect("HMAC can take key of any size");
-    
-        // Compute the HMAC of the message
-        mac.update(&message);
-        let result = mac.finalize();
-    
-        // Return the base64-encoded HMAC
-        let signature = base64::encode(result.into_bytes());
-        println!("Kraken signature:\n{}", signature);
-    
-        signature
-    }
-
-	let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
-
-	//kraken asked for 3 headers: key, sign, and content type with its corresponding info
-	//.body is nonce because in the Kraken code provided in cURL: 
-	//https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-	//--data-urlencode "nonce=<YOUR-NONCE>"
-	//		this means that nonce is added to the body of the request
-	let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
-			.header("API-Key", kraken_api_key)
-			.header("API-Sign", &kraken_signature)
-			.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-			.body(format!("nonce={}", nonce))
-			.build()
-			.expect("Failed to build kraken request");
-
-
-	let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
-
-	let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
-
-    let v: Value = serde_json::from_str(&kraken_response_text)?;
-    let mut kraken_buy_price_ask = 0.0;
-    let mut kraken_sell_price_bid = 0.0;
-    if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
-        // Access the ask and bid prices
-        kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
-        kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
-    
-        println!("Ask price: {}", kraken_buy_price_ask);
-        println!("Bid price: {}", kraken_sell_price_bid );
-    }
-    else {
-        println!("didnt parse kraken correctly.");
-    }
-
-    //println!("response:\n{:?}", kraken_response_text);
+        //basically Kraken requires a value that is always increasing to be in each request.
+        //I didnt use now.timestamp().to_string()  because just in case I have 2 
+        //	requests in a second I dont want to be penalized.
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time. MAY NEED TO USE LOCAL TIME
+        //		let now = Utc::now();
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
         
+        let url_path = "/0/public/Ticker?pair=SOLUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
 
-
-
-
-        return Ok(())
-
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            println!("Nonce:\n{}", nonce_str);
+            println!("Encoded payload:\n{}", post_data);
+            println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            println!("Kraken signature:\n{}", signature);
+        
+            signature
         }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        let mut kraken_sell_price_bid = 0.0;
+        if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("Ask price: {}", kraken_buy_price_ask);
+            println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+        //println!("response:\n{:?}", kraken_response_text);
+        //coinbase calculations
+            let coinbase_taker_fee = 0.008;
+
+            let total_spent = 0.01*(*coinbase_wallet);
+            let fee_for_purchase = total_spent*coinbase_taker_fee;
+            let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            //new state of coinbase wallet below
+            *coinbase_wallet -= total_spent;
+            let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+        //kraken calculations
+            let kraken_taker_fee = 0.0026;
+            
+            let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            *kraken_wallet += money_from_sell_after_fees;
+
+            let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+
+        //this will count as value after
+
+
+
+            return Ok(value_after)
+
+     }
 

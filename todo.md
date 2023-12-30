@@ -197,3 +197,5 @@ Log of what I've done:
 12/28/23 - added hex/tokio/dotenv
 12/29/23 - successfully parsed the input. Next step is to make it so it returns the f64. I got this! 
 12/29/23 - successfully parsed the kraken input as well. Next step is to put these into the formulas. Then next step after is to return f64. I got this!
+12/29/23 - added url/base64 for signature functions
+12/29/23 - did the calculations for the first function. Also changed the return and added a return. Next step is to do the rest of the functions. Or maybe to see if it works? I got this!

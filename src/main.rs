@@ -737,6 +737,8 @@ async fn main()  {
     dotenv().expect("Failed to load .env file");
     let coinbase_secret = env::var("COINBASE_SECRET_KEY").expect("SECRET_KEY must be set. check if even have .env file and if that is in it");
 	let coinbase_api_key = env::var("COINBASE_API_KEY").expect("API_KEY must be set. check if even have .env file and if that is in it");
+    let kraken_secret = env::var("KRAKEN_PRIVATE_KEY").expect("KRAKEN_PRIVATE_KEY must be set. check if even have .env file and if that is in it");
+	let kraken_api_key = env::var("KRAKEN_API_KEY").expect("KRAKEN_API_KEY must be set. check if even have .env file and if that is in it");
     let client = reqwest::Client::new();
 
     //test variables
@@ -746,7 +748,7 @@ async fn main()  {
     let mut kraken_wallet = 500.0;
     let mut gemini_wallet = 500.0;
     let unused_var = action_functions::s_i1_sol_1_coinbase_kraken(&value_prior, &coinbase_wallet, &kraken_wallet, &bitstamp_wallet,
-        &gemini_wallet, &coinbase_secret, &coinbase_api_key, client ).await;
+        &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key  ).await;
 
 
 

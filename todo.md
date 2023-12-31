@@ -203,3 +203,4 @@ Log of what I've done:
 12/30/23 - worked on coinbase->bitstamp. bitstamp is buggy right now. Next step is to fix that .I got this!
 12/30/23 - added uuid for bitstamp nonce
 12/31/23 - if I make btc-usd lowercase, it gives me a different error output. if I make it uppercase, it just prints all of the ticker. Not sure how to fix this. next step is to fix this. I got this!
+12/31/23 - fixed it because God gave me the challenge to show me I can overcome anything. Glory to God. Next step is to parse its bitch ass. I got this!

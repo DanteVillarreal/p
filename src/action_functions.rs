@@ -2652,7 +2652,7 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 
 	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/btc-usd/")
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
 		.header("X-Auth-Signature", bitstamp_signature)
 		.header("X-Auth-Nonce", bitstamp_nonce)

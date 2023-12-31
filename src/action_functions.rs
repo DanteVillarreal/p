@@ -2442,7 +2442,7 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
     }
 
     pub async fn s_i11_sol_1_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -2555,15 +2555,7 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
 	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
 	//	and just make it a random 36 char string from it.
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	//if no "now" in scope when moving file, 
-	//	the code is this:
-	////returns current time.
-    //		let now = Utc::now();
-	println!("bitstamp nonce:\n{}", bitstamp_nonce);
-	//timestamp has to be in seconds, idk why
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
+
 	
 	//the exact same as the Coinbase signature. we'll see if it works
 	//apparently it doesnt so I will code comment it out for now
@@ -2593,44 +2585,6 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 	//this is the bitstamp message IF we needed content_type
 	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
 	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-	let bitstamp_message = format!("BITSTAMP {}POSTwww.bitstamp.net/api/v2/user_transactions/{}{}{}{}v2{}", 
-	bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-
-
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-	//this is the bitstamp request IF we needed content type
-	//let bitstamp_request = client.post("https://www.bitstamp.net/api/v2/account_balances/")
-	//	.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-	//	.header("X-Auth-Signature", bitstamp_signature)
-	//	.header("X-Auth-Nonce", bitstamp_nonce)
-	//	.header("X-Auth-Timestamp", bitstamp_timestamp)
-	//	.header("X-Auth-Version", "v2")
-	//	.header("Content-Type", "application/x-www-form-urlencoded")
-	//	.build()
-	//	.expect("could not build bitstamp_request");
-
-	let bitstamp_request = client.post("https://www.bitstamp.net/api/v2/user_transactions/")
-		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-		.header("X-Auth-Signature", bitstamp_signature)
-		.header("X-Auth-Nonce", bitstamp_nonce)
-		.header("X-Auth-Timestamp", bitstamp_timestamp)
-		.header("X-Auth-Version", "v2")
-		.header("Content-Type", content_type)
-		.body(payload_string)
-		.build()
-		.expect("could not build bitstamp_request");
-
-
-	let bitstamp_response = client.execute(bitstamp_request).await
-		.expect("Failed to execute Gemini request");
-	let bitstamp_response_text = bitstamp_response.text().await
-		.expect("Failed to turn response into text");
-	//probably dont need "bitstamp" once we transfer this to the actual function
-	println!("Bitstamp:\n{:?\n}", bitstamp_response_text);
-
-
 
 
 
@@ -2647,7 +2601,7 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 	let bitstamp_nonce = the_uuid.to_string();
 	let bitstamp_timestamp = now.timestamp_millis().to_string();
 	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/btc-usd/{}{}{}{}v2{}", 
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
 			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
 	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
@@ -2668,6 +2622,13 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 	let bitstamp_response_text = bitstamp_response.text().await
 		.expect("Failed to turn response into text");
 	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
             
     
@@ -2694,10 +2655,20 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
+            //bitstamp calculations
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
             //this will count as value after
+                let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
     
-                return Ok(())
+                return Ok(value_after)
 
     }

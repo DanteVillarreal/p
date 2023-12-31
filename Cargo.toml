@@ -19,3 +19,4 @@ tokio = { version = "0.2.25", features = ["full"] }
 dotenv = "0.15.0"
 url = "2.2.2"
 base64 = "0.13.0"
+uuid = {version = "1.6.1", features = ["v4"]}

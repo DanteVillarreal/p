@@ -200,3 +200,5 @@ Log of what I've done:
 12/29/23 - added url/base64 for signature functions
 12/29/23 - did the calculations for the first function. Also changed the return and added a return. Next step is to do the rest of the functions. Or maybe to see if it works? I got this!
 12/30/23 - completed the rest of the coinbase->kraken functions. Next step is to do gemini or bitstamp, whichever can have coins sold. I got this!
+12/30/23 - worked on coinbase->bitstamp. bitstamp is buggy right now. Next step is to fix that .I got this!
+12/30/23 - added uuid for bitstamp nonce

@@ -4811,7 +4811,10 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
                                 .expect("Failed to execute Gemini request");
         let gemini_response_text = gemini_response.text().await
                                 .expect("Failed to turn response into text");
-        println!("{:?}", gemini_response_text);
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
 
 
 

@@ -207,3 +207,4 @@ Log of what I've done:
 12/31/23 - parsed the input then set it as return value. Next step is to do it to the rest of the coinbase->bitstamp functions. I got this!
 01/01/24 - 12:08 AM OF COURSE I WAS WORKING, you mother fucker. What would I be celebrating???? The fact that I STILL dont have version one done!?! Exactly. Lets get this shit done! So I finished coinbase->bitstamp. Next step is to see if I can do coinbase->gemini, if not, then do gemini->coinbase
 01/02/24 - got the gemini->coinbase to work. Next step is to parse the output. Then next step is to put it into the variable and change the buy and sell. I got this!
+01/02/24 - parsed output. Next step is to put it into the equations and do the output. I got this!

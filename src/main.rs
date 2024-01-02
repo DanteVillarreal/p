@@ -741,6 +741,8 @@ async fn main()  {
 	let kraken_api_key = env::var("KRAKEN_API_KEY").expect("KRAKEN_API_KEY must be set. check if even have .env file and if that is in it");
     let bitstamp_api_key = env::var("BITSTAMP_API_KEY").expect("could not find BITSTAMP_API_KEY spelled exactly like this. check if even have .env file");
 	let bitstamp_secret = env::var("BITSTAMP_SECRET_KEY").expect("could not find BITSTAMP_SECRET_KEY spelt exactly like this in .env file. check if even have .env file");
+    let gemini_api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set with exact name in .env file. check if even have .env file");
+    let gemini_secret = env::var("GEMINI_SECRET_KEY").expect("GEMINI_SECRET_KEY must be set with exact name in .env file. check if even have .env file");
     let client = reqwest::Client::new();
 
     //test variables
@@ -755,6 +757,9 @@ async fn main()  {
     let client = reqwest::Client::new();
     let value_after = action_functions::s_i11_sol_1_coinbase_bitstamp(&value_prior, &mut coinbase_wallet, &kraken_wallet, &mut bitstamp_wallet,
             &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key).await;
+    let client = reqwest::Client::new();
+    let value_after = action_functions::s_i21_sol_1_bitstamp_gemini(&value_prior, &mut coinbase_wallet, &kraken_wallet, &mut bitstamp_wallet,
+                &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key).await;
 
 
 

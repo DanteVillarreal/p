@@ -759,7 +759,7 @@ async fn main()  {
             &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key).await;
     let client = reqwest::Client::new();
     let value_after = action_functions::s_i21_sol_1_bitstamp_gemini(&value_prior, &mut coinbase_wallet, &kraken_wallet, &mut bitstamp_wallet,
-                &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key).await;
+                &mut gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key).await;
 
 
 

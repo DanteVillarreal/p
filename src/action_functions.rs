@@ -4762,8 +4762,8 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 
     }
 
-    pub async fn s_i21_sol_1_bitstamp_gemini(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(), Box<dyn Error>> {
+    pub async fn s_i21_sol_1_bitstamp_gemini(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -4814,8 +4814,9 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
         let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
                                 .expect("Failed to parse JSON");
         let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
         let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
 
 
 
@@ -4923,30 +4924,46 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.01;
 
-
-            //coinbase calculations
-                let coinbase_taker_fee = 0.008;
-    
-                let total_spent = 0.10*(*coinbase_wallet);
-                let fee_for_purchase = total_spent*coinbase_taker_fee;
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
                 let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-                //new state of coinbase wallet below
-                *coinbase_wallet -= total_spent;
-                let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
     
-            //kraken calculations
+    
+    
+
+            //coinbase calculations for sell
+
+                let coinbase_taker_fee = 0.008;
+                let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
                 //let kraken_taker_fee = 0.0026;
                 
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
@@ -4957,7 +4974,7 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
-            //bitstamp calculations
+            //bitstamp calculations - for sell
                 //let bitstamp_taker_fee = 0.004;
                 //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
@@ -4967,10 +4984,10 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 
 
             //this will count as value after
-                //let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+                let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
     
-                return Ok(())
+                return Ok(value_after)
 
     }    

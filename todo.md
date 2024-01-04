@@ -217,3 +217,4 @@ Log of what I've done:
 01/03/24 - did first kraken->coinbase. Next step is to do all of kraken->coinbase and at the end add the waits for transactions so its like request, buy.      2.5 sec,        request, sell.
 01/04/24 - finished kraken->coinbase. Next step is to do kraken->bitstamp and then do the waits like above. I got this!
 01/04/24 - did first kraken->bitstamp. Next step is to finish all of kraken->bitstamp. I got this!
+01/04/24 - finished kraken->bitstamp. Next step is to see which others I need to add. Then add the waits. Then add experience replay after we made a loop thing. I got this!

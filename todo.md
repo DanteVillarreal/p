@@ -215,3 +215,4 @@ Log of what I've done:
 01/03/24 - did first of gemini->bitstamp. Next step is to do all of gemini->bitstamp. I got this!
 01/04/24 - finished all of gemini->bitstamp. And realized I already did gemini->coinbase. Next step is to do kraken -> coinbase, and kraken->bitstamp. I got this!
 01/03/24 - did first kraken->coinbase. Next step is to do all of kraken->coinbase and at the end add the waits for transactions so its like request, buy.      2.5 sec,        request, sell.
+01/04/24 - finished kraken->coinbase. Next step is to do kraken->bitstamp and then do the waits like above. I got this!

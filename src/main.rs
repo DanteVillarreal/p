@@ -769,6 +769,9 @@ async fn main()  {
     let client = reqwest::Client::new();
     let value_after = action_functions::s_i51_sol_1_kraken_coinbase(&value_prior, &mut coinbase_wallet, &mut kraken_wallet, &bitstamp_wallet,
         &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key  ).await;
+    let client = reqwest::Client::new();
+    let value_after = action_functions::s_i61_sol_1_kraken_bitstamp(&value_prior, &coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
+        &gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key  ).await;
 
 
 

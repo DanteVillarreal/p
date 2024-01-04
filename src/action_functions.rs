@@ -353,7 +353,6 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 
      }
 
-
      pub async fn s_i2_sol_2_coinbase_kraken(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
     
@@ -9808,8 +9807,2036 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 
     }
 
+    pub async fn s_i42_sol_2_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+    //------BITSTAMP------//
+    type HmacSha256 = Hmac<Sha256>;
+    fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------FOR ACTUAL REQUEST MESSAGE------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.02;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+
+
+            //bitstamp calculations for sell
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+                println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i43_sol_3_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //------BITSTAMP------//
+    type HmacSha256 = Hmac<Sha256>;
+    fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------FOR ACTUAL REQUEST MESSAGE------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.03;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+
+
+            //bitstamp calculations for sell
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+                println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i44_sol_4_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //------BITSTAMP------//
+    type HmacSha256 = Hmac<Sha256>;
+    fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------FOR ACTUAL REQUEST MESSAGE------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.04;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+
+
+            //bitstamp calculations for sell
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+                println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i45_sol_5_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //------BITSTAMP------//
+    type HmacSha256 = Hmac<Sha256>;
+    fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------FOR ACTUAL REQUEST MESSAGE------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.05;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+
+
+            //bitstamp calculations for sell
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+                println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i46_sol_6_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //------BITSTAMP------//
+    type HmacSha256 = Hmac<Sha256>;
+    fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------FOR ACTUAL REQUEST MESSAGE------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.06;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+
+
+            //bitstamp calculations for sell
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+                println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i47_sol_7_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //------BITSTAMP------//
+    type HmacSha256 = Hmac<Sha256>;
+    fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------FOR ACTUAL REQUEST MESSAGE------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.07;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+
+
+            //bitstamp calculations for sell
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+                println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i48_sol_8_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //------BITSTAMP------//
+    type HmacSha256 = Hmac<Sha256>;
+    fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------FOR ACTUAL REQUEST MESSAGE------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.08;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+
+
+            //bitstamp calculations for sell
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+                println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i49_sol_9_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //------BITSTAMP------//
+    type HmacSha256 = Hmac<Sha256>;
+    fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------FOR ACTUAL REQUEST MESSAGE------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.09;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+
+
+            //bitstamp calculations for sell
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+                println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i50_sol_10_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //------BITSTAMP------//
+    type HmacSha256 = Hmac<Sha256>;
+    fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------FOR ACTUAL REQUEST MESSAGE------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.10;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+
+
+            //bitstamp calculations for sell
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+                println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }

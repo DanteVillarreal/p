@@ -212,3 +212,4 @@ Log of what I've done:
 01/02/24 - did the rest of the gemini->coinbase. Next step is to do gemini-> kraken. I got this!
 01/03/24 - did beginning of gemini->kraken. I think everything is parsed too. Next step is to do the rest of the gemini->kraken. I got this!
 01/03/24 - finished all of gemini->kraken. Next step is to do gemini->bitstamp, then gemini->coinbase. I got this!
+01/03/24 - did first of gemini->bitstamp. Next step is to do all of gemini->bitstamp. I got this!

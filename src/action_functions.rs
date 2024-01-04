@@ -7307,9 +7307,2285 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 
             //this will count as value after
                 let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    
+                //println!("value after:\n\t{}",value_after);
     
     
                 return Ok(value_after)
 
     }
+
+    pub async fn s_i32_sol_2_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+        //---------------------------Kraken---------------------------------------------//
+
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=SOLUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            println!("Nonce:\n{}", nonce_str);
+            println!("Encoded payload:\n{}", post_data);
+            println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        let mut kraken_sell_price_bid = 0.0;
+        if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("Ask price: {}", kraken_buy_price_ask);
+            println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+        //println!("response:\n{:?}", kraken_response_text);
+        //coinbase calculations
+            //let coinbase_taker_fee = 0.008;
+
+            //let total_spent = 0.01*(*coinbase_wallet);
+            //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            ////new state of coinbase wallet below
+            //*coinbase_wallet -= total_spent;
+            //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+        //kraken calculations
+            //let kraken_taker_fee = 0.0026;
+            
+            //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //*kraken_wallet += money_from_sell_after_fees;
+
+            //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.02;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                //println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i33_sol_3_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+        //---------------------------Kraken---------------------------------------------//
+
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=SOLUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            println!("Nonce:\n{}", nonce_str);
+            println!("Encoded payload:\n{}", post_data);
+            println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        let mut kraken_sell_price_bid = 0.0;
+        if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("Ask price: {}", kraken_buy_price_ask);
+            println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+        //println!("response:\n{:?}", kraken_response_text);
+        //coinbase calculations
+            //let coinbase_taker_fee = 0.008;
+
+            //let total_spent = 0.01*(*coinbase_wallet);
+            //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            ////new state of coinbase wallet below
+            //*coinbase_wallet -= total_spent;
+            //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+        //kraken calculations
+            //let kraken_taker_fee = 0.0026;
+            
+            //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //*kraken_wallet += money_from_sell_after_fees;
+
+            //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.03;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                //println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i34_sol_4_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+        //---------------------------Kraken---------------------------------------------//
+
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=SOLUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            println!("Nonce:\n{}", nonce_str);
+            println!("Encoded payload:\n{}", post_data);
+            println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        let mut kraken_sell_price_bid = 0.0;
+        if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("Ask price: {}", kraken_buy_price_ask);
+            println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+        //println!("response:\n{:?}", kraken_response_text);
+        //coinbase calculations
+            //let coinbase_taker_fee = 0.008;
+
+            //let total_spent = 0.01*(*coinbase_wallet);
+            //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            ////new state of coinbase wallet below
+            //*coinbase_wallet -= total_spent;
+            //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+        //kraken calculations
+            //let kraken_taker_fee = 0.0026;
+            
+            //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //*kraken_wallet += money_from_sell_after_fees;
+
+            //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.04;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                //println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i35_sol_5_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+        //---------------------------Kraken---------------------------------------------//
+
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=SOLUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            println!("Nonce:\n{}", nonce_str);
+            println!("Encoded payload:\n{}", post_data);
+            println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        let mut kraken_sell_price_bid = 0.0;
+        if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("Ask price: {}", kraken_buy_price_ask);
+            println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+        //println!("response:\n{:?}", kraken_response_text);
+        //coinbase calculations
+            //let coinbase_taker_fee = 0.008;
+
+            //let total_spent = 0.01*(*coinbase_wallet);
+            //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            ////new state of coinbase wallet below
+            //*coinbase_wallet -= total_spent;
+            //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+        //kraken calculations
+            //let kraken_taker_fee = 0.0026;
+            
+            //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //*kraken_wallet += money_from_sell_after_fees;
+
+            //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.05;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                //println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i36_sol_6_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+        //---------------------------Kraken---------------------------------------------//
+
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=SOLUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            println!("Nonce:\n{}", nonce_str);
+            println!("Encoded payload:\n{}", post_data);
+            println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        let mut kraken_sell_price_bid = 0.0;
+        if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("Ask price: {}", kraken_buy_price_ask);
+            println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+        //println!("response:\n{:?}", kraken_response_text);
+        //coinbase calculations
+            //let coinbase_taker_fee = 0.008;
+
+            //let total_spent = 0.01*(*coinbase_wallet);
+            //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            ////new state of coinbase wallet below
+            //*coinbase_wallet -= total_spent;
+            //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+        //kraken calculations
+            //let kraken_taker_fee = 0.0026;
+            
+            //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //*kraken_wallet += money_from_sell_after_fees;
+
+            //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.06;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                //println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i37_sol_7_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+        //---------------------------Kraken---------------------------------------------//
+
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=SOLUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            println!("Nonce:\n{}", nonce_str);
+            println!("Encoded payload:\n{}", post_data);
+            println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        let mut kraken_sell_price_bid = 0.0;
+        if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("Ask price: {}", kraken_buy_price_ask);
+            println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+        //println!("response:\n{:?}", kraken_response_text);
+        //coinbase calculations
+            //let coinbase_taker_fee = 0.008;
+
+            //let total_spent = 0.01*(*coinbase_wallet);
+            //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            ////new state of coinbase wallet below
+            //*coinbase_wallet -= total_spent;
+            //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+        //kraken calculations
+            //let kraken_taker_fee = 0.0026;
+            
+            //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //*kraken_wallet += money_from_sell_after_fees;
+
+            //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.07;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                //println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i38_sol_8_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+        //---------------------------Kraken---------------------------------------------//
+
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=SOLUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            println!("Nonce:\n{}", nonce_str);
+            println!("Encoded payload:\n{}", post_data);
+            println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        let mut kraken_sell_price_bid = 0.0;
+        if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("Ask price: {}", kraken_buy_price_ask);
+            println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+        //println!("response:\n{:?}", kraken_response_text);
+        //coinbase calculations
+            //let coinbase_taker_fee = 0.008;
+
+            //let total_spent = 0.01*(*coinbase_wallet);
+            //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            ////new state of coinbase wallet below
+            //*coinbase_wallet -= total_spent;
+            //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+        //kraken calculations
+            //let kraken_taker_fee = 0.0026;
+            
+            //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //*kraken_wallet += money_from_sell_after_fees;
+
+            //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.08;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                //println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i39_sol_9_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+        //---------------------------Kraken---------------------------------------------//
+
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=SOLUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            println!("Nonce:\n{}", nonce_str);
+            println!("Encoded payload:\n{}", post_data);
+            println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        let mut kraken_sell_price_bid = 0.0;
+        if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("Ask price: {}", kraken_buy_price_ask);
+            println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+        //println!("response:\n{:?}", kraken_response_text);
+        //coinbase calculations
+            //let coinbase_taker_fee = 0.008;
+
+            //let total_spent = 0.01*(*coinbase_wallet);
+            //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            ////new state of coinbase wallet below
+            //*coinbase_wallet -= total_spent;
+            //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+        //kraken calculations
+            //let kraken_taker_fee = 0.0026;
+            
+            //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //*kraken_wallet += money_from_sell_after_fees;
+
+            //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.09;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                //println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i40_sol_10_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+
+        //------------------------------Gemini-----------------------------------------//
+        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+
+
+
+
+
+
+
+
+
+        //---------------------------Kraken---------------------------------------------//
+
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=SOLUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            println!("Nonce:\n{}", nonce_str);
+            println!("Encoded payload:\n{}", post_data);
+            println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=SOLUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        let mut kraken_sell_price_bid = 0.0;
+        if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = solusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            kraken_sell_price_bid = solusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("Ask price: {}", kraken_buy_price_ask);
+            println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+        //println!("response:\n{:?}", kraken_response_text);
+        //coinbase calculations
+            //let coinbase_taker_fee = 0.008;
+
+            //let total_spent = 0.01*(*coinbase_wallet);
+            //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            ////new state of coinbase wallet below
+            //*coinbase_wallet -= total_spent;
+            //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+        //kraken calculations
+            //let kraken_taker_fee = 0.0026;
+            
+            //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //*kraken_wallet += money_from_sell_after_fees;
+
+            //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //gemini calculations for buy 
+                //this should equal 0.4%
+                let gemini_taker_fee = 0.004;
+                let percent_of_wallet_im_using = 0.10;
+
+                let total_spent = percent_of_wallet_im_using*(*gemini_wallet);
+                let fee_for_purchase = total_spent*gemini_taker_fee;
+                let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                //new state of gemini wallet below
+                *gemini_wallet -= total_spent;
+                let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
+    
+    
+    
+
+            //coinbase calculations for sell
+
+                //let coinbase_taker_fee = 0.008;
+                //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+                //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*coinbase_wallet += money_from_sell_after_fees;
+    
+    
+    
+    
+
+
+            //coinbase calculations for buy - not needed in this so code commented out
+            
+                //let coinbase_taker_fee = 0.008;
+    
+                //let total_spent = 0.10*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+            //kraken calculations - for sell
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations - for sell
+                //let bitstamp_taker_fee = 0.004;
+                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                //println!("value after:\n\t{}",value_after);
+    
+    
+                return Ok(value_after)
+
+    }
+
+
+
+
+
+
+
+

@@ -218,3 +218,4 @@ Log of what I've done:
 01/04/24 - finished kraken->coinbase. Next step is to do kraken->bitstamp and then do the waits like above. I got this!
 01/04/24 - did first kraken->bitstamp. Next step is to finish all of kraken->bitstamp. I got this!
 01/04/24 - finished kraken->bitstamp. Next step is to see which others I need to add. Then add the waits. Then add experience replay after we made a loop thing. I got this!
+01/04/24 - Added the "wait" time to each function. removed a few warnings. Next step is to connect them and then look at the fees and add whatever other fees I need to add. Also may need to remove some functions if the minimums are too large. I got this!

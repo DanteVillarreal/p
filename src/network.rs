@@ -377,36 +377,36 @@
 		//		Then value_prior = value_after;
 		//		Then the rest.
 		//So the action functions 
-		fn reward(value_prior: f64, value_after: f64 ) -> f64 {
-			let multiplier = 1.3;
-			let absolute_change = value_after - value_prior;
-			let relative_change = absolute_change / value_prior;
-			let reward = if absolute_change > 0.0 {
-				absolute_change
-			} 
-			else {
-			//why 1 / (1-relative_change)?
-			//so imagine I lost 1 dollars from 100 originally. So the relative change would be 0.01
-			//		if I did just 1/relative chnage, I would have 1/.01 = 100
-			//now imagine if I lost 10 dollars from 100. Relative change would be 0.1
-			//		if I did just 1/relative change, I would have 1/.1 = 10.
-			//so basically I'm having less penalty for a worse loss. This is why I'm doing 
-			//		1 - relative change. Now let's do the same scenarios but with 1-relative_change
-			//1 lost from 100. relative_change = 0.01. 1-relative_change = .99.
-			//		 1/(1-relative_change)= 1.010101...
-			//10 lost from 100. relative_change = 0.1. 1-relative_change = .9.
-			//		 1/(1-relative_change) = 1.11.
-			//so a larger weight for a larger loss.
-			//why 1 / (1-relative_change)*absolute)_change?
-			//The idea with that is so that the same loss is now weighed heavier than the same gain.
-			//AND it's weight is scaled in accordance with how much you lost percentage wise.
-			//But if I lost 10 percent of my entire portfolio, then I would want it to be worse than
-			//		just weighted 1.11 times more
-			//so why dont we multiply it by like 1.3 or some constant 
-				-1.0 *multiplier* (1.0 / (1.0 - relative_change.abs())) * absolute_change.abs()
-			};
-			return reward;
-		}
+	fn reward(value_prior: f64, value_after: f64 ) -> f64 {
+		let multiplier = 1.3;
+		let absolute_change = value_after - value_prior;
+		let relative_change = absolute_change / value_prior;
+		let reward = if absolute_change > 0.0 {
+			absolute_change
+		} 
+		else {
+		//why 1 / (1-relative_change)?
+		//so imagine I lost 1 dollars from 100 originally. So the relative change would be 0.01
+		//		if I did just 1/relative chnage, I would have 1/.01 = 100
+		//now imagine if I lost 10 dollars from 100. Relative change would be 0.1
+		//		if I did just 1/relative change, I would have 1/.1 = 10.
+		//so basically I'm having less penalty for a worse loss. This is why I'm doing 
+		//		1 - relative change. Now let's do the same scenarios but with 1-relative_change
+		//1 lost from 100. relative_change = 0.01. 1-relative_change = .99.
+		//		 1/(1-relative_change)= 1.010101...
+		//10 lost from 100. relative_change = 0.1. 1-relative_change = .9.
+		//		 1/(1-relative_change) = 1.11.
+		//so a larger weight for a larger loss.
+		//why 1 / (1-relative_change)*absolute)_change?
+		//The idea with that is so that the same loss is now weighed heavier than the same gain.
+		//AND it's weight is scaled in accordance with how much you lost percentage wise.
+		//But if I lost 10 percent of my entire portfolio, then I would want it to be worse than
+		//		just weighted 1.11 times more
+		//so why dont we multiply it by like 1.3 or some constant 
+			-1.0 *multiplier* (1.0 / (1.0 - relative_change.abs())) * absolute_change.abs()
+		};
+		return reward;
+	}
 		
 
 

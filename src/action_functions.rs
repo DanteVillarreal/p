@@ -2453,7 +2453,9 @@ use tokio::time::delay_for;
                 return Ok(value_after)
 
     }
-
+    //coinbase has 10 dollar minimum order size:
+//https://www.businessinsider.com/personal-finance/bitstamp-crypto-exchange-review#:~:text=Bitstamp%20has%20a%20%240%20minimum,of%20more%20than%20%24100%20million).
+    /*
     pub async fn s_i11_sol_1_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
@@ -2663,7 +2665,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -2895,7 +2897,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -2917,7 +2919,7 @@ use tokio::time::delay_for;
                 return Ok(value_after)
 
     }
-
+    */
     pub async fn s_i13_sol_3_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
@@ -4773,7 +4775,8 @@ use tokio::time::delay_for;
                 return Ok(value_after)
 
     }
-
+    //gemini has withdraw minimums of 10 dollars
+    /*
     pub async fn s_i21_sol_1_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
@@ -4972,7 +4975,7 @@ use tokio::time::delay_for;
                 //let fee_for_purchase = total_spent*coinbase_taker_fee;
                 //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
                 ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
+                //coinbase_wallet -= total_spent;
                 //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
             //kraken calculations - for sell
@@ -4981,7 +4984,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -4991,7 +4994,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+                //bitstamp_wallet += money_from_sell_after_fees;
 
 
 
@@ -5203,7 +5206,7 @@ use tokio::time::delay_for;
                 //let fee_for_purchase = total_spent*coinbase_taker_fee;
                 //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
                 ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
+                //coinbase_wallet -= total_spent;
                 //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
             //kraken calculations - for sell
@@ -5212,7 +5215,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -5222,7 +5225,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+                //bitstamp_wallet += money_from_sell_after_fees;
 
 
 
@@ -5234,7 +5237,7 @@ use tokio::time::delay_for;
                 return Ok(value_after)
 
     }
-
+    */
     pub async fn s_i23_sol_3_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
@@ -9613,7 +9616,9 @@ use tokio::time::delay_for;
                 return Ok(value_after)
 
     }
-
+    //gemini has withdraw minimums of 10 dollars: 
+    //      https://www.gemini.com/legal/user-agreement#section-fiat-currency-withdrawals
+    /*
     pub async fn s_i41_sol_1_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
@@ -9794,7 +9799,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
                 //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*coinbase_wallet += money_from_sell_after_fees;
+                //coinbase_wallet += money_from_sell_after_fees;
     
     
     
@@ -9809,7 +9814,7 @@ use tokio::time::delay_for;
                 //let fee_for_purchase = total_spent*coinbase_taker_fee;
                 //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
                 ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
+                //coinbase_wallet -= total_spent;
                 //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
             //kraken calculations - for sell
@@ -9818,7 +9823,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -9828,7 +9833,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+                //bitstamp_wallet += money_from_sell_after_fees;
 
 
 
@@ -10021,7 +10026,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
                 //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*coinbase_wallet += money_from_sell_after_fees;
+                //coinbase_wallet += money_from_sell_after_fees;
     
     
     
@@ -10036,7 +10041,7 @@ use tokio::time::delay_for;
                 //let fee_for_purchase = total_spent*coinbase_taker_fee;
                 //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
                 ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
+                //coinbase_wallet -= total_spent;
                 //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
             //kraken calculations - for sell
@@ -10045,7 +10050,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -10055,7 +10060,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+                //bitstamp_wallet += money_from_sell_after_fees;
 
 
 
@@ -10067,7 +10072,7 @@ use tokio::time::delay_for;
                 return Ok(value_after)
 
     }
-
+    */
     pub async fn s_i43_sol_3_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
@@ -10248,7 +10253,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
                 //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*coinbase_wallet += money_from_sell_after_fees;
+                //coinbase_wallet += money_from_sell_after_fees;
     
     
     
@@ -10263,7 +10268,7 @@ use tokio::time::delay_for;
                 //let fee_for_purchase = total_spent*coinbase_taker_fee;
                 //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
                 ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
+                //coinbase_wallet -= total_spent;
                 //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
             //kraken calculations - for sell
@@ -10272,7 +10277,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -10282,7 +10287,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+                //bitstamp_wallet += money_from_sell_after_fees;
 
 
 
@@ -10475,7 +10480,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
                 //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*coinbase_wallet += money_from_sell_after_fees;
+                //coinbase_wallet += money_from_sell_after_fees;
     
     
     
@@ -10490,7 +10495,7 @@ use tokio::time::delay_for;
                 //let fee_for_purchase = total_spent*coinbase_taker_fee;
                 //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
                 ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
+                //coinbase_wallet -= total_spent;
                 //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
             //kraken calculations - for sell
@@ -10499,7 +10504,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -10509,7 +10514,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+                //bitstamp_wallet += money_from_sell_after_fees;
 
 
 
@@ -10702,7 +10707,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
                 //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*coinbase_wallet += money_from_sell_after_fees;
+                //coinbase_wallet += money_from_sell_after_fees;
     
     
     
@@ -10717,7 +10722,7 @@ use tokio::time::delay_for;
                 //let fee_for_purchase = total_spent*coinbase_taker_fee;
                 //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
                 ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
+                //coinbase_wallet -= total_spent;
                 //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
             //kraken calculations - for sell
@@ -10726,7 +10731,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -10736,7 +10741,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+                //bitstamp_wallet += money_from_sell_after_fees;
 
 
 
@@ -10929,7 +10934,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
                 //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*coinbase_wallet += money_from_sell_after_fees;
+                //coinbase_wallet += money_from_sell_after_fees;
     
     
     
@@ -10944,7 +10949,7 @@ use tokio::time::delay_for;
                 //let fee_for_purchase = total_spent*coinbase_taker_fee;
                 //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
                 ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
+                //coinbase_wallet -= total_spent;
                 //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
             //kraken calculations - for sell
@@ -10953,7 +10958,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -10963,7 +10968,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+                //bitstamp_wallet += money_from_sell_after_fees;
 
 
 
@@ -11156,7 +11161,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
                 //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*coinbase_wallet += money_from_sell_after_fees;
+                //coinbase_wallet += money_from_sell_after_fees;
     
     
     
@@ -11171,7 +11176,7 @@ use tokio::time::delay_for;
                 //let fee_for_purchase = total_spent*coinbase_taker_fee;
                 //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
                 ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
+                //coinbase_wallet -= total_spent;
                 //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
             //kraken calculations - for sell
@@ -11180,7 +11185,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
+                //kraken_wallet += money_from_sell_after_fees;
     
                 //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
@@ -11190,7 +11195,7 @@ use tokio::time::delay_for;
                 //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
                 //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
                 //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+                //bitstamp_wallet += money_from_sell_after_fees;
 
 
 

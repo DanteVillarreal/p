@@ -12,7 +12,7 @@ use tokio;                                          //so I can do async
 use dotenv::dotenv;
 //use mod network;
 //use mod actions;
-
+use std::time::Instant;                             //this is to record time for execution
 
 
 ///-----FOR PARSING-----////
@@ -662,30 +662,34 @@ async fn main()  {
 
 
 
-/*this is just example code to evaluate if save and load of network works and it does  
-    //let mut network = NeuralNetwork {
-    //    layers: Vec::new(),
-    //    weights: Vec::new(),
-    //    biases: Vec::new(),
-    //};
-    //network.initialization(10, 10, 2); // Initialize with your parameters
+//this is just example code to evaluate if save and load of network works and it does  
+    let mut network = NeuralNetwork {
+        layers: Vec::new(),
+        weights: Vec::new(),
+        biases: Vec::new(),
+    };
+    network.initialization(10, 10, 2); // Initialize with your parameters
 
-    // Print the network
-    //network.print_layers();
+    //// Print the network
+    network.print_layers();
 
-    // Save the network
+    //// Save the network
     //network.save_v2()?;
 
-    // Load the network
-    let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1703492925570"; // Replace with your file path
-    let loaded_network = NeuralNetwork::load(path)?;
+    //// Load the network
+    //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1703492925570"; // Replace with your file path
+    //let loaded_network = NeuralNetwork::load(path)?;
 
-    // Print the loaded network
-    loaded_network.print_layers();
+    //// Print the loaded network
+    //loaded_network.print_layers();
 
-    Ok(())
+    let right_now = Instant::now();   //to measure execution time
+    network.feed_forward();
+    let elapsed = right_now.elapsed();
+    println!("Elapsed: {:?}", elapsed);
 
-    */
+
+    
 
 
 
@@ -733,7 +737,7 @@ async fn main()  {
 
 
     //---------beginning of code so I can execute functions----------//
-    
+    /*
     dotenv().expect("Failed to load .env file");
     let coinbase_secret = env::var("COINBASE_SECRET_KEY").expect("SECRET_KEY must be set. check if even have .env file and if that is in it");
 	let coinbase_api_key = env::var("COINBASE_API_KEY").expect("API_KEY must be set. check if even have .env file and if that is in it");
@@ -751,6 +755,7 @@ async fn main()  {
     let mut bitstamp_wallet = 500.0;
     let mut kraken_wallet = 500.0;
     let mut gemini_wallet = 500.0;
+
     let value_after = action_functions::s_i1_sol_1_coinbase_kraken( &mut coinbase_wallet, &mut kraken_wallet, &bitstamp_wallet,
         &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key  ).await;
 
@@ -772,7 +777,7 @@ async fn main()  {
     let client = reqwest::Client::new();
     let value_after = action_functions::s_i61_sol_1_kraken_bitstamp(&value_prior, &coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
         &gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key  ).await;
-
+*/
 
 
 }

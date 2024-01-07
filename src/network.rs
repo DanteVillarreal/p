@@ -219,7 +219,8 @@
 
 
 			//computes the actual matrix multiplication
-			//if confused. draw it out and do the calculations and you'll see it works
+			//confusing. I know, but best way to understand is to genuinely go 
+			//	through the trouble of drawing it out and doing the calculations.
 			for i in 0..layer.len() {
 				for j in 0..weights[0].len() {
 					for k in 0..layer_columns {
@@ -592,9 +593,9 @@
 
 
 
-
+		/*
 		pub fn initialization(&mut self, input_size: usize, output_size: usize, number_of_hidden_layers: usize) {
-			//intiialization of weights and biases and what not */
+			//intiialization of weights and biases and what not
 			//initialization rule I'm following:
         	//	The number of hidden neurons should be 2/3 the size of the input layer, 
 			//		plus the size of the output layer.
@@ -613,13 +614,13 @@
     		let mut rng = rand::thread_rng();
 
 			// Input layer
-			/*
-			The .push() is acutally creating a new NetworkLayer with the properties:
-					rows: 1,
-					columns: input_size,
-					data: vec![vec![0.0; input_size]],
-				and then appending the layer it creates, to the end of the .layers it already has
-			 */
+			
+			//The .push() is acutally creating a new NetworkLayer with the properties:
+			//		rows: 1,
+			//		columns: input_size,
+			//		data: vec![vec![0.0; input_size]],
+			//	and then appending the layer it creates, to the end of the .layers it already has
+			 
 			self.layers.push(NetworkLayer {
 				rows: 1,
 				columns: input_size,
@@ -631,34 +632,34 @@
 			//--first hidden layer--//
 				//for loop removed because I'm only making one layer 
 				
-				/*pushhing NetworkLayer first because each layer needs to be initialized
-					before establish weights and baises
-				*/
+				//pushhing NetworkLayer first because each layer needs to be initialized
+				//	before establish weights and baises
+				
 				self.layers.push(NetworkLayer {
 					rows: 1,
 					columns: hidden_size,
 					data: vec![vec![0.0; hidden_size]],
 				});
 
-				/*this creates the StandardNormal distribution itself */
+				//this creates the StandardNormal distribution itself 
 				let normal_distr = Normal::new(0.0, 1.0).unwrap();
 
 
-				/*
-				(0..hidden_size).map(|_| {...})...collect()	this is creating a new Vec
-						with hidden_size # of elements.
-						For each element it applies this function: 
-						normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64)).sqrt()
-						.collect()	is returning these results into the new vector
-						|_|			means we aren't using the values currently there, 
-									if there are any
-				why no .iter()? because the range itself:	(0..hidden_size) works as the iterator.
-				why 2 layers of (0..hidden_size).map?		the inside layer creates each inside
-																vec![1, 2, 3, ...]	.
-										each iteration of the outer (0..hidden_size).map creates
-											the outer vec![ ] that all the tiny vec![] of each
-											hidden layer are in
-				*/
+				
+				//(0..hidden_size).map(|_| {...})...collect()	this is creating a new Vec
+				//		with hidden_size # of elements.
+				//		For each element it applies this function: 
+				//		normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64)).sqrt()
+				//		.collect()	is returning these results into the new vector
+				//		|_|			means we aren't using the values currently there, 
+				//					if there are any
+				//why no .iter()? because the range itself:	(0..hidden_size) works as the iterator.
+				//why 2 layers of (0..hidden_size).map?		the inside layer creates each inside
+				//												vec![1, 2, 3, ...]	.
+				//						each iteration of the outer (0..hidden_size).map creates
+				//							the outer vec![ ] that all the tiny vec![] of each
+				//							hidden layer are in
+				
 				let weights: Vec<Vec<f64>> = (0..hidden_size).map(|_| {
 					(0..hidden_size)
 					.map(|_| normal_distr.sample(&mut rng) * (2.0 / (hidden_size as f64))
@@ -680,14 +681,14 @@
 			
 
 			//----rest of hidden layers ---//
-				/*only difference is:
-				self.weights.push(WeightLayer {
-					rows: hidden_size,
-					columns: hidden_size,
-					data: weights,
-				});
-					instead of rows: input_size above
-				*/
+				//only difference is:
+				//self.weights.push(WeightLayer {
+				//	rows: hidden_size,
+				//	columns: hidden_size,
+				//	data: weights,
+				//});
+				//	instead of rows: input_size above
+				
 
 				//starting at 1 because we already established the first hidden layer
 				for _ in 1..number_of_hidden_layers {
@@ -773,6 +774,102 @@
 
 
     	}
+		*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		pub fn initialization(&mut self, input_size: usize, output_size: usize, number_of_hidden_layers: usize) {
+			// Define the size of each hidden layer
+			let hidden_size = (2.0 / 3.0 * (input_size + output_size) as f64) as usize;
+		
+			// Create the random number generator
+			let mut rng = rand::thread_rng();
+		
+			// Initialize the input layer
+			self.layers.push(NetworkLayer {
+				rows: 1,
+				columns: input_size,
+				data: vec![vec![0.0; input_size]],
+			});
+		
+			// Initialize the hidden layers
+			for _ in 0..number_of_hidden_layers {
+				// Initialize the weights and biases for the current layer
+				let normal_distr = Normal::new(0.0, 1.0).unwrap();
+				let weights: Vec<Vec<f64>> = (0..self.layers.last().unwrap().columns).map(|_| {
+					(0..hidden_size)
+					.map(|_| (normal_distr.sample(&mut rng) * (2.0 / (self.layers.last().unwrap().columns as f64)).sqrt())).collect()
+				}).collect();
+		
+				self.weights.push(WeightLayer {
+					rows: self.layers.last().unwrap().columns,
+					columns: hidden_size,
+					data: weights,
+				});
+		
+				self.biases.push(BiasLayer {
+					rows: 1,
+					columns: hidden_size,
+					data: vec![vec![0.01; hidden_size]],
+				});
+		
+				// Initialize the neurons for the current layer
+				self.layers.push(NetworkLayer {
+					rows: 1,
+					columns: hidden_size,
+					data: vec![vec![0.0; hidden_size]],
+				});
+			}
+		
+			// Initialize the output layer
+			let normal_distr = Normal::new(0.0, 1.0).unwrap();
+			let weights: Vec<Vec<f64>> = (0..self.layers.last().unwrap().columns).map(|_| {
+				(0..output_size)
+				.map(|_| (normal_distr.sample(&mut rng) * (2.0 / (self.layers.last().unwrap().columns as f64)).sqrt())).collect()
+			}).collect();
+		
+			self.weights.push(WeightLayer {
+				rows: self.layers.last().unwrap().columns,
+				columns: output_size,
+				data: weights,
+			});
+		
+			self.biases.push(BiasLayer {
+				rows: 1,
+				columns: output_size,
+				data: vec![vec![0.01; output_size]],
+			});
+		
+			self.layers.push(NetworkLayer {
+				rows: 1,
+				columns: output_size,
+				data: vec![vec![0.0; output_size]],
+			});
+		}
+
+
+
+
+
+
+
 
 
 

@@ -661,7 +661,7 @@ async fn main()  {
 */
 
 
-
+/* 
 //this is just example code to evaluate if save and load of network works and it does  
     let mut network = NeuralNetwork {
         layers: Vec::new(),
@@ -687,7 +687,7 @@ async fn main()  {
     network.feed_forward();
     let elapsed = right_now.elapsed();
     println!("Elapsed: {:?}", elapsed);
-
+*/
 
     
 

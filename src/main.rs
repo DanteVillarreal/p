@@ -13,6 +13,9 @@ use dotenv::dotenv;
 //use mod network;
 //use mod actions;
 use std::time::Instant;                             //this is to record time for execution
+use std::process::{Command, Stdio};                 //for piping websocket client
+use std::io::{BufRead, BufReader};//this is to help us read from stdin
+use serde_json::Value;          //good for parsing intput in JSON format
 
 
 ///-----FOR PARSING-----////
@@ -77,8 +80,8 @@ use std::time::Instant;                             //this is to record time for
 
 
 //-----ALL-FOR-PARSING-UNDER-THIS//
-/*/
-fn handle_coinbase(message: &str) {
+
+fn handle_sol_coinbase(message: &str) {
     //if the message contains the word "heartbeat", ignore the entire message basically
     if message.contains("heartbeat") {
         println!("Coinbase heartbeat message. ignoring...");
@@ -92,35 +95,26 @@ fn handle_coinbase(message: &str) {
 
     //variable declaration so I can have a larger scope
     let mut coinbase_price = 0.0;
-    let mut coinbase_open_24h = 0.0;
     let mut coinbase_volume_24h = 0.0;
     let mut coinbase_low_24h = 0.0;
     let mut coinbase_high_24h = 0.0;
-    let mut coinbase_volume_30d = 0.0;
-    let mut coinbase_best_bid = 0.0;
-    let mut coinbase_best_bid_size = 0.0;
-    let mut coinbase_best_ask = 0.0;
-    let mut coinbase_best_ask_size = 0.0;
-    let mut coinbase_side = "pppp";
-    let mut coinbase_last_size = 0.0;
-
+    let mut coinbase_low_52w = 0.0;
+    let mut coinbase_high_52w = 0.0;
+    let mut coinbase_price_percent_chg_24h = 0.0;
 
     match data {
         Ok(value) => {
-
-
-            coinbase_price = value["price"].as_str().unwrap().parse::<f64>().unwrap();
-            coinbase_open_24h = value["open_24h"].as_str().unwrap().parse::<f64>().unwrap();
-            coinbase_volume_24h = value["volume_24h"].as_str().unwrap().parse::<f64>().unwrap();
-            coinbase_low_24h = value["low_24h"].as_str().unwrap().parse::<f64>().unwrap();
-            coinbase_high_24h = value["high_24h"].as_str().unwrap().parse::<f64>().unwrap();
-            coinbase_volume_30d = value["volume_30d"].as_str().unwrap().parse::<f64>().unwrap();
-            coinbase_best_bid = value["best_bid"].as_str().unwrap().parse::<f64>().unwrap();
-            coinbase_best_bid_size = value["best_bid_size"].as_str().unwrap().parse::<f64>().unwrap();
-            coinbase_best_ask = value["best_ask"].as_str().unwrap().parse::<f64>().unwrap();
-            coinbase_best_ask_size = value["best_ask_size"].as_str().unwrap().parse::<f64>().unwrap();
-            coinbase_side = value["side"].as_str().unwrap();
-            coinbase_last_size = value["last_size"].as_str().unwrap().parse::<f64>().unwrap();
+            let ticker = &value["events"][0]["tickers"][0];
+            coinbase_price = ticker["price"].as_str().unwrap().parse::<f64>().unwrap();
+            coinbase_volume_24h = ticker["volume_24_h"].as_str().unwrap().parse::<f64>().unwrap();
+            coinbase_low_24h = ticker["low_24_h"].as_str().unwrap().parse::<f64>().unwrap();
+            coinbase_high_24h = ticker["high_24_h"].as_str().unwrap().parse::<f64>().unwrap();
+            coinbase_low_52w = ticker["low_52_w"].as_str().unwrap().parse::<f64>().unwrap();
+            coinbase_high_52w = ticker["high_52_w"].as_str().unwrap().parse::<f64>().unwrap();
+            coinbase_price_percent_chg_24h = ticker["price_percent_chg_24_h"].as_str().unwrap().parse::<f64>().unwrap();
+        }
+        Err(e) => println!("Failed to parse SOL COINBASE message. \nError {}\n{}", e, message),
+    }
 
 
             //just for debugging
@@ -180,24 +174,132 @@ fn handle_coinbase(message: &str) {
                 }
             }
             */
-        },
-        Err(e) => {
-            println!("Failed to parse JSON Coinbase message\nError: {}\nMessage: {}", e, message);
-
-        },
+        //},
+        //Err(e) => {
+        //    println!("Failed to parse JSON Coinbase message\nError: {}\nMessage: {}", e, message);
+        //
+        //},
+        let indices = [0, 1, 2, 3, 4, 5, 6];
+        let new_values = [&coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
+                    &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
+                    &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
+        neural_network.update_input(&indices, &new_values);
     }
 
-    //NEED TO SEE IF i HAVE TO NORMALIZE THIS DATA FIRST
-    let indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-    let new_values = [&coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
-                &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
-                &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
-    neural_network.update_input(&indices, &new_values);
+    ////NEED TO SEE IF i HAVE TO NORMALIZE THIS DATA FIRST
+    //let indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    //let new_values = [&coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
+    //            &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
+    //            &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
+    //neural_network.update_input(&indices, &new_values);
+
+    fn handle_xlm_coinbase(message: &str) {
+        //if the message contains the word "heartbeat", ignore the entire message basically
+        if message.contains("heartbeat") {
+            println!("Coinbase heartbeat message. ignoring...");
+            return;
+        }
+        if message.trim().is_empty() {
+            println!("Coinbase: blank message received\nmessage: {}", message);
+            return;
+        }
+        let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
+    
+        //variable declaration so I can have a larger scope
+        let mut coinbase_price = 0.0;
+        let mut coinbase_volume_24h = 0.0;
+        let mut coinbase_low_24h = 0.0;
+        let mut coinbase_high_24h = 0.0;
+        let mut coinbase_low_52w = 0.0;
+        let mut coinbase_high_52w = 0.0;
+        let mut coinbase_price_percent_chg_24h = 0.0;
+    
+        match data {
+            Ok(value) => {
+                let ticker = &value["events"][0]["tickers"][0];
+                coinbase_price = ticker["price"].as_str().unwrap().parse::<f64>().unwrap();
+                coinbase_volume_24h = ticker["volume_24_h"].as_str().unwrap().parse::<f64>().unwrap();
+                coinbase_low_24h = ticker["low_24_h"].as_str().unwrap().parse::<f64>().unwrap();
+                coinbase_high_24h = ticker["high_24_h"].as_str().unwrap().parse::<f64>().unwrap();
+                coinbase_low_52w = ticker["low_52_w"].as_str().unwrap().parse::<f64>().unwrap();
+                coinbase_high_52w = ticker["high_52_w"].as_str().unwrap().parse::<f64>().unwrap();
+                coinbase_price_percent_chg_24h = ticker["price_percent_chg_24_h"].as_str().unwrap().parse::<f64>().unwrap();
+            }
+            Err(e) => println!("Failed to parse SOL COINBASE message. \nError {}\n{}", e, message),
+        }
+    
+    
+                //just for debugging
+                println!("coinbase_price: {}\ncoinbase_open_24h: {}\ncoinbase_volume_24h: {}
+                    \ncoinbase_low_24h: {}\ncoinbase_high_24h: {}\ncoinbase_volume_30d: {}
+                    \ncoinbase_best_bid: {}\ncoinbase_best_bid_size: {}\ncoinbase_best_ask: {}
+                    \ncoinbase_best_ask_size: {}\ncoinbase_side: {}\ncoinbase_last_size: {}", 
+                    &coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
+                    &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
+                    &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size);
+    
+    
+    
+                /*
+                if let Some(price) = value.get("price") {
+                    coinbase_price = price;
+                }
+    
+                // Check if the payload is an object
+                if let Value::Object(map) = &value {
+                    // Check if the object has a key "events" whose value is an array
+                    if let Some(Value::Array(events)) = map.get("events") {
+                        // Check if the first element of the array is an object
+                        if let Some(Value::Object(event)) = events.get(0) {
+                            // Check if the object has a key "tickers" whose value is an array
+                            if let Some(Value::Array(tickers)) = event.get("tickers") {
+                                // Check if the first element of the array is an object
+                                if let Some(Value::Object(ticker)) = tickers.get(0) {
+                                    // Extract the values
+                                    let price = ticker.get("price").and_then(Value::as_str).unwrap();
+                                    let volume_24_h = ticker.get("volume_24_h").and_then(Value::as_str)
+                                                            .unwrap();
+                                    let low_24_h = ticker.get("low_24_h").and_then(Value::as_str)
+                                                            .unwrap();
+                                    let high_24_h = ticker.get("high_24_h").and_then(Value::as_str)
+                                                            .unwrap();
+                                    let low_52_w = ticker.get("low_52_w").and_then(Value::as_str)
+                                                            .unwrap();
+                                    let high_52_w = ticker.get("high_52_w").and_then(Value::as_str)
+                                                            .unwrap();
+                                    let price_percent_chg_24_h = ticker.get("price_percent_chg_24_h")
+                                                            .and_then(Value::as_str).unwrap();
+    
+                                    //this is just for debugging purposes
+                                    println!("Coinbase: ticker: {:?}\nprice: {}\nvolume_24_h: {}\nlow_24_h: {}\n
+                                            high_24_h: {}\nlow_52_w: {}\nhigh_52_w: {}\nprice_percent_chg_24_h: {}\n",
+                                            &ticker, &price, &volume_24_h, &low_24_h, &high_24_h, &low_52_w, &high_52_w,
+                                            &price_percent_chg_24_h);
+    
+                                    //this is to actually update the neural network with these new inputs
+                                    let indices = [/* indices of the inputs to update */];
+                                    let new_values = [/* new values for those inputs */];
+                                    neural_network.update_input(&indices, &new_values);
+                                }
+                            }
+                        }
+                    }
+                }
+                */
+            //},
+            //Err(e) => {
+            //    println!("Failed to parse JSON Coinbase message\nError: {}\nMessage: {}", e, message);
+            //
+            //},
+            let indices = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+            let new_values = [&coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
+                        &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
+                        &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
+            neural_network.update_input(&indices, &new_values);
+        }
 
 
-
-}
-
+/*
 fn handle_kraken(message: &str) {
     if message.contains("heartbeat") {
         println!("Kraken: heartbeat message. ignoring...");
@@ -419,8 +521,173 @@ fn handle_kraken(message: &str) {
 
 
 }
+*/
+fn handle_sol_kraken(message: &str) {
+    if message.contains("heartbeat") {
+        println!("Kraken heartbeat message. ignoring...");
+        return;
+    }
+    if message.trim().is_empty() {
+        println!("Kraken: blank message received\nmessage: {}", message);
+        return;
+    }
+    let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
-fn handle_bitstamp(message: &str) {
+    let mut a_1 = 0.0;
+    let mut a_2 = 0.0;
+    let mut a_3 = 0.0;
+    let mut b_1 = 0.0;
+    let mut b_2 = 0.0;
+    let mut b_3 = 0.0;
+    let mut c_1 = 0.0;
+    let mut c_2 = 0.0;
+    let mut v_1 = 0.0;
+    let mut v_2 = 0.0;
+    let mut p_1 = 0.0;
+    let mut p_2 = 0.0;
+    let mut t_1 = 0.0;
+    let mut t_2 = 0.0;
+    let mut l_1 = 0.0;
+    let mut l_2 = 0.0;
+    let mut h_1 = 0.0;
+    let mut h_2 = 0.0;
+    let mut o_1 = 0.0;
+    let mut o_2 = 0.0;
+
+    match data {
+        Ok(value) => {
+            let ticker = &value[1];
+            a_1 = ticker["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            a_2 = ticker["a"][1].as_str().unwrap().parse::<f64>().unwrap();
+            a_3 = ticker["a"][2].as_str().unwrap().parse::<f64>().unwrap();
+            b_1 = ticker["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            b_2 = ticker["b"][1].as_str().unwrap().parse::<f64>().unwrap();
+            b_3 = ticker["b"][2].as_str().unwrap().parse::<f64>().unwrap();
+            c_1 = ticker["c"][0].as_str().unwrap().parse::<f64>().unwrap();
+            c_2 = ticker["c"][1].as_str().unwrap().parse::<f64>().unwrap();
+            v_1 = ticker["v"][0].as_str().unwrap().parse::<f64>().unwrap();
+            v_2 = ticker["v"][1].as_str().unwrap().parse::<f64>().unwrap();
+            p_1 = ticker["p"][0].as_str().unwrap().parse::<f64>().unwrap();
+            p_2 = ticker["p"][1].as_str().unwrap().parse::<f64>().unwrap();
+            t_1 = ticker["t"][0].as_str().unwrap().parse::<f64>().unwrap();
+            t_2 = ticker["t"][1].as_str().unwrap().parse::<f64>().unwrap();
+            l_1 = ticker["l"][0].as_str().unwrap().parse::<f64>().unwrap();
+            l_2 = ticker["l"][1].as_str().unwrap().parse::<f64>().unwrap();
+            h_1 = ticker["h"][0].as_str().unwrap().parse::<f64>().unwrap();
+            h_2 = ticker["h"][1].as_str().unwrap().parse::<f64>().unwrap();
+            o_1 = ticker["o"][0].as_str().unwrap().parse::<f64>().unwrap();
+            o_2 = ticker["o"][1].as_str().unwrap().parse::<f64>().unwrap();
+        }
+        Err(e) => println!("Failed to parse message: {}", e),
+    }
+    let indices: [usize; 20] = [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 
+    40, 41, 42, 43];
+let new_values = [&a_price, &a_whole_lot_volume, &a_lot_volume, &b_price, 
+    &b_whole_lot_volume, &b_lot_volume, &c_price, &c_lot_volume, 
+    &v_today, &v_last24hours, &p_today, &p_last24hours, &t_today, 
+    &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
+    &o_today, &o_last24hours];
+neural_network.update_input(&indices, &new_values);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+fn handle_xlm_kraken(message: &str) {
+    if message.contains("heartbeat") {
+        println!("Kraken heartbeat message. ignoring...");
+        return;
+    }
+    if message.trim().is_empty() {
+        println!("Kraken: blank message received\nmessage: {}", message);
+        return;
+    }
+    let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
+
+    let mut a_1 = 0.0;
+    let mut a_2 = 0.0;
+    let mut a_3 = 0.0;
+    let mut b_1 = 0.0;
+    let mut b_2 = 0.0;
+    let mut b_3 = 0.0;
+    let mut c_1 = 0.0;
+    let mut c_2 = 0.0;
+    let mut v_1 = 0.0;
+    let mut v_2 = 0.0;
+    let mut p_1 = 0.0;
+    let mut p_2 = 0.0;
+    let mut t_1 = 0.0;
+    let mut t_2 = 0.0;
+    let mut l_1 = 0.0;
+    let mut l_2 = 0.0;
+    let mut h_1 = 0.0;
+    let mut h_2 = 0.0;
+    let mut o_1 = 0.0;
+    let mut o_2 = 0.0;
+
+    match data {
+        Ok(value) => {
+            let ticker = &value[1];
+            a_1 = ticker["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            a_2 = ticker["a"][1].as_str().unwrap().parse::<f64>().unwrap();
+            a_3 = ticker["a"][2].as_str().unwrap().parse::<f64>().unwrap();
+            b_1 = ticker["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            b_2 = ticker["b"][1].as_str().unwrap().parse::<f64>().unwrap();
+            b_3 = ticker["b"][2].as_str().unwrap().parse::<f64>().unwrap();
+            c_1 = ticker["c"][0].as_str().unwrap().parse::<f64>().unwrap();
+            c_2 = ticker["c"][1].as_str().unwrap().parse::<f64>().unwrap();
+            v_1 = ticker["v"][0].as_str().unwrap().parse::<f64>().unwrap();
+            v_2 = ticker["v"][1].as_str().unwrap().parse::<f64>().unwrap();
+            p_1 = ticker["p"][0].as_str().unwrap().parse::<f64>().unwrap();
+            p_2 = ticker["p"][1].as_str().unwrap().parse::<f64>().unwrap();
+            t_1 = ticker["t"][0].as_str().unwrap().parse::<f64>().unwrap();
+            t_2 = ticker["t"][1].as_str().unwrap().parse::<f64>().unwrap();
+            l_1 = ticker["l"][0].as_str().unwrap().parse::<f64>().unwrap();
+            l_2 = ticker["l"][1].as_str().unwrap().parse::<f64>().unwrap();
+            h_1 = ticker["h"][0].as_str().unwrap().parse::<f64>().unwrap();
+            h_2 = ticker["h"][1].as_str().unwrap().parse::<f64>().unwrap();
+            o_1 = ticker["o"][0].as_str().unwrap().parse::<f64>().unwrap();
+            o_2 = ticker["o"][1].as_str().unwrap().parse::<f64>().unwrap();
+        }
+        Err(e) => println!("Failed to parse message: {}", e),
+    }
+    let indices: [usize; 20] = [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 
+    60, 61, 62, 63];
+let new_values = [&a_price, &a_whole_lot_volume, &a_lot_volume, &b_price, 
+    &b_whole_lot_volume, &b_lot_volume, &c_price, &c_lot_volume, 
+    &v_today, &v_last24hours, &p_today, &p_last24hours, &t_today, 
+    &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
+    &o_today, &o_last24hours];
+neural_network.update_input(&indices, &new_values);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+fn handle_sol_bitstamp(message: &str) {
     // Handle Bitstamp message
     if message.contains("subscription") {
         println!("subscription succeeded. unimportant message\nmessage: {}", message);
@@ -463,7 +730,67 @@ fn handle_bitstamp(message: &str) {
 
 }
 
-fn handle_gemini(message: &str) {
+
+
+
+
+
+
+
+
+fn handle_xlm_bitstamp(message: &str) {
+    // Handle Bitstamp message
+    if message.contains("subscription") {
+        println!("subscription succeeded. unimportant message\nmessage: {}", message);
+        return;
+    }
+
+    if message.trim().is_empty() {
+        println!("Bitstamp: blank message received\nmessage: {}", message);
+        return;
+    }
+
+    let v: Result<Value, serde_json::Error> = serde_json::from_str(message);
+
+    let mut amount = 0.0;
+    let mut price:i64 = 0;
+
+    match v {
+        Ok(value) => {
+            if let Value::Object(map) = &value {
+                // Check if the object has a key "data" whose value is an object
+                if let Some(Value::Object(data)) = map.get("data") {
+                    // Extract the values
+                    amount = data.get("amount").and_then(Value::as_f64).unwrap();
+                    price = data.get("price").and_then(Value::as_i64).unwrap();
+
+                    println!("Bitstamp:\namount: {}\nprice: {}\n\n\n", &amount, &price);
+        
+                }
+            }
+        },
+        Err(e) => {
+            println!("Failed to parse JSON Bitstamp message\nError: {}\nMessage: {}", e, message);
+        },
+    }
+
+
+    let indices: [usize; 2] = [32, 33];
+    let new_values = [&amount, &price];
+    neural_network.update_input(&indices, &new_values);
+
+}
+
+
+
+
+
+
+
+
+
+
+fn handle_sol_gemini(message: &str) {
     if message.contains("heartbeat") {
         println!("Gemini heartbeat message. ignoring...");
         return;
@@ -509,7 +836,7 @@ fn handle_gemini(message: &str) {
     //counting the neurons for the the amount in each wallet, I will have 40 input neurons.
 
 }
-*/
+
 //-----ALL-FOR-PARSING-ABOVE-THIS//
 
 
@@ -542,7 +869,7 @@ fn handle_gemini(message: &str) {
 async fn main()  {
     
 //-----ALL-FOR-PARSING-UNDER-THIS//
-/*
+
     env::set_var("RUST_BACKTRACE", "1");
     //why do I preface the "" with r?
     //                  because this tells Rust that it is a string literal and the
@@ -634,10 +961,13 @@ async fn main()  {
                 //else if "kraken received"...
                 //and if it's none of them, print that it's unknown and panic
                 match prefix {
-                    "Coinbase Received" => handle_coinbase(message),
-                    "Kraken Received" => handle_kraken(message),
-                    "Bitstamp received" => handle_bitstamp(message),
-                    "Gemini received" => handle_gemini(message),
+                    "SOL Coinbase Received" => handle_sol_coinbase(message),
+                    "XLM Coinbase Received" => handle_sol_coinbase(message),
+                    "SOL Kraken Received" => handle_sol_kraken(message),
+                    "XLM Kraken Received" => handle_xlm_kraken(message),
+                    "SOL Bitstamp received" => handle_sol_bitstamp(message),
+                    "XLM Bitstamp received" => handle_xlm_bitstamp(message),
+                    "Gemini received" => handle_sol_gemini(message),
                     _ => panic!("Unknown prefix: {}", prefix),
                 }
 
@@ -658,7 +988,7 @@ async fn main()  {
         }
     }
 //-----ALL-FOR-PARSING-ABOVE-THIS//
-*/
+
 
 
 /* 
@@ -687,7 +1017,7 @@ async fn main()  {
     network.feed_forward();
     let elapsed = right_now.elapsed();
     println!("Elapsed: {:?}", elapsed);
-*/
+
 
     
 
@@ -779,5 +1109,5 @@ async fn main()  {
         &gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key  ).await;
 */
 
-
+*/
 }

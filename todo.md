@@ -137,7 +137,9 @@ Make it so there are functions built into 1 function so that it does the initial
 19. Add L2 regularization
 20. places to optimize:
      in my main, find a way to make it do less checks when checking if the indices have been updated.
-     in bitstamp and gemini to maintain uptime, do a request to just get the price and amount instead of waiting like 5 minutes for gemini or bitstamp to finally get a trade
+     in bitstamp and gemini to maintain uptime, do a request to just get the price and amount instead of waiting like 5 minutes for gemini or bitstamp to finally get a trade. If I did I would have to add a mutex just in case it did happen to be that it updated from the websocket client at the same time the request was updating it.
+     not entirely sure if I need all of the messages in action_functions. I should see which ones I dont need for the functions to continue working, and remove the messages I do not need so it loads less into RAM.
+21. change all things to be warning free obviously, but also to change all initializations to be not 0, but Option<var type> instead. Except for the neurons of course.
 
 
 
@@ -233,4 +235,5 @@ Log of what I've done:
 01/08/24 - updated functions/indices. Next step is to fix the neural_network.update_inputs function so it isnt red. I got this!
 01/08/24 - updated functions so there were no more errors. Next step is to code comment action_functions so I can run the program and see if it actually works. I got this!
 01/08/24 - big updates. Updated all functions and removed errors. Had to revert to december 2023 rust analyzer because it had a compiler error that wasnt actually a compiler error. Next step is to see if it is actually changing the input nodes. After that, I need to create the rest of the xlm methods. After that I need to see if experience replay is actually working. I got this!
-01/08/24 - I added a way to track if all the nodes have been updated. Then I did a print statement to show the updated neurons. Next step is to create the rest of the xlm methods WITH the minimum withdraw/buy/deposite already in so I dont have to remove every function. I got this
+01/09/24 - I added a way to track if all the nodes have been updated. Then I did a print statement to show the updated neurons. Next step is to create the rest of the xlm methods WITH the minimum withdraw/buy/deposite already in so I dont have to remove every function. I got this!
+01/09/24 - added first xlm function in action_functions. Next step is to test it and see if it works. After that is to do the rest of all of them. I got this!

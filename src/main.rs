@@ -1143,6 +1143,7 @@ fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork, update
     for index in indices {
         updated[index] = true;
     }
+    //for debugging
     if updated.iter().all(|&x| x) {
         neural_network.print_layers();
     } 

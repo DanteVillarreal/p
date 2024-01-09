@@ -117,14 +117,14 @@ fn handle_sol_coinbase(message: &str) {
     }
 
 
-            //just for debugging
-            println!("coinbase_price: {}\ncoinbase_open_24h: {}\ncoinbase_volume_24h: {}
-                \ncoinbase_low_24h: {}\ncoinbase_high_24h: {}\ncoinbase_volume_30d: {}
-                \ncoinbase_best_bid: {}\ncoinbase_best_bid_size: {}\ncoinbase_best_ask: {}
-                \ncoinbase_best_ask_size: {}\ncoinbase_side: {}\ncoinbase_last_size: {}", 
-                &coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
-                &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
-                &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size);
+            ////just for debugging
+            //println!("coinbase_price: {}\ncoinbase_open_24h: {}\ncoinbase_volume_24h: {}
+            //    \ncoinbase_low_24h: {}\ncoinbase_high_24h: {}\ncoinbase_volume_30d: {}
+            //    \ncoinbase_best_bid: {}\ncoinbase_best_bid_size: {}\ncoinbase_best_ask: {}
+            //    \ncoinbase_best_ask_size: {}\ncoinbase_side: {}\ncoinbase_last_size: {}", 
+            //    &coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
+            //    &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
+            //    &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size);
 
 
 
@@ -180,11 +180,26 @@ fn handle_sol_coinbase(message: &str) {
         //
         //},
         let indices = [0, 1, 2, 3, 4, 5, 6];
-        let new_values = [&coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
-                    &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
-                    &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
+        let new_values = [&coinbase_price, &coinbase_volume_24h, &coinbase_low_24h, 
+                    &coinbase_high_24h, 
+                    &coinbase_low_52w, &coinbase_high_52w, &coinbase_price_percent_chg_24h,];
         neural_network.update_input(&indices, &new_values);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     ////NEED TO SEE IF i HAVE TO NORMALIZE THIS DATA FIRST
     //let indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -230,13 +245,13 @@ fn handle_sol_coinbase(message: &str) {
     
     
                 //just for debugging
-                println!("coinbase_price: {}\ncoinbase_open_24h: {}\ncoinbase_volume_24h: {}
-                    \ncoinbase_low_24h: {}\ncoinbase_high_24h: {}\ncoinbase_volume_30d: {}
-                    \ncoinbase_best_bid: {}\ncoinbase_best_bid_size: {}\ncoinbase_best_ask: {}
-                    \ncoinbase_best_ask_size: {}\ncoinbase_side: {}\ncoinbase_last_size: {}", 
-                    &coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
-                    &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
-                    &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size);
+                //println!("coinbase_price: {}\ncoinbase_open_24h: {}\ncoinbase_volume_24h: {}
+                //    \ncoinbase_low_24h: {}\ncoinbase_high_24h: {}\ncoinbase_volume_30d: {}
+                //    \ncoinbase_best_bid: {}\ncoinbase_best_bid_size: {}\ncoinbase_best_ask: {}
+                //    \ncoinbase_best_ask_size: {}\ncoinbase_side: {}\ncoinbase_last_size: {}", 
+                //    &coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
+                //    &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
+                //    &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size);
     
     
     
@@ -291,10 +306,9 @@ fn handle_sol_coinbase(message: &str) {
             //    println!("Failed to parse JSON Coinbase message\nError: {}\nMessage: {}", e, message);
             //
             //},
-            let indices = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
-            let new_values = [&coinbase_price, &coinbase_open_24h, &coinbase_volume_24h, &coinbase_low_24h, 
-                        &coinbase_high_24h, &coinbase_volume_30d, &coinbase_best_bid, &coinbase_best_bid_size, 
-                        &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
+            let indices = [7, 8, 9, 10, 11, 12, 13];
+            let new_values = [&coinbase_price, &coinbase_volume_24h, &coinbase_low_24h, 
+            &coinbase_high_24h, &coinbase_low_52w, &coinbase_high_52w, &coinbase_price_percent_chg_24h,];
             neural_network.update_input(&indices, &new_values);
         }
 
@@ -533,61 +547,71 @@ fn handle_sol_kraken(message: &str) {
     }
     let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
+    let mut a_0 = 0.0;
     let mut a_1 = 0.0;
     let mut a_2 = 0.0;
-    let mut a_3 = 0.0;
+
+    let mut b_0 = 0.0;
     let mut b_1 = 0.0;
     let mut b_2 = 0.0;
-    let mut b_3 = 0.0;
+
+    let mut c_0 = 0.0;
     let mut c_1 = 0.0;
-    let mut c_2 = 0.0;
+
+    let mut v_0 = 0.0;
     let mut v_1 = 0.0;
-    let mut v_2 = 0.0;
+
+    let mut p_0 = 0.0;
     let mut p_1 = 0.0;
-    let mut p_2 = 0.0;
+
+    let mut t_0 = 0.0;
     let mut t_1 = 0.0;
-    let mut t_2 = 0.0;
+
+    let mut l_0 = 0.0;
     let mut l_1 = 0.0;
-    let mut l_2 = 0.0;
+
+    let mut h_0 = 0.0;
     let mut h_1 = 0.0;
-    let mut h_2 = 0.0;
+
+    let mut o_0 = 0.0;
     let mut o_1 = 0.0;
-    let mut o_2 = 0.0;
 
     match data {
         Ok(value) => {
             let ticker = &value[1];
-            a_1 = ticker["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-            a_2 = ticker["a"][1].as_str().unwrap().parse::<f64>().unwrap();
-            a_3 = ticker["a"][2].as_str().unwrap().parse::<f64>().unwrap();
-            b_1 = ticker["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-            b_2 = ticker["b"][1].as_str().unwrap().parse::<f64>().unwrap();
-            b_3 = ticker["b"][2].as_str().unwrap().parse::<f64>().unwrap();
-            c_1 = ticker["c"][0].as_str().unwrap().parse::<f64>().unwrap();
-            c_2 = ticker["c"][1].as_str().unwrap().parse::<f64>().unwrap();
-            v_1 = ticker["v"][0].as_str().unwrap().parse::<f64>().unwrap();
-            v_2 = ticker["v"][1].as_str().unwrap().parse::<f64>().unwrap();
-            p_1 = ticker["p"][0].as_str().unwrap().parse::<f64>().unwrap();
-            p_2 = ticker["p"][1].as_str().unwrap().parse::<f64>().unwrap();
-            t_1 = ticker["t"][0].as_str().unwrap().parse::<f64>().unwrap();
-            t_2 = ticker["t"][1].as_str().unwrap().parse::<f64>().unwrap();
-            l_1 = ticker["l"][0].as_str().unwrap().parse::<f64>().unwrap();
-            l_2 = ticker["l"][1].as_str().unwrap().parse::<f64>().unwrap();
-            h_1 = ticker["h"][0].as_str().unwrap().parse::<f64>().unwrap();
-            h_2 = ticker["h"][1].as_str().unwrap().parse::<f64>().unwrap();
-            o_1 = ticker["o"][0].as_str().unwrap().parse::<f64>().unwrap();
-            o_2 = ticker["o"][1].as_str().unwrap().parse::<f64>().unwrap();
+            a_0 = ticker["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            a_1 = ticker["a"][1].as_str().unwrap().parse::<f64>().unwrap();
+            a_2 = ticker["a"][2].as_str().unwrap().parse::<f64>().unwrap();
+            b_0 = ticker["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            b_1 = ticker["b"][1].as_str().unwrap().parse::<f64>().unwrap();
+            b_2 = ticker["b"][2].as_str().unwrap().parse::<f64>().unwrap();
+            c_0 = ticker["c"][0].as_str().unwrap().parse::<f64>().unwrap();
+            c_1 = ticker["c"][1].as_str().unwrap().parse::<f64>().unwrap();
+            v_0 = ticker["v"][0].as_str().unwrap().parse::<f64>().unwrap();
+            v_1 = ticker["v"][1].as_str().unwrap().parse::<f64>().unwrap();
+            p_0 = ticker["p"][0].as_str().unwrap().parse::<f64>().unwrap();
+            p_1 = ticker["p"][1].as_str().unwrap().parse::<f64>().unwrap();
+            t_0 = ticker["t"][0].as_str().unwrap().parse::<f64>().unwrap();
+            t_1 = ticker["t"][1].as_str().unwrap().parse::<f64>().unwrap();
+            l_0 = ticker["l"][0].as_str().unwrap().parse::<f64>().unwrap();
+            l_1 = ticker["l"][1].as_str().unwrap().parse::<f64>().unwrap();
+            h_0 = ticker["h"][0].as_str().unwrap().parse::<f64>().unwrap();
+            h_1 = ticker["h"][1].as_str().unwrap().parse::<f64>().unwrap();
+            o_0 = ticker["o"][0].as_str().unwrap().parse::<f64>().unwrap();
+            o_1 = ticker["o"][1].as_str().unwrap().parse::<f64>().unwrap();
         }
         Err(e) => println!("Failed to parse message: {}", e),
     }
-    let indices: [usize; 20] = [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 
-    40, 41, 42, 43];
-let new_values = [&a_price, &a_whole_lot_volume, &a_lot_volume, &b_price, 
-    &b_whole_lot_volume, &b_lot_volume, &c_price, &c_lot_volume, 
-    &v_today, &v_last24hours, &p_today, &p_last24hours, &t_today, 
-    &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
-    &o_today, &o_last24hours];
-neural_network.update_input(&indices, &new_values);
+    let indices: [usize; 20] = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+    30, 31, 32, 33];
+    let new_values = [&a_0, &a_1, &a_2, &b_0, &b_1, &b_2, &c_0, &c_1, 
+        &v_0, &v_1, &p_0, &p_1, &t_0, &t_1, &l_0, &l_1, &h_0, &h_1, &o_0, &o_1];
+    //let new_values = [&a_price, &a_whole_lot_volume, &a_lot_volume, &b_price, 
+    //    &b_whole_lot_volume, &b_lot_volume, &c_price, &c_lot_volume, 
+    //    &v_today, &v_last24hours, &p_today, &p_last24hours, &t_today, 
+    //    &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
+    //    &o_today, &o_last24hours];
+    neural_network.update_input(&indices, &new_values);
 }
 
 
@@ -614,60 +638,65 @@ fn handle_xlm_kraken(message: &str) {
     }
     let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
+    let mut a_0 = 0.0;
     let mut a_1 = 0.0;
     let mut a_2 = 0.0;
-    let mut a_3 = 0.0;
+
+    let mut b_0 = 0.0;
     let mut b_1 = 0.0;
     let mut b_2 = 0.0;
-    let mut b_3 = 0.0;
+
+    let mut c_0 = 0.0;
     let mut c_1 = 0.0;
-    let mut c_2 = 0.0;
+
+    let mut v_0 = 0.0;
     let mut v_1 = 0.0;
-    let mut v_2 = 0.0;
+
+    let mut p_0 = 0.0;
     let mut p_1 = 0.0;
-    let mut p_2 = 0.0;
+
+    let mut t_0 = 0.0;
     let mut t_1 = 0.0;
-    let mut t_2 = 0.0;
+
+    let mut l_0 = 0.0;
     let mut l_1 = 0.0;
-    let mut l_2 = 0.0;
+
+    let mut h_0 = 0.0;
     let mut h_1 = 0.0;
-    let mut h_2 = 0.0;
+
+    let mut o_0 = 0.0;
     let mut o_1 = 0.0;
-    let mut o_2 = 0.0;
 
     match data {
         Ok(value) => {
             let ticker = &value[1];
-            a_1 = ticker["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-            a_2 = ticker["a"][1].as_str().unwrap().parse::<f64>().unwrap();
-            a_3 = ticker["a"][2].as_str().unwrap().parse::<f64>().unwrap();
-            b_1 = ticker["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-            b_2 = ticker["b"][1].as_str().unwrap().parse::<f64>().unwrap();
-            b_3 = ticker["b"][2].as_str().unwrap().parse::<f64>().unwrap();
-            c_1 = ticker["c"][0].as_str().unwrap().parse::<f64>().unwrap();
-            c_2 = ticker["c"][1].as_str().unwrap().parse::<f64>().unwrap();
-            v_1 = ticker["v"][0].as_str().unwrap().parse::<f64>().unwrap();
-            v_2 = ticker["v"][1].as_str().unwrap().parse::<f64>().unwrap();
-            p_1 = ticker["p"][0].as_str().unwrap().parse::<f64>().unwrap();
-            p_2 = ticker["p"][1].as_str().unwrap().parse::<f64>().unwrap();
-            t_1 = ticker["t"][0].as_str().unwrap().parse::<f64>().unwrap();
-            t_2 = ticker["t"][1].as_str().unwrap().parse::<f64>().unwrap();
-            l_1 = ticker["l"][0].as_str().unwrap().parse::<f64>().unwrap();
-            l_2 = ticker["l"][1].as_str().unwrap().parse::<f64>().unwrap();
-            h_1 = ticker["h"][0].as_str().unwrap().parse::<f64>().unwrap();
-            h_2 = ticker["h"][1].as_str().unwrap().parse::<f64>().unwrap();
-            o_1 = ticker["o"][0].as_str().unwrap().parse::<f64>().unwrap();
-            o_2 = ticker["o"][1].as_str().unwrap().parse::<f64>().unwrap();
+            a_0 = ticker["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            a_1 = ticker["a"][1].as_str().unwrap().parse::<f64>().unwrap();
+            a_2 = ticker["a"][2].as_str().unwrap().parse::<f64>().unwrap();
+            b_0 = ticker["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            b_1 = ticker["b"][1].as_str().unwrap().parse::<f64>().unwrap();
+            b_2 = ticker["b"][2].as_str().unwrap().parse::<f64>().unwrap();
+            c_0 = ticker["c"][0].as_str().unwrap().parse::<f64>().unwrap();
+            c_1 = ticker["c"][1].as_str().unwrap().parse::<f64>().unwrap();
+            v_0 = ticker["v"][0].as_str().unwrap().parse::<f64>().unwrap();
+            v_1 = ticker["v"][1].as_str().unwrap().parse::<f64>().unwrap();
+            p_0 = ticker["p"][0].as_str().unwrap().parse::<f64>().unwrap();
+            p_1 = ticker["p"][1].as_str().unwrap().parse::<f64>().unwrap();
+            t_0 = ticker["t"][0].as_str().unwrap().parse::<f64>().unwrap();
+            t_1 = ticker["t"][1].as_str().unwrap().parse::<f64>().unwrap();
+            l_0 = ticker["l"][0].as_str().unwrap().parse::<f64>().unwrap();
+            l_1 = ticker["l"][1].as_str().unwrap().parse::<f64>().unwrap();
+            h_0 = ticker["h"][0].as_str().unwrap().parse::<f64>().unwrap();
+            h_1 = ticker["h"][1].as_str().unwrap().parse::<f64>().unwrap();
+            o_0 = ticker["o"][0].as_str().unwrap().parse::<f64>().unwrap();
+            o_1 = ticker["o"][1].as_str().unwrap().parse::<f64>().unwrap();
         }
         Err(e) => println!("Failed to parse message: {}", e),
     }
-    let indices: [usize; 20] = [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 
-    60, 61, 62, 63];
-let new_values = [&a_price, &a_whole_lot_volume, &a_lot_volume, &b_price, 
-    &b_whole_lot_volume, &b_lot_volume, &c_price, &c_lot_volume, 
-    &v_today, &v_last24hours, &p_today, &p_last24hours, &t_today, 
-    &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
-    &o_today, &o_last24hours];
+    let indices: [usize; 20] = [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 
+    50, 51, 52, 53];
+let new_values = [&a_0, &a_1, &a_2, &b_0, &b_1, &b_2, &c_0, &c_1,
+     &v_0, &v_1, &p_0, &p_1, &t_0, &t_1, &l_0, &l_1, &h_0, &h_1, &o_0, &o_1];
 neural_network.update_input(&indices, &new_values);
 }
 
@@ -724,7 +753,7 @@ fn handle_sol_bitstamp(message: &str) {
     }
 
 
-    let indices: [usize; 2] = [32, 33];
+    let indices: [usize; 2] = [54, 55];
     let new_values = [&amount, &price];
     neural_network.update_input(&indices, &new_values);
 
@@ -775,7 +804,7 @@ fn handle_xlm_bitstamp(message: &str) {
     }
 
 
-    let indices: [usize; 2] = [32, 33];
+    let indices: [usize; 2] = [56, 57];
     let new_values = [&amount, &price];
     neural_network.update_input(&indices, &new_values);
 
@@ -802,7 +831,7 @@ fn handle_sol_gemini(message: &str) {
     let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
     let mut amount = 0.0;
-    let mut maker_side = "pppp";
+    //let mut maker_side = "pppp";
     let mut price = 0.0;
 
     match data {
@@ -815,11 +844,11 @@ fn handle_sol_gemini(message: &str) {
                     if let Some(Value::Object(event)) = events.get(0) {
                         // Extract the values
                         amount = event.get("amount").and_then(Value::as_f64).unwrap();
-                        maker_side = event.get("makerSide").and_then(Value::as_str).unwrap();
+                        //maker_side = event.get("makerSide").and_then(Value::as_str).unwrap();
                         price = event.get("price").and_then(Value::as_f64).unwrap();
                         
-                        println!("gemini:\namount: {}\nmaker_side: {}\nprice: {}\n\n\n", &amount, 
-                                &maker_side, &price);
+                       // println!("gemini:\namount: {}\nmaker_side: {}\nprice: {}\n\n\n", &amount, 
+                       //         &maker_side, &price);
                     }
                 }
             }
@@ -829,8 +858,8 @@ fn handle_sol_gemini(message: &str) {
         },
     }
 
-    let indices = [34, 35, 36];
-    let new_values = [&amount, &maker_side, &price];
+    let indices = [58, 59];
+    let new_values = [&amount, &price];
     neural_network.update_input(&indices, &new_values);
 
     //counting the neurons for the the amount in each wallet, I will have 40 input neurons.

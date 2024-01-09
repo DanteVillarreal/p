@@ -226,3 +226,4 @@ Log of what I've done:
 01/07/24 - fixed the error. Made new initialization function. Will need to code comment it later. Matrix multiplication is crazy fast though. Like not even a milisecond to do the matrix multiply (if its small).
 01/07/24 - So the issue is that I now have two different websites for coinbase and for kraken and for bitstamp because of SOL and XLM. So now I have to update my code to parse for the differences. Thats the next step. I also have to change coinbase because it isnt exchange anymore, its advanced api.I got this!
 01/08/24 - added/updated the new functions. Updated main to handle the new functions. Next step is to fix the indices starting from the 2nd coinbase. I got this!
+01/08/24 - updated functions/indices. Next step is to fix the neural_network.update_inputs function so it isnt red. I got this!

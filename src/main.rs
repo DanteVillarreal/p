@@ -81,7 +81,7 @@ use serde_json::Value;          //good for parsing intput in JSON format
 
 //-----ALL-FOR-PARSING-UNDER-THIS//
 
-fn handle_sol_coinbase(message: &str) {
+fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
     //if the message contains the word "heartbeat", ignore the entire message basically
     if message.contains("heartbeat") {
         println!("Coinbase heartbeat message. ignoring...");
@@ -180,9 +180,9 @@ fn handle_sol_coinbase(message: &str) {
         //
         //},
         let indices = [0, 1, 2, 3, 4, 5, 6];
-        let new_values = [&coinbase_price, &coinbase_volume_24h, &coinbase_low_24h, 
-                    &coinbase_high_24h, 
-                    &coinbase_low_52w, &coinbase_high_52w, &coinbase_price_percent_chg_24h,];
+        let new_values = [coinbase_price, coinbase_volume_24h, coinbase_low_24h, 
+                    coinbase_high_24h, 
+                    coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h,];
         neural_network.update_input(&indices, &new_values);
     }
 
@@ -208,7 +208,7 @@ fn handle_sol_coinbase(message: &str) {
     //            &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
     //neural_network.update_input(&indices, &new_values);
 
-    fn handle_xlm_coinbase(message: &str) {
+    fn handle_xlm_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
         //if the message contains the word "heartbeat", ignore the entire message basically
         if message.contains("heartbeat") {
             println!("Coinbase heartbeat message. ignoring...");
@@ -307,8 +307,9 @@ fn handle_sol_coinbase(message: &str) {
             //
             //},
             let indices = [7, 8, 9, 10, 11, 12, 13];
-            let new_values = [&coinbase_price, &coinbase_volume_24h, &coinbase_low_24h, 
-            &coinbase_high_24h, &coinbase_low_52w, &coinbase_high_52w, &coinbase_price_percent_chg_24h,];
+            let new_values = [coinbase_price, coinbase_volume_24h, coinbase_low_24h, 
+            coinbase_high_24h, 
+            coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h,];
             neural_network.update_input(&indices, &new_values);
         }
 
@@ -536,7 +537,7 @@ fn handle_kraken(message: &str) {
 
 }
 */
-fn handle_sol_kraken(message: &str) {
+fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork) {
     if message.contains("heartbeat") {
         println!("Kraken heartbeat message. ignoring...");
         return;
@@ -602,10 +603,12 @@ fn handle_sol_kraken(message: &str) {
         }
         Err(e) => println!("Failed to parse message: {}", e),
     }
+    println!("a_0: {}, a_1: {}, a_2: {}, b_0: {}, b_1: {}, b_2: {}, c_0: {}, c_1: {}, v_0: {}, v_1: {}, p_0: {}, p_1: {}, t_0: {}, t_1: {}, l_0: {}, l_1: {}, h_0: {}, h_1: {}, o_0: {}, o_1: {}", 
+    &a_0, &a_1, &a_2, &b_0, &b_1, &b_2, &c_0, &c_1, &v_0, &v_1, &p_0, &p_1, &t_0, &t_1, &l_0, &l_1, &h_0, &h_1, &o_0, &o_1);
     let indices: [usize; 20] = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
     30, 31, 32, 33];
-    let new_values = [&a_0, &a_1, &a_2, &b_0, &b_1, &b_2, &c_0, &c_1, 
-        &v_0, &v_1, &p_0, &p_1, &t_0, &t_1, &l_0, &l_1, &h_0, &h_1, &o_0, &o_1];
+    let new_values = [a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1, 
+        v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1];
     //let new_values = [&a_price, &a_whole_lot_volume, &a_lot_volume, &b_price, 
     //    &b_whole_lot_volume, &b_lot_volume, &c_price, &c_lot_volume, 
     //    &v_today, &v_last24hours, &p_today, &p_last24hours, &t_today, 
@@ -627,7 +630,7 @@ fn handle_sol_kraken(message: &str) {
 
 
 
-fn handle_xlm_kraken(message: &str) {
+fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork) {
     if message.contains("heartbeat") {
         println!("Kraken heartbeat message. ignoring...");
         return;
@@ -693,11 +696,13 @@ fn handle_xlm_kraken(message: &str) {
         }
         Err(e) => println!("Failed to parse message: {}", e),
     }
+    println!("a_0: {}, a_1: {}, a_2: {}, b_0: {}, b_1: {}, b_2: {}, c_0: {}, c_1: {}, v_0: {}, v_1: {}, p_0: {}, p_1: {}, t_0: {}, t_1: {}, l_0: {}, l_1: {}, h_0: {}, h_1: {}, o_0: {}, o_1: {}", 
+    &a_0, &a_1, &a_2, &b_0, &b_1, &b_2, &c_0, &c_1, &v_0, &v_1, &p_0, &p_1, &t_0, &t_1, &l_0, &l_1, &h_0, &h_1, &o_0, &o_1);
     let indices: [usize; 20] = [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 
     50, 51, 52, 53];
-let new_values = [&a_0, &a_1, &a_2, &b_0, &b_1, &b_2, &c_0, &c_1,
-     &v_0, &v_1, &p_0, &p_1, &t_0, &t_1, &l_0, &l_1, &h_0, &h_1, &o_0, &o_1];
-neural_network.update_input(&indices, &new_values);
+    let new_values = [a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1, 
+        v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1];
+    neural_network.update_input(&indices, &new_values);
 }
 
 
@@ -716,7 +721,7 @@ neural_network.update_input(&indices, &new_values);
 
 
 
-fn handle_sol_bitstamp(message: &str) {
+fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
     // Handle Bitstamp message
     if message.contains("subscription") {
         println!("subscription succeeded. unimportant message\nmessage: {}", message);
@@ -731,7 +736,7 @@ fn handle_sol_bitstamp(message: &str) {
     let v: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
     let mut amount = 0.0;
-    let mut price:i64 = 0;
+    let mut price = 0.0;
 
     match v {
         Ok(value) => {
@@ -740,7 +745,7 @@ fn handle_sol_bitstamp(message: &str) {
                 if let Some(Value::Object(data)) = map.get("data") {
                     // Extract the values
                     amount = data.get("amount").and_then(Value::as_f64).unwrap();
-                    price = data.get("price").and_then(Value::as_i64).unwrap();
+                    price = data.get("price").and_then(Value::as_f64).unwrap();
 
                     println!("Bitstamp:\namount: {}\nprice: {}\n\n\n", &amount, &price);
         
@@ -754,7 +759,7 @@ fn handle_sol_bitstamp(message: &str) {
 
 
     let indices: [usize; 2] = [54, 55];
-    let new_values = [&amount, &price];
+    let new_values = [amount, price];
     neural_network.update_input(&indices, &new_values);
 
 }
@@ -767,7 +772,7 @@ fn handle_sol_bitstamp(message: &str) {
 
 
 
-fn handle_xlm_bitstamp(message: &str) {
+fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
     // Handle Bitstamp message
     if message.contains("subscription") {
         println!("subscription succeeded. unimportant message\nmessage: {}", message);
@@ -782,7 +787,7 @@ fn handle_xlm_bitstamp(message: &str) {
     let v: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
     let mut amount = 0.0;
-    let mut price:i64 = 0;
+    let mut price = 0.0;
 
     match v {
         Ok(value) => {
@@ -791,7 +796,7 @@ fn handle_xlm_bitstamp(message: &str) {
                 if let Some(Value::Object(data)) = map.get("data") {
                     // Extract the values
                     amount = data.get("amount").and_then(Value::as_f64).unwrap();
-                    price = data.get("price").and_then(Value::as_i64).unwrap();
+                    price = data.get("price").and_then(Value::as_f64).unwrap();
 
                     println!("Bitstamp:\namount: {}\nprice: {}\n\n\n", &amount, &price);
         
@@ -805,7 +810,7 @@ fn handle_xlm_bitstamp(message: &str) {
 
 
     let indices: [usize; 2] = [56, 57];
-    let new_values = [&amount, &price];
+    let new_values = [amount, price];
     neural_network.update_input(&indices, &new_values);
 
 }
@@ -819,7 +824,7 @@ fn handle_xlm_bitstamp(message: &str) {
 
 
 
-fn handle_sol_gemini(message: &str) {
+fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork) {
     if message.contains("heartbeat") {
         println!("Gemini heartbeat message. ignoring...");
         return;
@@ -859,7 +864,7 @@ fn handle_sol_gemini(message: &str) {
     }
 
     let indices = [58, 59];
-    let new_values = [&amount, &price];
+    let new_values = [amount, price];
     neural_network.update_input(&indices, &new_values);
 
     //counting the neurons for the the amount in each wallet, I will have 40 input neurons.
@@ -900,6 +905,36 @@ async fn main()  {
 //-----ALL-FOR-PARSING-UNDER-THIS//
 
     env::set_var("RUST_BACKTRACE", "1");
+
+    //this is just example code to evaluate if save and load of network works and it does  
+    let mut neural_network = NeuralNetwork {
+        layers: Vec::new(),
+        weights: Vec::new(),
+        biases: Vec::new(),
+    };
+    neural_network.initialization(59, 80, 2); // Initialize with [input size], [output size], [# hidden layers]
+
+    //// Print the network
+    neural_network.print_layers();
+
+    //// Save the network
+    //neural_network.save_v2()?;
+
+    //// Load the network
+    //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1703492925570"; // Replace with your file path
+    //let loaded_network = NeuralNetwork::load(path)?;
+
+    //// Print the loaded network
+    //loaded_network.print_layers();
+
+    let right_now = Instant::now();   //to measure execution time
+    neural_network.feed_forward();
+    let elapsed = right_now.elapsed();
+    println!("Elapsed: {:?}", elapsed);
+
+
+
+
     //why do I preface the "" with r?
     //                  because this tells Rust that it is a string literal and the
     //                  \ does not have to be escaped, like a \t or \n.
@@ -990,13 +1025,13 @@ async fn main()  {
                 //else if "kraken received"...
                 //and if it's none of them, print that it's unknown and panic
                 match prefix {
-                    "SOL Coinbase Received" => handle_sol_coinbase(message),
-                    "XLM Coinbase Received" => handle_sol_coinbase(message),
-                    "SOL Kraken Received" => handle_sol_kraken(message),
-                    "XLM Kraken Received" => handle_xlm_kraken(message),
-                    "SOL Bitstamp received" => handle_sol_bitstamp(message),
-                    "XLM Bitstamp received" => handle_xlm_bitstamp(message),
-                    "Gemini received" => handle_sol_gemini(message),
+                    "SOL Coinbase Received" => handle_sol_coinbase(message, &mut neural_network),
+                    "XLM Coinbase Received" => handle_xlm_coinbase(message, &mut neural_network),
+                    "SOL Kraken Received" => handle_sol_kraken(message, &mut neural_network),
+                    "XLM Kraken Received" => handle_xlm_kraken(message, &mut neural_network),
+                    "SOL Bitstamp received" => handle_sol_bitstamp(message, &mut neural_network),
+                    "XLM Bitstamp received" => handle_xlm_bitstamp(message, &mut neural_network),
+                    "Gemini received" => handle_sol_gemini(message, &mut neural_network),
                     _ => panic!("Unknown prefix: {}", prefix),
                 }
 
@@ -1020,32 +1055,8 @@ async fn main()  {
 
 
 
-/* 
-//this is just example code to evaluate if save and load of network works and it does  
-    let mut network = NeuralNetwork {
-        layers: Vec::new(),
-        weights: Vec::new(),
-        biases: Vec::new(),
-    };
-    network.initialization(10, 10, 2); // Initialize with your parameters
 
-    //// Print the network
-    network.print_layers();
 
-    //// Save the network
-    //network.save_v2()?;
-
-    //// Load the network
-    //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1703492925570"; // Replace with your file path
-    //let loaded_network = NeuralNetwork::load(path)?;
-
-    //// Print the loaded network
-    //loaded_network.print_layers();
-
-    let right_now = Instant::now();   //to measure execution time
-    network.feed_forward();
-    let elapsed = right_now.elapsed();
-    println!("Elapsed: {:?}", elapsed);
 
 
     
@@ -1138,5 +1149,5 @@ async fn main()  {
         &gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key  ).await;
 */
 
-*/
+
 }

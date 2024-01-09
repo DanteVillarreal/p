@@ -15,7 +15,7 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 use std::time::Instant;                             //this is to record time for execution
 use std::time::Duration;                            //for "sleep"
 use std::thread::sleep;                          
-use tokio::time::delay_for;   
+use tokio::time::delay_for;                         //for "sleep", but in async functions
 
 /*
     pub fn nothing() {
@@ -1062,7 +1062,7 @@ use tokio::time::delay_for;
 
     }
     */
-    pub async fn s_i5_sol_5_coinbase_kraken(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i5_sol_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
 
             let now = Utc::now();
@@ -1294,7 +1294,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i6_sol_6_coinbase_kraken(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i6_sol_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
     
             let now = Utc::now();
@@ -1526,7 +1526,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i7_sol_7_coinbase_kraken(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i7_sol_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
 
             let now = Utc::now();
@@ -1758,7 +1758,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i8_sol_8_coinbase_kraken(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i8_sol_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
     
             let now = Utc::now();
@@ -1990,7 +1990,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i9_sol_9_coinbase_kraken(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i9_sol_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
     
             let now = Utc::now();
@@ -2222,7 +2222,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i10_sol_10_coinbase_kraken(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i10_sol_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
     
             let now = Utc::now();
@@ -2456,7 +2456,7 @@ use tokio::time::delay_for;
     //coinbase has 10 dollar minimum order size:
 //https://www.businessinsider.com/personal-finance/bitstamp-crypto-exchange-review#:~:text=Bitstamp%20has%20a%20%240%20minimum,of%20more%20than%20%24100%20million).
     /*
-    pub async fn s_i11_sol_1_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i11_sol_1_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
@@ -2688,7 +2688,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i12_sol_2_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i12_sol_2_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
@@ -2920,7 +2920,7 @@ use tokio::time::delay_for;
 
     }
     */
-    pub async fn s_i13_sol_3_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i13_sol_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
@@ -3152,7 +3152,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i14_sol_4_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i14_sol_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
@@ -3384,7 +3384,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i15_sol_5_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i15_sol_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
@@ -3616,7 +3616,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i16_sol_6_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i16_sol_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
@@ -3848,7 +3848,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i17_sol_7_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i17_sol_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
@@ -4080,7 +4080,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i18_sol_8_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i18_sol_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
@@ -4312,7 +4312,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i19_sol_9_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i19_sol_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
@@ -4544,7 +4544,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i20_sol_10_coinbase_bitstamp(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i20_sol_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
@@ -4777,7 +4777,7 @@ use tokio::time::delay_for;
     }
     //gemini has withdraw minimums of 10 dollars
     /*
-    pub async fn s_i21_sol_1_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    pub async fn s_i21_sol_1_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -5007,7 +5007,7 @@ use tokio::time::delay_for;
 
     }    
 
-    pub async fn s_i22_sol_2_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    pub async fn s_i22_sol_2_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -5238,7 +5238,7 @@ use tokio::time::delay_for;
 
     }
     */
-    pub async fn s_i23_sol_3_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    pub async fn s_i23_sol_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -5469,7 +5469,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i24_sol_4_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    pub async fn s_i24_sol_4_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -5700,7 +5700,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i25_sol_5_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    pub async fn s_i25_sol_5_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -5931,7 +5931,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i26_sol_6_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    pub async fn s_i26_sol_6_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -6162,7 +6162,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i27_sol_7_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    pub async fn s_i27_sol_7_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -6393,7 +6393,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i28_sol_8_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    pub async fn s_i28_sol_8_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -6624,7 +6624,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i29_sol_9_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    pub async fn s_i29_sol_9_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -6855,7 +6855,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i30_sol_10_gemini_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    pub async fn s_i30_sol_10_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -7087,7 +7087,7 @@ use tokio::time::delay_for;
     }
     //cant use 1 through 4 because minimum Kraken buy is 0.2 SOL
     /*
-    pub async fn s_i31_sol_1_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i31_sol_1_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -7340,7 +7340,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i32_sol_2_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i32_sol_2_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -7593,7 +7593,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i33_sol_3_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i33_sol_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -7846,7 +7846,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i34_sol_4_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i34_sol_4_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -8099,7 +8099,7 @@ use tokio::time::delay_for;
 
     }
     */
-    pub async fn s_i35_sol_5_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i35_sol_5_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -8352,7 +8352,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i36_sol_6_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i36_sol_6_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -8605,7 +8605,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i37_sol_7_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i37_sol_7_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -8858,7 +8858,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i38_sol_8_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i38_sol_8_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -9111,7 +9111,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i39_sol_9_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i39_sol_9_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -9364,7 +9364,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i40_sol_10_gemini_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i40_sol_10_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -9619,7 +9619,7 @@ use tokio::time::delay_for;
     //gemini has withdraw minimums of 10 dollars: 
     //      https://www.gemini.com/legal/user-agreement#section-fiat-currency-withdrawals
     /*
-    pub async fn s_i41_sol_1_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i41_sol_1_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -9846,7 +9846,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i42_sol_2_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i42_sol_2_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -10073,7 +10073,7 @@ use tokio::time::delay_for;
 
     }
     */
-    pub async fn s_i43_sol_3_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i43_sol_3_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -10300,7 +10300,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i44_sol_4_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i44_sol_4_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -10527,7 +10527,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i45_sol_5_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i45_sol_5_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -10754,7 +10754,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i46_sol_6_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i46_sol_6_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -10981,7 +10981,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i47_sol_7_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i47_sol_7_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -11208,7 +11208,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i48_sol_8_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i48_sol_8_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -11435,7 +11435,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i49_sol_9_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i49_sol_9_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -11662,7 +11662,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i50_sol_10_gemini_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i50_sol_10_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
@@ -11890,7 +11890,7 @@ use tokio::time::delay_for;
     }
     //cant use 1 through 4 because minimum Kraken buy is 0.2 SOL
     /*
-    pub async fn s_i51_sol_1_kraken_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+    pub async fn s_i51_sol_1_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -12147,7 +12147,7 @@ use tokio::time::delay_for;
 
      }
 
-     pub async fn s_i52_sol_2_kraken_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+     pub async fn s_i52_sol_2_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -12404,7 +12404,7 @@ use tokio::time::delay_for;
 
      }
 
-     pub async fn s_i53_sol_3_kraken_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+     pub async fn s_i53_sol_3_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -12661,7 +12661,7 @@ use tokio::time::delay_for;
 
      }
 
-     pub async fn s_i54_sol_4_kraken_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+     pub async fn s_i54_sol_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -12918,7 +12918,7 @@ use tokio::time::delay_for;
 
      }
      */
-     pub async fn s_i55_sol_5_kraken_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+     pub async fn s_i55_sol_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -13177,7 +13177,7 @@ use tokio::time::delay_for;
 
      }
 
-     pub async fn s_i56_sol_6_kraken_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+     pub async fn s_i56_sol_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -13436,7 +13436,7 @@ use tokio::time::delay_for;
 
      }
 
-     pub async fn s_i57_sol_7_kraken_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+     pub async fn s_i57_sol_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -13695,7 +13695,7 @@ use tokio::time::delay_for;
 
      }
 
-     pub async fn s_i58_sol_8_kraken_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+     pub async fn s_i58_sol_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -13954,7 +13954,7 @@ use tokio::time::delay_for;
 
      }
 
-     pub async fn s_i59_sol_9_kraken_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+     pub async fn s_i59_sol_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -14213,7 +14213,7 @@ use tokio::time::delay_for;
 
      }
 
-     pub async fn s_i60_sol_10_kraken_coinbase(value_prior: &f64, coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+     pub async fn s_i60_sol_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -14473,7 +14473,7 @@ use tokio::time::delay_for;
      }
      //cant use 1 through 4 because minimum Kraken buy is 0.2 SOL
      /*
-     pub async fn s_i61_sol_1_kraken_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+     pub async fn s_i61_sol_1_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -14719,7 +14719,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i62_sol_2_kraken_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i62_sol_2_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -14965,7 +14965,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i63_sol_3_kraken_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i63_sol_3_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -15211,7 +15211,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i64_sol_4_kraken_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i64_sol_4_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -15457,7 +15457,7 @@ use tokio::time::delay_for;
 
     }
     */
-    pub async fn s_i65_sol_5_kraken_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i65_sol_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -15703,7 +15703,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i66_sol_6_kraken_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i66_sol_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -15949,7 +15949,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i67_sol_7_kraken_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i67_sol_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -16195,7 +16195,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i68_sol_8_kraken_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i68_sol_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -16441,7 +16441,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i69_sol_9_kraken_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i69_sol_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -16687,7 +16687,7 @@ use tokio::time::delay_for;
 
     }
 
-    pub async fn s_i70_sol_10_kraken_bitstamp(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i70_sol_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 

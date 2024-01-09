@@ -228,3 +228,4 @@ Log of what I've done:
 01/08/24 - added/updated the new functions. Updated main to handle the new functions. Next step is to fix the indices starting from the 2nd coinbase. I got this!
 01/08/24 - updated functions/indices. Next step is to fix the neural_network.update_inputs function so it isnt red. I got this!
 01/08/24 - updated functions so there were no more errors. Next step is to code comment action_functions so I can run the program and see if it actually works. I got this!
+01/08/24 - big updates. Updated all functions and removed errors. Had to revert to december 2023 rust analyzer because it had a compiler error that wasnt actually a compiler error. Next step is to see if it is actually changing the input nodes. After that, I need to create the rest of the xlm methods. After that I need to see if experience replay is actually working. I got this!

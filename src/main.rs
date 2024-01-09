@@ -1,4 +1,5 @@
 use p::action_functions::s_i0_do_nothing;
+use rand_distr::num_traits::AsPrimitive;
 use rand_distr::{StandardNormal, Normal, Distribution};
 use reqwest::Client;                                //to actually make the request itself
 use std::env;                                       //so I can use .env files and I dont have to put key details on github
@@ -16,6 +17,8 @@ use std::time::Instant;                             //this is to record time for
 use std::process::{Command, Stdio};                 //for piping websocket client
 use std::io::{BufRead, BufReader};//this is to help us read from stdin
 use serde_json::Value;          //good for parsing intput in JSON format
+use tokio::time::delay_for;                         //for "sleep", but in async functions
+
 
 
 ///-----FOR PARSING-----////
@@ -84,11 +87,15 @@ use serde_json::Value;          //good for parsing intput in JSON format
 fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
     //if the message contains the word "heartbeat", ignore the entire message basically
     if message.contains("heartbeat") {
-        println!("Coinbase heartbeat message. ignoring...");
+        println!("Coinbase sol eartbeat message. ignoring...it's contents:\n{}", message);
+        return;
+    }
+    if message.contains("subscriptions") {
+        println!("Coinbase sol SubsCriptions message. ignoring...it's contents:\n{}", message);
         return;
     }
     if message.trim().is_empty() {
-        println!("Coinbase: blank message received\nmessage: {}", message);
+        println!("Coinbase sol: blank message received\nmessage: {}", message);
         return;
     }
     let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
@@ -183,7 +190,9 @@ fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
         let new_values = [coinbase_price, coinbase_volume_24h, coinbase_low_24h, 
                     coinbase_high_24h, 
                     coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h,];
+        println!("Before updating input");
         neural_network.update_input(&indices, &new_values);
+        println!("After updating input");
     }
 
 
@@ -211,11 +220,15 @@ fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
     fn handle_xlm_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
         //if the message contains the word "heartbeat", ignore the entire message basically
         if message.contains("heartbeat") {
-            println!("Coinbase heartbeat message. ignoring...");
+            println!("Coinbase xlm: heartbeat message. ignoring...it's contents:\n{}", message);
+            return;
+        }
+        if message.contains("subscriptions") {
+            println!("Coinbase xlm: SubsCriptions message. ignoring...it's contents:\n{}", message);
             return;
         }
         if message.trim().is_empty() {
-            println!("Coinbase: blank message received\nmessage: {}", message);
+            println!("Coinbase xlm: blank message received\nmessage: {}", message);
             return;
         }
         let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
@@ -310,7 +323,10 @@ fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
             let new_values = [coinbase_price, coinbase_volume_24h, coinbase_low_24h, 
             coinbase_high_24h, 
             coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h,];
+
+            println!("Before updating input");
             neural_network.update_input(&indices, &new_values);
+            println!("After updating input");
         }
 
 
@@ -539,11 +555,19 @@ fn handle_kraken(message: &str) {
 */
 fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork) {
     if message.contains("heartbeat") {
-        println!("Kraken heartbeat message. ignoring...");
+        println!("Kraken sol heartbeat message. ignoring...it's contents:\n{}", message);
+        return;
+    }
+    if message.contains("systemStatus") {
+        println!("Kraken sol: initial system message. ignoring message... it's contents:\n{}", message);
+        return;
+    }
+    if message.contains("subscriptionStatus") {
+        println!("Kraken sol: initial  SUB message. ignoring...it's contents:\n{}", message);
         return;
     }
     if message.trim().is_empty() {
-        println!("Kraken: blank message received\nmessage: {}", message);
+        println!("Kraken sol: blank message received\nmessage: {}", message);
         return;
     }
     let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
@@ -580,31 +604,139 @@ fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork) {
     match data {
         Ok(value) => {
             let ticker = &value[1];
-            a_0 = ticker["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-            a_1 = ticker["a"][1].as_str().unwrap().parse::<f64>().unwrap();
-            a_2 = ticker["a"][2].as_str().unwrap().parse::<f64>().unwrap();
-            b_0 = ticker["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-            b_1 = ticker["b"][1].as_str().unwrap().parse::<f64>().unwrap();
-            b_2 = ticker["b"][2].as_str().unwrap().parse::<f64>().unwrap();
-            c_0 = ticker["c"][0].as_str().unwrap().parse::<f64>().unwrap();
-            c_1 = ticker["c"][1].as_str().unwrap().parse::<f64>().unwrap();
-            v_0 = ticker["v"][0].as_str().unwrap().parse::<f64>().unwrap();
-            v_1 = ticker["v"][1].as_str().unwrap().parse::<f64>().unwrap();
-            p_0 = ticker["p"][0].as_str().unwrap().parse::<f64>().unwrap();
-            p_1 = ticker["p"][1].as_str().unwrap().parse::<f64>().unwrap();
-            t_0 = ticker["t"][0].as_str().unwrap().parse::<f64>().unwrap();
-            t_1 = ticker["t"][1].as_str().unwrap().parse::<f64>().unwrap();
-            l_0 = ticker["l"][0].as_str().unwrap().parse::<f64>().unwrap();
-            l_1 = ticker["l"][1].as_str().unwrap().parse::<f64>().unwrap();
-            h_0 = ticker["h"][0].as_str().unwrap().parse::<f64>().unwrap();
-            h_1 = ticker["h"][1].as_str().unwrap().parse::<f64>().unwrap();
-            o_0 = ticker["o"][0].as_str().unwrap().parse::<f64>().unwrap();
-            o_1 = ticker["o"][1].as_str().unwrap().parse::<f64>().unwrap();
+            a_0 = ticker["a"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for a[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse a[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            a_1 = ticker["a"][1].as_i64().unwrap_or_else(|| {
+                println!("Failed to get string for a[1]. Full message: {}", message);
+                panic!();
+            }) as f64;
+            a_2 = ticker["a"][2].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for a[2]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse a[2] as f64. Full message: {}", message);
+                panic!();
+            });
+            b_0 = ticker["b"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for b[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse b[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            b_1 = ticker["b"][1].as_i64().unwrap_or_else(|| {
+                println!("Failed to get string for a[1]. Full message: {}", message);
+                panic!();
+            }) as f64;
+            b_2 = ticker["b"][2].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for b[2]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse b[2] as f64. Full message: {}", message);
+                panic!();
+            });
+            c_0 = ticker["c"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for c[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse c[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            c_1 = ticker["c"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for c[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse c[1] as f64. Full message: {}", message);
+                panic!();
+            });
+            v_0 = ticker["v"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for v[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse v[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            v_1 = ticker["v"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for v[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse v[1] as f64. Full message: {}", message);
+                panic!();
+            });
+            p_0 = ticker["p"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for p[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse p[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            p_1 = ticker["p"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for p[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse p[1] as f64. Full message: {}", message);
+                panic!();
+            });
+            t_0 = ticker["t"][0].as_i64().unwrap_or_else(|| {
+                println!("Failed to get string for a[1]. Full message: {}", message);
+                panic!();
+            }) as f64;
+            t_1 = ticker["t"][1].as_i64().unwrap_or_else(|| {
+                println!("Failed to get string for a[1]. Full message: {}", message);
+                panic!();
+            }) as f64;
+            l_0 = ticker["l"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for l[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse l[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            l_1 = ticker["l"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for l[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse l[1] as f64. Full message: {}", message);
+                panic!();
+            });
+            h_0 = ticker["h"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for h[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse h[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            h_1 = ticker["h"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for h[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse h[1] as f64. Full message: {}", message);
+                panic!();
+            });
+            o_0 = ticker["o"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for o[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse o[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            o_1 = ticker["o"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for o[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse o[1] as f64. Full message: {}", message);
+                panic!();
+            });
         }
         Err(e) => println!("Failed to parse message: {}", e),
     }
-    println!("a_0: {}, a_1: {}, a_2: {}, b_0: {}, b_1: {}, b_2: {}, c_0: {}, c_1: {}, v_0: {}, v_1: {}, p_0: {}, p_1: {}, t_0: {}, t_1: {}, l_0: {}, l_1: {}, h_0: {}, h_1: {}, o_0: {}, o_1: {}", 
-    &a_0, &a_1, &a_2, &b_0, &b_1, &b_2, &c_0, &c_1, &v_0, &v_1, &p_0, &p_1, &t_0, &t_1, &l_0, &l_1, &h_0, &h_1, &o_0, &o_1);
+    //println!("a_0: {}, a_1: {}, a_2: {}, b_0: {}, b_1: {}, b_2: {}, c_0: {}, c_1: {}, v_0: {}, v_1: {}, p_0: {}, p_1: {}, t_0: {}, t_1: {}, l_0: {}, l_1: {}, h_0: {}, h_1: {}, o_0: {}, o_1: {}", 
+    //&a_0, &a_1, &a_2, &b_0, &b_1, &b_2, &c_0, &c_1, &v_0, &v_1, &p_0, &p_1, &t_0, &t_1, &l_0, &l_1, &h_0, &h_1, &o_0, &o_1);
     let indices: [usize; 20] = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
     30, 31, 32, 33];
     let new_values = [a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1, 
@@ -614,7 +746,9 @@ fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork) {
     //    &v_today, &v_last24hours, &p_today, &p_last24hours, &t_today, 
     //    &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
     //    &o_today, &o_last24hours];
+    println!("Before updating input");
     neural_network.update_input(&indices, &new_values);
+    println!("After updating input");
 }
 
 
@@ -632,11 +766,19 @@ fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork) {
 
 fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork) {
     if message.contains("heartbeat") {
-        println!("Kraken heartbeat message. ignoring...");
+        println!("Kraken xlm heartbeat message. ignoring...it's contents:\n{}", message);
+        return;
+    }
+    if message.contains("systemStatus") {
+        println!("Kraken xlm: initial system message. ignoring...it's contents:\n{}", message);
+        return;
+    }
+    if message.contains("subscriptionStatus") {
+        println!("Kraken xlm: initial  SUB message. ignoring...it's contents:\n{}", message);
         return;
     }
     if message.trim().is_empty() {
-        println!("Kraken: blank message received\nmessage: {}", message);
+        println!("Kraken xlm: blank message received\nmessage: {}", message);
         return;
     }
     let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
@@ -673,36 +815,147 @@ fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork) {
     match data {
         Ok(value) => {
             let ticker = &value[1];
-            a_0 = ticker["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-            a_1 = ticker["a"][1].as_str().unwrap().parse::<f64>().unwrap();
-            a_2 = ticker["a"][2].as_str().unwrap().parse::<f64>().unwrap();
-            b_0 = ticker["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-            b_1 = ticker["b"][1].as_str().unwrap().parse::<f64>().unwrap();
-            b_2 = ticker["b"][2].as_str().unwrap().parse::<f64>().unwrap();
-            c_0 = ticker["c"][0].as_str().unwrap().parse::<f64>().unwrap();
-            c_1 = ticker["c"][1].as_str().unwrap().parse::<f64>().unwrap();
-            v_0 = ticker["v"][0].as_str().unwrap().parse::<f64>().unwrap();
-            v_1 = ticker["v"][1].as_str().unwrap().parse::<f64>().unwrap();
-            p_0 = ticker["p"][0].as_str().unwrap().parse::<f64>().unwrap();
-            p_1 = ticker["p"][1].as_str().unwrap().parse::<f64>().unwrap();
-            t_0 = ticker["t"][0].as_str().unwrap().parse::<f64>().unwrap();
-            t_1 = ticker["t"][1].as_str().unwrap().parse::<f64>().unwrap();
-            l_0 = ticker["l"][0].as_str().unwrap().parse::<f64>().unwrap();
-            l_1 = ticker["l"][1].as_str().unwrap().parse::<f64>().unwrap();
-            h_0 = ticker["h"][0].as_str().unwrap().parse::<f64>().unwrap();
-            h_1 = ticker["h"][1].as_str().unwrap().parse::<f64>().unwrap();
-            o_0 = ticker["o"][0].as_str().unwrap().parse::<f64>().unwrap();
-            o_1 = ticker["o"][1].as_str().unwrap().parse::<f64>().unwrap();
+            a_0 = ticker["a"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for a[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse a[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            a_1 = ticker["a"][1].as_i64().unwrap_or_else(|| {
+                println!("Failed to get string for a[1]. Full message: {}", message);
+                panic!();
+            }) as f64;
+            a_2 = ticker["a"][2].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for a[2]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse a[2] as f64. Full message: {}", message);
+                panic!();
+            });
+            b_0 = ticker["b"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for b[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse b[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            b_1 = ticker["b"][1].as_i64().unwrap_or_else(|| {
+                println!("Failed to get string for a[1]. Full message: {}", message);
+                panic!();
+            }) as f64;
+            b_2 = ticker["b"][2].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for b[2]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse b[2] as f64. Full message: {}", message);
+                panic!();
+            });
+            c_0 = ticker["c"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for c[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse c[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            c_1 = ticker["c"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for c[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse c[1] as f64. Full message: {}", message);
+                panic!();
+            });
+            v_0 = ticker["v"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for v[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse v[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            v_1 = ticker["v"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for v[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse v[1] as f64. Full message: {}", message);
+                panic!();
+            });
+            p_0 = ticker["p"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for p[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse p[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            p_1 = ticker["p"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for p[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse p[1] as f64. Full message: {}", message);
+                panic!();
+            });
+            t_0 = ticker["t"][0].as_i64().unwrap_or_else(|| {
+                println!("Failed to get string for a[1]. Full message: {}", message);
+                panic!();
+            }) as f64;
+            t_1 = ticker["t"][1].as_i64().unwrap_or_else(|| {
+                println!("Failed to get string for a[1]. Full message: {}", message);
+                panic!();
+            }) as f64;
+            l_0 = ticker["l"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for l[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse l[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            l_1 = ticker["l"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for l[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse l[1] as f64. Full message: {}", message);
+                panic!();
+            });
+            h_0 = ticker["h"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for h[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse h[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            h_1 = ticker["h"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for h[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse h[1] as f64. Full message: {}", message);
+                panic!();
+            });
+            o_0 = ticker["o"][0].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for o[0]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse o[0] as f64. Full message: {}", message);
+                panic!();
+            });
+            o_1 = ticker["o"][1].as_str().unwrap_or_else(|| {
+                println!("Failed to get string for o[1]. Full message: {}", message);
+                panic!();
+            }).parse::<f64>().unwrap_or_else(|_| {
+                println!("Failed to parse o[1] as f64. Full message: {}", message);
+                panic!();
+            });
         }
         Err(e) => println!("Failed to parse message: {}", e),
     }
-    println!("a_0: {}, a_1: {}, a_2: {}, b_0: {}, b_1: {}, b_2: {}, c_0: {}, c_1: {}, v_0: {}, v_1: {}, p_0: {}, p_1: {}, t_0: {}, t_1: {}, l_0: {}, l_1: {}, h_0: {}, h_1: {}, o_0: {}, o_1: {}", 
-    &a_0, &a_1, &a_2, &b_0, &b_1, &b_2, &c_0, &c_1, &v_0, &v_1, &p_0, &p_1, &t_0, &t_1, &l_0, &l_1, &h_0, &h_1, &o_0, &o_1);
+    //println!("a_0: {}, a_1: {}, a_2: {}, b_0: {}, b_1: {}, b_2: {}, c_0: {}, c_1: {}, v_0: {}, v_1: {}, p_0: {}, p_1: {}, t_0: {}, t_1: {}, l_0: {}, l_1: {}, h_0: {}, h_1: {}, o_0: {}, o_1: {}", 
+    //&a_0, &a_1, &a_2, &b_0, &b_1, &b_2, &c_0, &c_1, &v_0, &v_1, &p_0, &p_1, &t_0, &t_1, &l_0, &l_1, &h_0, &h_1, &o_0, &o_1);
     let indices: [usize; 20] = [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 
     50, 51, 52, 53];
     let new_values = [a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1, 
         v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1];
+
+    println!("Before updating input");
     neural_network.update_input(&indices, &new_values);
+    println!("After updating input");
 }
 
 
@@ -724,12 +977,15 @@ fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork) {
 fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
     // Handle Bitstamp message
     if message.contains("subscription") {
-        println!("subscription succeeded. unimportant message\nmessage: {}", message);
+        println!("Bitstamp sol subscription succeeded. unimportant message\nmessage: {}", message);
         return;
     }
-
+    if message.contains("heartbeat") {
+        println!("Bitstamp sol heartbeat message\nmessage: {}", message);
+        return;
+    }
     if message.trim().is_empty() {
-        println!("Bitstamp: blank message received\nmessage: {}", message);
+        println!("Bitstamp sol: blank message received\nmessage: {}", message);
         return;
     }
 
@@ -760,7 +1016,9 @@ fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
 
     let indices: [usize; 2] = [54, 55];
     let new_values = [amount, price];
+    println!("Before updating input");
     neural_network.update_input(&indices, &new_values);
+    println!("After updating input");
 
 }
 
@@ -775,12 +1033,15 @@ fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
 fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
     // Handle Bitstamp message
     if message.contains("subscription") {
-        println!("subscription succeeded. unimportant message\nmessage: {}", message);
+        println!("Bitstamp xlm subscription succeeded. unimportant message\nmessage: {}", message);
         return;
     }
-
+    if message.contains("heartbeat") {
+        println!("Bitstamp xlm heartbeat message\nmessage: {}", message);
+        return;
+    }
     if message.trim().is_empty() {
-        println!("Bitstamp: blank message received\nmessage: {}", message);
+        println!("Bitstamp xlm: blank message received\nmessage: {}", message);
         return;
     }
 
@@ -811,7 +1072,9 @@ fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
 
     let indices: [usize; 2] = [56, 57];
     let new_values = [amount, price];
+    println!("Before updating input");
     neural_network.update_input(&indices, &new_values);
+    println!("After updating input");
 
 }
 
@@ -835,25 +1098,20 @@ fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork) {
     }
     let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
-    let mut amount = 0.0;
-    //let mut maker_side = "pppp";
-    let mut price = 0.0;
+    let mut amount: Option<f64> = None;
+    let mut price: Option<f64> = None;
 
     match data {
         Ok(value) => {
-    // Check if the payload is an object
+            if value.get("socket_sequence").and_then(Value::as_i64) == Some(0) {
+                println!("Gemini: socket sequence is 0, ignoring...");
+                return;
+            }
             if let Value::Object(map) = &value {
-                // Check if the object has a key "events" whose value is an array
                 if let Some(Value::Array(events)) = map.get("events") {
-                    // Check if the first element of the array is an object
                     if let Some(Value::Object(event)) = events.get(0) {
-                        // Extract the values
-                        amount = event.get("amount").and_then(Value::as_f64).unwrap();
-                        //maker_side = event.get("makerSide").and_then(Value::as_str).unwrap();
-                        price = event.get("price").and_then(Value::as_f64).unwrap();
-                        
-                       // println!("gemini:\namount: {}\nmaker_side: {}\nprice: {}\n\n\n", &amount, 
-                       //         &maker_side, &price);
+                        amount = event.get("amount").and_then(|v| v.as_str()).and_then(|s| s.parse::<f64>().ok());
+                        price = event.get("price").and_then(|v| v.as_str()).and_then(|s| s.parse::<f64>().ok());
                     }
                 }
             }
@@ -863,10 +1121,17 @@ fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork) {
         },
     }
 
-    let indices = [58, 59];
-    let new_values = [amount, price];
-    neural_network.update_input(&indices, &new_values);
-
+    if let (Some(amount), Some(price)) = (amount, price) {
+        let indices = [58, 59];
+        let new_values = [amount, price];
+        println!("Before updating input");
+        neural_network.update_input(&indices, &new_values);
+        println!("After updating input");
+    } else {
+        println!("Failed to parse amount and/or price");
+        println!("Gemini message:\n{}", message);
+        panic!();
+    }
     //counting the neurons for the the amount in each wallet, I will have 40 input neurons.
 
 }
@@ -912,10 +1177,12 @@ async fn main()  {
         weights: Vec::new(),
         biases: Vec::new(),
     };
-    neural_network.initialization(59, 80, 2); // Initialize with [input size], [output size], [# hidden layers]
+    neural_network.initialization(60, 80, 2); // Initialize with [input size], [output size], [# hidden layers]
 
     //// Print the network
     neural_network.print_layers();
+
+    
 
     //// Save the network
     //neural_network.save_v2()?;

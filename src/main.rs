@@ -84,7 +84,7 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
 
 //-----ALL-FOR-PARSING-UNDER-THIS//
 
-fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
+fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
     //if the message contains the word "heartbeat", ignore the entire message basically
     if message.contains("heartbeat") {
         println!("Coinbase sol eartbeat message. ignoring...it's contents:\n{}", message);
@@ -190,15 +190,28 @@ fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
         let new_values = [coinbase_price, coinbase_volume_24h, coinbase_low_24h, 
                     coinbase_high_24h, 
                     coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h,];
-        println!("Before updating input");
+
         neural_network.update_input(&indices, &new_values);
-        println!("After updating input");
+        //to mark the inputs as changed
+        for index in indices {
+            updated[index] = true;
+        }
+        if updated.iter().all(|&x| x) {
+            neural_network.print_layers();
+        } 
+        else {
+            let not_updated: Vec<String> = updated.iter()
+            .enumerate()
+            .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+            .collect();
+            println!("Neurons: {} have not been updated", not_updated.join(", "));
+        }
+
     }
 
 
 
-
-
+ 
 
 
 
@@ -217,7 +230,7 @@ fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
     //            &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
     //neural_network.update_input(&indices, &new_values);
 
-    fn handle_xlm_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
+    fn handle_xlm_coinbase(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
         //if the message contains the word "heartbeat", ignore the entire message basically
         if message.contains("heartbeat") {
             println!("Coinbase xlm: heartbeat message. ignoring...it's contents:\n{}", message);
@@ -324,9 +337,22 @@ fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork) {
             coinbase_high_24h, 
             coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h,];
 
-            println!("Before updating input");
+
             neural_network.update_input(&indices, &new_values);
-            println!("After updating input");
+            //to mark the inputs as changed
+            for index in indices {
+                updated[index] = true;
+            }
+            if updated.iter().all(|&x| x) {
+                neural_network.print_layers();
+            } 
+            else {
+                let not_updated: Vec<String> = updated.iter()
+                .enumerate()
+                .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+                .collect();
+                println!("Neurons: {} have not been updated", not_updated.join(", "));
+            }
         }
 
 
@@ -553,7 +579,7 @@ fn handle_kraken(message: &str) {
 
 }
 */
-fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork) {
+fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
     if message.contains("heartbeat") {
         println!("Kraken sol heartbeat message. ignoring...it's contents:\n{}", message);
         return;
@@ -746,9 +772,22 @@ fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork) {
     //    &v_today, &v_last24hours, &p_today, &p_last24hours, &t_today, 
     //    &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
     //    &o_today, &o_last24hours];
-    println!("Before updating input");
+
     neural_network.update_input(&indices, &new_values);
-    println!("After updating input");
+    //to mark the inputs as changed
+    for index in indices {
+        updated[index] = true;
+    }
+    if updated.iter().all(|&x| x) {
+        neural_network.print_layers();
+    } 
+    else {
+        let not_updated: Vec<String> = updated.iter()
+        .enumerate()
+        .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+        .collect();
+        println!("Neurons: {} have not been updated", not_updated.join(", "));
+    }
 }
 
 
@@ -764,7 +803,7 @@ fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork) {
 
 
 
-fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork) {
+fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
     if message.contains("heartbeat") {
         println!("Kraken xlm heartbeat message. ignoring...it's contents:\n{}", message);
         return;
@@ -953,9 +992,22 @@ fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork) {
     let new_values = [a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1, 
         v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1];
 
-    println!("Before updating input");
+
     neural_network.update_input(&indices, &new_values);
-    println!("After updating input");
+    //to mark the inputs as changed
+    for index in indices {
+        updated[index] = true;
+    }
+    if updated.iter().all(|&x| x) {
+        neural_network.print_layers();
+    } 
+    else {
+        let not_updated: Vec<String> = updated.iter()
+        .enumerate()
+        .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+        .collect();
+        println!("Neurons: {} have not been updated", not_updated.join(", "));
+    }
 }
 
 
@@ -974,7 +1026,7 @@ fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork) {
 
 
 
-fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
+fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
     // Handle Bitstamp message
     if message.contains("subscription") {
         println!("Bitstamp sol subscription succeeded. unimportant message\nmessage: {}", message);
@@ -1003,7 +1055,7 @@ fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
                     amount = data.get("amount").and_then(Value::as_f64).unwrap();
                     price = data.get("price").and_then(Value::as_f64).unwrap();
 
-                    println!("Bitstamp:\namount: {}\nprice: {}\n\n\n", &amount, &price);
+                    println!("Sol Bitstamp:\namount: {}\nprice: {}\n\n\n", &amount, &price);
         
                 }
             }
@@ -1016,9 +1068,22 @@ fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
 
     let indices: [usize; 2] = [54, 55];
     let new_values = [amount, price];
-    println!("Before updating input");
+
     neural_network.update_input(&indices, &new_values);
-    println!("After updating input");
+    //to mark the inputs as changed
+    for index in indices {
+        updated[index] = true;
+    }
+    if updated.iter().all(|&x| x) {
+        neural_network.print_layers();
+    } 
+    else {
+        let not_updated: Vec<String> = updated.iter()
+        .enumerate()
+        .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+        .collect();
+        println!("Neurons: {} have not been updated", not_updated.join(", "));
+    }
 
 }
 
@@ -1030,7 +1095,7 @@ fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
 
 
 
-fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
+fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
     // Handle Bitstamp message
     if message.contains("subscription") {
         println!("Bitstamp xlm subscription succeeded. unimportant message\nmessage: {}", message);
@@ -1059,7 +1124,7 @@ fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
                     amount = data.get("amount").and_then(Value::as_f64).unwrap();
                     price = data.get("price").and_then(Value::as_f64).unwrap();
 
-                    println!("Bitstamp:\namount: {}\nprice: {}\n\n\n", &amount, &price);
+                    println!("XLM Bitstamp:\namount: {}\nprice: {}\n\n\n", &amount, &price);
         
                 }
             }
@@ -1072,9 +1137,22 @@ fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
 
     let indices: [usize; 2] = [56, 57];
     let new_values = [amount, price];
-    println!("Before updating input");
+
     neural_network.update_input(&indices, &new_values);
-    println!("After updating input");
+    //to mark the inputs as changed
+    for index in indices {
+        updated[index] = true;
+    }
+    if updated.iter().all(|&x| x) {
+        neural_network.print_layers();
+    } 
+    else {
+        let not_updated: Vec<String> = updated.iter()
+        .enumerate()
+        .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+        .collect();
+        println!("Neurons: {} have not been updated", not_updated.join(", "));
+    }
 
 }
 
@@ -1087,7 +1165,7 @@ fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork) {
 
 
 
-fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork) {
+fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
     if message.contains("heartbeat") {
         println!("Gemini heartbeat message. ignoring...");
         return;
@@ -1124,9 +1202,22 @@ fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork) {
     if let (Some(amount), Some(price)) = (amount, price) {
         let indices = [58, 59];
         let new_values = [amount, price];
-        println!("Before updating input");
+
         neural_network.update_input(&indices, &new_values);
-        println!("After updating input");
+        //to mark the inputs as changed
+        for index in indices {
+            updated[index] = true;
+        }
+        if updated.iter().all(|&x| x) {
+            neural_network.print_layers();
+        } 
+        else {
+            let not_updated: Vec<String> = updated.iter()
+            .enumerate()
+            .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+            .collect();
+            println!("Neurons: {} have not been updated", not_updated.join(", "));
+        }
     } else {
         println!("Failed to parse amount and/or price");
         println!("Gemini message:\n{}", message);
@@ -1178,6 +1269,8 @@ async fn main()  {
         biases: Vec::new(),
     };
     neural_network.initialization(60, 80, 2); // Initialize with [input size], [output size], [# hidden layers]
+    //the first number in the initialization and the number below MUST be the same size
+    let mut updated = [false; 60];
 
     //// Print the network
     neural_network.print_layers();
@@ -1194,10 +1287,10 @@ async fn main()  {
     //// Print the loaded network
     //loaded_network.print_layers();
 
-    let right_now = Instant::now();   //to measure execution time
-    neural_network.feed_forward();
-    let elapsed = right_now.elapsed();
-    println!("Elapsed: {:?}", elapsed);
+    //let right_now = Instant::now();   //to measure execution time
+    //neural_network.feed_forward();
+    //let elapsed = right_now.elapsed();
+    //println!("Elapsed: {:?}", elapsed);
 
 
 
@@ -1292,13 +1385,13 @@ async fn main()  {
                 //else if "kraken received"...
                 //and if it's none of them, print that it's unknown and panic
                 match prefix {
-                    "SOL Coinbase Received" => handle_sol_coinbase(message, &mut neural_network),
-                    "XLM Coinbase Received" => handle_xlm_coinbase(message, &mut neural_network),
-                    "SOL Kraken Received" => handle_sol_kraken(message, &mut neural_network),
-                    "XLM Kraken Received" => handle_xlm_kraken(message, &mut neural_network),
-                    "SOL Bitstamp received" => handle_sol_bitstamp(message, &mut neural_network),
-                    "XLM Bitstamp received" => handle_xlm_bitstamp(message, &mut neural_network),
-                    "Gemini received" => handle_sol_gemini(message, &mut neural_network),
+                    "SOL Coinbase Received" => handle_sol_coinbase(message, &mut neural_network, &mut updated),
+                    "XLM Coinbase Received" => handle_xlm_coinbase(message, &mut neural_network, &mut updated),
+                    "SOL Kraken Received" => handle_sol_kraken(message, &mut neural_network, &mut updated),
+                    "XLM Kraken Received" => handle_xlm_kraken(message, &mut neural_network, &mut updated),
+                    "SOL Bitstamp received" => handle_sol_bitstamp(message, &mut neural_network, &mut updated),
+                    "XLM Bitstamp received" => handle_xlm_bitstamp(message, &mut neural_network, &mut updated),
+                    "Gemini received" => handle_sol_gemini(message, &mut neural_network, &mut updated),
                     _ => panic!("Unknown prefix: {}", prefix),
                 }
 

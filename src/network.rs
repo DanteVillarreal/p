@@ -1857,6 +1857,11 @@
 		//first smallest step:
 		//		create new functions in action_functions.rs that fake shit. so it will get all the data that it needs to get and then output the necessary data.
 
+		//01/09/24 - 
+		//		by this point I have created almost all of the sand box functions. I also had to add in XLM. This came with many many changes. 
+		//		I then needed to decide if I would have a mutex. I have decided not to since it isn't multithreaded and since no inputs will be changed at the same
+		//		time.
+
 
 
 

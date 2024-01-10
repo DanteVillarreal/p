@@ -1,3 +1,4 @@
+
 use chrono::Utc;            //to get time
 use hmac::{Hmac, Mac,};	                            //so I can do the signature stuff
 use sha2::{Sha256, Sha384, Sha512, Digest};	        //so I can do signature stuff
@@ -109,8 +110,8 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     //then [exchange buy]
     //then [exchange sell]
 
-    pub fn s_i0_do_nothing(value_prior: &f64) -> f64{
-        *value_prior
+    pub fn s_i0_do_nothing(value_prior: &f64) -> Result<f64, Box<dyn Error>>{
+        Ok(*value_prior)
     }
     //cant use 1 through 4 because minimum Kraken buy is 0.2 SOL
     /*

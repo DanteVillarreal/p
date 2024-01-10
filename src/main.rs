@@ -1,3 +1,5 @@
+
+
 use p::action_functions::s_i0_do_nothing;
 use rand_distr::num_traits::AsPrimitive;
 use rand_distr::{StandardNormal, Normal, Distribution};
@@ -928,8 +930,39 @@ async fn main()  {
     //the first number in the initialization and the number below MUST be the same size
     let mut updated = [false; 60];
 
+
+
+
+    //NOT FOR PARSING BUT I NEED THIS BEFORE THE FOR LOOP STARTS
+    let mut epsilon = 1.0;
+    //---------beginning of code so I can execute functions----------//
+    
+    dotenv().expect("Failed to load .env file");
+    let coinbase_secret = env::var("COINBASE_SECRET_KEY").expect("SECRET_KEY must be set. check if even have .env file and if that is in it");
+	let coinbase_api_key = env::var("COINBASE_API_KEY").expect("API_KEY must be set. check if even have .env file and if that is in it");
+    let kraken_secret = env::var("KRAKEN_PRIVATE_KEY").expect("KRAKEN_PRIVATE_KEY must be set. check if even have .env file and if that is in it");
+	let kraken_api_key = env::var("KRAKEN_API_KEY").expect("KRAKEN_API_KEY must be set. check if even have .env file and if that is in it");
+    let bitstamp_api_key = env::var("BITSTAMP_API_KEY").expect("could not find BITSTAMP_API_KEY spelled exactly like this. check if even have .env file");
+	let bitstamp_secret = env::var("BITSTAMP_SECRET_KEY").expect("could not find BITSTAMP_SECRET_KEY spelt exactly like this in .env file. check if even have .env file");
+    let gemini_api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set with exact name in .env file. check if even have .env file");
+    let gemini_secret = env::var("GEMINI_SECRET_KEY").expect("GEMINI_SECRET_KEY must be set with exact name in .env file. check if even have .env file");
+    let client = reqwest::Client::new();
+    let mut value_prior = 2000.0;
+    let mut coinbase_wallet = 500.0;
+    let mut bitstamp_wallet = 500.0;
+    let mut kraken_wallet = 500.0;
+    let mut gemini_wallet = 500.0;
+    //--end of code to execute funcitons
+
+
+
+
+
+
+
+    
     //// Print the network
-    neural_network.print_layers();
+    //neural_network.print_layers();
 
     
 
@@ -1130,7 +1163,7 @@ async fn main()  {
 
 
 
- 
+
 
 
 

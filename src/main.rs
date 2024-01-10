@@ -83,7 +83,7 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
 
 
 //-----ALL-FOR-PARSING-UNDER-THIS//
-/*
+
 fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
     //if the message contains the word "heartbeat", ignore the entire message basically
     if message.contains("heartbeat") {
@@ -884,7 +884,7 @@ fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, updated:
 }
 
 //-----ALL-FOR-PARSING-ABOVE-THIS//
-*/
+
 
 
 
@@ -915,7 +915,7 @@ fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, updated:
 async fn main()  {
     
 //-----ALL-FOR-PARSING-UNDER-THIS//
-    /*
+    
     env::set_var("RUST_BACKTRACE", "1");
 
     //this is just example code to evaluate if save and load of network works and it does  
@@ -1067,7 +1067,7 @@ async fn main()  {
             },
         }
     }
-    */
+    
 //-----ALL-FOR-PARSING-ABOVE-THIS//
 
 
@@ -1076,42 +1076,6 @@ async fn main()  {
 
 
 
-    
-
-
-
-    
-    //added 12/27/23 - this shit does NOT work. need to look at it later
-    //let functions: Vec<fn(f64) -> f64> = vec![s_i0_do_nothing(value_prior), s_i1_sol_1_coinbase_kraken(value_prior: &f64, coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-    //    gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client)];
-
-    /*
-    loop {
-        let (index, _) = self.exploration_or_exploitation(&mut epsilon);
-        let value_prior = amount_of_money;
-        
-        // Ensure the index is within the range of available functions
-        if index < functions.len() {
-            // Execute the selected function
-            amount_of_money = functionsindex;
-        } else {
-            // Handle the case where the index is out of range
-            println!("Index out of range");
-            break;
-        }
-        
-        let value_after = amount_of_money;
-        let reward_value = reward(value_prior, value_after);
-        
-        // You can then use the reward_value for further computations
-        // ...
-        
-        // Break condition for the loop
-        if some_condition {
-            break;
-        }
-    }
-    */
 
 
 
@@ -1119,6 +1083,54 @@ async fn main()  {
 
 
 
+    //------------------------for----experience----replay---below----------------------//
+
+
+    let mut replay_buffer = ReplayBuffer::new(10);
+
+    // Create a real transition
+    let state = NetworkLayer { /* fill with your real data */ };
+    let action = /* your real action */;
+    let reward = /* your real reward */;
+    let next_state = NetworkLayer { /* fill with your real data */ };
+
+    let transition = Transition {
+        state,
+        action,
+        reward,
+        next_state,
+    };
+
+    // Push the transition into the buffer
+    replay_buffer.push(transition);
+
+    // Save the buffer to a file
+    replay_buffer.save_to_file("replay_buffer.json").unwrap();
+
+    // Load the buffer from the file
+    let loaded_buffer = ReplayBuffer::load_from_file("replay_buffer.json").unwrap();
+
+    // Check if the loaded buffer is the same as the original one
+    assert_eq!(replay_buffer.buffer.len(), loaded_buffer.buffer.len());
+    assert_eq!(replay_buffer.capacity, loaded_buffer.capacity);
+    // Add more checks if necessary
+
+
+
+ //------------------------for----experience----replay---above----------------------//    
+
+
+
+
+
+
+
+
+
+
+
+
+ 
 
 
 
@@ -1178,4 +1190,7 @@ async fn main()  {
     let client = reqwest::Client::new();
     let value_after = action_functions::s_i105_xlm_5_kraken_bitstamp(&coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
         &gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key  ).await;
+
+
+    
 }

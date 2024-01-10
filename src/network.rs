@@ -1863,7 +1863,13 @@
 		//		time.
 
 
-
+		//01/09/24 - 
+		//		do I need to make it so there's no mutex until after every node has been updated
+		//		 	because then by that point I will be accessing it to do a feed-forward.
+		//			And I can't do a feed-forward while my inputs are being changed. Then I'll get
+		//		 	the wrong results.
+		//		Then do I need to make it so can't do another feed-forward until after I have
+		//			established the state, action, reward, next_state.
 
 
 	}

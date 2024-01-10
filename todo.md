@@ -238,3 +238,4 @@ Log of what I've done:
 01/09/24 - I added a way to track if all the nodes have been updated. Then I did a print statement to show the updated neurons. Next step is to create the rest of the xlm methods WITH the minimum withdraw/buy/deposite already in so I dont have to remove every function. I got this!
 01/09/24 - added first xlm function in action_functions. Next step is to test it and see if it works. After that is to do the rest of all of them. I got this!
 01/09/24 - finished all of xlm functions in action_functions. Next step is to check experience replay. I got this!
+01/09/24 - interim commit that will just save what I have so far. I am going to change some structs and yes, add a mutex so I need to make sure I have a good save. Next step is to add the mutex. After that is to check if it works. I got this!

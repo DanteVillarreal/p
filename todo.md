@@ -139,7 +139,10 @@ Make it so there are functions built into 1 function so that it does the initial
      in my main, find a way to make it do less checks when checking if the indices have been updated.
      in bitstamp and gemini to maintain uptime, do a request to just get the price and amount instead of waiting like 5 minutes for gemini or bitstamp to finally get a trade. If I did I would have to add a mutex just in case it did happen to be that it updated from the websocket client at the same time the request was updating it.
      not entirely sure if I need all of the messages in action_functions. I should see which ones I dont need for the functions to continue working, and remove the messages I do not need so it loads less into RAM.
+     figure out how to use no mutex. manual checks may be faster
 21. change all things to be warning free obviously, but also to change all initializations to be not 0, but Option<var type> instead. Except for the neurons of course.
+22.
+        
 
 
 
@@ -239,3 +242,4 @@ Log of what I've done:
 01/09/24 - added first xlm function in action_functions. Next step is to test it and see if it works. After that is to do the rest of all of them. I got this!
 01/09/24 - finished all of xlm functions in action_functions. Next step is to check experience replay. I got this!
 01/09/24 - interim commit that will just save what I have so far. I am going to change some structs and yes, add a mutex so I need to make sure I have a good save. Next step is to add the mutex. After that is to check if it works. I got this!
+01/10/24 - added mutex in update_input and feed_forward. Next step is to make it check experience replay. I got this!

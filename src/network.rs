@@ -7,6 +7,7 @@
 	use std::io::{BufReader, BufWriter};
 	use chrono::Utc;														//for timestamp
 	use std::path::Path;													//for help in representing file paths
+	use std::sync::Mutex;
 
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
 	
@@ -52,7 +53,10 @@
 		pub layers: Vec<NetworkLayer>,
 		pub weights: Vec<WeightLayer>,
 		pub biases: Vec<BiasLayer>,
-	}
+		pub input_mutex: Mutex<()>,		//added 01/10/24 - because I dont want input neurons read/written at sameTime
+	}									//	it's used as of 01/10/24, only in update_input and feed_forward.
+										//	not in backpropagation or update_weights because im not directly
+										//	accessing/editing input layer, just its weights
 
 
 
@@ -419,6 +423,13 @@
 	impl NeuralNetwork {
 		
 		pub fn feed_forward(&mut self) {
+			
+			//line of code below added 01/10/24
+			//why lock mutex: because it could uses the input layer's values, and so I can't have
+			//		them change while I'm accessing them. so lock it, then when I'm done
+			//		 and I unlock it, then you can mutate them.
+			let _guard = self.input_mutex.lock().unwrap();
+
 			//starting at 1 because all the layers rely on the layer before it, 
 			//		and the input layer is just the input itself so I dont have
 			//		 to compute anything for it
@@ -887,6 +898,13 @@
 
 
 		pub fn update_input(&mut self, indices: &[usize], new_values: &[f64]) {
+
+			//this line added: 01/10/24
+			//need mutex because I dont want to update the input layer while I'm reading from it
+			let _guard = self.input_mutex.lock().unwrap();
+
+
+
 			// Check that indices and new_values have the same length
 			//EXPLAIN THIS LATER
 			assert_eq!(indices.len(), new_values.len());
@@ -1597,6 +1615,8 @@
 
 
 		//Most updated version
+		//dont think it will be accessed at same time as feed_forward, so I will not add a mutex
+		//also the function, at least I dont think, doesnt directly access the input neurons, just its weights
 		pub fn el_backpropagation(&mut self, loss_derivative: &f64, current_q_value_index: &usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
 			//the purpose of this function is to find the gradient (aka derivative)
 			//		 of the loss funciton with respect to each weight.
@@ -1700,7 +1720,8 @@
 
 
 
-
+		//dont think it will be accessed at same tim as feed_forward, so I will not add a mutex
+		//also, it doesn't access the input neurons. at least I dont think.
 		pub fn el_update_weights(&mut self, gradients: &Vec<f64>, indices: &Vec<(usize, usize, usize)>) {
 			// Iterate over all gradients and their corresponding indices
 			let learning_rate = 0.001;

@@ -16983,27 +16983,27 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
             //added 12/29/23
             //this is the parsing
             let v: Value = serde_json::from_str(&response_text)?;
-            let mut coinbase_sell_price = 0.0;
-            let mut coinbase_buy_price = 0.0;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
     
             // Access the pricebooks array
             if let Some(pricebooks) = v["pricebooks"].as_array() {
                 // Iterate over each pricebook
                 for pricebook in pricebooks {
                     // Access the product_id, bids, and asks
-                    let product_id = pricebook["product_id"].as_str().unwrap_or("");
-                    let bids = &pricebook["bids"][0];
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
                     let asks = &pricebook["asks"][0];
             
                     // Access the price and size of the bids and asks
-                    coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
-                    let bid_size = bids["size"].as_str().unwrap_or("size not found");
-                    coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
                     let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
             
-                    println!("Product ID: {}", product_id);
-                    //println!("Best bid: {} (size: {})", bid_price, bid_size);
-                    //println!("Best ask: {} (size: {})", ask_price, ask_size);
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
                 }
             }
     
@@ -17027,9 +17027,9 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     
     
     
-    
+            println!("3 second wait");
             delay_for(Duration::from_secs(3)).await;
-    
+            
     
     
     
@@ -17070,9 +17070,9 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
                     .finish();
                 //FOR DEBUGGING
                 //println!("Private key:\n{}", secret);
-                println!("Nonce:\n{}", nonce_str);
-                println!("Encoded payload:\n{}", post_data);
-                println!("URI Path:\n{}", url_path);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
             
                 // Create the encoded string (nonce + post data) and hash it
                 let encoded = format!("{}{}", nonce_str, post_data);
@@ -17095,7 +17095,7 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
             
                 // Return the base64-encoded HMAC
                 let signature = base64::encode(result.into_bytes());
-                println!("Kraken signature:\n{}", signature);
+                //println!("Kraken signature:\n{}", signature);
             
                 signature
             }
@@ -17119,16 +17119,18 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
             let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
     
             let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
-    
+            
+            //println!("kraken response:{}", kraken_response_text);
+
             let v: Value = serde_json::from_str(&kraken_response_text)?;
-            let mut kraken_buy_price_ask = 0.0;
+            //let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
-            if let Some(xlmusd) = v["result"]["XLMUSD"].as_object() {
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
                 // Access the ask and bid prices
-                kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                //kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
                 kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
             
-                println!("Ask price: {}", kraken_buy_price_ask);
+                //println!("Ask price: {}", kraken_buy_price_ask);
                 println!("Bid price: {}", kraken_sell_price_bid );
             }
             else {
@@ -17138,13 +17140,13 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
             //println!("response:\n{:?}", kraken_response_text);
             //coinbase calculations
                 let coinbase_taker_fee = 0.008;
-    
-                let total_spent = 0.05*(*coinbase_wallet);
+                let fraction_of_wallet_used = 0.05;
+                let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
                 let fee_for_purchase = total_spent*coinbase_taker_fee;
                 let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
                 //new state of coinbase wallet below
                 *coinbase_wallet -= total_spent;
-                let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price;
+                let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
     
             //kraken calculations
                 let kraken_taker_fee = 0.0026;
@@ -17164,4 +17166,5877 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
                 return Ok(value_after)
 
     }
+
+    pub async fn s_i76_xlm_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+            
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            //		let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            //let mut kraken_buy_price_ask = 0.0;
+            let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                //kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                //println!("Ask price: {}", kraken_buy_price_ask);
+                println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+    
+            //println!("response:\n{:?}", kraken_response_text);
+            //coinbase calculations
+                let coinbase_taker_fee = 0.008;
+                let fraction_of_wallet_used = 0.06;
+                let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                let fee_for_purchase = total_spent*coinbase_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of coinbase wallet below
+                *coinbase_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+    
+            //this will count as value after
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i77_xlm_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+            
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            //		let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            //let mut kraken_buy_price_ask = 0.0;
+            let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                //kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                //println!("Ask price: {}", kraken_buy_price_ask);
+                println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+    
+            //println!("response:\n{:?}", kraken_response_text);
+            //coinbase calculations
+                let coinbase_taker_fee = 0.008;
+                let fraction_of_wallet_used = 0.07;
+                let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                let fee_for_purchase = total_spent*coinbase_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of coinbase wallet below
+                *coinbase_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+    
+            //this will count as value after
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i78_xlm_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+            
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            //		let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            //let mut kraken_buy_price_ask = 0.0;
+            let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                //kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                //println!("Ask price: {}", kraken_buy_price_ask);
+                println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+    
+            //println!("response:\n{:?}", kraken_response_text);
+            //coinbase calculations
+                let coinbase_taker_fee = 0.008;
+                let fraction_of_wallet_used = 0.08;
+                let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                let fee_for_purchase = total_spent*coinbase_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of coinbase wallet below
+                *coinbase_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+    
+            //this will count as value after
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i79_xlm_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+            
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            //		let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            //let mut kraken_buy_price_ask = 0.0;
+            let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                //kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                //println!("Ask price: {}", kraken_buy_price_ask);
+                println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+    
+            //println!("response:\n{:?}", kraken_response_text);
+            //coinbase calculations
+                let coinbase_taker_fee = 0.008;
+                let fraction_of_wallet_used = 0.09;
+                let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                let fee_for_purchase = total_spent*coinbase_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of coinbase wallet below
+                *coinbase_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+    
+            //this will count as value after
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i80_xlm_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+            
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            //		let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            //let mut kraken_buy_price_ask = 0.0;
+            let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                //kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                //println!("Ask price: {}", kraken_buy_price_ask);
+                println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+    
+            //println!("response:\n{:?}", kraken_response_text);
+            //coinbase calculations
+                let coinbase_taker_fee = 0.008;
+                let fraction_of_wallet_used = 0.10;
+                let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                let fee_for_purchase = total_spent*coinbase_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of coinbase wallet below
+                *coinbase_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                let kraken_taker_fee = 0.0026;
+                
+                let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *kraken_wallet += money_from_sell_after_fees;
+    
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+    
+            //this will count as value after
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i83_xlm_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+    
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+
+
+
+            //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+            
+    
+
+
+            //coinbase calculations
+            let coinbase_taker_fee = 0.008;
+            let fraction_of_wallet_used = 0.03;
+            let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+            let fee_for_purchase = total_spent*coinbase_taker_fee;
+            let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+            //new state of coinbase wallet below
+            *coinbase_wallet -= total_spent;
+            let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i84_xlm_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+    
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+
+
+
+            //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+            
+    
+
+
+            //coinbase calculations
+            let coinbase_taker_fee = 0.008;
+            let fraction_of_wallet_used = 0.04;
+            let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+            let fee_for_purchase = total_spent*coinbase_taker_fee;
+            let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+            //new state of coinbase wallet below
+            *coinbase_wallet -= total_spent;
+            let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i85_xlm_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+    
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+
+
+
+            //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+            
+    
+
+
+            //coinbase calculations
+            let coinbase_taker_fee = 0.008;
+            let fraction_of_wallet_used = 0.05;
+            let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+            let fee_for_purchase = total_spent*coinbase_taker_fee;
+            let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+            //new state of coinbase wallet below
+            *coinbase_wallet -= total_spent;
+            let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i86_xlm_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+    
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+
+
+
+            //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+            
+    
+
+
+            //coinbase calculations
+            let coinbase_taker_fee = 0.008;
+            let fraction_of_wallet_used = 0.06;
+            let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+            let fee_for_purchase = total_spent*coinbase_taker_fee;
+            let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+            //new state of coinbase wallet below
+            *coinbase_wallet -= total_spent;
+            let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i87_xlm_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+    
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+
+
+
+            //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+            
+    
+
+
+            //coinbase calculations
+            let coinbase_taker_fee = 0.008;
+            let fraction_of_wallet_used = 0.07;
+            let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+            let fee_for_purchase = total_spent*coinbase_taker_fee;
+            let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+            //new state of coinbase wallet below
+            *coinbase_wallet -= total_spent;
+            let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i88_xlm_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+    
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+
+
+
+            //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+            
+    
+
+
+            //coinbase calculations
+            let coinbase_taker_fee = 0.008;
+            let fraction_of_wallet_used = 0.08;
+            let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+            let fee_for_purchase = total_spent*coinbase_taker_fee;
+            let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+            //new state of coinbase wallet below
+            *coinbase_wallet -= total_spent;
+            let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i89_xlm_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+    
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+
+
+
+            //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+            
+    
+
+
+            //coinbase calculations
+            let coinbase_taker_fee = 0.008;
+            let fraction_of_wallet_used = 0.09;
+            let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+            let fee_for_purchase = total_spent*coinbase_taker_fee;
+            let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+            //new state of coinbase wallet below
+            *coinbase_wallet -= total_spent;
+            let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i90_xlm_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+    
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            //let mut coinbase_sell_price_bid = 0.0;
+            let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    //let bids = &pricebook["bids"][0];
+                    let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    //coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+
+
+
+            //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+// Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+	//println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+            
+    
+
+
+            //coinbase calculations
+            let coinbase_taker_fee = 0.008;
+            let fraction_of_wallet_used = 0.10;
+            let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+            let fee_for_purchase = total_spent*coinbase_taker_fee;
+            let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+            //new state of coinbase wallet below
+            *coinbase_wallet -= total_spent;
+            let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            //kraken calculations
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+            //bitstamp calculations
+                let bitstamp_taker_fee = 0.004;
+                let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+            //this will count as value after
+                let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+                return Ok(value_after)
+
+    }
+
+    pub async fn s_i95_xlm_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let mut kraken_buy_price_ask = 0.0;
+            //let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                println!("i95 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+                //println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            let mut coinbase_sell_price_bid = 0.0;
+            //let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    let bids = &pricebook["bids"][0];
+                    //let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    //coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    println!("i95 Best sell bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+            //println!("response:\n{:?}", kraken_response_text);
+           // //coinbase calculations - buy
+                //let coinbase_taker_fee = 0.008;
+                //let fraction_of_wallet_used = 0.05;
+                //let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            ////kraken calculations - sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+
+
+            //kraken calculations - buy
+                let kraken_taker_fee = 0.0026;
+                let fraction_of_wallet_used = 0.05;
+                let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+                let fee_for_purchase = total_spent*kraken_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of kraken wallet
+                *kraken_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+    
+            //coinbase calculations - sell
+                let coinbase_taker_fee = 0.008;
+                    
+                let money_from_sell_before_fees = amount_of_xlm * coinbase_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *coinbase_wallet += money_from_sell_after_fees;
+
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+
+
+            //this will count as value after
+    
+    
+    
+            return Ok(value_after)
+
+    }
+
+    pub async fn s_i96_xlm_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let mut kraken_buy_price_ask = 0.0;
+            //let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                //println!("i95 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+                //println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            let mut coinbase_sell_price_bid = 0.0;
+            //let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    let bids = &pricebook["bids"][0];
+                    //let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    //coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("i95 Best sell bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+            //println!("response:\n{:?}", kraken_response_text);
+           // //coinbase calculations - buy
+                //let coinbase_taker_fee = 0.008;
+                //let fraction_of_wallet_used = 0.05;
+                //let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            ////kraken calculations - sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+
+
+            //kraken calculations - buy
+                let kraken_taker_fee = 0.0026;
+                let fraction_of_wallet_used = 0.06;
+                let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+                let fee_for_purchase = total_spent*kraken_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of kraken wallet
+                *kraken_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+    
+            //coinbase calculations - sell
+                let coinbase_taker_fee = 0.008;
+                    
+                let money_from_sell_before_fees = amount_of_xlm * coinbase_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *coinbase_wallet += money_from_sell_after_fees;
+
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+
+
+            //this will count as value after
+    
+    
+    
+            return Ok(value_after)
+
+    }
+
+    pub async fn s_i97_xlm_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let mut kraken_buy_price_ask = 0.0;
+            //let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                //println!("i95 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+                //println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            let mut coinbase_sell_price_bid = 0.0;
+            //let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    let bids = &pricebook["bids"][0];
+                    //let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    //coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("i95 Best sell bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+            //println!("response:\n{:?}", kraken_response_text);
+           // //coinbase calculations - buy
+                //let coinbase_taker_fee = 0.008;
+                //let fraction_of_wallet_used = 0.05;
+                //let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            ////kraken calculations - sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+
+
+            //kraken calculations - buy
+                let kraken_taker_fee = 0.0026;
+                let fraction_of_wallet_used = 0.07;
+                let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+                let fee_for_purchase = total_spent*kraken_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of kraken wallet
+                *kraken_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+    
+            //coinbase calculations - sell
+                let coinbase_taker_fee = 0.008;
+                    
+                let money_from_sell_before_fees = amount_of_xlm * coinbase_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *coinbase_wallet += money_from_sell_after_fees;
+
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+
+
+            //this will count as value after
+    
+    
+    
+            return Ok(value_after)
+
+    }
+
+    pub async fn s_i98_xlm_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let mut kraken_buy_price_ask = 0.0;
+            //let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                //println!("i95 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+                //println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            let mut coinbase_sell_price_bid = 0.0;
+            //let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    let bids = &pricebook["bids"][0];
+                    //let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    //coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("i95 Best sell bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+            //println!("response:\n{:?}", kraken_response_text);
+           // //coinbase calculations - buy
+                //let coinbase_taker_fee = 0.008;
+                //let fraction_of_wallet_used = 0.05;
+                //let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            ////kraken calculations - sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+
+
+            //kraken calculations - buy
+                let kraken_taker_fee = 0.0026;
+                let fraction_of_wallet_used = 0.08;
+                let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+                let fee_for_purchase = total_spent*kraken_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of kraken wallet
+                *kraken_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+    
+            //coinbase calculations - sell
+                let coinbase_taker_fee = 0.008;
+                    
+                let money_from_sell_before_fees = amount_of_xlm * coinbase_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *coinbase_wallet += money_from_sell_after_fees;
+
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+
+
+            //this will count as value after
+    
+    
+    
+            return Ok(value_after)
+
+    }
+
+    pub async fn s_i99_xlm_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let mut kraken_buy_price_ask = 0.0;
+            //let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                //println!("i95 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+                //println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            let mut coinbase_sell_price_bid = 0.0;
+            //let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    let bids = &pricebook["bids"][0];
+                    //let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    //coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("i95 Best sell bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+            //println!("response:\n{:?}", kraken_response_text);
+           // //coinbase calculations - buy
+                //let coinbase_taker_fee = 0.008;
+                //let fraction_of_wallet_used = 0.05;
+                //let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            ////kraken calculations - sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+
+
+            //kraken calculations - buy
+                let kraken_taker_fee = 0.0026;
+                let fraction_of_wallet_used = 0.09;
+                let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+                let fee_for_purchase = total_spent*kraken_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of kraken wallet
+                *kraken_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+    
+            //coinbase calculations - sell
+                let coinbase_taker_fee = 0.008;
+                    
+                let money_from_sell_before_fees = amount_of_xlm * coinbase_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *coinbase_wallet += money_from_sell_after_fees;
+
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+
+
+            //this will count as value after
+    
+    
+    
+            return Ok(value_after)
+
+    }
+
+    pub async fn s_i100_xlm_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+    
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XLMUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                    .header("API-Key", kraken_api_key)
+                    .header("API-Sign", &kraken_signature)
+                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    .body(format!("nonce={}", nonce))
+                    .build()
+                    .expect("Failed to build kraken request");
+    
+    
+            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+    
+            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            
+            //println!("kraken response:{}", kraken_response_text);
+
+            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let mut kraken_buy_price_ask = 0.0;
+            //let mut kraken_sell_price_bid = 0.0;
+            if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+                // Access the ask and bid prices
+                kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+                //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            
+                //println!("i95 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+                //println!("Bid price: {}", kraken_sell_price_bid );
+            }
+            else {
+                println!("didnt parse kraken correctly.");
+            }
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            println!("3 second wait");
+            delay_for(Duration::from_secs(3)).await;
+
+
+
+
+            let now = Utc::now();
+            let time_stamp = now.timestamp().to_string();
+            let method = "GET";
+            let request_path = "/api/v3/brokerage/best_bid_ask";
+            let body = "";
+            let message = format!("{}{}{}{}", &time_stamp, 
+            &method, &request_path, &body);
+            type HmacSha256 = Hmac<Sha256>;
+            fn sign(message: &str, coinbase_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+            mac.update(message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+            }
+            let coinbase_signature = sign(&message, &coinbase_secret);
+    
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build()?;
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+    
+            let response = client.execute(request).await?;
+            //let response = match response {
+            //    Ok(resp) => resp,
+            //    Err(e) => {
+            //        eprintln!("Failed to execute request: \n{}", e);
+            //        return Err(e);
+            //    }
+            //};
+    
+    
+            let response_text = response.text().await?;
+    
+            //added 12/29/23
+            //this is the parsing
+            let v: Value = serde_json::from_str(&response_text)?;
+            let mut coinbase_sell_price_bid = 0.0;
+            //let mut coinbase_buy_price_ask = 0.0;
+    
+            // Access the pricebooks array
+            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                // Iterate over each pricebook
+                for pricebook in pricebooks {
+                    // Access the product_id, bids, and asks
+                    //let product_id = pricebook["product_id"].as_str().unwrap_or("");
+                    let bids = &pricebook["bids"][0];
+                    //let asks = &pricebook["asks"][0];
+            
+                    // Access the price and size of the bids and asks
+                    coinbase_sell_price_bid = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let bid_size = bids["size"].as_str().unwrap_or("size not found");
+                    //coinbase_buy_price_ask = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+                    //let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+            
+                    //println!("Product ID: {}", product_id);
+                    //println!("i95 Best sell bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+                    //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                }
+            }
+    
+            //manages any errors from line above
+            //let response_text = match response_text {
+            //    Ok(t) => t,
+            //    Err(e) => {
+            //        eprintln!("Failed to read response text: \n{}", e);
+            //        return;
+            //    }
+            //};
+    
+            //prints the actual response
+            //println!("list accounts response\n{:?}", &response_text);
+    
+            //println!("response:\n{:?}", kraken_response_text);
+           // //coinbase calculations - buy
+                //let coinbase_taker_fee = 0.008;
+                //let fraction_of_wallet_used = 0.05;
+                //let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
+                //let fee_for_purchase = total_spent*coinbase_taker_fee;
+                //let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                ////new state of coinbase wallet below
+                //*coinbase_wallet -= total_spent;
+                //let amount_of_xlm = money_going_to_xlm_after_fees/coinbase_buy_price_ask;
+    
+            ////kraken calculations - sell
+                //let kraken_taker_fee = 0.0026;
+                
+                //let money_from_sell_before_fees = amount_of_xlm * kraken_sell_price_bid;
+                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                //*kraken_wallet += money_from_sell_after_fees;
+    
+                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+    
+
+
+            //kraken calculations - buy
+                let kraken_taker_fee = 0.0026;
+                let fraction_of_wallet_used = 0.10;
+                let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+                let fee_for_purchase = total_spent*kraken_taker_fee;
+                let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+                //new state of kraken wallet
+                *kraken_wallet -= total_spent;
+                let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+    
+            //coinbase calculations - sell
+                let coinbase_taker_fee = 0.008;
+                    
+                let money_from_sell_before_fees = amount_of_xlm * coinbase_sell_price_bid;
+                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+                *coinbase_wallet += money_from_sell_after_fees;
+
+                let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
+
+
+
+            //this will count as value after
+    
+    
+    
+            return Ok(value_after)
+
+    }
+
+    pub async fn s_i105_xlm_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        //look at m, then look at functions to figure out current price of sol at coinbase,
+    
+
+    //---KRAKEN--//
+    
+        //basically Kraken requires a value that is always increasing to be in each request.
+        //I didnt use now.timestamp().to_string()  because just in case I have 2 
+        //	requests in a second I dont want to be penalized.
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time. MAY NEED TO USE LOCAL TIME
+        let now = Utc::now();
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=XLMUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            //println!("Nonce:\n{}", nonce_str);
+            //println!("Encoded payload:\n{}", post_data);
+            //println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            //println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        
+        //println!("kraken response:{}", kraken_response_text);
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        //let mut kraken_sell_price_bid = 0.0;
+        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+
+
+
+
+
+
+
+
+                //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+    type HmacSha256 = Hmac<Sha256>;
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+    // Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    println!("Bid: {}", bitstamp_sell_price_bid, );
+    //println!("Ask: {}", bitstamp_buy_price_ask);
+	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+    //kraken calculations - buy
+    let kraken_taker_fee = 0.0026;
+    let fraction_of_wallet_used = 0.05;
+    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+    let fee_for_purchase = total_spent*kraken_taker_fee;
+    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+    //new state of kraken wallet
+    *kraken_wallet -= total_spent;
+    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+    //bitstamp calculations
+    let bitstamp_taker_fee = 0.004;
+    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+    *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+    return Ok(value_after)
+
+
+    }
+
+    pub async fn s_i106_xlm_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        //look at m, then look at functions to figure out current price of sol at coinbase,
+    
+
+    //---KRAKEN--//
+    
+        //basically Kraken requires a value that is always increasing to be in each request.
+        //I didnt use now.timestamp().to_string()  because just in case I have 2 
+        //	requests in a second I dont want to be penalized.
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time. MAY NEED TO USE LOCAL TIME
+        let now = Utc::now();
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=XLMUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            //println!("Nonce:\n{}", nonce_str);
+            //println!("Encoded payload:\n{}", post_data);
+            //println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            //println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        
+        //println!("kraken response:{}", kraken_response_text);
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        //let mut kraken_sell_price_bid = 0.0;
+        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+
+
+
+
+
+
+
+
+                //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+    type HmacSha256 = Hmac<Sha256>;
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+    // Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    println!("Bid: {}", bitstamp_sell_price_bid, );
+    //println!("Ask: {}", bitstamp_buy_price_ask);
+	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+    //kraken calculations - buy
+    let kraken_taker_fee = 0.0026;
+    let fraction_of_wallet_used = 0.06;
+    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+    let fee_for_purchase = total_spent*kraken_taker_fee;
+    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+    //new state of kraken wallet
+    *kraken_wallet -= total_spent;
+    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+    //bitstamp calculations
+    let bitstamp_taker_fee = 0.004;
+    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+    *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+    return Ok(value_after)
+
+
+    }
+
+    pub async fn s_i107_xlm_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        //look at m, then look at functions to figure out current price of sol at coinbase,
+    
+
+    //---KRAKEN--//
+    
+        //basically Kraken requires a value that is always increasing to be in each request.
+        //I didnt use now.timestamp().to_string()  because just in case I have 2 
+        //	requests in a second I dont want to be penalized.
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time. MAY NEED TO USE LOCAL TIME
+        let now = Utc::now();
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=XLMUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            //println!("Nonce:\n{}", nonce_str);
+            //println!("Encoded payload:\n{}", post_data);
+            //println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            //println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        
+        //println!("kraken response:{}", kraken_response_text);
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        //let mut kraken_sell_price_bid = 0.0;
+        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+
+
+
+
+
+
+
+
+                //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+    type HmacSha256 = Hmac<Sha256>;
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+    // Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    println!("Bid: {}", bitstamp_sell_price_bid, );
+    //println!("Ask: {}", bitstamp_buy_price_ask);
+	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+    //kraken calculations - buy
+    let kraken_taker_fee = 0.0026;
+    let fraction_of_wallet_used = 0.07;
+    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+    let fee_for_purchase = total_spent*kraken_taker_fee;
+    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+    //new state of kraken wallet
+    *kraken_wallet -= total_spent;
+    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+    //bitstamp calculations
+    let bitstamp_taker_fee = 0.004;
+    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+    *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+    return Ok(value_after)
+
+
+    }
+
+    pub async fn s_i108_xlm_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        //look at m, then look at functions to figure out current price of sol at coinbase,
+    
+
+    //---KRAKEN--//
+    
+        //basically Kraken requires a value that is always increasing to be in each request.
+        //I didnt use now.timestamp().to_string()  because just in case I have 2 
+        //	requests in a second I dont want to be penalized.
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time. MAY NEED TO USE LOCAL TIME
+        let now = Utc::now();
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=XLMUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            //println!("Nonce:\n{}", nonce_str);
+            //println!("Encoded payload:\n{}", post_data);
+            //println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            //println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        
+        //println!("kraken response:{}", kraken_response_text);
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        //let mut kraken_sell_price_bid = 0.0;
+        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+
+
+
+
+
+
+
+
+                //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+    type HmacSha256 = Hmac<Sha256>;
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+    // Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    println!("Bid: {}", bitstamp_sell_price_bid, );
+    //println!("Ask: {}", bitstamp_buy_price_ask);
+	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+    //kraken calculations - buy
+    let kraken_taker_fee = 0.0026;
+    let fraction_of_wallet_used = 0.08;
+    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+    let fee_for_purchase = total_spent*kraken_taker_fee;
+    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+    //new state of kraken wallet
+    *kraken_wallet -= total_spent;
+    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+    //bitstamp calculations
+    let bitstamp_taker_fee = 0.004;
+    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+    *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+    return Ok(value_after)
+
+
+    }
+
+    pub async fn s_i109_xlm_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        //look at m, then look at functions to figure out current price of sol at coinbase,
+    
+
+    //---KRAKEN--//
+    
+        //basically Kraken requires a value that is always increasing to be in each request.
+        //I didnt use now.timestamp().to_string()  because just in case I have 2 
+        //	requests in a second I dont want to be penalized.
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time. MAY NEED TO USE LOCAL TIME
+        let now = Utc::now();
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=XLMUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            //println!("Nonce:\n{}", nonce_str);
+            //println!("Encoded payload:\n{}", post_data);
+            //println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            //println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        
+        //println!("kraken response:{}", kraken_response_text);
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        //let mut kraken_sell_price_bid = 0.0;
+        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+
+
+
+
+
+
+
+
+                //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+    type HmacSha256 = Hmac<Sha256>;
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+    // Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    println!("Bid: {}", bitstamp_sell_price_bid, );
+    //println!("Ask: {}", bitstamp_buy_price_ask);
+	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+    //kraken calculations - buy
+    let kraken_taker_fee = 0.0026;
+    let fraction_of_wallet_used = 0.09;
+    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+    let fee_for_purchase = total_spent*kraken_taker_fee;
+    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+    //new state of kraken wallet
+    *kraken_wallet -= total_spent;
+    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+    //bitstamp calculations
+    let bitstamp_taker_fee = 0.004;
+    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+    *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+    return Ok(value_after)
+
+
+    }
+
+    pub async fn s_i110_xlm_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        //look at m, then look at functions to figure out current price of sol at coinbase,
+    
+
+    //---KRAKEN--//
+    
+        //basically Kraken requires a value that is always increasing to be in each request.
+        //I didnt use now.timestamp().to_string()  because just in case I have 2 
+        //	requests in a second I dont want to be penalized.
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time. MAY NEED TO USE LOCAL TIME
+        let now = Utc::now();
+        let nonce = now.timestamp_millis().to_string();
+        let data = vec![
+            ("nonce", &nonce),
+            // Add more parameters as needed
+        ];
+        //let post_data: String = form_urlencoded::Serializer::new(String::new())
+        //    .extend_pairs(data)
+        //    .finish();
+        
+        let url_path = "/0/public/Ticker?pair=XLMUSD";
+        //let message = format!("{}{}{}", url_path, nonce, post_data);
+
+        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+        -> String {
+            // Create the post data
+            let post_data: String = form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(data)
+                .finish();
+            //FOR DEBUGGING
+            //println!("Private key:\n{}", secret);
+            //println!("Nonce:\n{}", nonce_str);
+            //println!("Encoded payload:\n{}", post_data);
+            //println!("URI Path:\n{}", url_path);
+        
+            // Create the encoded string (nonce + post data) and hash it
+            let encoded = format!("{}{}", nonce_str, post_data);
+            let mut hasher = sha2::Sha256::new();
+            hasher.update(encoded);
+            let encoded_hash = hasher.finalize();
+        
+            // Create the message (url_path + encoded_hash as bytes)
+            let mut message = url_path.as_bytes().to_vec();
+            message.extend_from_slice(&encoded_hash);
+        
+            // Create a HMAC-SHA512 object with the base64-decoded secret
+            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                .expect("HMAC can take key of any size");
+        
+            // Compute the HMAC of the message
+            mac.update(&message);
+            let result = mac.finalize();
+        
+            // Return the base64-encoded HMAC
+            let signature = base64::encode(result.into_bytes());
+            //println!("Kraken signature:\n{}", signature);
+        
+            signature
+        }
+
+        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        //.body is nonce because in the Kraken code provided in cURL: 
+        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        //--data-urlencode "nonce=<YOUR-NONCE>"
+        //		this means that nonce is added to the body of the request
+        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+                .header("API-Key", kraken_api_key)
+                .header("API-Sign", &kraken_signature)
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .body(format!("nonce={}", nonce))
+                .build()
+                .expect("Failed to build kraken request");
+
+
+        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        
+        //println!("kraken response:{}", kraken_response_text);
+
+        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let mut kraken_buy_price_ask = 0.0;
+        //let mut kraken_sell_price_bid = 0.0;
+        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+            // Access the ask and bid prices
+            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        
+            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //println!("Bid price: {}", kraken_sell_price_bid );
+        }
+        else {
+            println!("didnt parse kraken correctly.");
+        }
+
+
+
+
+
+
+
+
+
+                //-------------------------Bitstamp---------------------------//
+                //Bitstamp for some reason needs nonce to be 36 characters long. 
+	//	nonce is basically a unique id that needs to be different every time you make a request. 
+	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+	//	and just make it a random 36 char string from it.
+
+	
+	//the exact same as the Coinbase signature. we'll see if it works
+	//apparently it doesnt so I will code comment it out for now
+	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+	//											.expect("HMAC can take key of any size");
+	//	mac.update(bitstamp_message.as_bytes());
+	//	let result = mac.finalize();
+	//	let code_bytes = result.into_bytes();
+	//	hex::encode(code_bytes)
+	//}
+    type HmacSha256 = Hmac<Sha256>;
+	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+			.expect("HMAC can take key of any size");
+		mac.update(bitstamp_message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+	}
+	
+
+	let content_type = "application/x-www-form-urlencoded";
+	let payload_string = "offset=1";
+	//if we needed content_type, it is here
+	//let content_type = "application/json";
+	//this is the bitstamp message IF we needed content_type
+	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+
+
+
+
+
+
+//--------------------Account-balances------------------------------------------//
+
+
+
+	let the_uuid = Uuid::new_v4();
+	let bitstamp_nonce = the_uuid.to_string();
+	let bitstamp_timestamp = now.timestamp_millis().to_string();
+	//let content_type = "application/x-www-form-urlencoded";
+	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+		.header("X-Auth-Signature", bitstamp_signature)
+		.header("X-Auth-Nonce", bitstamp_nonce)
+		.header("X-Auth-Timestamp", bitstamp_timestamp)
+		.header("X-Auth-Version", "v2")
+		//.header("Content-Type", content_type)
+		//.body(payload_string)
+		.build()
+		.expect("\ncould not build bitstamp_request");
+
+	let bitstamp_response = client.execute(bitstamp_request).await
+		.expect("Failed to execute Bitstamp request");
+	let bitstamp_response_text = bitstamp_response.text().await
+		.expect("Failed to turn response into text");
+	//probably dont need "bitstamp" once we transfer this to the actual function
+    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+    .expect("Failed to parse JSON");
+
+    // Extract the bid and ask values
+    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+    println!("Bid: {}", bitstamp_sell_price_bid, );
+    //println!("Ask: {}", bitstamp_buy_price_ask);
+	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+    //kraken calculations - buy
+    let kraken_taker_fee = 0.0026;
+    let fraction_of_wallet_used = 0.10;
+    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+    let fee_for_purchase = total_spent*kraken_taker_fee;
+    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+    //new state of kraken wallet
+    *kraken_wallet -= total_spent;
+    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+    //bitstamp calculations
+    let bitstamp_taker_fee = 0.004;
+    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+    *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+    
+    return Ok(value_after)
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 

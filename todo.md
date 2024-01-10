@@ -237,3 +237,4 @@ Log of what I've done:
 01/08/24 - big updates. Updated all functions and removed errors. Had to revert to december 2023 rust analyzer because it had a compiler error that wasnt actually a compiler error. Next step is to see if it is actually changing the input nodes. After that, I need to create the rest of the xlm methods. After that I need to see if experience replay is actually working. I got this!
 01/09/24 - I added a way to track if all the nodes have been updated. Then I did a print statement to show the updated neurons. Next step is to create the rest of the xlm methods WITH the minimum withdraw/buy/deposite already in so I dont have to remove every function. I got this!
 01/09/24 - added first xlm function in action_functions. Next step is to test it and see if it works. After that is to do the rest of all of them. I got this!
+01/09/24 - finished all of xlm functions in action_functions. Next step is to check experience replay. I got this!

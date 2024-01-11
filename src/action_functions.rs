@@ -2980,7 +2980,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i13_sol_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3205,6 +3205,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //this will count as value after
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
                 return Ok(value_after)
@@ -3212,7 +3223,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i14_sol_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3438,13 +3449,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i15_sol_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3670,13 +3691,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i16_sol_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3901,6 +3932,18 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //this will count as value after
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
                 return Ok(value_after)
@@ -3908,7 +3951,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i17_sol_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4135,12 +4178,24 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i18_sol_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4366,13 +4421,26 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i19_sol_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4598,13 +4666,26 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i20_sol_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4830,6 +4911,18 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 62
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
@@ -5298,7 +5391,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i23_sol_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -5523,13 +5616,24 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and gemini being updated, I will update:
+                //  60, 61, 64
+                let indices = [60, 61, 64];
+                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i24_sol_4_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -5754,13 +5858,25 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and gemini being updated, I will update:
+                //  60, 61, 64
+                let indices = [60, 61, 64];
+                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i25_sol_5_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -5985,13 +6101,26 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and gemini being updated, I will update:
+                //  60, 61, 64
+                let indices = [60, 61, 64];
+                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i26_sol_6_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6216,13 +6345,25 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and gemini being updated, I will update:
+                //  60, 61, 64
+                let indices = [60, 61, 64];
+                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i27_sol_7_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6447,13 +6588,26 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and gemini being updated, I will update:
+                //  60, 61, 64
+                let indices = [60, 61, 64];
+                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i28_sol_8_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6679,12 +6833,24 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and gemini being updated, I will update:
+                //  60, 61, 64
+                let indices = [60, 61, 64];
+                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i29_sol_9_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6909,13 +7075,24 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
-    
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and gemini being updated, I will update:
+                //  60, 61, 64
+                let indices = [60, 61, 64];
+                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i30_sol_10_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -7139,7 +7316,16 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //this will count as value after
                 let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
-    
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and gemini being updated, I will update:
+                //  60, 61, 64
+                let indices = [60, 61, 64];
+                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
@@ -8159,7 +8345,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i35_sol_5_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -8406,13 +8592,25 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
                 //println!("value after:\n\t{}",value_after);
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is kraken and gemini being updated, I will update:
+                //  60, 63, 64
+                let indices = [60, 63, 64];
+                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i36_sol_6_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -8660,12 +8858,24 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //println!("value after:\n\t{}",value_after);
     
     
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is kraken and gemini being updated, I will update:
+                //  60, 63, 64
+                let indices = [60, 63, 64];
+                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i37_sol_7_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -8912,13 +9122,26 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
                 //println!("value after:\n\t{}",value_after);
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is kraken and gemini being updated, I will update:
+                //  60, 63, 64
+                let indices = [60, 63, 64];
+                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i38_sol_8_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9165,13 +9388,26 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
                 //println!("value after:\n\t{}",value_after);
     
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is kraken and gemini being updated, I will update:
+                //  60, 63, 64
+                let indices = [60, 63, 64];
+                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i39_sol_9_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9419,12 +9655,25 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //println!("value after:\n\t{}",value_after);
     
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is kraken and gemini being updated, I will update:
+                //  60, 63, 64
+                let indices = [60, 63, 64];
+                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i40_sol_10_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9671,6 +9920,19 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
                 //println!("value after:\n\t{}",value_after);
     
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is kraken and gemini being updated, I will update:
+                //  60, 63, 64
+                let indices = [60, 63, 64];
+                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
@@ -10133,7 +10395,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i43_sol_3_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10352,15 +10614,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
                 let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                println!("value after:\n\t{}",value_after);
+                //println!("value after:\n\t{}",value_after);
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is bitstamp and gemini being updated, I will update:
+                //  60, 62, 64
+                let indices = [60, 62, 64];
+                let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i44_sol_4_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10579,15 +10853,28 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
                 let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                println!("value after:\n\t{}",value_after);
+                //println!("value after:\n\t{}",value_after);
     
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is bitstamp and gemini being updated, I will update:
+                //  60, 62, 64
+                let indices = [60, 62, 64];
+                let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i45_sol_5_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10806,15 +11093,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
                 let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                println!("value after:\n\t{}",value_after);
+                //println!("value after:\n\t{}",value_after);
     
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is bitstamp and gemini being updated, I will update:
+                //  60, 62, 64
+                let indices = [60, 62, 64];
+                let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i46_sol_6_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11033,15 +11332,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
                 let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                println!("value after:\n\t{}",value_after);
+                //println!("value after:\n\t{}",value_after);
     
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is bitstamp and gemini being updated, I will update:
+                //  60, 62, 64
+                let indices = [60, 62, 64];
+                let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i47_sol_7_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11260,15 +11571,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
                 let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                println!("value after:\n\t{}",value_after);
+                //println!("value after:\n\t{}",value_after);
     
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is bitstamp and gemini being updated, I will update:
+                //  60, 62, 64
+                let indices = [60, 62, 64];
+                let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i48_sol_8_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11487,15 +11810,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
                 let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                println!("value after:\n\t{}",value_after);
+                //println!("value after:\n\t{}",value_after);
     
     
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is bitstamp and gemini being updated, I will update:
+                //  60, 62, 64
+                let indices = [60, 62, 64];
+                let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i49_sol_9_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11714,15 +12049,28 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
                 let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                println!("value after:\n\t{}",value_after);
+                //println!("value after:\n\t{}",value_after);
     
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is bitstamp and gemini being updated, I will update:
+                //  60, 62, 64
+                let indices = [60, 62, 64];
+                let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
+
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i50_sol_10_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11941,8 +12289,20 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
                 let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                println!("value after:\n\t{}",value_after);
+                //println!("value after:\n\t{}",value_after);
     
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is bitstamp and gemini being updated, I will update:
+                //  60, 62, 64
+                let indices = [60, 62, 64];
+                let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
@@ -12978,7 +13338,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
      */
      pub async fn s_i55_sol_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -13230,14 +13590,28 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
-            println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
 
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+            
             return Ok(value_after)
 
      }
 
      pub async fn s_i56_sol_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -13489,14 +13863,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
-            println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
 
             return Ok(value_after)
 
      }
 
      pub async fn s_i57_sol_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -13748,14 +14135,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
-            println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
 
             return Ok(value_after)
 
      }
 
      pub async fn s_i58_sol_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -14007,14 +14407,28 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
-            println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
+
 
             return Ok(value_after)
 
      }
 
      pub async fn s_i59_sol_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -14266,14 +14680,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
-            println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
+
 
             return Ok(value_after)
 
      }
 
      pub async fn s_i60_sol_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -14525,7 +14952,20 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
-            println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
+
 
             return Ok(value_after)
 
@@ -15517,7 +15957,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i65_sol_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -15756,14 +16196,28 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-            println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is bitstamp and kraken being updated, I will update:
+                //  60, 62, 63
+                let indices = [60, 62, 63];
+                let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
+
 
             return Ok(value_after)
 
     }
 
     pub async fn s_i66_sol_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16002,14 +16456,28 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-            println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is bitstamp and kraken being updated, I will update:
+                //  60, 62, 63
+                let indices = [60, 62, 63];
+                let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
+
 
             return Ok(value_after)
 
     }
 
     pub async fn s_i67_sol_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16248,14 +16716,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-            println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+            //value_after = 60
+            //coinbase = 61
+            //bitstamp = 62
+            //kraken = 63
+            //gemini = 64
+            //since this is bitstamp and kraken being updated, I will update:
+            //  60, 62, 63
+            let indices = [60, 62, 63];
+            let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+            neural_network.update_input(&indices, &new_values);
+
 
             return Ok(value_after)
 
     }
 
     pub async fn s_i68_sol_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16494,14 +16975,28 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-            println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+
+            //value_after = 60
+            //coinbase = 61
+            //bitstamp = 62
+            //kraken = 63
+            //gemini = 64
+            //since this is bitstamp and kraken being updated, I will update:
+            //  60, 62, 63
+            let indices = [60, 62, 63];
+            let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+            neural_network.update_input(&indices, &new_values);
+
 
             return Ok(value_after)
 
     }
 
     pub async fn s_i69_sol_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16740,14 +17235,28 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-            println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+
+            //value_after = 60
+            //coinbase = 61
+            //bitstamp = 62
+            //kraken = 63
+            //gemini = 64
+            //since this is bitstamp and kraken being updated, I will update:
+            //  60, 62, 63
+            let indices = [60, 62, 63];
+            let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+            neural_network.update_input(&indices, &new_values);
+
 
             return Ok(value_after)
 
     }
 
     pub async fn s_i70_sol_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16986,14 +17495,28 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         //this will count as value after
             let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-            println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+            //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+
+            //value_after = 60
+            //coinbase = 61
+            //bitstamp = 62
+            //kraken = 63
+            //gemini = 64
+            //since this is bitstamp and kraken being updated, I will update:
+            //  60, 62, 63
+            let indices = [60, 62, 63];
+            let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+            neural_network.update_input(&indices, &new_values);
+
 
             return Ok(value_after)
 
     }
 
     pub async fn s_i75_xlm_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -17219,7 +17742,16 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
             //this will count as value after
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
                 return Ok(value_after)
@@ -17227,7 +17759,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i76_xlm_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -17454,14 +17986,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
             //this will count as value after
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i77_xlm_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -17687,7 +18228,16 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
             //this will count as value after
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
                 return Ok(value_after)
@@ -17695,7 +18245,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i78_xlm_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -17922,14 +18472,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
             //this will count as value after
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i79_xlm_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18156,14 +18715,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
             //this will count as value after
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i80_xlm_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18390,14 +18958,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
             //this will count as value after
     
-    
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i83_xlm_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18617,14 +19194,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //this will count as value after
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 62
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i84_xlm_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18845,13 +19431,24 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 62
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
+
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i85_xlm_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19072,13 +19669,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 62
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i86_xlm_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19299,13 +19906,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 62
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i87_xlm_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19526,13 +20143,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 62
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i88_xlm_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19753,13 +20380,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 62
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i89_xlm_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19980,13 +20617,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 62
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
+
                 return Ok(value_after)
 
     }
 
     pub async fn s_i90_xlm_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -20207,13 +20854,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
     
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 62
+                let indices = [60, 61, 62];
+                let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                neural_network.update_input(&indices, &new_values);
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i95_xlm_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
     
             //---KRAKEN--//
     
@@ -20458,7 +21115,16 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
             //this will count as value after
-    
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
             return Ok(value_after)
@@ -20466,7 +21132,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i96_xlm_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
     
             //---KRAKEN--//
     
@@ -20711,7 +21377,16 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
             //this will count as value after
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
             return Ok(value_after)
@@ -20719,7 +21394,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i97_xlm_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
     
             //---KRAKEN--//
     
@@ -20965,14 +21640,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
             return Ok(value_after)
 
     }
 
     pub async fn s_i98_xlm_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
     
             //---KRAKEN--//
     
@@ -21218,14 +21902,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
             return Ok(value_after)
 
     }
 
     pub async fn s_i99_xlm_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
     
             //---KRAKEN--//
     
@@ -21471,14 +22164,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
             return Ok(value_after)
 
     }
 
     pub async fn s_i100_xlm_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
     
             //---KRAKEN--//
     
@@ -21724,14 +22426,23 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             //this will count as value after
     
-    
+                    //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
             return Ok(value_after)
 
     }
 
     pub async fn s_i105_xlm_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -21841,123 +22552,132 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
                 //-------------------------Bitstamp---------------------------//
                 //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
+        //	nonce is basically a unique id that needs to be different every time you make a request. 
+        //	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+        //	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+        //	and just make it a random 36 char string from it.
 
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-    type HmacSha256 = Hmac<Sha256>;
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
+        
+        //the exact same as the Coinbase signature. we'll see if it works
+        //apparently it doesnt so I will code comment it out for now
+        //fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+        //	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+        //											.expect("HMAC can take key of any size");
+        //	mac.update(bitstamp_message.as_bytes());
+        //	let result = mac.finalize();
+        //	let code_bytes = result.into_bytes();
+        //	hex::encode(code_bytes)
+        //}
+        type HmacSha256 = Hmac<Sha256>;
+        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                .expect("HMAC can take key of any size");
+            mac.update(bitstamp_message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+        }
+        
 
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
+        let content_type = "application/x-www-form-urlencoded";
+        let payload_string = "offset=1";
+        //if we needed content_type, it is here
+        //let content_type = "application/json";
+        //this is the bitstamp message IF we needed content_type
+        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
 
 
 
 
 
-//--------------------Account-balances------------------------------------------//
+
+
+    //--------------------Account-balances------------------------------------------//
 
 
 
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+        let the_uuid = Uuid::new_v4();
+        let bitstamp_nonce = the_uuid.to_string();
+        let bitstamp_timestamp = now.timestamp_millis().to_string();
+        //let content_type = "application/x-www-form-urlencoded";
+        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-		.header("X-Auth-Signature", bitstamp_signature)
-		.header("X-Auth-Nonce", bitstamp_nonce)
-		.header("X-Auth-Timestamp", bitstamp_timestamp)
-		.header("X-Auth-Version", "v2")
-		//.header("Content-Type", content_type)
-		//.body(payload_string)
-		.build()
-		.expect("\ncould not build bitstamp_request");
+        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            .header("X-Auth-Signature", bitstamp_signature)
+            .header("X-Auth-Nonce", bitstamp_nonce)
+            .header("X-Auth-Timestamp", bitstamp_timestamp)
+            .header("X-Auth-Version", "v2")
+            //.header("Content-Type", content_type)
+            //.body(payload_string)
+            .build()
+            .expect("\ncould not build bitstamp_request");
 
-	let bitstamp_response = client.execute(bitstamp_request).await
-		.expect("Failed to execute Bitstamp request");
-	let bitstamp_response_text = bitstamp_response.text().await
-		.expect("Failed to turn response into text");
-	//probably dont need "bitstamp" once we transfer this to the actual function
-    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-    .expect("Failed to parse JSON");
+        let bitstamp_response = client.execute(bitstamp_request).await
+            .expect("Failed to execute Bitstamp request");
+        let bitstamp_response_text = bitstamp_response.text().await
+            .expect("Failed to turn response into text");
+        //probably dont need "bitstamp" once we transfer this to the actual function
+        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        .expect("Failed to parse JSON");
 
-    // Extract the bid and ask values
-    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-    println!("Bid: {}", bitstamp_sell_price_bid, );
-    //println!("Ask: {}", bitstamp_buy_price_ask);
-	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
+        // Extract the bid and ask values
+        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        println!("Bid: {}", bitstamp_sell_price_bid, );
+        //println!("Ask: {}", bitstamp_buy_price_ask);
+        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
 
-    //kraken calculations - buy
-    let kraken_taker_fee = 0.0026;
-    let fraction_of_wallet_used = 0.05;
-    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-    let fee_for_purchase = total_spent*kraken_taker_fee;
-    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-    //new state of kraken wallet
-    *kraken_wallet -= total_spent;
-    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
 
 
-    //bitstamp calculations
-    let bitstamp_taker_fee = 0.004;
-    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-    *bitstamp_wallet += money_from_sell_after_fees;
+        //kraken calculations - buy
+        let kraken_taker_fee = 0.0026;
+        let fraction_of_wallet_used = 0.05;
+        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        let fee_for_purchase = total_spent*kraken_taker_fee;
+        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        //new state of kraken wallet
+        *kraken_wallet -= total_spent;
+        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+        //bitstamp calculations
+        let bitstamp_taker_fee = 0.004;
+        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-    
-    return Ok(value_after)
+        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        //value_after = 60
+        //coinbase = 61
+        //bitstamp = 62
+        //kraken = 63
+        //gemini = 64
+        //since this is bitstamp and kraken being updated, I will update:
+        //  60, 62, 63
+        let indices = [60, 62, 63];
+        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        neural_network.update_input(&indices, &new_values);
+        
+        return Ok(value_after)
 
 
     }
 
     pub async fn s_i106_xlm_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -22067,115 +22787,124 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
                 //-------------------------Bitstamp---------------------------//
                 //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
+        //	nonce is basically a unique id that needs to be different every time you make a request. 
+        //	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+        //	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+        //	and just make it a random 36 char string from it.
 
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-    type HmacSha256 = Hmac<Sha256>;
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
+        
+        //the exact same as the Coinbase signature. we'll see if it works
+        //apparently it doesnt so I will code comment it out for now
+        //fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+        //	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+        //											.expect("HMAC can take key of any size");
+        //	mac.update(bitstamp_message.as_bytes());
+        //	let result = mac.finalize();
+        //	let code_bytes = result.into_bytes();
+        //	hex::encode(code_bytes)
+        //}
+        type HmacSha256 = Hmac<Sha256>;
+        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                .expect("HMAC can take key of any size");
+            mac.update(bitstamp_message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+        }
+        
 
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
+        let content_type = "application/x-www-form-urlencoded";
+        let payload_string = "offset=1";
+        //if we needed content_type, it is here
+        //let content_type = "application/json";
+        //this is the bitstamp message IF we needed content_type
+        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
 
 
 
 
 
-//--------------------Account-balances------------------------------------------//
+
+
+    //--------------------Account-balances------------------------------------------//
 
 
 
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+        let the_uuid = Uuid::new_v4();
+        let bitstamp_nonce = the_uuid.to_string();
+        let bitstamp_timestamp = now.timestamp_millis().to_string();
+        //let content_type = "application/x-www-form-urlencoded";
+        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-		.header("X-Auth-Signature", bitstamp_signature)
-		.header("X-Auth-Nonce", bitstamp_nonce)
-		.header("X-Auth-Timestamp", bitstamp_timestamp)
-		.header("X-Auth-Version", "v2")
-		//.header("Content-Type", content_type)
-		//.body(payload_string)
-		.build()
-		.expect("\ncould not build bitstamp_request");
+        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            .header("X-Auth-Signature", bitstamp_signature)
+            .header("X-Auth-Nonce", bitstamp_nonce)
+            .header("X-Auth-Timestamp", bitstamp_timestamp)
+            .header("X-Auth-Version", "v2")
+            //.header("Content-Type", content_type)
+            //.body(payload_string)
+            .build()
+            .expect("\ncould not build bitstamp_request");
 
-	let bitstamp_response = client.execute(bitstamp_request).await
-		.expect("Failed to execute Bitstamp request");
-	let bitstamp_response_text = bitstamp_response.text().await
-		.expect("Failed to turn response into text");
-	//probably dont need "bitstamp" once we transfer this to the actual function
-    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-    .expect("Failed to parse JSON");
+        let bitstamp_response = client.execute(bitstamp_request).await
+            .expect("Failed to execute Bitstamp request");
+        let bitstamp_response_text = bitstamp_response.text().await
+            .expect("Failed to turn response into text");
+        //probably dont need "bitstamp" once we transfer this to the actual function
+        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        .expect("Failed to parse JSON");
 
-    // Extract the bid and ask values
-    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-    println!("Bid: {}", bitstamp_sell_price_bid, );
-    //println!("Ask: {}", bitstamp_buy_price_ask);
-	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
+        // Extract the bid and ask values
+        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        println!("Bid: {}", bitstamp_sell_price_bid, );
+        //println!("Ask: {}", bitstamp_buy_price_ask);
+        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
 
-    //kraken calculations - buy
-    let kraken_taker_fee = 0.0026;
-    let fraction_of_wallet_used = 0.06;
-    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-    let fee_for_purchase = total_spent*kraken_taker_fee;
-    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-    //new state of kraken wallet
-    *kraken_wallet -= total_spent;
-    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
 
 
-    //bitstamp calculations
-    let bitstamp_taker_fee = 0.004;
-    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-    *bitstamp_wallet += money_from_sell_after_fees;
+        //kraken calculations - buy
+        let kraken_taker_fee = 0.0026;
+        let fraction_of_wallet_used = 0.06;
+        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        let fee_for_purchase = total_spent*kraken_taker_fee;
+        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        //new state of kraken wallet
+        *kraken_wallet -= total_spent;
+        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+        //bitstamp calculations
+        let bitstamp_taker_fee = 0.004;
+        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-    
+        //value_after = 60
+        //coinbase = 61
+        //bitstamp = 62
+        //kraken = 63
+        //gemini = 64
+        //since this is bitstamp and kraken being updated, I will update:
+        //  60, 62, 63
+        let indices = [60, 62, 63];
+        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        neural_network.update_input(&indices, &new_values);
     
     return Ok(value_after)
 
@@ -22183,7 +22912,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i107_xlm_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -22293,115 +23022,124 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
                 //-------------------------Bitstamp---------------------------//
                 //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
+        //	nonce is basically a unique id that needs to be different every time you make a request. 
+        //	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+        //	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+        //	and just make it a random 36 char string from it.
 
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-    type HmacSha256 = Hmac<Sha256>;
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
+        
+        //the exact same as the Coinbase signature. we'll see if it works
+        //apparently it doesnt so I will code comment it out for now
+        //fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+        //	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+        //											.expect("HMAC can take key of any size");
+        //	mac.update(bitstamp_message.as_bytes());
+        //	let result = mac.finalize();
+        //	let code_bytes = result.into_bytes();
+        //	hex::encode(code_bytes)
+        //}
+        type HmacSha256 = Hmac<Sha256>;
+        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                .expect("HMAC can take key of any size");
+            mac.update(bitstamp_message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+        }
+        
 
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
+        let content_type = "application/x-www-form-urlencoded";
+        let payload_string = "offset=1";
+        //if we needed content_type, it is here
+        //let content_type = "application/json";
+        //this is the bitstamp message IF we needed content_type
+        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
 
 
 
 
 
-//--------------------Account-balances------------------------------------------//
+
+
+    //--------------------Account-balances------------------------------------------//
 
 
 
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+        let the_uuid = Uuid::new_v4();
+        let bitstamp_nonce = the_uuid.to_string();
+        let bitstamp_timestamp = now.timestamp_millis().to_string();
+        //let content_type = "application/x-www-form-urlencoded";
+        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-		.header("X-Auth-Signature", bitstamp_signature)
-		.header("X-Auth-Nonce", bitstamp_nonce)
-		.header("X-Auth-Timestamp", bitstamp_timestamp)
-		.header("X-Auth-Version", "v2")
-		//.header("Content-Type", content_type)
-		//.body(payload_string)
-		.build()
-		.expect("\ncould not build bitstamp_request");
+        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            .header("X-Auth-Signature", bitstamp_signature)
+            .header("X-Auth-Nonce", bitstamp_nonce)
+            .header("X-Auth-Timestamp", bitstamp_timestamp)
+            .header("X-Auth-Version", "v2")
+            //.header("Content-Type", content_type)
+            //.body(payload_string)
+            .build()
+            .expect("\ncould not build bitstamp_request");
 
-	let bitstamp_response = client.execute(bitstamp_request).await
-		.expect("Failed to execute Bitstamp request");
-	let bitstamp_response_text = bitstamp_response.text().await
-		.expect("Failed to turn response into text");
-	//probably dont need "bitstamp" once we transfer this to the actual function
-    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-    .expect("Failed to parse JSON");
+        let bitstamp_response = client.execute(bitstamp_request).await
+            .expect("Failed to execute Bitstamp request");
+        let bitstamp_response_text = bitstamp_response.text().await
+            .expect("Failed to turn response into text");
+        //probably dont need "bitstamp" once we transfer this to the actual function
+        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        .expect("Failed to parse JSON");
 
-    // Extract the bid and ask values
-    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-    println!("Bid: {}", bitstamp_sell_price_bid, );
-    //println!("Ask: {}", bitstamp_buy_price_ask);
-	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
+        // Extract the bid and ask values
+        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        println!("Bid: {}", bitstamp_sell_price_bid, );
+        //println!("Ask: {}", bitstamp_buy_price_ask);
+        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
 
-    //kraken calculations - buy
-    let kraken_taker_fee = 0.0026;
-    let fraction_of_wallet_used = 0.07;
-    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-    let fee_for_purchase = total_spent*kraken_taker_fee;
-    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-    //new state of kraken wallet
-    *kraken_wallet -= total_spent;
-    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
 
 
-    //bitstamp calculations
-    let bitstamp_taker_fee = 0.004;
-    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-    *bitstamp_wallet += money_from_sell_after_fees;
+        //kraken calculations - buy
+        let kraken_taker_fee = 0.0026;
+        let fraction_of_wallet_used = 0.07;
+        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        let fee_for_purchase = total_spent*kraken_taker_fee;
+        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        //new state of kraken wallet
+        *kraken_wallet -= total_spent;
+        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+        //bitstamp calculations
+        let bitstamp_taker_fee = 0.004;
+        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-    
+        //value_after = 60
+        //coinbase = 61
+        //bitstamp = 62
+        //kraken = 63
+        //gemini = 64
+        //since this is bitstamp and kraken being updated, I will update:
+        //  60, 62, 63
+        let indices = [60, 62, 63];
+        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        neural_network.update_input(&indices, &new_values);
     
     return Ok(value_after)
 
@@ -22409,7 +23147,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i108_xlm_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -22519,115 +23257,124 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
                 //-------------------------Bitstamp---------------------------//
                 //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
+        //	nonce is basically a unique id that needs to be different every time you make a request. 
+        //	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+        //	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+        //	and just make it a random 36 char string from it.
 
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-    type HmacSha256 = Hmac<Sha256>;
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
+        
+        //the exact same as the Coinbase signature. we'll see if it works
+        //apparently it doesnt so I will code comment it out for now
+        //fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+        //	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+        //											.expect("HMAC can take key of any size");
+        //	mac.update(bitstamp_message.as_bytes());
+        //	let result = mac.finalize();
+        //	let code_bytes = result.into_bytes();
+        //	hex::encode(code_bytes)
+        //}
+        type HmacSha256 = Hmac<Sha256>;
+        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                .expect("HMAC can take key of any size");
+            mac.update(bitstamp_message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+        }
+        
 
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
+        let content_type = "application/x-www-form-urlencoded";
+        let payload_string = "offset=1";
+        //if we needed content_type, it is here
+        //let content_type = "application/json";
+        //this is the bitstamp message IF we needed content_type
+        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
 
 
 
 
 
-//--------------------Account-balances------------------------------------------//
+
+
+    //--------------------Account-balances------------------------------------------//
 
 
 
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+        let the_uuid = Uuid::new_v4();
+        let bitstamp_nonce = the_uuid.to_string();
+        let bitstamp_timestamp = now.timestamp_millis().to_string();
+        //let content_type = "application/x-www-form-urlencoded";
+        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-		.header("X-Auth-Signature", bitstamp_signature)
-		.header("X-Auth-Nonce", bitstamp_nonce)
-		.header("X-Auth-Timestamp", bitstamp_timestamp)
-		.header("X-Auth-Version", "v2")
-		//.header("Content-Type", content_type)
-		//.body(payload_string)
-		.build()
-		.expect("\ncould not build bitstamp_request");
+        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            .header("X-Auth-Signature", bitstamp_signature)
+            .header("X-Auth-Nonce", bitstamp_nonce)
+            .header("X-Auth-Timestamp", bitstamp_timestamp)
+            .header("X-Auth-Version", "v2")
+            //.header("Content-Type", content_type)
+            //.body(payload_string)
+            .build()
+            .expect("\ncould not build bitstamp_request");
 
-	let bitstamp_response = client.execute(bitstamp_request).await
-		.expect("Failed to execute Bitstamp request");
-	let bitstamp_response_text = bitstamp_response.text().await
-		.expect("Failed to turn response into text");
-	//probably dont need "bitstamp" once we transfer this to the actual function
-    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-    .expect("Failed to parse JSON");
+        let bitstamp_response = client.execute(bitstamp_request).await
+            .expect("Failed to execute Bitstamp request");
+        let bitstamp_response_text = bitstamp_response.text().await
+            .expect("Failed to turn response into text");
+        //probably dont need "bitstamp" once we transfer this to the actual function
+        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        .expect("Failed to parse JSON");
 
-    // Extract the bid and ask values
-    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-    println!("Bid: {}", bitstamp_sell_price_bid, );
-    //println!("Ask: {}", bitstamp_buy_price_ask);
-	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
+        // Extract the bid and ask values
+        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        println!("Bid: {}", bitstamp_sell_price_bid, );
+        //println!("Ask: {}", bitstamp_buy_price_ask);
+        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
 
-    //kraken calculations - buy
-    let kraken_taker_fee = 0.0026;
-    let fraction_of_wallet_used = 0.08;
-    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-    let fee_for_purchase = total_spent*kraken_taker_fee;
-    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-    //new state of kraken wallet
-    *kraken_wallet -= total_spent;
-    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
 
 
-    //bitstamp calculations
-    let bitstamp_taker_fee = 0.004;
-    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-    *bitstamp_wallet += money_from_sell_after_fees;
+        //kraken calculations - buy
+        let kraken_taker_fee = 0.0026;
+        let fraction_of_wallet_used = 0.08;
+        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        let fee_for_purchase = total_spent*kraken_taker_fee;
+        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        //new state of kraken wallet
+        *kraken_wallet -= total_spent;
+        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+        //bitstamp calculations
+        let bitstamp_taker_fee = 0.004;
+        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-    
+        //value_after = 60
+        //coinbase = 61
+        //bitstamp = 62
+        //kraken = 63
+        //gemini = 64
+        //since this is bitstamp and kraken being updated, I will update:
+        //  60, 62, 63
+        let indices = [60, 62, 63];
+        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        neural_network.update_input(&indices, &new_values);
     
     return Ok(value_after)
 
@@ -22635,7 +23382,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i109_xlm_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -22745,115 +23492,124 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
                 //-------------------------Bitstamp---------------------------//
                 //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
+        //	nonce is basically a unique id that needs to be different every time you make a request. 
+        //	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+        //	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+        //	and just make it a random 36 char string from it.
 
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-    type HmacSha256 = Hmac<Sha256>;
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
+        
+        //the exact same as the Coinbase signature. we'll see if it works
+        //apparently it doesnt so I will code comment it out for now
+        //fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+        //	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+        //											.expect("HMAC can take key of any size");
+        //	mac.update(bitstamp_message.as_bytes());
+        //	let result = mac.finalize();
+        //	let code_bytes = result.into_bytes();
+        //	hex::encode(code_bytes)
+        //}
+        type HmacSha256 = Hmac<Sha256>;
+        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                .expect("HMAC can take key of any size");
+            mac.update(bitstamp_message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+        }
+        
 
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
+        let content_type = "application/x-www-form-urlencoded";
+        let payload_string = "offset=1";
+        //if we needed content_type, it is here
+        //let content_type = "application/json";
+        //this is the bitstamp message IF we needed content_type
+        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
 
 
 
 
 
-//--------------------Account-balances------------------------------------------//
+
+
+    //--------------------Account-balances------------------------------------------//
 
 
 
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+        let the_uuid = Uuid::new_v4();
+        let bitstamp_nonce = the_uuid.to_string();
+        let bitstamp_timestamp = now.timestamp_millis().to_string();
+        //let content_type = "application/x-www-form-urlencoded";
+        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-		.header("X-Auth-Signature", bitstamp_signature)
-		.header("X-Auth-Nonce", bitstamp_nonce)
-		.header("X-Auth-Timestamp", bitstamp_timestamp)
-		.header("X-Auth-Version", "v2")
-		//.header("Content-Type", content_type)
-		//.body(payload_string)
-		.build()
-		.expect("\ncould not build bitstamp_request");
+        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            .header("X-Auth-Signature", bitstamp_signature)
+            .header("X-Auth-Nonce", bitstamp_nonce)
+            .header("X-Auth-Timestamp", bitstamp_timestamp)
+            .header("X-Auth-Version", "v2")
+            //.header("Content-Type", content_type)
+            //.body(payload_string)
+            .build()
+            .expect("\ncould not build bitstamp_request");
 
-	let bitstamp_response = client.execute(bitstamp_request).await
-		.expect("Failed to execute Bitstamp request");
-	let bitstamp_response_text = bitstamp_response.text().await
-		.expect("Failed to turn response into text");
-	//probably dont need "bitstamp" once we transfer this to the actual function
-    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-    .expect("Failed to parse JSON");
+        let bitstamp_response = client.execute(bitstamp_request).await
+            .expect("Failed to execute Bitstamp request");
+        let bitstamp_response_text = bitstamp_response.text().await
+            .expect("Failed to turn response into text");
+        //probably dont need "bitstamp" once we transfer this to the actual function
+        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        .expect("Failed to parse JSON");
 
-    // Extract the bid and ask values
-    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-    println!("Bid: {}", bitstamp_sell_price_bid, );
-    //println!("Ask: {}", bitstamp_buy_price_ask);
-	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
+        // Extract the bid and ask values
+        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        println!("Bid: {}", bitstamp_sell_price_bid, );
+        //println!("Ask: {}", bitstamp_buy_price_ask);
+        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
 
-    //kraken calculations - buy
-    let kraken_taker_fee = 0.0026;
-    let fraction_of_wallet_used = 0.09;
-    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-    let fee_for_purchase = total_spent*kraken_taker_fee;
-    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-    //new state of kraken wallet
-    *kraken_wallet -= total_spent;
-    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
 
 
-    //bitstamp calculations
-    let bitstamp_taker_fee = 0.004;
-    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-    *bitstamp_wallet += money_from_sell_after_fees;
+        //kraken calculations - buy
+        let kraken_taker_fee = 0.0026;
+        let fraction_of_wallet_used = 0.09;
+        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        let fee_for_purchase = total_spent*kraken_taker_fee;
+        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        //new state of kraken wallet
+        *kraken_wallet -= total_spent;
+        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+        //bitstamp calculations
+        let bitstamp_taker_fee = 0.004;
+        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-    
+        //value_after = 60
+        //coinbase = 61
+        //bitstamp = 62
+        //kraken = 63
+        //gemini = 64
+        //since this is bitstamp and kraken being updated, I will update:
+        //  60, 62, 63
+        let indices = [60, 62, 63];
+        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        neural_network.update_input(&indices, &new_values);
     
     return Ok(value_after)
 
@@ -22861,7 +23617,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i110_xlm_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -22971,115 +23727,124 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
                 //-------------------------Bitstamp---------------------------//
                 //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
+        //	nonce is basically a unique id that needs to be different every time you make a request. 
+        //	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+        //	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+        //	and just make it a random 36 char string from it.
 
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-    type HmacSha256 = Hmac<Sha256>;
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
+        
+        //the exact same as the Coinbase signature. we'll see if it works
+        //apparently it doesnt so I will code comment it out for now
+        //fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+        //	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+        //											.expect("HMAC can take key of any size");
+        //	mac.update(bitstamp_message.as_bytes());
+        //	let result = mac.finalize();
+        //	let code_bytes = result.into_bytes();
+        //	hex::encode(code_bytes)
+        //}
+        type HmacSha256 = Hmac<Sha256>;
+        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                .expect("HMAC can take key of any size");
+            mac.update(bitstamp_message.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            hex::encode(code_bytes)
+        }
+        
 
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
+        let content_type = "application/x-www-form-urlencoded";
+        let payload_string = "offset=1";
+        //if we needed content_type, it is here
+        //let content_type = "application/json";
+        //this is the bitstamp message IF we needed content_type
+        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
 
 
 
 
 
-//--------------------Account-balances------------------------------------------//
+
+
+    //--------------------Account-balances------------------------------------------//
 
 
 
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+        let the_uuid = Uuid::new_v4();
+        let bitstamp_nonce = the_uuid.to_string();
+        let bitstamp_timestamp = now.timestamp_millis().to_string();
+        //let content_type = "application/x-www-form-urlencoded";
+        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xlm-usd/{}{}{}{}v2{}", 
+                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
 
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-		.header("X-Auth-Signature", bitstamp_signature)
-		.header("X-Auth-Nonce", bitstamp_nonce)
-		.header("X-Auth-Timestamp", bitstamp_timestamp)
-		.header("X-Auth-Version", "v2")
-		//.header("Content-Type", content_type)
-		//.body(payload_string)
-		.build()
-		.expect("\ncould not build bitstamp_request");
+        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            .header("X-Auth-Signature", bitstamp_signature)
+            .header("X-Auth-Nonce", bitstamp_nonce)
+            .header("X-Auth-Timestamp", bitstamp_timestamp)
+            .header("X-Auth-Version", "v2")
+            //.header("Content-Type", content_type)
+            //.body(payload_string)
+            .build()
+            .expect("\ncould not build bitstamp_request");
 
-	let bitstamp_response = client.execute(bitstamp_request).await
-		.expect("Failed to execute Bitstamp request");
-	let bitstamp_response_text = bitstamp_response.text().await
-		.expect("Failed to turn response into text");
-	//probably dont need "bitstamp" once we transfer this to the actual function
-    let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-    .expect("Failed to parse JSON");
+        let bitstamp_response = client.execute(bitstamp_request).await
+            .expect("Failed to execute Bitstamp request");
+        let bitstamp_response_text = bitstamp_response.text().await
+            .expect("Failed to turn response into text");
+        //probably dont need "bitstamp" once we transfer this to the actual function
+        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        .expect("Failed to parse JSON");
 
-    // Extract the bid and ask values
-    let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-    //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-    println!("Bid: {}", bitstamp_sell_price_bid, );
-    //println!("Ask: {}", bitstamp_buy_price_ask);
-	println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
+        // Extract the bid and ask values
+        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        println!("Bid: {}", bitstamp_sell_price_bid, );
+        //println!("Ask: {}", bitstamp_buy_price_ask);
+        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
 
-    //kraken calculations - buy
-    let kraken_taker_fee = 0.0026;
-    let fraction_of_wallet_used = 0.10;
-    let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-    let fee_for_purchase = total_spent*kraken_taker_fee;
-    let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-    //new state of kraken wallet
-    *kraken_wallet -= total_spent;
-    let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
 
 
-    //bitstamp calculations
-    let bitstamp_taker_fee = 0.004;
-    let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-    *bitstamp_wallet += money_from_sell_after_fees;
+        //kraken calculations - buy
+        let kraken_taker_fee = 0.0026;
+        let fraction_of_wallet_used = 0.10;
+        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        let fee_for_purchase = total_spent*kraken_taker_fee;
+        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        //new state of kraken wallet
+        *kraken_wallet -= total_spent;
+        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask;
+
+
+        //bitstamp calculations
+        let bitstamp_taker_fee = 0.004;
+        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-    let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
+        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        //value_after = 60
+        //coinbase = 61
+        //bitstamp = 62
+        //kraken = 63
+        //gemini = 64
+        //since this is bitstamp and kraken being updated, I will update:
+        //  60, 62, 63
+        let indices = [60, 62, 63];
+        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        neural_network.update_input(&indices, &new_values);
     
     return Ok(value_after)
 

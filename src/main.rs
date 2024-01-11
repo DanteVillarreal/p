@@ -1,6 +1,6 @@
 
 
-mod network;
+
 
 use p::action_functions::s_i0_do_nothing;
 use rand_distr::num_traits::AsPrimitive;
@@ -22,7 +22,7 @@ use std::process::{Command, Stdio};                 //for piping websocket clien
 use std::io::{BufRead, BufReader};//this is to help us read from stdin
 use serde_json::Value;          //good for parsing intput in JSON format
 use tokio::time::delay_for;                         //for "sleep", but in async functions
-
+use std::sync::Mutex;
 
 
 ///-----FOR PARSING-----////
@@ -927,6 +927,7 @@ async fn main()  {
         layers: Vec::new(),
         weights: Vec::new(),
         biases: Vec::new(),
+        input_mutex: Mutex::new(()),
     };
     neural_network.initialization(65, 75, 2); // Initialize with [input size], [output size], [# hidden layers]
     //the first number in the initialization and the number below MUST be the same size
@@ -1131,8 +1132,8 @@ async fn main()  {
 
     // Create a real transition
     let state = NetworkLayer { /* fill with your real data */ };
-    let action = /* your real action */;
-    let reward = /* your real reward */;
+    //let action = /* your real action */;
+    //let reward = /* your real reward */;
     let next_state = NetworkLayer { /* fill with your real data */ };
 
     let transition = Transition {
@@ -1235,3 +1236,4 @@ async fn main()  {
 
     
 }
+

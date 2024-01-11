@@ -244,3 +244,4 @@ Log of what I've done:
 01/09/24 - interim commit that will just save what I have so far. I am going to change some structs and yes, add a mutex so I need to make sure I have a good save. Next step is to add the mutex. After that is to check if it works. I got this!
 01/10/24 - added mutex in update_input and feed_forward. Next step is to make it check experience replay. I got this!
 01/10/24 - changed networklayer struct. made new feed_forward to use cloned input layer. Added all action_functions in cycle function. Now I need to fix it. the answer is in bing.com. I got this!
+01/10/24 - fixed the errors in cycle function. Next step is to finish developing the function. I got this!

@@ -1,5 +1,7 @@
 
 
+mod network;
+
 use p::action_functions::s_i0_do_nothing;
 use rand_distr::num_traits::AsPrimitive;
 use rand_distr::{StandardNormal, Normal, Distribution};
@@ -1210,19 +1212,19 @@ async fn main()  {
     //let value_after = action_functions::s_i61_sol_1_kraken_bitstamp(&value_prior, &coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
     //    &gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key  ).await;
 
-    let client = reqwest::Client::new();
-    let value_after = action_functions::s_i75_xlm_5_coinbase_kraken( &mut coinbase_wallet, &mut kraken_wallet, &bitstamp_wallet,
-            &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key  ).await;
-    let client = reqwest::Client::new();
-    let value_after = action_functions::s_i83_xlm_3_coinbase_bitstamp( &mut coinbase_wallet, &kraken_wallet, &mut bitstamp_wallet,
-        &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key).await;
-    let client = reqwest::Client::new();
-    let value_after = action_functions::s_i95_xlm_5_kraken_coinbase( &mut coinbase_wallet, &mut kraken_wallet, &bitstamp_wallet,
-        &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key  ).await;
+    //let client = reqwest::Client::new();
+    //let value_after = action_functions::s_i75_xlm_5_coinbase_kraken( &mut coinbase_wallet, &mut kraken_wallet, &bitstamp_wallet,
+    //        &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key  ).await;
+    //let client = reqwest::Client::new();
+    //let value_after = action_functions::s_i83_xlm_3_coinbase_bitstamp( &mut coinbase_wallet, &kraken_wallet, &mut bitstamp_wallet,
+    //    &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key).await;
+    //let client = reqwest::Client::new();
+    //let value_after = action_functions::s_i95_xlm_5_kraken_coinbase( &mut coinbase_wallet, &mut kraken_wallet, &bitstamp_wallet,
+    //    &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key  ).await;
     
-    let client = reqwest::Client::new();
-    let value_after = action_functions::s_i105_xlm_5_kraken_bitstamp(&coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
-        &gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key  ).await;
+    //let client = reqwest::Client::new();
+    //let value_after = action_functions::s_i105_xlm_5_kraken_bitstamp(&coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
+    //    &gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key  ).await;
 
 
     

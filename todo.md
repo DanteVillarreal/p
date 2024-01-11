@@ -249,3 +249,4 @@ Log of what I've done:
 01/10/24 - updated first action_functions so they update input. Next step is to update all of them. After that is to finish cycle fn. I got this!
 01/10/24 - updated all of the action_functions so they update input. Next step is to finish cycle fn. I got this!
 01/10/24 - fixed some errors that happened as a result. I had a stray "mod network" in main that fucked everything in my network.rs. I couldnt import anything. Then I fixed a mutex issue that appeared when I cleared some other errors. Next step is to finish cycle fn. I got this!
+01/11/24 - finished cycle fn except for exp replay part. Next step is get experience replay working. I got this!

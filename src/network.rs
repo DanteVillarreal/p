@@ -416,7 +416,24 @@
 		};
 		return reward;
 	}
-		
+
+
+		//for back propagation to update weights.
+	//Gives us a measure of how well we're doing. 
+	//	The lower the loss the better the network's predictions
+	//DONT THINK THIS IS EVEN NEEDED.
+	//MAY DEPrecRATE
+	pub fn calculate_loss( current_q_value: &f64, target_q_value: &f64) -> f64 {
+		(current_q_value - target_q_value).powi(2)
+	}
+	//This tells us how much the loss's output would change if we made a small change
+	//  to its input. If the derivative is positive, it means increasing the weight 
+	//	would increase the loss. So to minimize the loss, we should decrease the weight.
+	//  If the derivative is negative, increasing the weight would decrease the loss, 
+	//	so we should increase the weight. 
+	pub fn calculate_loss_derivative(current_q_value: &f64, target_q_value: &f64) -> f64 {
+		2.0 * (current_q_value - target_q_value)
+	}
 
 
 
@@ -464,9 +481,9 @@
 		//added 01/10/24
 		//why? because I have a mutex in pub fn cycle that wont allow me to do a feed_forward
 		//	unless input layer is cloned
-		pub fn feed_forward_with_cloned_input(&mut self, input_layer: NetworkLayer) {
+		pub fn feed_forward_with_cloned_input(&mut self, input_layer: &NetworkLayer) {
 			// Use the cloned input layer as the first layer in the feed_forward process
-			self.layers[0] = input_layer;
+			self.layers[0] = input_layer.clone();
 		
 			for i in 1..self.layers.len() {
 				let previous_activations = &self.layers[i-1].data;
@@ -1142,7 +1159,7 @@
 
 
 		//12/23/23 changed function to not use index because it's not being returned and never used
-		pub fn calculate_target_q_value(&mut self, reward: f64, input_layer: NetworkLayer) -> f64{
+		pub fn calculate_target_q_value(&mut self, reward: f64, input_layer: &NetworkLayer) -> f64{
 			//gamma is basically a numerical representation of how much I value future states
 			//	 and their corresponding q_values.
 			//		it's value is from 0 to 1. 0 means I dont value the next state at all
@@ -1158,7 +1175,7 @@
 
 			//I want to feed forward so I have a new set of q_values that will serve as my
 			//	 "next_q_value"
-			self.feed_forward_with_cloned_input(input_layer);
+			self.feed_forward_with_cloned_input(&input_layer);
 
 
 
@@ -1225,21 +1242,23 @@
 
 
 
+		//MOVED.
+		//THESE WERE MOVED TO NOT BE METHODS. they didnt need &self
 
-		//for back propagation to update weights.
-		//Gives us a measure of how well we're doing. 
-		//	The lower the loss the better the network's predictions
-		pub fn calculate_loss(&self, current_q_value: &f64, target_q_value: &f64) -> f64 {
-			(current_q_value - target_q_value).powi(2)
-		}
-		//This tells us how much the loss's output would change if we made a small change
-		//  to its input. If the derivative is positive, it means increasing the weight 
-		//	would increase the loss. So to minimize the loss, we should decrease the weight.
-		//  If the derivative is negative, increasing the weight would decrease the loss, 
-		//	so we should increase the weight. 
-		pub fn calculate_loss_derivative(&self, current_q_value: &f64, target_q_value: &f64) -> f64 {
-			2.0 * (current_q_value - target_q_value)
-		}
+		////for back propagation to update weights.
+		////Gives us a measure of how well we're doing. 
+		////	The lower the loss the better the network's predictions
+		//pub fn calculate_loss( current_q_value: &f64, target_q_value: &f64) -> f64 {
+		//	(current_q_value - target_q_value).powi(2)
+		//}
+		////This tells us how much the loss's output would change if we made a small change
+		////  to its input. If the derivative is positive, it means increasing the weight 
+		////	would increase the loss. So to minimize the loss, we should decrease the weight.
+		////  If the derivative is negative, increasing the weight would decrease the loss, 
+		////	so we should increase the weight. 
+		//pub fn calculate_loss_derivative(current_q_value: &f64, target_q_value: &f64) -> f64 {
+		//	2.0 * (current_q_value - target_q_value)
+		//}
 
 
 
@@ -1757,7 +1776,8 @@
 		//Most updated version
 		//dont think it will be accessed at same time as feed_forward, so I will not add a mutex
 		//also the function, at least I dont think, doesnt directly access the input neurons, just its weights
-		pub fn el_backpropagation(&mut self, loss_derivative: &f64, current_q_value_index: &usize) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+		pub fn el_backpropagation(&mut self, current_q_value_index: &usize,
+			 current_q_value: &f64, target_q_value: &f64) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
 			//the purpose of this function is to find the gradient (aka derivative)
 			//		 of the loss funciton with respect to each weight.
 			// der. loss (w/ respect to weights) = der. loss (w/ respect to output)  x  der. out (w/ respect to weights).
@@ -1801,6 +1821,7 @@
 			let mut gradients = Vec::new();
 			//why indices? because I need to track what I'm changing for the update_weights function
 			let mut indices = Vec::new();
+			let loss_derivative = calculate_loss_derivative(&current_q_value, &target_q_value);
 			//gradient is the product of three terms: 1. the derivative of the loss function, 
 			//		2. the derivative of the activation function at the output of the neuron connected *TO* the weight,
 			//		3. and the output of the neuron that the weight connects *FROM*
@@ -2107,9 +2128,10 @@
 			//If I do, then I may just remove the mutex from feed_forward all-together
 			
 				let _guard = self.input_mutex.lock().unwrap();
-				let input_layer_clone = self.layers[0].clone();
+				let current_state_input_layer_clone = self.layers[0].clone();
 				//need to drop mutex so I can then do the feed_forward
 				drop(_guard);
+
 				//stuff for exp replay
 					//state stuff
 					let input_data = self.layers[0].data.clone();
@@ -2121,15 +2143,15 @@
 						columns: input_columns,
 						data: input_data,
 					};
-				self.feed_forward_with_cloned_input(input_layer_clone);
+				self.feed_forward_with_cloned_input(&current_state_input_layer_clone);
 			
 
 			//for epsilon-greedy
-			let (current_state_index_chosen, current_state_q_value) = self.exploration_or_exploitation(epsilon);
+			let (index_chosen_for_current_state, q_value_for_current_state) = self.exploration_or_exploitation(epsilon);
 			
 
 			//for exp. replay
-			let action = current_state_index_chosen;
+			let action = index_chosen_for_current_state;
 
 
 
@@ -2144,8 +2166,7 @@
 			//let kraken_wallet_immutable = &*kraken_wallet;
 			//let bitstamp_wallet_immutable = &*bitstamp_wallet;
 			//let gemini_wallet_immutable = &*gemini_wallet;
-			
-			let value_after: f64 = match current_state_index_chosen {
+			let value_after: f64 = match index_chosen_for_current_state {
 				0 => action_functions::s_i0_do_nothing(value_prior)?,
 				1 => {
 					let gemini_wallet_immutable = &*gemini_wallet;
@@ -2526,10 +2547,10 @@
 			let the_reward = reward(*value_prior, value_after);
 			//do target q value and then get next state 
 			let _guard = self.input_mutex.lock().unwrap();
-			let input_layer_clone = self.layers[0].clone();
+			//this gives us the next state's input layer
+			let next_state_input_layer_clone = self.layers[0].clone();
 			//need to drop mutex so I can then do the feed_forward
 			drop(_guard);
-
 			//do I need to add my value_prior as input?
 			//I think so because this will help the network decide whether to be risky or not
 			//so I need to update the input every time I do an action_function and it
@@ -2540,6 +2561,25 @@
 			//	everytime value_prior changes, so everytime I execute an action_function
 			//	 I need to update the input. so in every action function, I have to
 			//	 update the input
+			//DONE DONE DONE
+
+			//now I need to get the target q value, aka the next state's q value
+			let target_q_value = self.calculate_target_q_value(the_reward, &next_state_input_layer_clone);
+
+
+			// I now have everything for the experience replay:
+			let transition = Transition {
+				state : current_state_input_layer_clone,
+				action,
+				reward : the_reward,
+				next_state : next_state_input_layer_clone,
+			};
+
+
+			let (gradients, indices) = self.el_backpropagation(&index_chosen_for_current_state, &q_value_for_current_state, &target_q_value );
+
+			self.el_update_weights(&gradients, &indices);
+
 
 
 

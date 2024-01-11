@@ -16,7 +16,9 @@ use uuid::Uuid;										//this is for bitstamp. part of the input for the signa
 use std::time::Instant;                             //this is to record time for execution
 use std::time::Duration;                            //for "sleep"
 use std::thread::sleep;                          
-use tokio::time::delay_for;                         //for "sleep", but in async functions
+use tokio::time::delay_for;
+
+use crate::network::NeuralNetwork;                         //to take in neuralNetwork as parameter
 
 /*
     pub fn nothing() {
@@ -1064,7 +1066,7 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     }
     */
     pub async fn s_i5_sol_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1285,7 +1287,18 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
                 *kraken_wallet += money_from_sell_after_fees;
     
                 let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
-    
+
+
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
             //this will count as value after
     
@@ -1296,7 +1309,7 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     }
 
     pub async fn s_i6_sol_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1520,7 +1533,16 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     
     
             //this will count as value after
-    
+                            //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
                 return Ok(value_after)
@@ -1528,7 +1550,7 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     }
 
     pub async fn s_i7_sol_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1752,7 +1774,16 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     
     
             //this will count as value after
-    
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
                 return Ok(value_after)
@@ -1760,7 +1791,7 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     }
 
     pub async fn s_i8_sol_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1984,7 +2015,16 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     
     
             //this will count as value after
-    
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
                 return Ok(value_after)
@@ -1992,7 +2032,7 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     }
 
     pub async fn s_i9_sol_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -2216,7 +2256,16 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     
     
             //this will count as value after
-    
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
                 return Ok(value_after)
@@ -2224,7 +2273,7 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     }
 
     pub async fn s_i10_sol_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -2448,7 +2497,16 @@ use tokio::time::delay_for;                         //for "sleep", but in async 
     
     
             //this will count as value after
-    
+                //value_after = 60
+                //coinbase = 61
+                //bitstamp = 62
+                //kraken = 63
+                //gemini = 64
+                //since this is coinbase and kraken being updated, I will update:
+                //  60, 61, 63
+                let indices = [60, 61, 63];
+                let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                neural_network.update_input(&indices, &new_values);
     
     
                 return Ok(value_after)

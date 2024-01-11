@@ -928,9 +928,19 @@ async fn main()  {
         weights: Vec::new(),
         biases: Vec::new(),
     };
-    neural_network.initialization(60, 80, 2); // Initialize with [input size], [output size], [# hidden layers]
+    neural_network.initialization(65, 75, 2); // Initialize with [input size], [output size], [# hidden layers]
     //the first number in the initialization and the number below MUST be the same size
     let mut updated = [false; 60];
+    let mut value_prior = 2000.0;
+    let mut coinbase_wallet = 500.0;
+    let mut bitstamp_wallet = 500.0;
+    let mut kraken_wallet = 500.0;
+    let mut gemini_wallet = 500.0;
+
+   
+    let indices = [60, 61, 62, 63, 64];
+    let new_values = [value_prior, coinbase_wallet, bitstamp_wallet, kraken_wallet, gemini_wallet];
+    neural_network.update_input(&indices, &new_values);
 
 
 
@@ -949,11 +959,7 @@ async fn main()  {
     let gemini_api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set with exact name in .env file. check if even have .env file");
     let gemini_secret = env::var("GEMINI_SECRET_KEY").expect("GEMINI_SECRET_KEY must be set with exact name in .env file. check if even have .env file");
     let client = reqwest::Client::new();
-    let mut value_prior = 2000.0;
-    let mut coinbase_wallet = 500.0;
-    let mut bitstamp_wallet = 500.0;
-    let mut kraken_wallet = 500.0;
-    let mut gemini_wallet = 500.0;
+   
     //--end of code to execute funcitons
 
 

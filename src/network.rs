@@ -319,7 +319,7 @@
 	//CODE COMMENTED THIS OUT FOR NOW. THIS IS 100% NECESSARY FOR THE PROPER
 	//		 FUNCTIONALITY OF THE NEURAL NETWORK. BUT IT NEEDS PARTS THAT ARENT
 	//		 DONE YET AND I WANT TO RUN MY SAVE AND LOAD STATES
-	//pub fn reward_function() -> f64 {
+	//pub fn reward_ function() -> f64 {
 		//let new_balance = 
 		//I need to figure out where I would get the balance from. Do I make an entire function just to return a balance
 		//or can I return two f64 from 1 function
@@ -386,7 +386,7 @@
 		//		Then value_prior = value_after;
 		//		Then the rest.
 		//So the action functions 
-	fn reward(value_prior: f64, value_after: f64 ) -> f64 {
+	pub fn reward(value_prior: f64, value_after: f64 ) -> f64 {
 		let multiplier = 1.3;
 		let absolute_change = value_after - value_prior;
 		let relative_change = absolute_change / value_prior;
@@ -1142,7 +1142,7 @@
 
 
 		//12/23/23 changed function to not use index because it's not being returned and never used
-		pub fn calculate_target_q_value(&mut self, reward: f64) -> f64{
+		pub fn calculate_target_q_value(&mut self, reward: f64, input_layer: NetworkLayer) -> f64{
 			//gamma is basically a numerical representation of how much I value future states
 			//	 and their corresponding q_values.
 			//		it's value is from 0 to 1. 0 means I dont value the next state at all
@@ -1158,7 +1158,7 @@
 
 			//I want to feed forward so I have a new set of q_values that will serve as my
 			//	 "next_q_value"
-			self.feed_forward();
+			self.feed_forward_with_cloned_input(input_layer);
 
 
 
@@ -2033,6 +2033,59 @@
 		//			established the state, action, reward, next_state.
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		//added 01/10/24
 		pub async fn cycle(&mut self, epsilon: &mut f64, value_prior: &mut f64, coinbase_wallet: &mut f64,
 			 kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,gemini_wallet: &mut f64,
@@ -2074,6 +2127,13 @@
 			//for epsilon-greedy
 			let (current_state_index_chosen, current_state_q_value) = self.exploration_or_exploitation(epsilon);
 			
+
+			//for exp. replay
+			let action = current_state_index_chosen;
+
+
+
+
 
 			////to actually do the functions
 			////how does it work:
@@ -2459,8 +2519,36 @@
 				},
 				_ => todo!(),
 			};
+
+
+
+			
+			let the_reward = reward(*value_prior, value_after);
+			//do target q value and then get next state 
+			let _guard = self.input_mutex.lock().unwrap();
+			let input_layer_clone = self.layers[0].clone();
+			//need to drop mutex so I can then do the feed_forward
+			drop(_guard);
+
+			//do I need to add my value_prior as input?
+			//I think so because this will help the network decide whether to be risky or not
+			//so I need to update the input every time I do an action_function and it
+			//		 will do like 1 index and then the update_input thing
+			//what are the downsides?
+			//	I need to figure out how to update the input immediately after initialization
+			//	Easy, just do an update input line right after initialization.
+			//	everytime value_prior changes, so everytime I execute an action_function
+			//	 I need to update the input. so in every action function, I have to
+			//	 update the input
+
+
+
+
+
+
 			Ok(())
 		}
+
 
 
 

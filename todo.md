@@ -245,3 +245,5 @@ Log of what I've done:
 01/10/24 - added mutex in update_input and feed_forward. Next step is to make it check experience replay. I got this!
 01/10/24 - changed networklayer struct. made new feed_forward to use cloned input layer. Added all action_functions in cycle function. Now I need to fix it. the answer is in bing.com. I got this!
 01/10/24 - fixed the errors in cycle function. Next step is to finish developing the function. I got this!
+01/10/24 - changed calculate_target_q_value to use feed_forward with cloned input layer
+01/10/24 - updated first action_functions so they update input. Next step is to update all of them. After that is to finish cycle fn. I got this!

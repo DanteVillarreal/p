@@ -252,3 +252,4 @@ Log of what I've done:
 01/10/24 - fixed some errors that happened as a result. I had a stray "mod network" in main that fucked everything in my network.rs. I couldnt import anything. Then I fixed a mutex issue that appeared when I cleared some other errors. Next step is to finish cycle fn. I got this!
 01/11/24 - finished cycle fn except for exp replay part. Next step is get experience replay working. I got this!
 01/11/24 - I think I finished exp replay. Next step is to put the cycle fn in main and get everything together to run it. After that is to  make it sample from it at random after its like 1000 big. I got this!
+01/11/24 - Moved read_lines part of websocket client thing and then added cycle fn to main. Need to remove errors next. Then run it. I got this!

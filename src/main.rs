@@ -18,11 +18,13 @@ use dotenv::dotenv;
 //use mod network;
 //use mod actions;
 use std::time::Instant;                             //this is to record time for execution
-use std::process::{Command, Stdio};                 //for piping websocket client
+use std::process::{Command, Stdio, ChildStdout};                 //for piping websocket client
 use std::io::{BufRead, BufReader};//this is to help us read from stdin
 use serde_json::Value;          //good for parsing intput in JSON format
 use tokio::time::delay_for;                         //for "sleep", but in async functions
 use std::sync::Mutex;
+use tokio::task;                                    //to do child spawns
+use std::error::Error;                              //to do box error 
 
 
 ///-----FOR PARSING-----////
@@ -137,16 +139,16 @@ fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork, update
         for index in indices {
             updated[index] = true;
         }
-        if updated.iter().all(|&x| x) {
-            neural_network.print_layers();
-        } 
-        else {
-            let not_updated: Vec<String> = updated.iter()
-            .enumerate()
-            .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
-            .collect();
-            println!("Neurons: {} have not been updated", not_updated.join(", "));
-        }
+        //if updated.iter().all(|&x| x) {
+        //    neural_network.print_layers();
+        //} 
+        //else {
+        //    let not_updated: Vec<String> = updated.iter()
+        //    .enumerate()
+        //    .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+        //    .collect();
+        //    println!("Neurons: {} have not been updated", not_updated.join(", "));
+        //}
 
     }
 
@@ -221,16 +223,16 @@ fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork, update
             for index in indices {
                 updated[index] = true;
             }
-            if updated.iter().all(|&x| x) {
-                neural_network.print_layers();
-            } 
-            else {
-                let not_updated: Vec<String> = updated.iter()
-                .enumerate()
-                .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
-                .collect();
-                println!("Neurons: {} have not been updated", not_updated.join(", "));
-            }
+            //if updated.iter().all(|&x| x) {
+            //    neural_network.print_layers();
+            //} 
+            //else {
+            //    let not_updated: Vec<String> = updated.iter()
+            //    .enumerate()
+            //   .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+            //    .collect();
+            //    println!("Neurons: {} have not been updated", not_updated.join(", "));
+            //}
         }
 
 
@@ -437,16 +439,16 @@ fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork, updated:
     for index in indices {
         updated[index] = true;
     }
-    if updated.iter().all(|&x| x) {
-        neural_network.print_layers();
-    } 
-    else {
-        let not_updated: Vec<String> = updated.iter()
-        .enumerate()
-        .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
-        .collect();
-        println!("Neurons: {} have not been updated", not_updated.join(", "));
-    }
+    //if updated.iter().all(|&x| x) {
+    //    neural_network.print_layers();
+    //} 
+    //else {
+    //    let not_updated: Vec<String> = updated.iter()
+    //    .enumerate()
+    //    .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+    //    .collect();
+    //    println!("Neurons: {} have not been updated", not_updated.join(", "));
+    //}
 }
 
 
@@ -657,16 +659,16 @@ fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork, updated:
     for index in indices {
         updated[index] = true;
     }
-    if updated.iter().all(|&x| x) {
-        neural_network.print_layers();
-    } 
-    else {
-        let not_updated: Vec<String> = updated.iter()
-        .enumerate()
-        .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
-        .collect();
-        println!("Neurons: {} have not been updated", not_updated.join(", "));
-    }
+    //if updated.iter().all(|&x| x) {
+    //    neural_network.print_layers();
+    //} 
+    //else {
+    //    let not_updated: Vec<String> = updated.iter()
+    //    .enumerate()
+    //    .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+    //    .collect();
+    //    println!("Neurons: {} have not been updated", not_updated.join(", "));
+    //}
 }
 
 
@@ -733,16 +735,16 @@ fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork, update
     for index in indices {
         updated[index] = true;
     }
-    if updated.iter().all(|&x| x) {
-        neural_network.print_layers();
-    } 
-    else {
-        let not_updated: Vec<String> = updated.iter()
-        .enumerate()
-        .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
-        .collect();
-        println!("Neurons: {} have not been updated", not_updated.join(", "));
-    }
+    //if updated.iter().all(|&x| x) {
+    //    neural_network.print_layers();
+    //} 
+    //else {
+    //    let not_updated: Vec<String> = updated.iter()
+    //    .enumerate()
+    //    .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+    //    .collect();
+    //    println!("Neurons: {} have not been updated", not_updated.join(", "));
+    //}
 
 }
 
@@ -803,16 +805,16 @@ fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork, update
         updated[index] = true;
     }
     //for debugging
-    if updated.iter().all(|&x| x) {
-        neural_network.print_layers();
-    } 
-    else {
-        let not_updated: Vec<String> = updated.iter()
-        .enumerate()
-        .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
-        .collect();
-        println!("Neurons: {} have not been updated", not_updated.join(", "));
-    }
+    //if updated.iter().all(|&x| x) {
+    //    neural_network.print_layers();
+    //} 
+    //else {
+    //    let not_updated: Vec<String> = updated.iter()
+    //    .enumerate()
+    //    .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+    //    .collect();
+    //   println!("Neurons: {} have not been updated", not_updated.join(", "));
+    //}
 
 }
 
@@ -868,16 +870,16 @@ fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, updated:
         for index in indices {
             updated[index] = true;
         }
-        if updated.iter().all(|&x| x) {
-            neural_network.print_layers();
-        } 
-        else {
-            let not_updated: Vec<String> = updated.iter()
-            .enumerate()
-            .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
-            .collect();
-            println!("Neurons: {} have not been updated", not_updated.join(", "));
-        }
+        //if updated.iter().all(|&x| x) {
+        //    neural_network.print_layers();
+        //} 
+        //else {
+        //    let not_updated: Vec<String> = updated.iter()
+        //    .enumerate()
+        //    .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
+        //    .collect();
+        //    println!("Neurons: {} have not been updated", not_updated.join(", "));
+        //}
     } else {
         println!("Failed to parse amount and/or price");
         println!("Gemini message:\n{}", message);
@@ -892,8 +894,79 @@ fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, updated:
 
 
 
+//added 01/11/24 - because I need async to be able to run this and the cycle fn at same time
+async fn read_lines(reader: BufReader<ChildStdout>, neural_network: &mut NeuralNetwork, 
+    updated: &mut [bool; 60]) {
+    
+    for line_being_read in reader.lines() {
+
+        //error handling in case it doesn't read Input clrrectly
+        match line_being_read{
+            
+            //this gives me 1 line of output which is good because each message is
+            //   printed in 1 line but it looks like multiple because it overflows
+            Ok(line_being_read) => {
+
+                
+                //line.splintn(2, ':'): iterates over the line and splits it at  ":".
+                //.collect()            collects the 2 substrings and puts it into a
+                //                  Vec<&str>   which is a vector of substrings. 
+                //                  Aka an array of substrings
+                //parts now contains the 2 substrings split at the  :
+                let parts: Vec<&str> = line_being_read.splitn(2, ':').collect();
 
 
+                if parts[0] == "Message sent successfully" {
+                    continue;
+                }
+                //this checks if parts has exactly 2 elements
+                //If it doesn't this means that the input string didnt contain a colon
+                //  so it is unexpected behavior. So panic (at least for now)
+                //WILL NEED to implement a save state before the panic
+                
+                if parts.len() != 2 {
+                    panic!("got a weird line of input. The input was\n
+                            {:?}", parts);
+                }
+                //gets the first element of the parts and trims leading or
+                //  trailing whitespace
+                let prefix = parts[0].trim();
+                //this is the actual guts of the message
+                let message = parts[1].trim();
+
+                //this is operating as an if statement of if: "coinbase received"
+                //  go to handle_coinbase(message) function
+                //else if "kraken received"...
+                //and if it's none of them, print that it's unknown and panic
+                match prefix {
+                    "SOL Coinbase Received" => handle_sol_coinbase(message, neural_network, updated),
+                    "XLM Coinbase Received" => handle_xlm_coinbase(message, neural_network, updated),
+                    "SOL Kraken Received" => handle_sol_kraken(message, neural_network, updated),
+                    "XLM Kraken Received" => handle_xlm_kraken(message, neural_network, updated),
+                    "SOL Bitstamp received" => handle_sol_bitstamp(message, neural_network, updated),
+                    "XLM Bitstamp received" => handle_xlm_bitstamp(message, neural_network, updated),
+                    "Gemini received" => handle_sol_gemini(message, neural_network, updated),
+                    _ => panic!("Unknown prefix: {}", prefix),
+                }
+
+            },
+            Err(e) => {
+                eprintln!("Error reading line from stdin: {}", e);
+                panic!();
+                //it will panic because it may be crucial to read every
+                //  line. so exit program if it doesn't. but now that I think
+                //  about it I should probably save the state of the DQN
+                //  if I am implementing this program into the DQN later
+                //why?
+                //  so that it doesn't have to relearn everything.
+                //HOWEVER:
+                //  I dont have a function to save the state of the DQN
+                //  but I should add it here though
+            },
+        }
+    }
+
+}
 
 
 
@@ -916,7 +989,7 @@ fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, updated:
 
 //12/23/23 code commented everything, added the new lines of code labelled below then added the return to fn main()
 #[tokio::main]
-async fn main()  {
+async fn main() ->Result<(), Box<dyn Error>>  {
     
 //-----ALL-FOR-PARSING-UNDER-THIS//
     
@@ -963,7 +1036,16 @@ async fn main()  {
    
     //--end of code to execute funcitons
 
-
+    let cycle_task = task::spawn(async {
+        for _ in 0..100 {
+            neural_network.cycle(&mut epsilon, &mut value_prior,
+                 &mut coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
+                  &mut gemini_wallet, &coinbase_secret, &coinbase_api_key, client,
+                   &kraken_secret, &kraken_api_key, &gemini_secret,
+                    &gemini_api_key, &bitstamp_secret, &bitstamp_api_key).await?;
+        }
+        Ok(())
+    });
 
 
 
@@ -1036,79 +1118,85 @@ async fn main()  {
 
     let reader = BufReader::new(websocket_client.stdout
             .expect("Failed to get stdout"));
+    let read_lines_task = task::spawn(async {
+        read_lines(reader, &mut neural_network, &mut updated).await;
+    });
+    let _ = tokio::try_join!(cycle_task, read_lines_task)?;
 
-
+    Ok(())
     //let stdin = io::stdin();
     
     //this will run indefinitely and will not stop if there is a break in the
     //  input. it will pause and wait for more data to become available.
-    for line_being_read in reader.lines() {
 
-        //error handling in case it doesn't read Input clrrectly
-        match line_being_read{
-            
-            //this gives me 1 line of output which is good because each message is
-            //   printed in 1 line but it looks like multiple because it overflows
-            Ok(line_being_read) => {
-
-                
-                //line.splintn(2, ':'): iterates over the line and splits it at  ":".
-                //.collect()            collects the 2 substrings and puts it into a
-                //                  Vec<&str>   which is a vector of substrings. 
-                //                  Aka an array of substrings
-                //parts now contains the 2 substrings split at the  :
-                let parts: Vec<&str> = line_being_read.splitn(2, ':').collect();
-
-
-                if parts[0] == "Message sent successfully" {
-                    continue;
-                }
-                //this checks if parts has exactly 2 elements
-                //If it doesn't this means that the input string didnt contain a colon
-                //  so it is unexpected behavior. So panic (at least for now)
-                //WILL NEED to implement a save state before the panic
-                
-                if parts.len() != 2 {
-                    panic!("got a weird line of input. The input was\n
-                            {:?}", parts);
-                }
-                //gets the first element of the parts and trims leading or
-                //  trailing whitespace
-                let prefix = parts[0].trim();
-                //this is the actual guts of the message
-                let message = parts[1].trim();
-
-                //this is operating as an if statement of if: "coinbase received"
-                //  go to handle_coinbase(message) function
-                //else if "kraken received"...
-                //and if it's none of them, print that it's unknown and panic
-                match prefix {
-                    "SOL Coinbase Received" => handle_sol_coinbase(message, &mut neural_network, &mut updated),
-                    "XLM Coinbase Received" => handle_xlm_coinbase(message, &mut neural_network, &mut updated),
-                    "SOL Kraken Received" => handle_sol_kraken(message, &mut neural_network, &mut updated),
-                    "XLM Kraken Received" => handle_xlm_kraken(message, &mut neural_network, &mut updated),
-                    "SOL Bitstamp received" => handle_sol_bitstamp(message, &mut neural_network, &mut updated),
-                    "XLM Bitstamp received" => handle_xlm_bitstamp(message, &mut neural_network, &mut updated),
-                    "Gemini received" => handle_sol_gemini(message, &mut neural_network, &mut updated),
-                    _ => panic!("Unknown prefix: {}", prefix),
-                }
-
-            },
-            Err(e) => {
-                eprintln!("Error reading line from stdin: {}", e);
-                panic!();
-                //it will panic because it may be crucial to read every
-                //  line. so exit program if it doesn't. but now that I think
-                //  about it I should probably save the state of the DQN
-                //  if I am implementing this program into the DQN later
-                //why?
-                //  so that it doesn't have to relearn everything.
-                //HOWEVER:
-                //  I dont have a function to save the state of the DQN
-                //  but I should add it here though
-            },
-        }
-    }
+    ////01/11/24 - code commented out and put in its own function
+    //for line_being_read in reader.lines() {
+    //    
+    //    //error handling in case it doesn't read Input clrrectly
+    //    match line_being_read{
+    //        
+    //        //this gives me 1 line of output which is good because each message is
+    //        //   printed in 1 line but it looks like multiple because it overflows
+    //        Ok(line_being_read) => {
+    //    
+    //            
+    //            //line.splintn(2, ':'): iterates over the line and splits it at  ":".
+    //            //.collect()            collects the 2 substrings and puts it into a
+    //            //                  Vec<&str>   which is a vector of substrings. 
+    //            //                  Aka an array of substrings
+    //            //parts now contains the 2 substrings split at the  :
+    //            let parts: Vec<&str> = line_being_read.splitn(2, ':').collect();
+    //
+    //
+    //            if parts[0] == "Message sent successfully" {
+     //               continue;
+    //            }
+    //            //this checks if parts has exactly 2 elements
+    //            //If it doesn't this means that the input string didnt contain a colon
+   //             //  so it is unexpected behavior. So panic (at least for now)
+    //            //WILL NEED to implement a save state before the panic
+    //            
+    //            if parts.len() != 2 {
+    //                panic!("got a weird line of input. The input was\n
+    //                        {:?}", parts);
+    //            }
+    //            //gets the first element of the parts and trims leading or
+    //            //  trailing whitespace
+    //            let prefix = parts[0].trim();
+     //           //this is the actual guts of the message
+    //            let message = parts[1].trim();
+    //
+    //            //this is operating as an if statement of if: "coinbase received"
+    //            //  go to handle_coinbase(message) function
+    //            //else if "kraken received"...
+    //            //and if it's none of them, print that it's unknown and panic
+    //            match prefix {
+     //               "SOL Coinbase Received" => handle_sol_coinbase(message, &mut neural_network, &mut updated),
+    //                "XLM Coinbase Received" => handle_xlm_coinbase(message, &mut neural_network, &mut updated),
+    //                "SOL Kraken Received" => handle_sol_kraken(message, &mut neural_network, &mut updated),
+    //                "XLM Kraken Received" => handle_xlm_kraken(message, &mut neural_network, &mut updated),
+    //                "SOL Bitstamp received" => handle_sol_bitstamp(message, &mut neural_network, &mut updated),
+    //                "XLM Bitstamp received" => handle_xlm_bitstamp(message, &mut neural_network, &mut updated),
+    //                "Gemini received" => handle_sol_gemini(message, &mut neural_network, &mut updated),
+    //                _ => panic!("Unknown prefix: {}", prefix),
+    //            }
+    //
+     //       },
+    //        Err(e) => {
+    //            eprintln!("Error reading line from stdin: {}", e);
+    //            panic!();
+    //            //it will panic because it may be crucial to read every
+    //            //  line. so exit program if it doesn't. but now that I think
+    //            //  about it I should probably save the state of the DQN
+    //            //  if I am implementing this program into the DQN later
+    //            //why?
+    //            //  so that it doesn't have to relearn everything.
+    //            //HOWEVER:
+    //            //  I dont have a function to save the state of the DQN
+    //            //  but I should add it here though
+    //        },
+    //    }
+    //}
     
 //-----ALL-FOR-PARSING-ABOVE-THIS//
 
@@ -1132,23 +1220,23 @@ async fn main()  {
 
     //---------beginning of code so I can execute functions----------//
     
-    dotenv().expect("Failed to load .env file");
-    let coinbase_secret = env::var("COINBASE_SECRET_KEY").expect("SECRET_KEY must be set. check if even have .env file and if that is in it");
-	let coinbase_api_key = env::var("COINBASE_API_KEY").expect("API_KEY must be set. check if even have .env file and if that is in it");
-    let kraken_secret = env::var("KRAKEN_PRIVATE_KEY").expect("KRAKEN_PRIVATE_KEY must be set. check if even have .env file and if that is in it");
-	let kraken_api_key = env::var("KRAKEN_API_KEY").expect("KRAKEN_API_KEY must be set. check if even have .env file and if that is in it");
-    let bitstamp_api_key = env::var("BITSTAMP_API_KEY").expect("could not find BITSTAMP_API_KEY spelled exactly like this. check if even have .env file");
-	let bitstamp_secret = env::var("BITSTAMP_SECRET_KEY").expect("could not find BITSTAMP_SECRET_KEY spelt exactly like this in .env file. check if even have .env file");
-    let gemini_api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set with exact name in .env file. check if even have .env file");
-    let gemini_secret = env::var("GEMINI_SECRET_KEY").expect("GEMINI_SECRET_KEY must be set with exact name in .env file. check if even have .env file");
-    let client = reqwest::Client::new();
+    //dotenv().expect("Failed to load .env file");
+    //let coinbase_secret = env::var("COINBASE_SECRET_KEY").expect("SECRET_KEY must be set. check if even have .env file and if that is in it");
+	//let coinbase_api_key = env::var("COINBASE_API_KEY").expect("API_KEY must be set. check if even have .env file and if that is in it");
+    //let kraken_secret = env::var("KRAKEN_PRIVATE_KEY").expect("KRAKEN_PRIVATE_KEY must be set. check if even have .env file and if that is in it");
+	//let kraken_api_key = env::var("KRAKEN_API_KEY").expect("KRAKEN_API_KEY must be set. check if even have .env file and if that is in it");
+    //let bitstamp_api_key = env::var("BITSTAMP_API_KEY").expect("could not find BITSTAMP_API_KEY spelled exactly like this. check if even have .env file");
+	//let bitstamp_secret = env::var("BITSTAMP_SECRET_KEY").expect("could not find BITSTAMP_SECRET_KEY spelt exactly like this in .env file. check if even have .env file");
+    //let gemini_api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set with exact name in .env file. check if even have .env file");
+    //let gemini_secret = env::var("GEMINI_SECRET_KEY").expect("GEMINI_SECRET_KEY must be set with exact name in .env file. check if even have .env file");
+    //let client = reqwest::Client::new();
 
     //test variables
-    let mut value_prior = 2000.0;
-    let mut coinbase_wallet = 500.0;
-    let mut bitstamp_wallet = 500.0;
-    let mut kraken_wallet = 500.0;
-    let mut gemini_wallet = 500.0;
+    //let mut value_prior = 2000.0;
+    //let mut coinbase_wallet = 500.0;
+    //let mut bitstamp_wallet = 500.0;
+    //let mut kraken_wallet = 500.0;
+    //let mut gemini_wallet = 500.0;
 
     //let value_after = action_functions::s_i1_sol_1_coinbase_kraken( &mut coinbase_wallet, &mut kraken_wallet, &bitstamp_wallet,
     //    &gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key  ).await;

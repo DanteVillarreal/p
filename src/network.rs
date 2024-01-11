@@ -3,14 +3,15 @@
 	//use crate::action_functions::{/*insert all the action functions */};
 	use rand_distr::{Normal, Distribution};									//to generate different dist. of random numbers
 	use serde::{Serialize, Deserialize};									//to save/load my neural network
-	use std::fs::File;
-	use std::io::{BufReader, BufWriter};
+	use std::fs::File;														//to access files. for NeuralNet
+	use std::io::{BufReader, BufWriter};									//to save NeuralNet
 	use chrono::Utc;														//for timestamp
 	use std::path::Path;													//for help in representing file paths
-	use std::sync::Mutex;
+	use std::sync::Mutex;													//lock input_layer
 	use rand::prelude::SliceRandom;												//for exp replay
-	use	crate::action_functions;											//for 
-	use std::error::Error;
+	use	crate::action_functions;											//for action_functions
+	use std::error::Error;													//for action_functions
+	use std::fs;														//for replay_buffer
 
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
 	
@@ -114,10 +115,20 @@
 			&self.buffer[index]
 		}
 
-		//added 12/26/23
-		//why? because they would save to RAM instead if we didnt do this.
-		pub fn save_to_file(&self, filename: &str) -> std::io::Result<()> {
-			let file = File::create(filename)?;
+		////added 12/26/23
+		////why? because they would save to RAM instead if we didnt do this.
+		//pub fn save_to_file(&self, filename: &str) -> std::io::Result<()> {
+		//	let file = File::create(filename)?;
+		//	let writer = BufWriter::new(file);
+		//	serde_json::to_writer(writer, &self)?;
+		//	Ok(())
+		//}
+		pub fn save_replay_buffer_v2(&self) -> std::io::Result<()> {
+			let base_path = "D:\\Downloads\\PxOmni\\rust_replay_buffers";
+			let now = Utc::now();
+			let timestamp = now.timestamp_millis().to_string();
+			let file_path = Path::new(base_path).join(timestamp);
+			let file = File::create(file_path)?;
 			let writer = BufWriter::new(file);
 			serde_json::to_writer(writer, &self)?;
 			Ok(())
@@ -130,11 +141,48 @@
 			let replay_buffer = serde_json::from_reader(reader)?;
 			Ok(replay_buffer)
 		}
-
-
-
-
-
+		//added 01/11/24
+		//this is to test if replay_buffer actually works
+		pub fn load_most_recent() -> std::io::Result<Self> {
+			let base_path = Path::new("D:\\Downloads\\PxOmni\\rust_save_states");
+			let mut most_recent_file = None;
+			let mut most_recent_timestamp = 0;
+	
+			for entry in fs::read_dir(base_path)? {
+				let entry = entry?;
+				let path = entry.path();
+				if path.is_file() {
+					if let Some(filename) = path.file_name() {
+						if let Some(filename_str) = filename.to_str() {
+							if let Ok(timestamp) = filename_str.parse::<i64>() {
+								if timestamp > most_recent_timestamp {
+									most_recent_file = Some(path);
+									most_recent_timestamp = timestamp;
+								}
+							}
+						}
+					}
+				}
+			}
+	
+			if let Some(most_recent_file) = most_recent_file {
+				let file = fs::File::open(most_recent_file)?;
+				let reader = BufReader::new(file);
+				let replay_buffer = serde_json::from_reader(reader)?;
+				Ok(replay_buffer)
+			} else {
+				Err(std::io::Error::new(std::io::ErrorKind::Other, "No replay buffer found"))
+			}
+		}
+		//added 01/11/24
+		pub fn print_replay_buffer(&self) {
+			println!("ReplayBuffer capacity: {}", self.capacity);
+			println!("Number of transitions: {}", self.buffer.len());
+			for (i, transition) in self.buffer.iter().enumerate() {
+				println!("Transition {}: {:?}", i, transition);
+			}
+		}
+	
 	}
 	
 
@@ -2129,12 +2177,14 @@
 			
 				let _guard = self.input_mutex.lock().unwrap();
 				let current_state_input_layer_clone = self.layers[0].clone();
+				//stuff for exp replay
+					let input_data = self.layers[0].data.clone();
 				//need to drop mutex so I can then do the feed_forward
 				drop(_guard);
 
 				//stuff for exp replay
+					let mut replay_buffer = ReplayBuffer::new(10);
 					//state stuff
-					let input_data = self.layers[0].data.clone();
 					let input_rows = self.layers[0].rows;
 					let input_columns = self.layers[0].columns;
 
@@ -2569,19 +2619,25 @@
 
 			// I now have everything for the experience replay:
 			let transition = Transition {
-				state : current_state_input_layer_clone,
+				state,
 				action,
 				reward : the_reward,
 				next_state : next_state_input_layer_clone,
 			};
 
 
+
+
+
+			//does backpropagation
 			let (gradients, indices) = self.el_backpropagation(&index_chosen_for_current_state, &q_value_for_current_state, &target_q_value );
-
+			//updates weights. aka... IMPROVEMENT
 			self.el_update_weights(&gradients, &indices);
-
-
-
+			//push transition into the replay buffer
+			replay_buffer.push(transition);
+			//save the buffer to a file
+			let _dummyvar = replay_buffer.save_replay_buffer_v2();
+			replay_buffer.print_replay_buffer();
 
 
 

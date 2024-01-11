@@ -1128,53 +1128,6 @@ async fn main()  {
     //------------------------for----experience----replay---below----------------------//
 
 
-    let mut replay_buffer = ReplayBuffer::new(10);
-
-    // Create a real transition
-    let state = NetworkLayer { /* fill with your real data */ };
-    //let action = /* your real action */;
-    //let reward = /* your real reward */;
-    let next_state = NetworkLayer { /* fill with your real data */ };
-
-    let transition = Transition {
-        state,
-        action,
-        reward,
-        next_state,
-    };
-
-    // Push the transition into the buffer
-    replay_buffer.push(transition);
-
-    // Save the buffer to a file
-    replay_buffer.save_to_file("replay_buffer.json").unwrap();
-
-    // Load the buffer from the file
-    let loaded_buffer = ReplayBuffer::load_from_file("replay_buffer.json").unwrap();
-
-    // Check if the loaded buffer is the same as the original one
-    assert_eq!(replay_buffer.buffer.len(), loaded_buffer.buffer.len());
-    assert_eq!(replay_buffer.capacity, loaded_buffer.capacity);
-    // Add more checks if necessary
-
-
-
- //------------------------for----experience----replay---above----------------------//    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     //---------beginning of code so I can execute functions----------//

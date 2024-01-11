@@ -140,6 +140,7 @@ Make it so there are functions built into 1 function so that it does the initial
      in bitstamp and gemini to maintain uptime, do a request to just get the price and amount instead of waiting like 5 minutes for gemini or bitstamp to finally get a trade. If I did I would have to add a mutex just in case it did happen to be that it updated from the websocket client at the same time the request was updating it.
      not entirely sure if I need all of the messages in action_functions. I should see which ones I dont need for the functions to continue working, and remove the messages I do not need so it loads less into RAM.
      figure out how to use no mutex. manual checks may be faster
+     figure out how to choose "better" experience replays vs just picking random ones, aka exp replays that had unexpected outcomes
 21. change all things to be warning free obviously, but also to change all initializations to be not 0, but Option<var type> instead. Except for the neurons of course.
 22.
         
@@ -250,3 +251,4 @@ Log of what I've done:
 01/10/24 - updated all of the action_functions so they update input. Next step is to finish cycle fn. I got this!
 01/10/24 - fixed some errors that happened as a result. I had a stray "mod network" in main that fucked everything in my network.rs. I couldnt import anything. Then I fixed a mutex issue that appeared when I cleared some other errors. Next step is to finish cycle fn. I got this!
 01/11/24 - finished cycle fn except for exp replay part. Next step is get experience replay working. I got this!
+01/11/24 - I think I finished exp replay. Next step is to put the cycle fn in main and get everything together to run it. After that is to  make it sample from it at random after its like 1000 big. I got this!

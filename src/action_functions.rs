@@ -112,7 +112,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     //then [exchange buy]
     //then [exchange sell]
 
-    pub fn s_i0_do_nothing(value_prior: &f64) -> Result<f64, Box<dyn Error>>{
+    pub fn s_i0_do_nothing(value_prior: &f64) -> Result<f64, Box<dyn Error + Send>>{
         Ok(*value_prior)
     }
     //cant use 1 through 4 because minimum Kraken buy is 0.2 SOL
@@ -1066,7 +1066,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i5_sol_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1090,7 +1090,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -1100,7 +1101,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -1110,11 +1112,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -1252,7 +1254,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
             let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
     
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -1309,7 +1311,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i6_sol_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1333,7 +1335,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -1343,7 +1346,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -1353,11 +1356,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -1495,7 +1498,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
             let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
     
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -1550,7 +1553,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i7_sol_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1574,7 +1577,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -1584,7 +1588,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -1594,11 +1598,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -1736,7 +1740,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
             let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
     
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -1791,7 +1795,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i8_sol_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1815,7 +1819,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -1825,7 +1830,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -1835,11 +1840,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -1977,7 +1982,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
             let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
     
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -2032,7 +2037,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i9_sol_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -2056,7 +2061,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -2066,7 +2072,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -2076,11 +2082,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -2218,7 +2224,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
             let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
     
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -2273,7 +2279,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i10_sol_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -2297,7 +2303,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -2307,7 +2314,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -2317,11 +2324,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -2459,7 +2466,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
             let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
     
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -2516,7 +2523,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 //https://www.businessinsider.com/personal-finance/bitstamp-crypto-exchange-review#:~:text=Bitstamp%20has%20a%20%240%20minimum,of%20more%20than%20%24100%20million).
     /*
     pub async fn s_i11_sol_1_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -2748,7 +2755,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i12_sol_2_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -2980,7 +2987,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i13_sol_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3004,7 +3011,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -3014,7 +3022,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -3024,11 +3032,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -3223,7 +3231,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i14_sol_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3247,7 +3255,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -3257,7 +3266,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -3267,11 +3276,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -3465,7 +3474,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i15_sol_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3489,7 +3498,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -3499,7 +3509,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -3509,11 +3519,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -3707,7 +3717,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i16_sol_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3731,7 +3741,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -3741,7 +3752,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -3751,11 +3762,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -3951,7 +3962,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i17_sol_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3975,7 +3986,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -3985,7 +3997,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -3995,11 +4007,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -4195,7 +4207,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i18_sol_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4219,7 +4231,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -4229,7 +4242,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -4239,11 +4252,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -4440,7 +4453,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i19_sol_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4464,7 +4477,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -4474,7 +4488,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -4484,11 +4498,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -4685,7 +4699,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i20_sol_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4709,7 +4723,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -4719,7 +4734,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -4729,11 +4744,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -4930,7 +4945,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     //gemini has withdraw minimums of 10 dollars
     /*
     pub async fn s_i21_sol_1_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -5160,7 +5175,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }    
 
     pub async fn s_i22_sol_2_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -5391,7 +5406,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i23_sol_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -5479,7 +5494,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -5489,7 +5505,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -5499,11 +5515,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -5633,7 +5649,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i24_sol_4_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -5721,7 +5737,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -5731,7 +5748,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -5741,11 +5758,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -5876,7 +5893,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i25_sol_5_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -5964,7 +5981,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -5974,7 +5992,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -5984,11 +6002,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -6120,7 +6138,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i26_sol_6_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6208,7 +6226,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -6218,7 +6236,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -6228,11 +6246,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -6363,7 +6381,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i27_sol_7_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6451,7 +6469,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -6461,7 +6480,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -6471,11 +6490,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -6607,7 +6626,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i28_sol_8_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6695,7 +6714,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -6705,7 +6725,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -6715,11 +6735,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -6850,7 +6870,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i29_sol_9_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6938,7 +6958,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -6948,7 +6969,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -6958,11 +6979,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -7092,7 +7113,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i30_sol_10_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -7180,7 +7201,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -7190,7 +7212,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -7200,11 +7222,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price = 0.0;
             let mut coinbase_buy_price = 0.0;
     
@@ -7333,7 +7355,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     //cant use 1 through 4 because minimum Kraken buy is 0.2 SOL
     /*
     pub async fn s_i31_sol_1_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -7586,7 +7608,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i32_sol_2_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -7839,7 +7861,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i33_sol_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -8092,7 +8114,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i34_sol_4_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -8345,7 +8367,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i35_sol_5_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -8481,7 +8503,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -8610,7 +8632,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i36_sol_6_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -8746,7 +8768,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -8875,7 +8897,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i37_sol_7_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9011,7 +9033,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -9141,7 +9163,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i38_sol_8_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9277,7 +9299,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -9407,7 +9429,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i39_sol_9_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9543,7 +9565,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).expect("couldnt get value from kraken responese text");
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -9673,7 +9695,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i40_sol_10_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9809,7 +9831,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).expect("couldn't parse kraken in s_i40_sol_10_gemini_kraken");
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -9941,7 +9963,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     //      https://www.gemini.com/legal/user-agreement#section-fiat-currency-withdrawals
     /*
     pub async fn s_i41_sol_1_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10168,7 +10190,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i42_sol_2_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10395,7 +10417,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i43_sol_3_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10634,7 +10656,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i44_sol_4_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10874,7 +10896,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i45_sol_5_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11113,7 +11135,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i46_sol_6_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11352,7 +11374,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i47_sol_7_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11591,7 +11613,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i48_sol_8_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11830,7 +11852,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i49_sol_9_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -12070,7 +12092,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i50_sol_10_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -13338,7 +13360,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
      */
      pub async fn s_i55_sol_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -13374,7 +13396,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()?;
+        .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //manages the error I described above
         //let request = match request {
         //Ok(req) => req,
@@ -13384,7 +13406,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //}
         //};
 
-        let response = client.execute(request).await?;
+        let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //let response = match response {
         //    Ok(resp) => resp,
         //    Err(e) => {
@@ -13394,11 +13416,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //};
 
 
-        let response_text = response.text().await?;
+        let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
 
         //added 12/29/23
         //this is the parsing
-        let v: Value = serde_json::from_str(&response_text)?;
+        let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut coinbase_sell_price = 0.0;
         let mut coinbase_buy_price = 0.0;
 
@@ -13537,7 +13559,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -13611,7 +13633,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
      pub async fn s_i56_sol_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -13647,7 +13669,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()?;
+        .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //manages the error I described above
         //let request = match request {
         //Ok(req) => req,
@@ -13657,7 +13679,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //}
         //};
 
-        let response = client.execute(request).await?;
+        let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //let response = match response {
         //    Ok(resp) => resp,
         //    Err(e) => {
@@ -13667,11 +13689,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //};
 
 
-        let response_text = response.text().await?;
+        let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
 
         //added 12/29/23
         //this is the parsing
-        let v: Value = serde_json::from_str(&response_text)?;
+        let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut coinbase_sell_price = 0.0;
         let mut coinbase_buy_price = 0.0;
 
@@ -13810,7 +13832,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -13883,7 +13905,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
      pub async fn s_i57_sol_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -13919,7 +13941,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()?;
+        .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //manages the error I described above
         //let request = match request {
         //Ok(req) => req,
@@ -13929,7 +13951,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //}
         //};
 
-        let response = client.execute(request).await?;
+        let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //let response = match response {
         //    Ok(resp) => resp,
         //    Err(e) => {
@@ -13939,11 +13961,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //};
 
 
-        let response_text = response.text().await?;
+        let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
 
         //added 12/29/23
         //this is the parsing
-        let v: Value = serde_json::from_str(&response_text)?;
+        let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut coinbase_sell_price = 0.0;
         let mut coinbase_buy_price = 0.0;
 
@@ -14082,7 +14104,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -14155,7 +14177,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
      pub async fn s_i58_sol_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -14191,7 +14213,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()?;
+        .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //manages the error I described above
         //let request = match request {
         //Ok(req) => req,
@@ -14201,7 +14223,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //}
         //};
 
-        let response = client.execute(request).await?;
+        let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //let response = match response {
         //    Ok(resp) => resp,
         //    Err(e) => {
@@ -14211,11 +14233,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //};
 
 
-        let response_text = response.text().await?;
+        let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
 
         //added 12/29/23
         //this is the parsing
-        let v: Value = serde_json::from_str(&response_text)?;
+        let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut coinbase_sell_price = 0.0;
         let mut coinbase_buy_price = 0.0;
 
@@ -14354,7 +14376,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -14428,7 +14450,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
      pub async fn s_i59_sol_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -14464,7 +14486,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()?;
+        .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //manages the error I described above
         //let request = match request {
         //Ok(req) => req,
@@ -14474,7 +14496,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //}
         //};
 
-        let response = client.execute(request).await?;
+        let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //let response = match response {
         //    Ok(resp) => resp,
         //    Err(e) => {
@@ -14484,11 +14506,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //};
 
 
-        let response_text = response.text().await?;
+        let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
 
         //added 12/29/23
         //this is the parsing
-        let v: Value = serde_json::from_str(&response_text)?;
+        let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut coinbase_sell_price = 0.0;
         let mut coinbase_buy_price = 0.0;
 
@@ -14627,7 +14649,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -14700,7 +14722,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
      pub async fn s_i60_sol_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -14736,7 +14758,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()?;
+        .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //manages the error I described above
         //let request = match request {
         //Ok(req) => req,
@@ -14746,7 +14768,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //}
         //};
 
-        let response = client.execute(request).await?;
+        let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         //let response = match response {
         //    Ok(resp) => resp,
         //    Err(e) => {
@@ -14756,11 +14778,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //};
 
 
-        let response_text = response.text().await?;
+        let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
 
         //added 12/29/23
         //this is the parsing
-        let v: Value = serde_json::from_str(&response_text)?;
+        let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut coinbase_sell_price = 0.0;
         let mut coinbase_buy_price = 0.0;
 
@@ -14899,7 +14921,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -15957,7 +15979,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i65_sol_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16138,7 +16160,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -16217,7 +16239,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i66_sol_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16398,7 +16420,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -16477,7 +16499,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i67_sol_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16658,7 +16680,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -16736,7 +16758,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i68_sol_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16917,7 +16939,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -16996,7 +17018,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i69_sol_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -17177,7 +17199,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -17256,7 +17278,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i70_sol_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -17437,7 +17459,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         let mut kraken_sell_price_bid = 0.0;
         if let Some(solusd) = v["result"]["SOLUSD"].as_object() {
@@ -17516,7 +17538,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i75_xlm_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -17540,7 +17562,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -17550,7 +17573,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -17560,11 +17583,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -17704,7 +17727,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -17759,7 +17782,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i76_xlm_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -17783,7 +17806,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build()
+            .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -17793,7 +17817,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -17803,11 +17827,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -17947,7 +17971,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -18002,7 +18026,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i77_xlm_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18026,7 +18050,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -18036,7 +18060,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -18046,11 +18070,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -18190,7 +18214,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -18245,7 +18269,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i78_xlm_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18269,7 +18293,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -18279,7 +18303,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -18289,11 +18313,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -18433,7 +18457,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -18488,7 +18512,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i79_xlm_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18512,7 +18536,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -18522,7 +18546,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -18532,11 +18556,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -18676,7 +18700,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -18731,7 +18755,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i80_xlm_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18755,7 +18779,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -18765,7 +18789,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -18775,11 +18799,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -18919,7 +18943,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut kraken_buy_price_ask = 0.0;
             let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -18974,7 +18998,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i83_xlm_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18998,7 +19022,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -19008,7 +19032,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -19018,11 +19042,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -19210,7 +19234,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i84_xlm_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19234,7 +19258,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -19244,7 +19268,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -19254,11 +19278,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -19448,7 +19472,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i85_xlm_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19472,7 +19496,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -19482,7 +19506,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -19492,11 +19516,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -19685,7 +19709,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i86_xlm_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19709,7 +19733,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -19719,7 +19743,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -19729,11 +19753,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -19922,7 +19946,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i87_xlm_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19946,7 +19970,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -19956,7 +19980,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -19966,11 +19990,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -20159,7 +20183,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i88_xlm_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -20183,7 +20207,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -20193,7 +20217,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -20203,11 +20227,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -20396,7 +20420,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i89_xlm_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -20420,7 +20444,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -20430,7 +20454,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -20440,11 +20464,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -20633,7 +20657,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i90_xlm_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<(f64), Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -20657,7 +20681,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -20667,7 +20691,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -20677,11 +20701,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let mut coinbase_sell_price_bid = 0.0;
             let mut coinbase_buy_price_ask = 0.0;
     
@@ -20870,7 +20894,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i95_xlm_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -20953,7 +20977,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             //let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -21008,7 +21032,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -21018,7 +21042,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -21028,11 +21052,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price_bid = 0.0;
             //let mut coinbase_buy_price_ask = 0.0;
     
@@ -21132,7 +21156,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i96_xlm_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -21215,7 +21239,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             //let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -21270,7 +21294,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -21280,7 +21304,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -21290,11 +21314,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price_bid = 0.0;
             //let mut coinbase_buy_price_ask = 0.0;
     
@@ -21394,7 +21418,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i97_xlm_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -21477,7 +21501,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             //let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -21532,7 +21556,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -21542,7 +21566,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -21552,11 +21576,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price_bid = 0.0;
             //let mut coinbase_buy_price_ask = 0.0;
     
@@ -21656,7 +21680,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i98_xlm_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -21739,7 +21763,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             //let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -21794,7 +21818,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -21804,7 +21828,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -21814,11 +21838,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price_bid = 0.0;
             //let mut coinbase_buy_price_ask = 0.0;
     
@@ -21918,7 +21942,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i99_xlm_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -22001,7 +22025,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             //let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -22056,7 +22080,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -22066,7 +22090,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -22076,11 +22100,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price_bid = 0.0;
             //let mut coinbase_buy_price_ask = 0.0;
     
@@ -22180,7 +22204,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i100_xlm_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -22263,7 +22287,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
             //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text)?;
+            let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut kraken_buy_price_ask = 0.0;
             //let mut kraken_sell_price_bid = 0.0;
             if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -22318,7 +22342,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            .build()?;
+            .build().map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //manages the error I described above
             //let request = match request {
             //Ok(req) => req,
@@ -22328,7 +22352,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //}
             //};
     
-            let response = client.execute(request).await?;
+            let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             //let response = match response {
             //    Ok(resp) => resp,
             //    Err(e) => {
@@ -22338,11 +22362,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //};
     
     
-            let response_text = response.text().await?;
+            let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
     
             //added 12/29/23
             //this is the parsing
-            let v: Value = serde_json::from_str(&response_text)?;
+            let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
             let mut coinbase_sell_price_bid = 0.0;
             //let mut coinbase_buy_price_ask = 0.0;
     
@@ -22442,7 +22466,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i105_xlm_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -22527,7 +22551,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         
         //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         //let mut kraken_sell_price_bid = 0.0;
         if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -22677,7 +22701,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i106_xlm_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -22762,7 +22786,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         
         //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         //let mut kraken_sell_price_bid = 0.0;
         if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -22912,7 +22936,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i107_xlm_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -22997,7 +23021,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         
         //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         //let mut kraken_sell_price_bid = 0.0;
         if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -23147,7 +23171,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i108_xlm_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -23232,7 +23256,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         
         //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         //let mut kraken_sell_price_bid = 0.0;
         if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -23382,7 +23406,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i109_xlm_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -23467,7 +23491,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         
         //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         //let mut kraken_sell_price_bid = 0.0;
         if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
@@ -23617,7 +23641,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i110_xlm_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -23702,7 +23726,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         
         //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text)?;
+        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
         let mut kraken_buy_price_ask = 0.0;
         //let mut kraken_sell_price_bid = 0.0;
         if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {

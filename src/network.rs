@@ -7,12 +7,13 @@
 	use std::io::{BufReader, BufWriter};									//to save NeuralNet
 	use chrono::Utc;														//for timestamp
 	use std::path::Path;													//for help in representing file paths
-	use std::sync::Mutex;													//lock input_layer
+	//use std::sync::Mutex;													//not async compat.
 	use rand::prelude::SliceRandom;												//for exp replay
 	use	crate::action_functions;											//for action_functions
 	use std::error::Error;													//for action_functions
 	use std::fs;														//for replay_buffer
-
+	use tokio::sync::Mutex;                             // Use async Mutex from Tokio
+	use std::sync::Arc;  // Use Arc to share Mutex among multiple tasks
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
 	
 	//why #[derive(Serialize, Deserialize)] ?
@@ -57,7 +58,7 @@
 		pub layers: Vec<NetworkLayer>,
 		pub weights: Vec<WeightLayer>,
 		pub biases: Vec<BiasLayer>,
-		pub input_mutex: Mutex<()>,		//added 01/10/24 - because I dont want input neurons read/written at sameTime
+		//pub input_mutex: Arc<Mutex<()>>,		//added 01/10/24 - because I dont want input neurons read/written at sameTime
 	}									//	it's used as of 01/10/24, only in update_input and feed_forward.
 										//	not in backpropagation or update_weights because im not directly
 										//	accessing/editing input layer, just its weights
@@ -1102,11 +1103,12 @@
 
 
 
-		pub fn update_input(&mut self, indices: &[usize], new_values: &[f64]) {
+		pub async fn update_input(&mut self, indices: &[usize], new_values: &[f64]) {
 
 			//this line added: 01/10/24
 			//need mutex because I dont want to update the input layer while I'm reading from it
-			let _guard = self.input_mutex.lock().unwrap();
+			//01/11/24 - removed.
+			//let _guard = self.input_mutex.lock().await;
 
 
 
@@ -1207,7 +1209,7 @@
 
 
 		//12/23/23 changed function to not use index because it's not being returned and never used
-		pub fn calculate_target_q_value(&mut self, reward: f64, input_layer: &NetworkLayer) -> f64{
+		pub fn calculate_target_q_value(&mut self, reward: f64) -> f64{
 			//gamma is basically a numerical representation of how much I value future states
 			//	 and their corresponding q_values.
 			//		it's value is from 0 to 1. 0 means I dont value the next state at all
@@ -1223,7 +1225,7 @@
 
 			//I want to feed forward so I have a new set of q_values that will serve as my
 			//	 "next_q_value"
-			self.feed_forward_with_cloned_input(&input_layer);
+			self.feed_forward();
 
 
 
@@ -2158,9 +2160,9 @@
 		//added 01/10/24
 		pub async fn cycle(&mut self, epsilon: &mut f64, value_prior: &mut f64, coinbase_wallet: &mut f64,
 			 kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,gemini_wallet: &mut f64,
-			 coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client,
+			 coinbase_secret: &str, coinbase_api_key: &str,
 			 kraken_secret: &str, kraken_api_key: &str, gemini_secret: &str, gemini_api_key: &str,
-			 bitstamp_secret: &str, bitstamp_api_key: &str)-> Result<(), Box<dyn Error>> {
+			 bitstamp_secret: &str, bitstamp_api_key: &str)-> Result<(), Box<dyn Error + Send>> {
 			//this will execute once all the inputs have been updated
 			//it will do everything from save current state in replay buffer
 			//to feed_forward
@@ -2174,16 +2176,17 @@
 			//MIGHT NEED TO ESTABLISH A MUTEX right now so it doesn't feed forward
 			//		 different information than I saved into the state for exp. replay.
 			//If I do, then I may just remove the mutex from feed_forward all-together
-			
-				let _guard = self.input_mutex.lock().unwrap();
-				let current_state_input_layer_clone = self.layers[0].clone();
-				//stuff for exp replay
-					let input_data = self.layers[0].data.clone();
-				//need to drop mutex so I can then do the feed_forward
-				drop(_guard);
+				//01/11/24 - removed. 
+					//let _guard = self.input_mutex.lock().await;
+					//let current_state_input_layer_clone = self.layers[0].clone();
+					//stuff for exp replay
+					//let input_data = self.layers[0].data.clone();
+					//need to drop mutex so I can then do the feed_forward
+					//drop(_guard);
 
 				//stuff for exp replay
 					let mut replay_buffer = ReplayBuffer::new(10);
+					let input_data = self.layers[0].data.clone();
 					//state stuff
 					let input_rows = self.layers[0].rows;
 					let input_columns = self.layers[0].columns;
@@ -2193,8 +2196,9 @@
 						columns: input_columns,
 						data: input_data,
 					};
-				self.feed_forward_with_cloned_input(&current_state_input_layer_clone);
-			
+				//01/11/24 - removed
+					//self.feed_forward_with_cloned_input(&current_state_input_layer_clone);
+				self.feed_forward();
 
 			//for epsilon-greedy
 			let (index_chosen_for_current_state, q_value_for_current_state) = self.exploration_or_exploitation(epsilon);
@@ -2216,6 +2220,7 @@
 			//let kraken_wallet_immutable = &*kraken_wallet;
 			//let bitstamp_wallet_immutable = &*bitstamp_wallet;
 			//let gemini_wallet_immutable = &*gemini_wallet;
+			let client = reqwest::Client::new();
 			let value_after: f64 = match index_chosen_for_current_state {
 				0 => action_functions::s_i0_do_nothing(value_prior)?,
 				1 => {
@@ -2596,11 +2601,14 @@
 			
 			let the_reward = reward(*value_prior, value_after);
 			//do target q value and then get next state 
-			let _guard = self.input_mutex.lock().unwrap();
-			//this gives us the next state's input layer
+			//01/11/24 - removed
+				//let _guard = self.input_mutex.lock().await;
+				////this gives us the next state's input layer
+			//need to clone because then I'll have 2 mutable borrows
 			let next_state_input_layer_clone = self.layers[0].clone();
-			//need to drop mutex so I can then do the feed_forward
-			drop(_guard);
+				//need to drop mutex so I can then do the feed_forward
+				//drop(_guard);
+			//let next_state_input_layer = self.layers[0];
 			//do I need to add my value_prior as input?
 			//I think so because this will help the network decide whether to be risky or not
 			//so I need to update the input every time I do an action_function and it
@@ -2614,16 +2622,19 @@
 			//DONE DONE DONE
 
 			//now I need to get the target q value, aka the next state's q value
-			let target_q_value = self.calculate_target_q_value(the_reward, &next_state_input_layer_clone);
 
+			let target_q_value = self.calculate_target_q_value(the_reward);
+			
 
 			// I now have everything for the experience replay:
+
 			let transition = Transition {
 				state,
 				action,
 				reward : the_reward,
 				next_state : next_state_input_layer_clone,
 			};
+
 
 
 

@@ -253,3 +253,4 @@ Log of what I've done:
 01/11/24 - finished cycle fn except for exp replay part. Next step is get experience replay working. I got this!
 01/11/24 - I think I finished exp replay. Next step is to put the cycle fn in main and get everything together to run it. After that is to  make it sample from it at random after its like 1000 big. I got this!
 01/11/24 - Moved read_lines part of websocket client thing and then added cycle fn to main. Need to remove errors next. Then run it. I got this!
+01/12/24 - removed mutexes from update_input and cycle. Added them before. removed mutex from struct. made functions in main async, changed return type of action_functions. Did a lot of shit because there were so many errors. Next step is to add the wait so that it doesnt do a cycle until it has updated each input neuron first. I got this!

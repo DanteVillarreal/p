@@ -255,3 +255,4 @@ Log of what I've done:
 01/11/24 - Moved read_lines part of websocket client thing and then added cycle fn to main. Need to remove errors next. Then run it. I got this!
 01/12/24 - removed mutexes from update_input and cycle. Added them before. removed mutex from struct. made functions in main async, changed return type of action_functions. Did a lot of shit because there were so many errors. Next step is to add the wait so that it doesnt do a cycle until it has updated each input neuron first. I got this!
 01/13/24 - reverted to previous commit, but got out-of-bound error in back-propagation function. Then got error where it doesnt seem to be joining the cycle and read_lines task. Next step is to fix these. I got this!
+01/14/24 - fixed out-of-bounds error with new backpropagation function. Now I have to fix the error of not joining the 2 tasks as described above. I got this!

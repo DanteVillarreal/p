@@ -1916,7 +1916,7 @@
 
 
 
-
+		/*
 		//Most updated version
 		//dont think it will be accessed at same time as feed_forward, so I will not add a mutex
 		//also the function, at least I dont think, doesnt directly access the input neurons, just its weights
@@ -1988,7 +1988,7 @@
 		//01/13/24 - got index out of bounds error so removed:
 			//for layer_index in (0..self.weights.len()).rev() {
 		//01/13/24 - added:
-			for layer_index in (0..self.weights.len()-1).rev() {
+			for layer_index in (0..self.weights.len()).rev() {
 				let weight_layer = &self.weights[layer_index];
 				// Iterates over all rows in the current layer, how do I know this? because it's iterating over the LENgth of weight_layer, aka the number of rows
 				//is it fine to be 0..weight and not 0..=weight? yes because it's the index so the index starts at 0 and ends 1 before length which is perfect.
@@ -2025,7 +2025,49 @@
 			}
 			(gradients, indices)
 		}
+		*/
 
+
+		pub fn el_backpropagation(&mut self, current_q_value_index: &usize,
+			current_q_value: &f64, target_q_value: &f64) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+
+		   let mut gradients = Vec::new();
+		   let mut indices = Vec::new();
+		   let loss_derivative = calculate_loss_derivative(&current_q_value, &target_q_value);
+
+		   let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
+		   let mut derivative_of_to_neuron: Option<f64>;
+
+		   for layer_index in (0..self.weights.len()-1).rev() {
+			   if layer_index == 0 {
+				   continue;
+			   }
+			   let weight_layer = &self.weights[layer_index];
+
+			   for i in 0..self.layers[layer_index - 1].data[0].len() {
+				   let mut k: usize = 0;
+				   for j in 0..weight_layer.data[i].len() {
+
+					   if layer_index > 0 {
+						   if layer_index == &self.weights.len() - 1 {
+							   derivative_of_to_neuron = Some(derivative_of_output_neuron);
+							   k = *current_q_value_index;
+						   } 
+						   else {
+							   derivative_of_to_neuron = Some(leaky_relu_derivative(self.layers[layer_index].data[0][j]));
+						   };
+						   if let Some(derivativeoftoneuron) = derivative_of_to_neuron{
+							   let gradient = loss_derivative * derivativeoftoneuron * self.layers[layer_index - 1].data[0][i];
+							   gradients.push(gradient);
+							   indices.push((layer_index, i, k));
+							   k+=1;
+						   }
+					   }
+				   }
+			   }
+		   }
+		   (gradients, indices)
+	   }
 
 
 		//dont think it will be accessed at same tim as feed_forward, so I will not add a mutex

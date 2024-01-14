@@ -22,6 +22,7 @@ use std::process::{Command, Stdio, ChildStdout};                 //for piping we
 use std::io::{BufRead, BufReader};//this is to help us read from stdin
 use serde_json::Value;          //good for parsing intput in JSON format
 use tokio::time::delay_for;                         //for "sleep", but in async functions
+use std::time::Duration;                            //for use in conjunction with delay_for
 //use std::sync::Mutex;                             //cant use this because not async
 use tokio::task;                                    //to do child spawns
 use std::error::Error;                              //to do box error 
@@ -1007,7 +1008,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         biases: Vec::new(),
         //removed input_mutex from struct
     };
-    neural_network.initialization(65, 75, 2); // Initialize with [input size], [output size], [# hidden layers]
+    neural_network.initialization(66, 75, 2); // Initialize with [input size], [output size], [# hidden layers]
     //the first number in the initialization and the number below MUST be the same size
     let mut updated = [false; 60];
     let mut value_prior = 2000.0;
@@ -1046,8 +1047,19 @@ async fn main() ->Result<(), Box<dyn Error>>  {
     let cycle_task = task::spawn( {
         let shared_neural_network = Arc::clone(&shared_neural_network);
         async move{
-        for _ in 0..100 {
+        
+        //because gemini is so slow and I dont know how to update the inputs without breaking everything
+        //  I will do a 5 minute wait so Gemini can update and then I will begin the cycles.
+        //I will print the neural_network before each cycle to make sure the input layer and weights
+        //  have been updated.
+
+        //delay_for(Duration::from_secs(10)).await;
+
+        for _ in 0..10 {
             let mut neural_network = shared_neural_network.lock().await;
+
+            neural_network.print_layers();
+
             neural_network.cycle(&mut epsilon, &mut value_prior,
                  &mut coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
                   &mut gemini_wallet, &coinbase_secret, &coinbase_api_key,

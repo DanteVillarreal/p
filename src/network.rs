@@ -488,6 +488,100 @@
 
 
 
+
+
+
+
+	
+
+	/*
+	//since gemini's updates are so slow, I am going to manually updated gemini with
+	//	rest request right before I do a cycle 
+	
+	pub async fn update_geminis_bitch_ass(client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork) -> Result<f64, Box<dyn Error + Send>> {
+		//Gemini documentation:
+		//For public API entry points, we limit requests to 120 requests per minute,
+		//	 and recommend that you do not exceed 1 request per second.
+		//So:
+		//	I will do a cycle with gemini and time how long it takes plus 10%
+		//Then:
+		//	if under a second I will round up and wait that long plus a littleMore
+		
+
+
+		//INSERT DELAY_FOR HERE
+
+
+		fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+            let encoded_payload = encode(gemini_payload.to_string());
+            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                            .expect("HMAC can take key of any size");
+            mac.update(encoded_payload.as_bytes());
+            let result = mac.finalize();
+            let code_bytes = result.into_bytes();
+            let gemini_signature = hex::encode(code_bytes);
+            println!("Gemini signature:\n{}", &gemini_signature);
+            gemini_signature
+    
+        }
+        //if no "now" in scope when moving file, 
+        //	the code is this:
+        ////returns current time.
+        //		let now = Utc::now();
+        let now = Utc::now();
+        let gemini_time_stamp = now.timestamp().to_string();
+        let gemini_nonce = gemini_time_stamp;
+        let gemini_url = "https://api.gemini.com/v1/pubticker/solusd";
+        let gemini_payload = json!({
+            "request": "/v1/mytrades",
+            "nonce": &gemini_nonce
+        });
+        let base64_encoded_payload = encode(gemini_payload.to_string());
+        let gemini_content_type = "text/plain";
+        let gemini_content_length = "0";
+        let gemini_cache_control = "no-cache";
+        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+        
+        let gemini_request = client.get(gemini_url)
+                .header("Content-Type", gemini_content_type)
+                .header("Content-Length", gemini_content_length)
+                .header("X-GEMINI-APIKEY", gemini_api_key)
+                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-SIGNATURE", &gemini_signature)
+                .header("Cache-Control", gemini_cache_control)
+                .build()
+                .expect("couldn't build gemini request");
+    
+    
+        let gemini_response = client.execute(gemini_request).await
+                                .expect("Failed to execute Gemini request");
+        let gemini_response_text = gemini_response.text().await
+                                .expect("Failed to turn response into text");
+        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+                                .expect("Failed to parse JSON");
+        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        //CAN ONLY BUY. NOT SELL
+        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+
+		let indices = [58, 59];
+        let new_values = [gemini_sell_pricebid, gemini_buy_ask];
+
+		neural_network.update_input(&indices, &new_values).await;
+	}
+	*/
+
+
+
+
+
+
+
+
+
+
+
+
+
 	
 
 	impl NeuralNetwork {
@@ -1891,7 +1985,10 @@
 			let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
 			let mut derivative_of_to_neuron: Option<f64>;
 			// Iterate over all WeightLayers in reverse order
-			for layer_index in (0..self.weights.len()).rev() {
+		//01/13/24 - got index out of bounds error so removed:
+			//for layer_index in (0..self.weights.len()).rev() {
+		//01/13/24 - added:
+			for layer_index in (0..self.weights.len()-1).rev() {
 				let weight_layer = &self.weights[layer_index];
 				// Iterates over all rows in the current layer, how do I know this? because it's iterating over the LENgth of weight_layer, aka the number of rows
 				//is it fine to be 0..weight and not 0..=weight? yes because it's the index so the index starts at 0 and ends 1 before length which is perfect.

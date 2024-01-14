@@ -5462,7 +5462,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         println!("Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
 
 
-
+        //need to GET AMOUNT AND PRICE SO i CAN PUT IT INTO THE INPUT AND MNAKE ANEW INPUT FRUNCITON
 
 
 

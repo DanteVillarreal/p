@@ -255,3 +255,4 @@ Log of what I've done:
 01/11/24 - Moved read_lines part of websocket client thing and then added cycle fn to main. Need to remove errors next. Then run it. I got this!
 01/12/24 - removed mutexes from update_input and cycle. Added them before. removed mutex from struct. made functions in main async, changed return type of action_functions. Did a lot of shit because there were so many errors. Next step is to add the wait so that it doesnt do a cycle until it has updated each input neuron first. I got this!
 01/12/24 - update wouldnt work so fixed it which caused errors so fixed those. It is stuck in an infinite loop and doesnt read anything. Next step is to fix it. I got this!
+01/13/24 - honestly dont know what this commit is, but I am reverting back to commit e1a33bead60da80f2ee9d5dec008435fd724f756 because I dont like the most recent changes I made.

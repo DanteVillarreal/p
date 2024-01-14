@@ -1166,7 +1166,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                 println!("Neurons: {} have not been updated", not_updated.join(", "));
                 tokio::time::delay_for(tokio::time::Duration::from_secs(1)).await;
             }
-            for _ in 0..100 {
+            for i in 0..100 {
+                println!("testing{}", i);
                 let mut neural_network = shared_neural_network.lock().await;
                 neural_network.cycle(&mut epsilon, &mut value_prior,
                     &mut coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,

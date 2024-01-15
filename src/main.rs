@@ -1065,6 +1065,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                   &mut gemini_wallet, &coinbase_secret, &coinbase_api_key,
                    &kraken_secret, &kraken_api_key, &gemini_secret,
                     &gemini_api_key, &bitstamp_secret, &bitstamp_api_key).await?;
+            
+            neural_network.print_layers();
         }
         Ok::<(), Box<dyn Error + Send>>(())
     }

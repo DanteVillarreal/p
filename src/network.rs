@@ -2337,11 +2337,14 @@
 					};
 				//01/11/24 - removed
 					//self.feed_forward_with_cloned_input(&current_state_input_layer_clone);
+				println!("Before feed forward");
 				self.feed_forward();
+				println!("After feed forward");
 
 			//for epsilon-greedy
+			//println!("Before exploration or exploitation");
 			let (index_chosen_for_current_state, q_value_for_current_state) = self.exploration_or_exploitation(epsilon);
-			
+			//println!("index chosen: {}\nq value for current state: {}", &index_chosen_for_current_state, &q_value_for_current_state);
 
 			//for exp. replay
 			let action = index_chosen_for_current_state;
@@ -2737,14 +2740,17 @@
 
 
 
-			
+		//	println!("Before reward");
 			let the_reward = reward(*value_prior, value_after);
+		//	println!("After reward");
 			//do target q value and then get next state 
 			//01/11/24 - removed
 				//let _guard = self.input_mutex.lock().await;
 				////this gives us the next state's input layer
 			//need to clone because then I'll have 2 mutable borrows
+		//	println!("Before clone");
 			let next_state_input_layer_clone = self.layers[0].clone();
+		//	println!("After clone");
 				//need to drop mutex so I can then do the feed_forward
 				//drop(_guard);
 			//let next_state_input_layer = self.layers[0];
@@ -2761,8 +2767,9 @@
 			//DONE DONE DONE
 
 			//now I need to get the target q value, aka the next state's q value
-
+		//	println!("Before calculate target q value");
 			let target_q_value = self.calculate_target_q_value(the_reward);
+		//	println!("after calculate target q value");
 			
 
 			// I now have everything for the experience replay:
@@ -2780,14 +2787,24 @@
 
 
 			//does backpropagation
+		//	println!("Before back propagation");
 			let (gradients, indices) = self.el_backpropagation(&index_chosen_for_current_state, &q_value_for_current_state, &target_q_value );
+		//	println!("fater back propagation");
 			//updates weights. aka... IMPROVEMENT
+		//	println!("Before update weights");
 			self.el_update_weights(&gradients, &indices);
+		//	println!("after update weights");
 			//push transition into the replay buffer
+		//	println!("Before pushing transition");
 			replay_buffer.push(transition);
+		//	println!("after pushing transition");
 			//save the buffer to a file
+		//	println!("Before saving replay buffer");
 			let _dummyvar = replay_buffer.save_replay_buffer_v2();
+		//	println!("After saving replay buffer");
+		//	println!("Before printing replay buffer");
 			replay_buffer.print_replay_buffer();
+		//	println!("after saving replay buffer");
 
 
 

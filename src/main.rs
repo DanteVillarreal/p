@@ -94,7 +94,10 @@ use tokio::sync::MutexGuard;
 
 //-----ALL-FOR-PARSING-UNDER-THIS//
 
-async fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24- removed:
+    //async fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - added line directly beneath this:
+async fn handle_sol_coinbase(message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60]) {
     //if the message contains the word "heartbeat", ignore the entire message basically
     if message.contains("heartbeat") {
         println!("Coinbase sol eartbeat message. ignoring...it's contents:\n{}", message);
@@ -138,6 +141,10 @@ async fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork, 
                     coinbase_high_24h, 
                     coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h,];
 
+
+        //01/16/24 - added 1st line below this:
+        let mut neural_network = shared_neural_network.lock().await;
+
         neural_network.update_input(&indices, &new_values).await;
         //to mark the inputs as changed
         for index in indices {
@@ -177,7 +184,10 @@ async fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork, 
     //            &coinbase_best_ask, &coinbase_best_ask_size, &coinbase_side, &coinbase_last_size];
     //neural_network.update_input(&indices, &new_values);
 
-    async fn handle_xlm_coinbase(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - removed:    
+    //async fn handle_xlm_coinbase(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - added line below this:
+async fn handle_xlm_coinbase(message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60]) {
         //if the message contains the word "heartbeat", ignore the entire message basically
         if message.contains("heartbeat") {
             println!("Coinbase xlm: heartbeat message. ignoring...it's contents:\n{}", message);
@@ -222,6 +232,9 @@ async fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork, 
             coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h,];
 
 
+            //01/16/24 - added 1st line below this:
+            let mut neural_network = shared_neural_network.lock().await;
+
             neural_network.update_input(&indices, &new_values).await;
             //to mark the inputs as changed
             for index in indices {
@@ -243,8 +256,10 @@ async fn handle_sol_coinbase(message: &str, neural_network: &mut NeuralNetwork, 
 
 
 
-
-async fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - removed:
+    //async fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - added in its place:
+async fn handle_sol_kraken(message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60]) {
     if message.contains("heartbeat") {
         println!("Kraken sol heartbeat message. ignoring...it's contents:\n{}", message);
         return;
@@ -438,6 +453,9 @@ async fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork, up
     //    &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
     //    &o_today, &o_last24hours];
 
+    //01/16/24 - added 1st line below this:
+    let mut neural_network = shared_neural_network.lock().await;
+
     neural_network.update_input(&indices, &new_values).await;
     //to mark the inputs as changed
     for index in indices {
@@ -467,8 +485,10 @@ async fn handle_sol_kraken(message: &str, neural_network: &mut NeuralNetwork, up
 
 
 
-
-async fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - removed:
+    //async fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - added in its place:
+async fn handle_xlm_kraken(message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60]) {
     if message.contains("heartbeat") {
         println!("Kraken xlm heartbeat message. ignoring...it's contents:\n{}", message);
         return;
@@ -658,6 +678,9 @@ async fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork, up
         v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1];
 
 
+    //01/16/24 - added 1st line below this:
+    let mut neural_network = shared_neural_network.lock().await;
+
     neural_network.update_input(&indices, &new_values).await;
     //to mark the inputs as changed
     for index in indices {
@@ -690,8 +713,10 @@ async fn handle_xlm_kraken(message: &str, neural_network: &mut NeuralNetwork, up
 
 
 
-
-async fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - removed:
+    //async fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - added in its place:
+async fn handle_sol_bitstamp(message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60]) {
     // Handle Bitstamp message
     if message.contains("subscription") {
         println!("Bitstamp sol subscription succeeded. unimportant message\nmessage: {}", message);
@@ -734,6 +759,9 @@ async fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork, 
     let indices: [usize; 2] = [54, 55];
     let new_values = [amount, price];
 
+    //01/16/24 - added 1st line below this:
+    let mut neural_network = shared_neural_network.lock().await;
+
     neural_network.update_input(&indices, &new_values).await;
     //to mark the inputs as changed
     for index in indices {
@@ -759,8 +787,10 @@ async fn handle_sol_bitstamp(message: &str, neural_network: &mut NeuralNetwork, 
 
 
 
-
-async fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - removed:
+    //async fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - added line directly below:
+async fn handle_xlm_bitstamp(message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60]) {
     // Handle Bitstamp message
     if message.contains("subscription") {
         println!("Bitstamp xlm subscription succeeded. unimportant message\nmessage: {}", message);
@@ -803,6 +833,8 @@ async fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork, 
     let indices: [usize; 2] = [56, 57];
     let new_values = [amount, price];
 
+    //01/16/24 - added 1st line below this:
+    let mut neural_network = shared_neural_network.lock().await;
     neural_network.update_input(&indices, &new_values).await;
     //to mark the inputs as changed
     for index in indices {
@@ -830,8 +862,10 @@ async fn handle_xlm_bitstamp(message: &str, neural_network: &mut NeuralNetwork, 
 
 
 
-
-async fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - removed
+    //async fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
+//01/16/24 - added in its place:
+async fn handle_sol_gemini(message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60]) {
     if message.contains("heartbeat") {
         println!("Gemini heartbeat message. ignoring...");
         return;
@@ -868,7 +902,8 @@ async fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, up
     if let (Some(amount), Some(price)) = (amount, price) {
         let indices = [58, 59];
         let new_values = [amount, price];
-
+        //01/16/24 - added 1st line under this:
+        let mut neural_network = shared_neural_network.lock().await;
         neural_network.update_input(&indices, &new_values).await;
         //to mark the inputs as changed
         for index in indices {
@@ -901,11 +936,16 @@ async fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, up
 //added 01/11/24 - because I need async to be able to run this and the cycle fn at same time
 //async fn read_lines(reader: BufReader<ChildStdout>, neural_network: &mut NeuralNetwork, 
 //    updated: &mut [bool; 60]) {
+//01/16/24 - removed
+    //async fn read_lines(reader: BufReader<ChildStdout>, 
+    //    neural_network: &mut MutexGuard<'_, NeuralNetwork>, updated: &mut [bool; 60]) {
+//01/16/24 - added in its place
 async fn read_lines(reader: BufReader<ChildStdout>, 
-    neural_network: &mut MutexGuard<'_, NeuralNetwork>, updated: &mut [bool; 60]) {
-    
-    for line_being_read in reader.lines() {
+    shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60]) {    
 
+    for line_being_read in reader.lines() {
+        //01/16/24 - added line right below this
+        let mut neural_network = shared_neural_network.lock().await;
         //error handling in case it doesn't read Input clrrectly
         match line_being_read{
             
@@ -944,16 +984,28 @@ async fn read_lines(reader: BufReader<ChildStdout>,
                 //  go to handle_coinbase(message) function
                 //else if "kraken received"...
                 //and if it's none of them, print that it's unknown and panic
-                match prefix {
-                    "SOL Coinbase Received" => handle_sol_coinbase(message, neural_network, updated).await,
-                    "XLM Coinbase Received" => handle_xlm_coinbase(message, neural_network, updated).await,
-                    "SOL Kraken Received" => handle_sol_kraken(message, neural_network, updated).await,
-                    "XLM Kraken Received" => handle_xlm_kraken(message, neural_network, updated).await,
-                    "SOL Bitstamp received" => handle_sol_bitstamp(message, neural_network, updated).await,
-                    "XLM Bitstamp received" => handle_xlm_bitstamp(message, neural_network, updated).await,
-                    "Gemini received" => handle_sol_gemini(message, neural_network, updated).await,
-                    _ => panic!("Unknown prefix: {}", prefix),
-                }
+                //01/16/24 - removed
+                    //match prefix {
+                    //    "SOL Coinbase Received" => handle_sol_coinbase(message, neural_network, updated).await,
+                    //    "XLM Coinbase Received" => handle_xlm_coinbase(message, neural_network, updated).await,
+                    //    "SOL Kraken Received" => handle_sol_kraken(message, neural_network, updated).await,
+                    //    "XLM Kraken Received" => handle_xlm_kraken(message, neural_network, updated).await,
+                    //    "SOL Bitstamp received" => handle_sol_bitstamp(message, neural_network, updated).await,
+                    //    "XLM Bitstamp received" => handle_xlm_bitstamp(message, neural_network, updated).await,
+                    //    "Gemini received" => handle_sol_gemini(message, neural_network, updated).await,
+                    //    _ => panic!("Unknown prefix: {}", prefix),
+                    //}
+                //01/16/24 - added in its place:
+                    match prefix {
+                        "SOL Coinbase Received" => handle_sol_coinbase(message, shared_neural_network.clone(), updated).await,
+                        "XLM Coinbase Received" => handle_xlm_coinbase(message, shared_neural_network.clone(), updated).await,
+                        "SOL Kraken Received" => handle_sol_kraken(message, shared_neural_network.clone(), updated).await,
+                        "XLM Kraken Received" => handle_xlm_kraken(message, shared_neural_network.clone(), updated).await,
+                        "SOL Bitstamp received" => handle_sol_bitstamp(message, shared_neural_network.clone(), updated).await,
+                        "XLM Bitstamp received" => handle_xlm_bitstamp(message, shared_neural_network.clone(), updated).await,
+                        "Gemini received" => handle_sol_gemini(message, shared_neural_network.clone(), updated).await,
+                        _ => panic!("Unknown prefix: {}", prefix),
+                    }
 
             },
             Err(e) => {
@@ -1056,8 +1108,13 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         //delay_for(Duration::from_secs(10)).await;
 
         for _ in 0..10 {
+            //01/16/24 - added:
+                //println!("Before delay, hopefully you get lines from websocket client being read");
+                //delay_for(Duration::from_secs(5)).await;
+                //println!("after delay, hopefully you this shows up in console. but just in case:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             let mut neural_network = shared_neural_network.lock().await;
-
+            //01/16/24 - added:
+                //println!("after lock. this should show up");
             neural_network.print_layers();
 
             neural_network.cycle(&mut epsilon, &mut value_prior,
@@ -1067,6 +1124,12 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                     &gemini_api_key, &bitstamp_secret, &bitstamp_api_key).await?;
             
             neural_network.print_layers();
+            //01/16/24 - added - this BREAKS THE CODE. not the drop, nor the print, but the delay_for does
+                //drop(neural_network);
+                //println!("Before delay, hopefully you get lines from websocket client being read");
+                //delay_for(Duration::from_secs(5)).await;
+                //println!("after delay, hopefully you this shows up in console. but just in case:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+
         }
         Ok::<(), Box<dyn Error + Send>>(())
     }
@@ -1150,7 +1213,11 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         let shared_neural_network = Arc::clone(&shared_neural_network);
         let mut updated = updated.clone();
         async move{
-            read_lines(reader, &mut shared_neural_network.lock().await, &mut updated).await;
+            //01/16/24 - removed
+                //read_lines(reader, &mut shared_neural_network.lock().await, &mut updated).await;
+            //01/16/24 - added in its place
+                read_lines(reader, shared_neural_network, &mut updated).await;
+
         }
     });
     let _ = tokio::try_join!(cycle_task, read_lines_task)?;

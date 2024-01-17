@@ -17,18 +17,19 @@ use tokio;                                          //so I can do async
 use dotenv::dotenv;
 //use mod network;
 //use mod actions;
-use std::time::Instant;                             //this is to record time for execution
+//use std::time::Instant;                             //this is to record time for execution
 use std::process::{Command, Stdio, ChildStdout};                 //for piping websocket client
 use std::io::{BufRead, BufReader};//this is to help us read from stdin
 use serde_json::Value;          //good for parsing intput in JSON format
 use tokio::time::delay_for;                         //for "sleep", but in async functions
-use std::time::Duration;                            //for use in conjunction with delay_for
+use std::time::{Duration, Instant};                            //for use in conjunction with delay_for
 //use std::sync::Mutex;                             //cant use this because not async
 use tokio::task;                                    //to do child spawns
 use std::error::Error;                              //to do box error 
 use tokio::sync::Mutex;                             // Use async Mutex from Tokio
 use std::sync::Arc;  // Use Arc to share Mutex among multiple tasks
 use tokio::sync::MutexGuard;
+use tokio::time::delay_until;
 
 
 ///-----FOR PARSING-----////
@@ -945,7 +946,8 @@ async fn read_lines(reader: BufReader<ChildStdout>,
 
     for line_being_read in reader.lines() {
         //01/16/24 - added line right below this
-        let mut neural_network = shared_neural_network.lock().await;
+        //01/17/24 - removed the line right below this
+        //let mut neural_network = shared_neural_network.lock().await;
         //error handling in case it doesn't read Input clrrectly
         match line_being_read{
             
@@ -1095,7 +1097,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
     let client = reqwest::Client::new();
    
     //--end of code to execute funcitons
-
+    println!("reached let cycle task");
     let cycle_task = task::spawn( {
         let shared_neural_network = Arc::clone(&shared_neural_network);
         async move{
@@ -1106,29 +1108,43 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         //  have been updated.
 
         //delay_for(Duration::from_secs(10)).await;
-
+                    //01/17/24 - added:
+                    println!("reached let when");
+                    let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                    delay_until(when).await;
+        println!("reached for _ ");
         for _ in 0..10 {
             //01/16/24 - added:
                 //println!("Before delay, hopefully you get lines from websocket client being read");
                 //delay_for(Duration::from_secs(5)).await;
                 //println!("after delay, hopefully you this shows up in console. but just in case:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-            let mut neural_network = shared_neural_network.lock().await;
-            //01/16/24 - added:
-                //println!("after lock. this should show up");
-            neural_network.print_layers();
+            //01/17/24 - added curly braces
+            {
+                println!("reached let mut neural network");
+                let mut neural_network = shared_neural_network.lock().await;
+                //01/16/24 - added:
+                    //println!("after lock. this should show up");
+                    println!("reached first print_layers");
+                neural_network.print_layers();
 
-            neural_network.cycle(&mut epsilon, &mut value_prior,
-                 &mut coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
-                  &mut gemini_wallet, &coinbase_secret, &coinbase_api_key,
-                   &kraken_secret, &kraken_api_key, &gemini_secret,
-                    &gemini_api_key, &bitstamp_secret, &bitstamp_api_key).await?;
-            
-            neural_network.print_layers();
-            //01/16/24 - added - this BREAKS THE CODE. not the drop, nor the print, but the delay_for does
-                //drop(neural_network);
-                //println!("Before delay, hopefully you get lines from websocket client being read");
-                //delay_for(Duration::from_secs(5)).await;
-                //println!("after delay, hopefully you this shows up in console. but just in case:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+                neural_network.cycle(&mut epsilon, &mut value_prior,
+                    &mut coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
+                    &mut gemini_wallet, &coinbase_secret, &coinbase_api_key,
+                    &kraken_secret, &kraken_api_key, &gemini_secret,
+                        &gemini_api_key, &bitstamp_secret, &bitstamp_api_key).await?;
+                //01/17/24 - removed:
+                    //neural_network.print_layers();
+                //01/16/24 - added - this BREAKS THE CODE. not the drop, nor the print, but the delay_for does
+                    //drop(neural_network);
+                    //println!("Before delay, hopefully you get lines from websocket client being read");
+                    //delay_for(Duration::from_secs(5)).await;
+                    //println!("after delay, hopefully you this shows up in console. but just in case:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+            //01/17/24 - added curly brace. this is so the neural network is dropped after the lock
+            }
+            //01/17/24 - added:
+                println!("5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                delay_until(when).await;
 
         }
         Ok::<(), Box<dyn Error + Send>>(())

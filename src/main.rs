@@ -1113,25 +1113,32 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                     let when = tokio::time::Instant::now() + Duration::from_secs(5);
                     delay_until(when).await;
         println!("reached for _ ");
-        for _ in 0..10 {
+        for _ in 0..1 {
             //01/16/24 - added:
                 //println!("Before delay, hopefully you get lines from websocket client being read");
                 //delay_for(Duration::from_secs(5)).await;
                 //println!("after delay, hopefully you this shows up in console. but just in case:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             //01/17/24 - added curly braces
             {
+
                 println!("reached let mut neural network");
                 let mut neural_network = shared_neural_network.lock().await;
-                //01/16/24 - added:
-                    //println!("after lock. this should show up");
-                    println!("reached first print_layers");
-                neural_network.print_layers();
+                //01/18/24 - added to debug
+                    println!("before weight update");
+                    neural_network.print_layers();
+
 
                 neural_network.cycle(&mut epsilon, &mut value_prior,
                     &mut coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
                     &mut gemini_wallet, &coinbase_secret, &coinbase_api_key,
                     &kraken_secret, &kraken_api_key, &gemini_secret,
                         &gemini_api_key, &bitstamp_secret, &bitstamp_api_key).await?;
+                
+
+                //01/18/24 - added to debug:
+                    //println!("after lock. this should show up");
+                    println!("After weight update");
+                    neural_network.print_layers();
                 //01/17/24 - removed:
                     //neural_network.print_layers();
                 //01/16/24 - added - this BREAKS THE CODE. not the drop, nor the print, but the delay_for does

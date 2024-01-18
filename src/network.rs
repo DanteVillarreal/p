@@ -40,6 +40,8 @@
 	}
 	#[derive(Debug)]
 	#[derive(Serialize, Deserialize)]
+	//01/18/24 - added to see if update weights is working
+		#[derive(Clone, PartialEq)]
 	pub struct WeightLayer {
 		pub rows: usize,
 		pub columns: usize,
@@ -1109,6 +1111,7 @@
 		pub fn initialization(&mut self, input_size: usize, output_size: usize, number_of_hidden_layers: usize) {
 			// Define the size of each hidden layer
 			let hidden_size = (2.0 / 3.0 * (input_size + output_size) as f64) as usize;
+			println!("hidden size:\n{}", &hidden_size);
 		
 			// Create the random number generator
 			let mut rng = rand::thread_rng();
@@ -2027,7 +2030,7 @@
 		}
 		*/
 
-
+		/*
 		pub fn el_backpropagation(&mut self, current_q_value_index: &usize,
 			current_q_value: &f64, target_q_value: &f64) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
 
@@ -2068,23 +2071,100 @@
 		   }
 		   (gradients, indices)
 	   }
+	   */
 
+	   //this should address the first layer not being updated
+	   /*
+	    pub fn el_backpropagation(&mut self, current_q_value_index: &usize,
+			current_q_value: &f64, target_q_value: &f64) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
 
-		//dont think it will be accessed at same tim as feed_forward, so I will not add a mutex
-		//also, it doesn't access the input neurons. at least I dont think.
-		pub fn el_update_weights(&mut self, gradients: &Vec<f64>, indices: &Vec<(usize, usize, usize)>) {
+			let mut gradients = Vec::new();
+			let mut indices = Vec::new();
+			let loss_derivative = calculate_loss_derivative(&current_q_value, &target_q_value);
+
+			let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
+			let mut derivative_of_to_neuron: Option<f64>;
+
+			for layer_index in (0..self.weights.len()).rev() {
+				let weight_layer = &self.weights[layer_index];
+
+				for i in 0..self.layers[layer_index].data[0].len() {
+					let mut k: usize = 0;
+					for j in 0..weight_layer.data[i].len() {
+
+						if layer_index == self.weights.len() - 1 {
+							derivative_of_to_neuron = Some(derivative_of_output_neuron);
+							k = *current_q_value_index;
+						} 
+						else {
+							derivative_of_to_neuron = Some(leaky_relu_derivative(self.layers[layer_index + 1].data[0][j]));
+						};
+						if let Some(derivativeoftoneuron) = derivative_of_to_neuron{
+							let gradient = loss_derivative * derivativeoftoneuron * self.layers[layer_index].data[0][i];
+							gradients.push(gradient);
+							indices.push((layer_index, i, k));
+							k+=1;
+						}
+					}
+				}
+			}
+			(gradients, indices)
+   		}
+		*/
+
+		//this should address the lower rows not being updated in conjunction with first layer not being updated
+		/*
+		pub fn el_backpropagation(&mut self, current_q_value_index: &usize,
+			current_q_value: &f64, target_q_value: &f64) -> (Vec<f64>, Vec<(usize, usize, usize)>) {
+
+			let mut gradients = Vec::new();
+			let mut indices = Vec::new();
+			let loss_derivative = calculate_loss_derivative(&current_q_value, &target_q_value);
+
+			let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
+			let mut derivative_of_to_neuron: Option<f64>;
+
+			for layer_index in (0..self.weights.len()).rev() {
+				let weight_layer = &self.weights[layer_index];
+
+				for i in 0..weight_layer.data.len() { // Iterate over the neurons in the current layer
+					let mut k: usize = 0;
+					for j in 0..weight_layer.data[i].len() {
+
+						if layer_index == self.weights.len() - 1 {
+							derivative_of_to_neuron = Some(derivative_of_output_neuron);
+							k = *current_q_value_index;
+						} 
+						else {
+							derivative_of_to_neuron = Some(leaky_relu_derivative(self.layers[layer_index + 1].data[0][j]));
+						};
+						if let Some(derivativeoftoneuron) = derivative_of_to_neuron{
+							let gradient = loss_derivative * derivativeoftoneuron * self.layers[layer_index].data[0][i];
+							gradients.push(gradient);
+							indices.push((layer_index, i, k));
+							k+=1;
+						}
+					}
+				}
+			}
+			(gradients, indices)
+		}
+		*/
+
+		
+
+	pub fn el_update_weights(&mut self, gradients: &Vec<f64>, indices: &Vec<(usize, usize, usize)>) {
 			// Iterate over all gradients and their corresponding indices
 			let learning_rate = 0.001;
 			for (gradient_index, (layer_index, i, j)) in indices.iter().enumerate() {
+				// Print the weight before update
+				println!("Weight before update for layer {}, neuron {}: {}", layer_index, i, self.weights[*layer_index].data[*i][*j]);
 				// Update the corresponding weight by subtracting the gradient times the learning rate
 				self.weights[*layer_index].data[*i][*j] -= learning_rate * gradients[gradient_index];
+				// Print the weight after update
+				println!("Weight after update for layer {}, neuron {}: {}", layer_index, i, self.weights[*layer_index].data[*i][*j]);
 			}
 		}
-
-
-
-
-
 
 
 
@@ -2792,7 +2872,11 @@
 		//	println!("fater back propagation");
 			//updates weights. aka... IMPROVEMENT
 		//	println!("Before update weights");
+			let weights_before_update = self.weights.clone();
 			self.el_update_weights(&gradients, &indices);
+			let weights_after_update = self.weights.clone();
+			assert!(weights_before_update != weights_after_update, "The weights were not updated!");
+			//assert!(weights_before_update == weights_after_update, "The weights were updated!");
 		//	println!("after update weights");
 			//push transition into the replay buffer
 		//	println!("Before pushing transition");

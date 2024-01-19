@@ -11,6 +11,7 @@ use rand::Rng;
 use hmac::{Hmac, Mac,};	                            //so I can do the signature stuff
 use sha2::{Sha256, Sha384, Sha512, Digest};	        //so I can do signature stuff
 use p::network::NeuralNetwork;
+use p::network::GradientNetwork;                    //to use gradients
 use p::action_functions;
 use p::execute_action_functions;
 use tokio;                                          //so I can do async
@@ -1056,13 +1057,20 @@ async fn main() ->Result<(), Box<dyn Error>>  {
     env::set_var("RUST_BACKTRACE", "1");
 
     //this is just example code to evaluate if save and load of network works and it does  
+    
+    //01/19/24 - added:
+    let mut gradient_network = GradientNetwork {
+        layers: Vec::new(),
+    };
     let mut neural_network = NeuralNetwork {
         layers: Vec::new(),
         weights: Vec::new(),
         biases: Vec::new(),
+        //01/19/24 - added:
+        gradients: gradient_network,
         //removed input_mutex from struct
     };
-    neural_network.initialization(66, 75, 2); // Initialize with [input size], [output size], [# hidden layers]
+    neural_network.initialization(65, 75, 2); // Initialize with [input size], [output size], [# hidden layers]
     //the first number in the initialization and the number below MUST be the same size
     let mut updated = [false; 60];
     let mut value_prior = 2000.0;
@@ -1070,6 +1078,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
     let mut bitstamp_wallet = 500.0;
     let mut kraken_wallet = 500.0;
     let mut gemini_wallet = 500.0;
+
 
     //this will allow me to do async mutex
     let shared_neural_network = Arc::new(Mutex::new(neural_network));
@@ -1110,7 +1119,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         //delay_for(Duration::from_secs(10)).await;
                     //01/17/24 - added:
                     println!("reached let when");
-                    let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                    let when = tokio::time::Instant::now() + Duration::from_secs(10);
                     delay_until(when).await;
         println!("reached for _ ");
         for _ in 0..1 {
@@ -1118,14 +1127,21 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                 //println!("Before delay, hopefully you get lines from websocket client being read");
                 //delay_for(Duration::from_secs(5)).await;
                 //println!("after delay, hopefully you this shows up in console. but just in case:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-            //01/17/24 - added curly braces
-            {
+            //01/17/24 - added curly braces for scope of lock
+                //01/19/24 - added:
 
-                println!("reached let mut neural network");
+            {
+                //println!("reached let mut neural network");
                 let mut neural_network = shared_neural_network.lock().await;
+
+                    
                 //01/18/24 - added to debug
                     println!("before weight update");
                     neural_network.print_layers();
+                //01/19/24 - added to see why last inputs are not updating
+                    let indices = [60, 61, 62, 63, 64];
+                    let new_values = [value_prior, coinbase_wallet, bitstamp_wallet, kraken_wallet, gemini_wallet];
+                    neural_network.update_input(&indices, &new_values);
 
 
                 neural_network.cycle(&mut epsilon, &mut value_prior,

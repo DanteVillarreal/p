@@ -60,15 +60,26 @@
 		pub layers: Vec<NetworkLayer>,
 		pub weights: Vec<WeightLayer>,
 		pub biases: Vec<BiasLayer>,
-		//pub input_mutex: Arc<Mutex<()>>,		//added 01/10/24 - because I dont want input neurons read/written at sameTime
-	}									//	it's used as of 01/10/24, only in update_input and feed_forward.
-										//	not in backpropagation or update_weights because im not directly
-										//	accessing/editing input layer, just its weights
+		//01/19/24 - added
+		pub gradients: GradientNetwork,
+	}
 
 
 
-
-
+	//01/19/24 - added
+	#[derive(Debug)]
+	#[derive(Serialize, Deserialize)]
+	pub struct GradientLayer {
+		pub rows: usize,
+		pub columns: usize,
+		pub data: Vec<Vec<f64>>,
+	}
+	//01/19/24 - added
+	#[derive(Debug)]
+	#[derive(Serialize, Deserialize)]
+	pub struct GradientNetwork {
+		pub layers: Vec<GradientLayer>,
+	}
 
 
 
@@ -280,6 +291,7 @@
 			//computes the actual matrix multiplication
 			//confusing. I know, but best way to understand is to genuinely go 
 			//	through the trouble of drawing it out and doing the calculations.
+			//explanation is also below "sum"
 			for i in 0..layer.len() {
 				for j in 0..weights[0].len() {
 					for k in 0..layer_columns {
@@ -287,7 +299,39 @@
 					}
 				}
 			}
+
 			sum //this is the value returned. aka the matrix returned
+
+			//previous neuron layer
+			// vec![
+  			//	vec![Na, Nb, Nc, ...]
+  			// ]
+			//weights:
+			// vec![
+  			//	vec![wa1, wa2, wa3, wa4, ...],
+  			//	vec![wb1, wb2, wb3, wb4, ...],
+  			//	vec![wc1, wc2, wc3, wc4, ...],
+  			//	...
+			// ]
+			//next neuron layer
+			// vec![
+  			//	 vec![N1, N2, N3, N4,...]
+  			// ]
+
+			//we can think of sum[i][j] as the next neuron
+
+			//i = 0, j = 0, k = 0
+			//sum[i][j] = N1
+			//layer[i][k] = Na
+			//weights[k][j] = Wa1
+			//so: N1 = Na*Wa1
+			//i = 0, j = 0, k = 1
+			//sum[i][j] = N1
+			//layer[i][k] = Nb because 0th row, next column
+			//weights[k][j] = Wb1 because 1st row, 0th column
+			//so: N1 = Nb*Wb1 + Na*Wa1
+			//this continues, then when j changes, we go to next neuron,
+			//	and next column in weight layer
 			
 	}
 
@@ -598,9 +642,27 @@
 			//// 		due to the need for the same input to be fed forward and stored in exp. replay
 			//let _guard = self.input_mutex.lock().unwrap();
 
+			//how it's structured
+			//neurons:
+			// vec![
+  			//	vec![Na, Nb, Nc, ...]
+  			// ]
+			//weights:
+			// vec![
+  			//	vec![wa1, wa2, wa3, wa4, ...],
+  			//	vec![wb1, wb2, wb3, wb4, ...],
+  			//	vec![wc1, wc2, wc3, wc4, ...],
+  			//	...
+			// ]
+			//neurons:
+			// vec![
+  			//	 vec![N1, N2, N3, N4,...]
+  			// ]
+
 			//starting at 1 because all the layers rely on the layer before it, 
 			//		and the input layer is just the input itself so I dont have
 			//		 to compute anything for it
+			
 			for i in 1..self.layers.len() {
 
 				//i REALLY NEED to understand this part more. I need to know what's being
@@ -609,6 +671,7 @@
 				//I actually understand it now
 				//so the previous activation is just the output of the neuron in the previous layer
 				//and weights is just the weights extending FROM the previous layer.
+
 				let previous_activations = &self.layers[i-1].data;
 				let weights = &self.weights[i-1].data;
 				let biases = &self.biases[i-1].data;
@@ -1176,6 +1239,16 @@
 				columns: output_size,
 				data: vec![vec![0.0; output_size]],
 			});
+
+			//01/19/24 - added:
+			//this establishes the GradientLayer
+			for weight_layer in &self.weights {
+				self.gradients.layers.push(GradientLayer {
+					rows: weight_layer.rows,
+					columns: weight_layer.columns,
+					data: vec![vec![0.0; weight_layer.columns]; weight_layer.rows],
+				});
+			}
 		}
 
 
@@ -2151,8 +2224,129 @@
 		}
 		*/
 
-		
 
+	//01/19/24 - added
+	pub fn el_backpropagation(&mut self, current_q_value_index: &usize,
+		current_q_value: &f64, target_q_value: &f64) {
+		//initialize gradient layer to 0
+		//iterate through weight layer in reverse and apply formula to calculate gradient
+
+		//initializes gradient_layer's data to 0
+		for gradient_layer in &mut self.gradients.layers {
+			for row in &mut gradient_layer.data {
+				for gradient in row.iter_mut() {
+					*gradient = 0.0;
+				}
+			}
+		}
+
+		//setting up formulas
+		let loss_derivative = calculate_loss_derivative(&current_q_value, &target_q_value);
+		let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
+		let mut derivative_of_to_neuron: Option<f64>;
+
+
+		//setting up readability:
+		let last_weight_layer = &self.weights.last().unwrap();
+		let last_gradient_layer = self.gradients.layers.last_mut().unwrap();
+		let second_last_neuron_layer = &self.layers[self.layers.len()-2];
+
+
+
+		// First for-loop: Calculate gradients for weights connecting to chosen
+		//		output neuron in the last weight layer
+		for (j, weight) in last_weight_layer.data.iter().enumerate() {
+			// Calculate gradient for weight[j][chosen_output_neuron_index]
+				//calculate derivative of to neuron
+					//this is  just derivative of output neuron
+
+				//calculate output of from neuron
+					let output_of_from_neuron = &second_last_neuron_layer.data[0][j];
+			
+			last_gradient_layer.data[j][*current_q_value_index] = loss_derivative*derivative_of_output_neuron*output_of_from_neuron;
+
+			
+		}
+
+		// Second for-loop: Calculate gradients for all other weights
+		for (i, weight_layer) in self.weights.iter().enumerate() {
+			if i != self.weights.len() - 1 { // Skip the last weight layer
+
+				//for readability
+				let gradient_layer = &mut self.gradients.layers[i];
+
+				for (j, weight_row) in weight_layer.data.iter().enumerate() {
+					for (k, _weight) in weight_row.iter().enumerate() {
+						// Calculate gradient for weight[j][i]
+						//calculate derivative of to neuron
+							//i+1 because it's the NEXT neuron's layer
+							//[0] because there's only 1 row
+							//[k]? why not [j]? If the sizes of the neuron layers were the same,
+							//		then j could work. However, we need to do [k] because the
+							//		columns of the weight layer correspond to what neuron the
+							//		weight attaches TO.
+							//remember:
+								//previous neuron layer
+								// vec![
+								//	vec![Na, Nb, Nc, ...]
+								// ]
+								//weights:
+								// vec![   [k], [k], [k], [k]
+								//[j] vec![wa1, wa2, wa3, wa4, ...],
+								//[j] vec![wb1, wb2, wb3, wb4, ...],
+								//[j] vec![wc1, wc2, wc3, wc4, ...],
+								//	...
+								// ]
+								//next neuron layer
+								// vec![
+								//	 vec![N1, N2, N3, N4,...]
+								// ]
+
+							let derivative_of_to_neuron = leaky_relu_derivative(self.layers[i+1].data[0][k]);
+						//calculate output of from neuron
+							let output_of_from_neuron = &self.layers[i].data[0][j];
+
+							gradient_layer.data[j][k] = loss_derivative*derivative_of_to_neuron*output_of_from_neuron;
+
+
+
+					}
+				}
+			}
+		}
+	}
+	//01/19/24 - added
+	pub fn el_update_weights(&mut self, learning_rate: &f64) {
+		for (i, weight_layer) in self.weights.iter_mut().enumerate() {
+			let gradient_layer = &self.gradients.layers[i];
+			for (j, weight_row) in weight_layer.data.iter_mut().enumerate() {
+				for (k, weight) in weight_row.iter_mut().enumerate() {
+					let gradient = gradient_layer.data[j][k];
+					*weight -= learning_rate * gradient;
+				}
+			}
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//01/19/24 - removed since created new back propagation function
+	/*
 	pub fn el_update_weights(&mut self, gradients: &Vec<f64>, indices: &Vec<(usize, usize, usize)>) {
 			// Iterate over all gradients and their corresponding indices
 			let learning_rate = 0.001;
@@ -2166,7 +2360,7 @@
 			}
 		}
 
-
+	*/
 
 
 		//how to save my neural network. Aka, how do I keep all the biases and weights stored 
@@ -2342,9 +2536,40 @@
 
 
 
-
-
-
+		//added 01/19/24:
+		pub fn compare_weights(&self, old_weights: &Vec<WeightLayer>, layer_index: usize) {
+			let weight_layer = &self.weights[layer_index];
+			let old_weight_layer = &old_weights[layer_index];
+		
+			for (j, weight_row) in weight_layer.data.iter().enumerate() {
+				for (k, weight) in weight_row.iter().enumerate() {
+					let old_weight = old_weight_layer.data[j][k];
+					if weight != &old_weight {
+						println!("Weight at layer {}, row {}, column {} changed from {} to {}", layer_index, j, k, old_weight, weight);
+					}
+				}
+			}
+		}
+		//added 01/19/24:
+		pub fn print_weight_layer_rows(&self, layer_index: usize) {
+			if layer_index < self.weights.len() {
+				println!("Weight layer {} has {} rows", layer_index, self.weights[layer_index].rows);
+			} else {
+				println!("Invalid layer index");
+			}
+		}
+		//added 01/19/24:
+		pub fn print_gradients_for_layer_and_row(&self, layer_index: usize, row_index: usize) {
+			if layer_index < self.gradients.layers.len() {
+				if row_index < self.gradients.layers[layer_index].rows {
+					println!("Gradients for row {} in layer {} are {:?}", row_index, layer_index, self.gradients.layers[layer_index].data[row_index]);
+				} else {
+					println!("Invalid row index");
+				}
+			} else {
+				println!("Invalid layer index");
+			}
+		}
 
 
 
@@ -2868,14 +3093,28 @@
 
 			//does backpropagation
 		//	println!("Before back propagation");
-			let (gradients, indices) = self.el_backpropagation(&index_chosen_for_current_state, &q_value_for_current_state, &target_q_value );
+			//01/19/24 - removed:
+				//let (gradients, indices) = self.el_backpropagation(&index_chosen_for_current_state, &q_value_for_current_state, &target_q_value );
+			//01/19/24 - added:
+				//let old_weights = self.weights.clone();
+				self.el_backpropagation(&index_chosen_for_current_state, &q_value_for_current_state, &target_q_value);
+				let learning_rate = 0.0001;
 		//	println!("fater back propagation");
 			//updates weights. aka... IMPROVEMENT
 		//	println!("Before update weights");
-			let weights_before_update = self.weights.clone();
-			self.el_update_weights(&gradients, &indices);
-			let weights_after_update = self.weights.clone();
-			assert!(weights_before_update != weights_after_update, "The weights were not updated!");
+			//just for debugging
+
+			//01/19/24 - removed:
+				//self.el_update_weights(&gradients, &indices);
+			//01/16/24 - added:
+				self.el_update_weights(&learning_rate);
+				//let layer_index_to_compare_weights = 0;
+				//self.compare_weights(&old_weights, layer_index_to_compare_weights);
+				//self.print_weight_layer_rows(0);
+				//self.print_gradients_for_layer_and_row(0, 54);
+			//01/19/24 - removed:
+				//let weights_after_update = self.weights.clone();
+				//assert!(weights_before_update != weights_after_update, "The weights were not updated!");
 			//assert!(weights_before_update == weights_after_update, "The weights were updated!");
 		//	println!("after update weights");
 			//push transition into the replay buffer

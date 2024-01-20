@@ -63,6 +63,8 @@
 		pub biases: Vec<BiasLayer>,
 		//01/19/24 - added
 		pub gradients: GradientNetwork,
+		//01/20/24 - added:
+		pub replay_buffer: ReplayBuffer,
 	}
 
 
@@ -2646,11 +2648,63 @@
 
 
 		//added 01/10/24
-		pub async fn cycle(&mut self, epsilon: &mut f64, value_prior: &mut f64, coinbase_wallet: &mut f64,
-			 kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,gemini_wallet: &mut f64,
-			 coinbase_secret: &str, coinbase_api_key: &str,
-			 kraken_secret: &str, kraken_api_key: &str, gemini_secret: &str, gemini_api_key: &str,
-			 bitstamp_secret: &str, bitstamp_api_key: &str)-> Result<(), Box<dyn Error + Send>> {
+		//01/20/24 - removed:
+			//pub async fn cycle(&mut self, epsilon: &mut f64, value_prior: &mut f64, coinbase_wallet: &mut f64,
+			//	kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,gemini_wallet: &mut f64,
+			//	coinbase_secret: &str, coinbase_api_key: &str,
+			//	kraken_secret: &str, kraken_api_key: &str, gemini_secret: &str, gemini_api_key: &str,
+			//	bitstamp_secret: &str, bitstamp_api_key: &str)-> Result<(), Box<dyn Error + Send>> {
+		//01/21/24 - added. Only difference is the i: usize part
+		pub async fn cycle(&mut self, i: usize, epsilon: &mut f64, value_prior: &mut f64, coinbase_wallet: &mut f64,
+			kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,gemini_wallet: &mut f64,
+			coinbase_secret: &str, coinbase_api_key: &str,
+			kraken_secret: &str, kraken_api_key: &str, gemini_secret: &str, gemini_api_key: &str,
+			bitstamp_secret: &str, bitstamp_api_key: &str)-> Result<(), Box<dyn Error + Send>> {
+			
+			
+			
+		//01/21/24 - added:
+			if i%10 == 0 && !self.replay_buffer.is_empty() {
+				let current_state = self.layers[0].clone();
+				let transition = self.replay_buffer.sample_random_replay_buffer()?;
+				//now ready to use sampled transition for training
+				let state = transition.state.clone();
+				let action = transition.action;
+				let reward = transition.reward;
+				let next_state = transition.next_state.clone();
+
+				//establish input layer from replay buffer to then feed it forward
+				self.layers[0] = state;
+				self.feed_forward();
+
+				//calculate new target q-value
+
+
+
+
+
+
+				//this is to reset my input layer to what it was before the expReplay
+				self.layers[0] = current_state;
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 			//this will execute once all the inputs have been updated
 			//it will do everything from save current state in replay buffer
 			//to feed_forward
@@ -2686,9 +2740,9 @@
 					};
 				//01/11/24 - removed
 					//self.feed_forward_with_cloned_input(&current_state_input_layer_clone);
-				println!("Before feed forward");
+					//println!("Before feed forward");
 				self.feed_forward();
-				println!("After feed forward");
+					//println!("After feed forward");
 
 			//for epsilon-greedy
 			//println!("Before exploration or exploitation");

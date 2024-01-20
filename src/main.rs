@@ -1059,6 +1059,12 @@ async fn main() ->Result<(), Box<dyn Error>>  {
 
     //this is just example code to evaluate if save and load of network works and it does  
     
+    //01/20/24 - added:
+    let replay_buffer = ReplayBuffer {
+        capacity: 10000, // Set this to your desired capacity
+        buffer: Vec::new(),
+    };
+
     //01/19/24 - added:
     let mut gradient_network = GradientNetwork {
         layers: Vec::new(),
@@ -1069,7 +1075,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         biases: Vec::new(),
         //01/19/24 - added:
         gradients: gradient_network,
-        //removed input_mutex from struct
+        //01/20/24 - added:
+        replay_buffer,
     };
     neural_network.initialization(65, 75, 2); // Initialize with [input size], [output size], [# hidden layers]
     //the first number in the initialization and the number below MUST be the same size
@@ -1123,7 +1130,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                     let when = tokio::time::Instant::now() + Duration::from_secs(10);
                     delay_until(when).await;
         println!("reached for _ ");
-        for _ in 0..100_000 {
+        for i in 0..100_000 {
             //01/16/24 - added:
                 //println!("Before delay, hopefully you get lines from websocket client being read");
                 //delay_for(Duration::from_secs(5)).await;
@@ -1175,8 +1182,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                     let new_values = [value_prior, coinbase_wallet, bitstamp_wallet, kraken_wallet, gemini_wallet];
                     neural_network.update_input(&indices, &new_values).await;
 
-
-                neural_network.cycle(&mut epsilon, &mut value_prior,
+                    //01/20/24 - added: 
+                neural_network.cycle(i, &mut epsilon, &mut value_prior,
                     &mut coinbase_wallet, &mut kraken_wallet, &mut bitstamp_wallet,
                     &mut gemini_wallet, &coinbase_secret, &coinbase_api_key,
                     &kraken_secret, &kraken_api_key, &gemini_secret,

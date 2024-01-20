@@ -1122,7 +1122,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                     let when = tokio::time::Instant::now() + Duration::from_secs(10);
                     delay_until(when).await;
         println!("reached for _ ");
-        for _ in 0..1 {
+        for _ in 0..10_000 {
             //01/16/24 - added:
                 //println!("Before delay, hopefully you get lines from websocket client being read");
                 //delay_for(Duration::from_secs(5)).await;
@@ -1136,12 +1136,12 @@ async fn main() ->Result<(), Box<dyn Error>>  {
 
                     
                 //01/18/24 - added to debug
-                    println!("before weight update");
-                    neural_network.print_layers();
+                    //println!("before weight update");
+                    //neural_network.print_layers();
                 //01/19/24 - added to see why last inputs are not updating
                     let indices = [60, 61, 62, 63, 64];
                     let new_values = [value_prior, coinbase_wallet, bitstamp_wallet, kraken_wallet, gemini_wallet];
-                    neural_network.update_input(&indices, &new_values);
+                    neural_network.update_input(&indices, &new_values).await;
 
 
                 neural_network.cycle(&mut epsilon, &mut value_prior,
@@ -1153,8 +1153,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
 
                 //01/18/24 - added to debug:
                     //println!("after lock. this should show up");
-                    println!("After weight update");
-                    neural_network.print_layers();
+                    //println!("After weight update");
+                    //neural_network.print_layers();
                 //01/17/24 - removed:
                     //neural_network.print_layers();
                 //01/16/24 - added - this BREAKS THE CODE. not the drop, nor the print, but the delay_for does
@@ -1163,6 +1163,11 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                     //delay_for(Duration::from_secs(5)).await;
                     //println!("after delay, hopefully you this shows up in console. but just in case:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             //01/17/24 - added curly brace. this is so the neural network is dropped after the lock
+
+
+                    //SAVE NEURAL NETWORK
+
+
             }
             //01/17/24 - added:
                 println!("5 sec delay");

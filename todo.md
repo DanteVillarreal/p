@@ -136,11 +136,12 @@ Make it so there are functions built into 1 function so that it does the initial
 18. Optimize gamma value
 19. Add L2 regularization
 20. places to optimize:
-     in my main, find a way to make it do less checks when checking if the indices have been updated.
-     in bitstamp and gemini to maintain uptime, do a request to just get the price and amount instead of waiting like 5 minutes for gemini or bitstamp to finally get a trade. If I did I would have to add a mutex just in case it did happen to be that it updated from the websocket client at the same time the request was updating it.
-     not entirely sure if I need all of the messages in action_functions. I should see which ones I dont need for the functions to continue working, and remove the messages I do not need so it loads less into RAM.
-     figure out how to use no mutex. manual checks may be faster
-     figure out how to choose "better" experience replays vs just picking random ones, aka exp replays that had unexpected outcomes
+     o   in my main, find a way to make it do less checks when checking if the indices have been updated.
+     o   in bitstamp and gemini to maintain uptime, do a request to just get the price and amount instead of waiting like 5 minutes for gemini or bitstamp to finally get a trade. If I did I would have to add a mutex just in case it did happen to be that it updated from the websocket client at the same time the request was updating it.
+     o  not entirely sure if I need all of the messages in action_functions. I should see which ones I dont need for the functions to continue working, and remove the messages I do not need so it loads less into RAM.
+     o  figure out how to use no mutex. manual checks may be faster
+     o  figure out how to choose "better" experience replays vs just picking random ones, aka exp replays that had unexpected outcomes
+     o  
 21. change all things to be warning free obviously, but also to change all initializations to be not 0, but Option<var type> instead. Except for the neurons of course.
 22.
         
@@ -261,4 +262,5 @@ Log of what I've done:
 01/17/24 - FIXED THE ISSUE. What happened was I was prematurlely locking the neural network WAYYYYYY before the neural network was being changed. So I deleted 1 line of code and it half worked. Then even with the delay in the for loop I noticed that it wasnt showing the websocket client was reading shit, so all glory to God, because I was thinking about locking and unlocking, I realized that my new delay I added was happening WHILE my neural network was locked. So, I changed its scope and BAM it finally worked. The weights dont seem to be updating with back propagation. Next step is to double check if they are, and if they arent, then modify it. I got this!
 01/18/24 - figured out where the issue is. It has to Its in my back propagation funciton, most likely. I got it to update more weights, but I still havent gotten every weight updated in the first layer. Next step is to fix the back propagation funciton. I got this!
 01/19/24 - redid backpropagation and update_weights functions. Fixed it. Next step is to figure out why the last inputs are not updating. I got this!
-01/20/24 - fixed inputs not updating. Next step is to save neural network and then print rewards to a new file and then run it 10000 times. I got this!
+01/20/24 - fixed inputs not updating. Next step is to save neural network and then print rewards to a new file to see if its working and then run it 10000 times. I got this!
+01/20/24 - added save_reward and sample from replay buffer functions. Next step is to integrate them into my program. I got this!

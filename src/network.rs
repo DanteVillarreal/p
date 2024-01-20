@@ -4,7 +4,7 @@
 	use rand_distr::{Normal, Distribution};									//to generate different dist. of random numbers
 	use serde::{Serialize, Deserialize};									//to save/load my neural network
 	use std::fs::File;														//to access files. for NeuralNet
-	use std::io::{BufReader, BufWriter};									//to save NeuralNet
+	use std::io::{BufReader, BufWriter, Write};									//to save NeuralNet
 	use chrono::Utc;														//for timestamp
 	use std::path::Path;													//for help in representing file paths
 	//use std::sync::Mutex;													//not async compat.
@@ -14,6 +14,7 @@
 	use std::fs;														//for replay_buffer
 	use tokio::sync::Mutex;                             // Use async Mutex from Tokio
 	use std::sync::Arc;  // Use Arc to share Mutex among multiple tasks
+
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
 	
 	//why #[derive(Serialize, Deserialize)] ?
@@ -93,7 +94,7 @@
 
 	//added 12/25/23
 	#[derive(Debug)]
-	#[derive(Serialize, Deserialize)]
+	#[derive(Serialize, Deserialize, Clone)]
 	pub struct Transition {
 		pub state: NetworkLayer,
 		pub action: usize,
@@ -158,7 +159,7 @@
 		//added 01/11/24
 		//this is to test if replay_buffer actually works
 		pub fn load_most_recent() -> std::io::Result<Self> {
-			let base_path = Path::new("D:\\Downloads\\PxOmni\\rust_save_states");
+			let base_path = Path::new("D:\\Downloads\\PxOmni\\rust_replay_buffers");
 			let mut most_recent_file = None;
 			let mut most_recent_timestamp = 0;
 	
@@ -195,6 +196,36 @@
 			for (i, transition) in self.buffer.iter().enumerate() {
 				println!("Transition {}: {:?}", i, transition);
 			}
+		}
+		//01/20/24 added:
+		pub fn sample_random_replay_buffer(&self) -> std::io::Result<Transition> {
+			let base_path = Path::new("D:\\Downloads\\PxOmni\\rust_replay_buffers");
+			let mut rng = rand::thread_rng();
+			let mut replay_buffers = Vec::new();
+		
+			// Collect all replay buffer files
+			for entry in fs::read_dir(base_path)? {
+				let entry = entry?;
+				let path = entry.path();
+				if path.is_file() {
+					replay_buffers.push(path);
+				}
+			}
+		
+			// Randomly select a replay buffer file
+			let random_index = rng.gen_range(0..replay_buffers.len());
+			let random_file = &replay_buffers[random_index];
+		
+			// Load the selected replay buffer
+			let file = fs::File::open(random_file)?;
+			let reader = BufReader::new(file);
+			let replay_buffer: ReplayBuffer = serde_json::from_reader(reader)?;
+		
+			// Randomly select a transition from the replay buffer
+			let random_index = rng.gen_range(0..replay_buffer.buffer.len());
+			let random_transition = &replay_buffer.buffer[random_index];
+		
+			Ok(random_transition.clone())
 		}
 	
 	}
@@ -615,6 +646,19 @@
 		neural_network.update_input(&indices, &new_values).await;
 	}
 	*/
+
+	//01/20/24 added-
+	pub fn save_reward(reward: &f64) -> std::io::Result<()> {
+
+		let now = Utc::now();
+		let timestamp = now.timestamp_millis().to_string();
+		let base_path = "D:\\Downloads\\PxOmni\\rust_neural_network_rewards";
+		let file_path = Path::new(base_path).join("rewards.txt");
+		let mut file = fs::OpenOptions::new().write(true).append(true).open(file_path)?;
+		writeln!(file, "{},{}", reward, timestamp)?;
+		Ok(())
+	}
+
 
 
 
@@ -2255,7 +2299,7 @@
 
 		// First for-loop: Calculate gradients for weights connecting to chosen
 		//		output neuron in the last weight layer
-		for (j, weight) in last_weight_layer.data.iter().enumerate() {
+		for (j, _weight) in last_weight_layer.data.iter().enumerate() {
 			// Calculate gradient for weight[j][chosen_output_neuron_index]
 				//calculate derivative of to neuron
 					//this is  just derivative of output neuron
@@ -3047,6 +3091,11 @@
 
 		//	println!("Before reward");
 			let the_reward = reward(*value_prior, value_after);
+			//01/20/24 - added:
+				//this will save my reward so I can see how my network is improving
+				let _unused_variable = save_reward(&the_reward);
+				//to reset value_prior so that reward is calculated correctly
+				*value_prior = value_after;
 		//	println!("After reward");
 			//do target q value and then get next state 
 			//01/11/24 - removed

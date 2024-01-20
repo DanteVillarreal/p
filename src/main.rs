@@ -5,7 +5,8 @@
 use p::action_functions::s_i0_do_nothing;
 use rand_distr::num_traits::AsPrimitive;
 use rand_distr::{StandardNormal, Normal, Distribution};
-use reqwest::Client;                                //to actually make the request itself
+use reqwest::Client;
+use serde::de::value;                                //to actually make the request itself
 use std::env;                                       //so I can use .env files and I dont have to put key details on github
 use rand::Rng;
 use hmac::{Hmac, Mac,};	                            //so I can do the signature stuff
@@ -1103,7 +1104,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
 	let bitstamp_secret = env::var("BITSTAMP_SECRET_KEY").expect("could not find BITSTAMP_SECRET_KEY spelt exactly like this in .env file. check if even have .env file");
     let gemini_api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set with exact name in .env file. check if even have .env file");
     let gemini_secret = env::var("GEMINI_SECRET_KEY").expect("GEMINI_SECRET_KEY must be set with exact name in .env file. check if even have .env file");
-    let client = reqwest::Client::new();
+    //let client = reqwest::Client::new();
    
     //--end of code to execute funcitons
     println!("reached let cycle task");
@@ -1122,7 +1123,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                     let when = tokio::time::Instant::now() + Duration::from_secs(10);
                     delay_until(when).await;
         println!("reached for _ ");
-        for _ in 0..10_000 {
+        for _ in 0..100_000 {
             //01/16/24 - added:
                 //println!("Before delay, hopefully you get lines from websocket client being read");
                 //delay_for(Duration::from_secs(5)).await;
@@ -1133,8 +1134,39 @@ async fn main() ->Result<(), Box<dyn Error>>  {
             {
                 //println!("reached let mut neural network");
                 let mut neural_network = shared_neural_network.lock().await;
+                //01/20/24 - added:
+                    //why? neural network will probably lose bunches of money at first
+                    //   and I dont want the neural network to learn using balance
+                    //   under 1800 dollars.
+                if coinbase_wallet <= 450.0 {
+                    coinbase_wallet = 500.0;
+                    //then print to new file that we reset balance at coinbase
+                    //  at certain time so that I can track which neural network
+                    //  iteration is performing good
+                    value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                }
+                if kraken_wallet <= 450.0 {
+                    kraken_wallet = 500.0;
+                    //then print to new file that we reset balance at coinbase
+                    //  at certain time so that I can track which neural network
+                    //  iteration is performing good
+                    value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                }
+                if gemini_wallet <= 450.0 {
+                    gemini_wallet = 500.0;
+                    //then print to new file that we reset balance at coinbase
+                    //  at certain time so that I can track which neural network
+                    //  iteration is performing good
+                    value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                }
+                if bitstamp_wallet <= 450.0 {
+                    bitstamp_wallet = 500.0;
+                    //then print to new file that we reset balance at coinbase
+                    //  at certain time so that I can track which neural network
+                    //  iteration is performing good
+                    value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                }
 
-                    
                 //01/18/24 - added to debug
                     //println!("before weight update");
                     //neural_network.print_layers();
@@ -1164,9 +1196,24 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                     //println!("after delay, hopefully you this shows up in console. but just in case:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             //01/17/24 - added curly brace. this is so the neural network is dropped after the lock
 
-
+                //SAVE NEURAL NETWORK
+            //SAVE NEURAL NETWORK
+                //SAVE NEURAL NETWORK
                     //SAVE NEURAL NETWORK
-
+                        //SAVE NEURAL NETWORK
+                            //SAVE NEURAL NETWORK
+                                //SAVE NEURAL NETWORK
+                                    //SAVE NEURAL NETWORK
+                                        //SAVE NEURAL NETWORK
+                                            //SAVE NEURAL NETWORK
+                                        //SAVE NEURAL NETWORK
+                                    //SAVE NEURAL NETWORK
+                                //SAVE NEURAL NETWORK
+                            //SAVE NEURAL NETWORK
+                                //SAVE NEURAL NETWORK
+                                    //SAVE NEURAL NETWORK
+                                        //SAVE NEURAL NETWORK
+            let _unused_variable = neural_network.save_v2();
 
             }
             //01/17/24 - added:

@@ -2687,24 +2687,7 @@
 				//this is to reset my input layer to what it was before the expReplay
 				self.layers[0] = current_state;
 			}
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
+
 			//this will execute once all the inputs have been updated
 			//it will do everything from save current state in replay buffer
 			//to feed_forward
@@ -2727,7 +2710,7 @@
 					//drop(_guard);
 
 				//stuff for exp replay
-					let mut replay_buffer = ReplayBuffer::new(10);
+					let mut replay_buffer = ReplayBuffer::new(1);
 					let input_data = self.layers[0].data.clone();
 					//state stuff
 					let input_rows = self.layers[0].rows;
@@ -3243,6 +3226,456 @@
 
 
 
+
+
+		//01/21/24 - added:
+		//this feed forwards,
+		pub  async fn cycle_part_one_of_two(&mut self, i: usize, 
+			epsilon: &mut f64, value_prior: &mut f64, coinbase_wallet: &mut f64,
+			kraken_wallet: &mut f64, bitstamp_wallet: &mut f64, 
+			gemini_wallet: &mut f64, coinbase_secret: &str, 
+			coinbase_api_key: &str, kraken_secret: &str, kraken_api_key: &str, 
+			gemini_secret: &str, gemini_api_key: &str, bitstamp_secret: &str, 
+			bitstamp_api_key: &str) -> (usize, f64, f64) {
+
+
+
+			self.feed_forward();
+
+			let (index_chosen_for_current_state, q_value_for_current_state) = 
+				self.exploration_or_exploitation(epsilon);
+
+
+
+			let value_after = self.choose_action_function(value_prior, 
+				coinbase_wallet, kraken_wallet, bitstamp_wallet, 
+				gemini_wallet, coinbase_secret, coinbase_api_key, kraken_secret, 
+				kraken_api_key, gemini_secret, gemini_api_key, bitstamp_secret, 
+				bitstamp_api_key, index_chosen_for_current_state).await;
+			
+			let value_after = match value_after {
+				Ok(val) => val,
+				Err(e) => {
+					panic!("An error occurred when establishing value_after in 
+					match:\n{}", e); // or handle the error appropriately
+				},
+			};
+
+			let the_reward = reward(*value_prior, value_after);
+			let _unused_variable = save_reward(&the_reward);
+			*value_prior = value_after;
+
+			(index_chosen_for_current_state, q_value_for_current_state, 
+				the_reward)
+		}
+
+
+		pub async fn choose_action_function(&mut self, value_prior: &mut f64, 
+			coinbase_wallet: &mut f64, kraken_wallet: &mut f64, 
+			bitstamp_wallet: &mut f64, gemini_wallet: &mut f64, 
+			coinbase_secret: &str, coinbase_api_key: &str, kraken_secret: &str, 
+			kraken_api_key: &str, gemini_secret: &str, gemini_api_key: &str, 
+			bitstamp_secret: &str, bitstamp_api_key: &str, 
+			index_chosen_for_current_state: usize) ->  
+			Result<f64, Box<dyn Error + Send>> {
+
+
+			
+			let client = reqwest::Client::new();
+			let value_after: f64 = match index_chosen_for_current_state {
+				0 => action_functions::s_i0_do_nothing(value_prior)?,
+				1 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i5_sol_5_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				2 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i6_sol_6_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				3 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i7_sol_7_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				4 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+				action_functions::s_i8_sol_8_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				5 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i9_sol_9_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				6 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i10_sol_10_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				7 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i13_sol_3_coinbase_bitstamp(coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				8 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i14_sol_4_coinbase_bitstamp(coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				9 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i15_sol_5_coinbase_bitstamp(coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				10 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i16_sol_6_coinbase_bitstamp(coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				11 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i17_sol_7_coinbase_bitstamp(coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				12 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i18_sol_8_coinbase_bitstamp(coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				13 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i19_sol_9_coinbase_bitstamp(coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				14 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i20_sol_10_coinbase_bitstamp(coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				15 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i23_sol_3_gemini_coinbase(coinbase_wallet, &kraken_wallet_immutable, &bitstamp_wallet_immutable, gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				16 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i24_sol_4_gemini_coinbase(coinbase_wallet, &kraken_wallet_immutable, &bitstamp_wallet_immutable, gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				17 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i25_sol_5_gemini_coinbase(coinbase_wallet, &kraken_wallet_immutable, &bitstamp_wallet_immutable, gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				18 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i26_sol_6_gemini_coinbase(coinbase_wallet, &kraken_wallet_immutable, &bitstamp_wallet_immutable, gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				19 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i27_sol_7_gemini_coinbase(coinbase_wallet, &kraken_wallet_immutable, &bitstamp_wallet_immutable, gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				20 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i28_sol_8_gemini_coinbase(coinbase_wallet, &kraken_wallet_immutable, &bitstamp_wallet_immutable, gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				21 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i29_sol_9_gemini_coinbase(coinbase_wallet, &kraken_wallet_immutable, &bitstamp_wallet_immutable, gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				22 => {
+					let kraken_wallet_immutable = &*kraken_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i30_sol_10_gemini_coinbase(coinbase_wallet, &kraken_wallet_immutable, &bitstamp_wallet_immutable, gemini_wallet, &coinbase_secret, &coinbase_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				23 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i35_sol_5_gemini_kraken(&coinbase_wallet_immutable, kraken_wallet, &bitstamp_wallet_immutable, gemini_wallet, &kraken_secret, &kraken_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				24 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i36_sol_6_gemini_kraken(&coinbase_wallet_immutable, kraken_wallet, &bitstamp_wallet_immutable, gemini_wallet, &kraken_secret, &kraken_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				25 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i37_sol_7_gemini_kraken(&coinbase_wallet_immutable, kraken_wallet, &bitstamp_wallet_immutable, gemini_wallet, &kraken_secret, &kraken_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				26 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i38_sol_8_gemini_kraken(&coinbase_wallet_immutable, kraken_wallet, &bitstamp_wallet_immutable, gemini_wallet, &kraken_secret, &kraken_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				27 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i39_sol_9_gemini_kraken(&coinbase_wallet_immutable, kraken_wallet, &bitstamp_wallet_immutable, gemini_wallet, &kraken_secret, &kraken_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				28 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i40_sol_10_gemini_kraken(&coinbase_wallet_immutable, kraken_wallet, &bitstamp_wallet_immutable, gemini_wallet, &kraken_secret, &kraken_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				29 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let kraken_wallet_immutable = &*kraken_wallet;
+					action_functions::s_i43_sol_3_gemini_bitstamp(&coinbase_wallet_immutable, &kraken_wallet_immutable, bitstamp_wallet, gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				30 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let kraken_wallet_immutable = &*kraken_wallet;
+					action_functions::s_i44_sol_4_gemini_bitstamp(&coinbase_wallet_immutable, &kraken_wallet_immutable, bitstamp_wallet, gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				31 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let kraken_wallet_immutable = &*kraken_wallet;
+					action_functions::s_i45_sol_5_gemini_bitstamp(&coinbase_wallet_immutable, &kraken_wallet_immutable, bitstamp_wallet, gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				32 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let kraken_wallet_immutable = &*kraken_wallet;
+					action_functions::s_i46_sol_6_gemini_bitstamp(&coinbase_wallet_immutable, &kraken_wallet_immutable, bitstamp_wallet, gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				33 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let kraken_wallet_immutable = &*kraken_wallet;
+					action_functions::s_i47_sol_7_gemini_bitstamp(&coinbase_wallet_immutable, &kraken_wallet_immutable, bitstamp_wallet, gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				34 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let kraken_wallet_immutable = &*kraken_wallet;
+					action_functions::s_i48_sol_8_gemini_bitstamp(&coinbase_wallet_immutable, &kraken_wallet_immutable, bitstamp_wallet, gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				35 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let kraken_wallet_immutable = &*kraken_wallet;
+					action_functions::s_i49_sol_9_gemini_bitstamp(&coinbase_wallet_immutable, &kraken_wallet_immutable, bitstamp_wallet, gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				36 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let kraken_wallet_immutable = &*kraken_wallet;
+					action_functions::s_i50_sol_10_gemini_bitstamp(&coinbase_wallet_immutable, &kraken_wallet_immutable, bitstamp_wallet, gemini_wallet, &bitstamp_secret, &bitstamp_api_key, client, &gemini_secret, &gemini_api_key, self).await?
+				},
+				37 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i55_sol_5_kraken_coinbase(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				38 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i56_sol_6_kraken_coinbase(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				39 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i57_sol_7_kraken_coinbase(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				40 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i58_sol_8_kraken_coinbase(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				41 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i59_sol_9_kraken_coinbase(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				42 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i60_sol_10_kraken_coinbase(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				43 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					action_functions::s_i65_sol_5_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				44 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					action_functions::s_i66_sol_6_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				45 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					action_functions::s_i67_sol_7_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				46 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					action_functions::s_i68_sol_8_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				47 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					action_functions::s_i69_sol_9_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				48 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					action_functions::s_i70_sol_10_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				49 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i75_xlm_5_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				50 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i76_xlm_6_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				51 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i77_xlm_7_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				52 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i78_xlm_8_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				53 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i79_xlm_9_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				54 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i80_xlm_10_coinbase_kraken(coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				55 => {
+					let kraken_wallet_immutable = &* kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i83_xlm_3_coinbase_bitstamp( coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				56 => {
+					let kraken_wallet_immutable = &* kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i84_xlm_4_coinbase_bitstamp( coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				57 => {
+					let kraken_wallet_immutable = &* kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i85_xlm_5_coinbase_bitstamp( coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				58 => {
+					let kraken_wallet_immutable = &* kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i86_xlm_6_coinbase_bitstamp( coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				59 => {
+					let kraken_wallet_immutable = &* kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i87_xlm_7_coinbase_bitstamp( coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				60 => {
+					let kraken_wallet_immutable = &* kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i88_xlm_8_coinbase_bitstamp( coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				61 => {
+					let kraken_wallet_immutable = &* kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i89_xlm_9_coinbase_bitstamp( coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				62 => {
+					let kraken_wallet_immutable = &* kraken_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i90_xlm_10_coinbase_bitstamp( coinbase_wallet, &kraken_wallet_immutable, bitstamp_wallet, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &bitstamp_secret, &bitstamp_api_key, self).await?
+				},
+				63 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i95_xlm_5_kraken_coinbase( coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				64 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i96_xlm_6_kraken_coinbase( coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				65 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i97_xlm_7_kraken_coinbase( coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				66 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i98_xlm_8_kraken_coinbase( coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				67 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i99_xlm_9_kraken_coinbase( coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				68 => {
+					let gemini_wallet_immutable = &*gemini_wallet;
+					let bitstamp_wallet_immutable = &*bitstamp_wallet;
+					action_functions::s_i100_xlm_10_kraken_coinbase( coinbase_wallet, kraken_wallet, &bitstamp_wallet_immutable, &gemini_wallet_immutable, &coinbase_secret, &coinbase_api_key, client, &kraken_secret, &kraken_api_key, self).await?
+				},
+				69 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i105_xlm_5_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				70 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i106_xlm_6_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				71 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i107_xlm_7_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				72 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i108_xlm_8_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				73 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i109_xlm_9_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self  ).await?
+				},
+				74 => {
+					let coinbase_wallet_immutable = &*coinbase_wallet;
+					let gemini_wallet_immutable = &*gemini_wallet;
+					action_functions::s_i110_xlm_10_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self ).await?
+				},
+				_ => todo!(),
+			};
+
+
+
+
+			Ok(value_after)
+
+		}
+
+
+		pub fn cycle_part_two_of_two(&mut self, 
+			index_chosen_for_current_state: usize, 
+			q_value_for_current_state: f64, the_reward: f64) {
+
+			//this just finishes everything up
+			let target_q_value = self.calculate_target_q_value(the_reward);
+			self.el_backpropagation(&index_chosen_for_current_state,
+				&q_value_for_current_state, &target_q_value);
+			let learning_rate = 0.0001;
+			self.el_update_weights(&learning_rate);
+		}
 
 	}
 

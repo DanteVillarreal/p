@@ -265,3 +265,6 @@ Log of what I've done:
 01/20/24 - fixed inputs not updating. Next step is to save neural network and then print rewards to a new file to see if its working and then run it 10000 times. I got this!
 01/20/24 - added save_reward and sample from replay buffer functions. Next step is to integrate them into my program. I got this!
 01/20/24 - changed NeuralNetwork struct. I realized that Ive been calculating the target_q_value incorrectly because I wasnt getting a new input layer. I need to redo it so it will do: feed forward, action and q_value, but then it will exit of new cycle function, then unlock neural_network lock. Wait 1 second, then lock it, save new input layer as next_state, then do calculate target q value, then perform back propagation hooking it up to old chosen_index and old q_value. Then update the weights. I got this!
+01/21/24 - NEED TO REMOVE SOLANA FROM BITSTAMP. Will add XRP to all: gemini, bitstamp, kraken, coinbase.
+01/21/24 - Separated cycle function so it can properly update weights. Next step is to introduce the i%10 part in the for loop. Then after that is to run it and see if its doing everything correctly. Then finally, next step is to do Remove solana-bitstamp functions. Then add xrp functions to all. I got this!
+

@@ -233,6 +233,12 @@
 	}
 	
 
+	pub fn is_folder_empty(folder: &str) -> std::io::Result<bool> {
+		let mut entries = fs::read_dir(folder)?;
+		Ok(entries.next().is_none())
+	}
+
+
 
 
 

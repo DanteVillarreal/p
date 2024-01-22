@@ -11,10 +11,13 @@ use std::env;                                       //so I can use .env files an
 use rand::Rng;
 use hmac::{Hmac, Mac,};	                            //so I can do the signature stuff
 use sha2::{Sha256, Sha384, Sha512, Digest};	        //so I can do signature stuff
-use p::network::NeuralNetwork;
-use p::network::GradientNetwork;                    //to use gradients
+use p::network::{NeuralNetwork, NetworkLayer, ReplayBuffer, GradientNetwork, Transition};
+//use p::network::NetworkLayer;
+//use p::network::ReplayBuffer;
+//use p::network::GradientNetwork;                    //to use gradients
 use p::action_functions;
 use p::execute_action_functions;
+use p::network;
 use tokio;                                          //so I can do async
 use dotenv::dotenv;
 //use mod network;
@@ -1263,162 +1266,292 @@ async fn main() ->Result<(), Box<dyn Error>>  {
             let when = tokio::time::Instant::now() + Duration::from_secs(10);
             delay_until(when).await;
             for i in 0..100_000 {
-                is_empty = is_folder_empty(folder);
-                if let Some(false) = is_empty {
+                //01/22/24 - removed:
+                    //is_empty = network::is_folder_empty(folder);
+                    //if let Some(false) = is_empty {
+                //01/22/24 - added:
+                let is_empty_result = network::is_folder_empty(folder);
+                if let Ok(is_empty) = is_empty_result {
                     if i%10 == 0 {
                         //=====NEURAL NETWORK LOCKED=====//
                         //===============================//
                             let mut neural_network = 
                                 shared_neural_network.lock().await;
-                            let current_state = self.layers[0].clone();
-                            let transition = self.replay_buffer
+                            let current_state = neural_network.layers[0].clone();
+                            let transition_result = neural_network.replay_buffer
                                 .sample_random_replay_buffer();
-                            //now ready to use sampled transition for training
-                            let state = transition.state.clone();
-                            let index_chosen_for_current_state = transition.action;
-                            let reward = transition.reward;
-                            let next_state = transition.next_state.clone();
+                            if let Ok(transition) = transition_result {
+                                //now ready to use sampled transition for training
+                                let state = transition.state.clone();
+                                let index_chosen_for_current_state = transition.action;
+                                let reward = transition.reward;
+                                let next_state = transition.next_state.clone();
 
-                            //why self.layers[0] = 0?
-                            //  so that it uses the exp replay's input as the input
-                            self.layers[0] = state;
-                            neural_network.feed_forward();
-                            let q_value_for_current_state = neural_network.layers
-                                .last().unwrap().data[0][action];
-                            let target_q_value = neural_network
-                                .calculate_target_q_value(reward);
-                            neural_network
-                                .el_backpropagation(index_chosen_for_current_state, 
-                                    q_value_for_current_state, &target_q_value);
+                                //why self.layers[0] = 0?
+                                //  so that it uses the exp replay's input as the input
+                                neural_network.layers[0] = state;
+                                neural_network.feed_forward();
+                                let q_value_for_current_state = neural_network.layers
+                                    .last().unwrap().data[0][index_chosen_for_current_state];
+                                let target_q_value = neural_network
+                                    .calculate_target_q_value(reward);
+                                neural_network
+                                    .el_backpropagation(&index_chosen_for_current_state, 
+                                        &q_value_for_current_state, &target_q_value);
 
-                            let learning_rate = 0.0001;
-                            neural_network.el_update_weights(&learning_rate);
-
-
-
+                                let learning_rate = 0.0001;
+                                neural_network.el_update_weights(&learning_rate);
 
 
 
-                            //this is to reset my input layer to what it was before the
-                            // expReplay
-                            self.layers[0] = current_state;
+
+
+
+                                //this is to reset my input layer to what it was before the
+                                // expReplay
+                                neural_network.layers[0] = current_state;
+                            }
+                            else {
+                                panic!("error when making transition");
+                            }
+                            
                     }
+                    else {
+                    
+                        //=====NEURAL NETWORK LOCKED=====//
+                        //===============================//
+                            let mut neural_network =
+                                shared_neural_network.lock().await;
+                            
+        
+                            //for experience replay
+                            let input_data = neural_network.layers[0].data.clone();
+                            //state stuff
+                            let input_rows = neural_network.layers[0].rows;
+                            let input_columns = neural_network.layers[0].columns;
+        
+                            let state = NetworkLayer {
+                                rows: input_rows,
+                                columns: input_columns,
+                                data: input_data,
+                            };
+        
+                                //why? neural network will probably lose bunches of money at first
+                                //   and I dont want the neural network to learn using balance
+                                //   under 1800 dollars.
+                            if coinbase_wallet <= 450.0 {
+                                coinbase_wallet = 500.0;
+                                //then print to new file that we reset balance at coinbase
+                                //  at certain time so that I can track which neural network
+                                //  iteration is performing good
+                                value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                            }
+                            if kraken_wallet <= 450.0 {
+                                kraken_wallet = 500.0;
+                                //then print to new file that we reset balance at coinbase
+                                //  at certain time so that I can track which neural network
+                                //  iteration is performing good
+                                value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                            }
+                            if gemini_wallet <= 450.0 {
+                                gemini_wallet = 500.0;
+                                //then print to new file that we reset balance at coinbase
+                                //  at certain time so that I can track which neural network
+                                //  iteration is performing good
+                                value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                            }
+                            if bitstamp_wallet <= 450.0 {
+                                bitstamp_wallet = 500.0;
+                                //then print to new file that we reset balance at coinbase
+                                //  at certain time so that I can track which neural network
+                                //  iteration is performing good
+                                value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                            }
+        
+        
+                            
+                            //this value of the wallets for the inputs
+                            let indices = [60, 61, 62, 63, 64];
+                            let new_values = [value_prior, coinbase_wallet, 
+                                bitstamp_wallet, kraken_wallet, gemini_wallet];
+                            neural_network.update_input(&indices, &new_values).await;
+        
+                                //01/20/24 - added: 
+                            let (index_chosen_for_current_state, q_value_for_current_state, 
+                                the_reward);
+        
+                            //this is to get us the values that part two is going ot use
+                            let result = neural_network.cycle_part_one_of_two(i, &mut epsilon, 
+                                &mut value_prior, &mut coinbase_wallet, &mut kraken_wallet,
+                                &mut bitstamp_wallet, &mut gemini_wallet, &coinbase_secret,
+                                &coinbase_api_key, &kraken_secret, &kraken_api_key, &gemini_secret,
+                                &gemini_api_key, &bitstamp_secret, &bitstamp_api_key).await;
+        
+                            match result {
+                                Ok(values) => {
+                                    index_chosen_for_current_state = values.0;
+                                    q_value_for_current_state = values.1;
+                                    the_reward = values.2;
+                                },
+                                Err(e) => eprintln!("An error occurred: {}", e),
+                            }
+                            
+        
+        
+                        //----------------NEURAL-NETWORK-DROPPED-----------------//
+                            drop(neural_network);
+                            println!("1 sec delay for new inputs");
+                            let when = tokio::time::Instant::now() + Duration::from_secs(1);
+                            delay_until(when).await;
+        
+        
+        
+        
+                        //=====NEURAL NETWORK LOCKED=====//
+                        //===============================//
+                            let mut neural_network = 
+                                shared_neural_network.lock().await;
+                            let next_state_input_layer_clone = neural_network.layers[0].clone();
+                            let transition = Transition {
+                                state,
+                                action,
+                                reward : the_reward,
+                                next_state : next_state_input_layer_clone,
+                            };
+                            neural_network.cycle_part_two_of_two(index_chosen_for_current_state,
+                                q_value_for_current_state, the_reward);
+                            let _unused_variable = neural_network.save_v2();
+        
+        
+                        //----------------NEURAL-NETWORK-DROPPED-----------------//
+                            drop(neural_network);
+        
+                            //save replay
+                            replay_buffer.push(transition);
+                            let _dummyvar = replay_buffer.save_replay_buffer_v2();
+                        }
                 }
                 else {
-                    
-                //=====NEURAL NETWORK LOCKED=====//
-                //===============================//
-                    let mut neural_network =
-                        shared_neural_network.lock().await;
-                    
-
-                    //for experience replay
-                    let input_data = self.layers[0].data.clone();
-                    //state stuff
-                    let input_rows = self.layers[0].rows;
-                    let input_columns = self.layers[0].columns;
-
-                    let state = NetworkLayer {
-                        rows: input_rows,
-                        columns: input_columns,
-                        data: input_data,
-                    };
-
-                        //why? neural network will probably lose bunches of money at first
-                        //   and I dont want the neural network to learn using balance
-                        //   under 1800 dollars.
-                    if coinbase_wallet <= 450.0 {
-                        coinbase_wallet = 500.0;
-                        //then print to new file that we reset balance at coinbase
-                        //  at certain time so that I can track which neural network
-                        //  iteration is performing good
-                        value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
-                    }
-                    if kraken_wallet <= 450.0 {
-                        kraken_wallet = 500.0;
-                        //then print to new file that we reset balance at coinbase
-                        //  at certain time so that I can track which neural network
-                        //  iteration is performing good
-                        value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
-                    }
-                    if gemini_wallet <= 450.0 {
-                        gemini_wallet = 500.0;
-                        //then print to new file that we reset balance at coinbase
-                        //  at certain time so that I can track which neural network
-                        //  iteration is performing good
-                        value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
-                    }
-                    if bitstamp_wallet <= 450.0 {
-                        bitstamp_wallet = 500.0;
-                        //then print to new file that we reset balance at coinbase
-                        //  at certain time so that I can track which neural network
-                        //  iteration is performing good
-                        value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
-                    }
-
-
-                    
-                    //this value of the wallets for the inputs
-                    let indices = [60, 61, 62, 63, 64];
-                    let new_values = [value_prior, coinbase_wallet, 
-                        bitstamp_wallet, kraken_wallet, gemini_wallet];
-                    neural_network.update_input(&indices, &new_values).await;
-
-                        //01/20/24 - added: 
-                    let (index_chosen_for_current_state, q_value_for_current_state, 
-                        the_reward);
-
-                    //this is to get us the values that part two is going ot use
-                    result = neural_network.cycle_part_one_of_two(i, &mut epsilon, 
-                        &mut value_prior, &mut coinbase_wallet, &mut kraken_wallet,
-                        &mut bitstamp_wallet, &mut gemini_wallet, coinbase_secret,
-                        coinbase_api_key, kraken_secret, kraken_api_key, gemini_secret,
-                        gemini_api_key, bitstamp_secret, bitstamp_api_key).await;
-
-                    match result {
-                        Ok(values) => {
-                            index_chosen_for_current_state = values.0;
-                            q_value_for_current_state = values.1;
-                            the_reward = values.2;
-                            println!("The function returned: {}, {}, {}", i, f1, f2);
-                        },
-                        Err(e) => eprintln!("An error occurred: {}", e),
-                    }
-                    
-
-
-                //----------------NEURAL-NETWORK-DROPPED-----------------//
-                    drop(neural_network);
-                    println!("1 sec delay for new inputs");
-                    let when = tokio::time::Instant::now() + Duration::from_secs(1);
-                    delay_until(when).await;
-
-
-
-
-                //=====NEURAL NETWORK LOCKED=====//
-                //===============================//
-                    let mut neural_network = 
-                        shared_neural_network.lock().await;
-                    let next_state_input_layer_clone = self.layers[0].clone();
-                    let transition = Transition {
-                        state,
-                        action,
-                        reward : the_reward,
-                        next_state : next_state_input_layer_clone,
-                    };
-                    neural_network.cycle_part_two_of_two(index_chosen_for_current_state,
-                        q_value_for_current_state, the_reward);
-                    let _unused_variable = neural_network.save_v2();
-
-
-                //----------------NEURAL-NETWORK-DROPPED-----------------//
-                    drop(neural_network);
-
-                    //save replay
-                    replay_buffer.push(transition);
-                    let _dummyvar = replay_buffer.save_replay_buffer_v2();
+                    panic!("there was no empty_result");
                 }
+                //01/22/24 - removed:
+                /*
+                    else {
+                        
+                    //=====NEURAL NETWORK LOCKED=====//
+                    //===============================//
+                        let mut neural_network =
+                            shared_neural_network.lock().await;
+                        
+
+                        //for experience replay
+                        let input_data = neural_network.layers[0].data.clone();
+                        //state stuff
+                        let input_rows = neural_network.layers[0].rows;
+                        let input_columns = neural_network.layers[0].columns;
+
+                        let state = NetworkLayer {
+                            rows: input_rows,
+                            columns: input_columns,
+                            data: input_data,
+                        };
+
+                            //why? neural network will probably lose bunches of money at first
+                            //   and I dont want the neural network to learn using balance
+                            //   under 1800 dollars.
+                        if coinbase_wallet <= 450.0 {
+                            coinbase_wallet = 500.0;
+                            //then print to new file that we reset balance at coinbase
+                            //  at certain time so that I can track which neural network
+                            //  iteration is performing good
+                            value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                        }
+                        if kraken_wallet <= 450.0 {
+                            kraken_wallet = 500.0;
+                            //then print to new file that we reset balance at coinbase
+                            //  at certain time so that I can track which neural network
+                            //  iteration is performing good
+                            value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                        }
+                        if gemini_wallet <= 450.0 {
+                            gemini_wallet = 500.0;
+                            //then print to new file that we reset balance at coinbase
+                            //  at certain time so that I can track which neural network
+                            //  iteration is performing good
+                            value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                        }
+                        if bitstamp_wallet <= 450.0 {
+                            bitstamp_wallet = 500.0;
+                            //then print to new file that we reset balance at coinbase
+                            //  at certain time so that I can track which neural network
+                            //  iteration is performing good
+                            value_prior = coinbase_wallet + bitstamp_wallet + gemini_wallet + kraken_wallet;
+                        }
+
+
+                        
+                        //this value of the wallets for the inputs
+                        let indices = [60, 61, 62, 63, 64];
+                        let new_values = [value_prior, coinbase_wallet, 
+                            bitstamp_wallet, kraken_wallet, gemini_wallet];
+                        neural_network.update_input(&indices, &new_values).await;
+
+                            //01/20/24 - added: 
+                        let (index_chosen_for_current_state, q_value_for_current_state, 
+                            the_reward);
+
+                        //this is to get us the values that part two is going ot use
+                        result = neural_network.cycle_part_one_of_two(i, &mut epsilon, 
+                            &mut value_prior, &mut coinbase_wallet, &mut kraken_wallet,
+                            &mut bitstamp_wallet, &mut gemini_wallet, &coinbase_secret,
+                            &coinbase_api_key, &kraken_secret, &kraken_api_key, &gemini_secret,
+                            &gemini_api_key, &bitstamp_secret, &bitstamp_api_key).await;
+
+                        match result {
+                            Ok(values) => {
+                                index_chosen_for_current_state = values.0;
+                                q_value_for_current_state = values.1;
+                                the_reward = values.2;
+                                println!("The function returned: {}, {}, {}", i, f1, f2);
+                            },
+                            Err(e) => eprintln!("An error occurred: {}", e),
+                        }
+                        
+
+
+                    //----------------NEURAL-NETWORK-DROPPED-----------------//
+                        drop(neural_network);
+                        println!("1 sec delay for new inputs");
+                        let when = tokio::time::Instant::now() + Duration::from_secs(1);
+                        delay_until(when).await;
+
+
+
+
+                    //=====NEURAL NETWORK LOCKED=====//
+                    //===============================//
+                        let mut neural_network = 
+                            shared_neural_network.lock().await;
+                        let next_state_input_layer_clone = neural_network.layers[0].clone();
+                        let transition = Transition {
+                            state,
+                            action,
+                            reward : the_reward,
+                            next_state : next_state_input_layer_clone,
+                        };
+                        neural_network.cycle_part_two_of_two(index_chosen_for_current_state,
+                            q_value_for_current_state, the_reward);
+                        let _unused_variable = neural_network.save_v2();
+
+
+                    //----------------NEURAL-NETWORK-DROPPED-----------------//
+                        drop(neural_network);
+
+                        //save replay
+                        replay_buffer.push(transition);
+                        let _dummyvar = replay_buffer.save_replay_buffer_v2();
+                    }
+                */
             }
             Ok::<(), Box<dyn Error + Send>>(())
         }

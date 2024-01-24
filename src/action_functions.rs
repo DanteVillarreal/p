@@ -1300,7 +1300,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
             //this will count as value after
     
@@ -1545,7 +1548,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
     
                 return Ok(value_after)
@@ -1787,7 +1793,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
     
                 return Ok(value_after)
@@ -2029,7 +2038,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
     
                 return Ok(value_after)
@@ -2271,7 +2283,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
     
                 return Ok(value_after)
@@ -2513,7 +2528,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
     
                 return Ok(value_after)
@@ -3223,7 +3241,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
     
                 return Ok(value_after)
@@ -3467,7 +3488,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -3710,7 +3734,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -3954,7 +3981,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
     
                 return Ok(value_after)
@@ -4199,7 +4229,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
 
                 return Ok(value_after)
@@ -4445,7 +4478,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -4690,7 +4726,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
 
     
@@ -4936,7 +4975,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 62
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -5641,7 +5683,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 64
                 let indices = [60, 61, 64];
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -5885,7 +5930,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 64
                 let indices = [60, 61, 64];
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -6129,7 +6177,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 64
                 let indices = [60, 61, 64];
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
 
     
@@ -6373,7 +6424,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 64
                 let indices = [60, 61, 64];
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -6618,7 +6672,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 64
                 let indices = [60, 61, 64];
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -6862,7 +6919,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 64
                 let indices = [60, 61, 64];
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
 
                 return Ok(value_after)
@@ -7105,7 +7165,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 64
                 let indices = [60, 61, 64];
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
 
                 return Ok(value_after)
@@ -7347,7 +7410,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 64
                 let indices = [60, 61, 64];
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -8624,7 +8690,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 63, 64
                 let indices = [60, 63, 64];
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -8889,7 +8958,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 63, 64
                 let indices = [60, 63, 64];
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
 
                 return Ok(value_after)
@@ -9154,7 +9226,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 63, 64
                 let indices = [60, 63, 64];
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
 
     
@@ -9421,7 +9496,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 63, 64
                 let indices = [60, 63, 64];
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -9687,7 +9765,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 63, 64
                 let indices = [60, 63, 64];
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
 
                 return Ok(value_after)
@@ -9953,7 +10034,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 63, 64
                 let indices = [60, 63, 64];
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -10648,7 +10732,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 62, 64
                 let indices = [60, 62, 64];
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -10888,7 +10975,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 62, 64
                 let indices = [60, 62, 64];
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
 
                 return Ok(value_after)
@@ -11128,7 +11218,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 62, 64
                 let indices = [60, 62, 64];
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
                 return Ok(value_after)
 
@@ -11367,7 +11460,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 62, 64
                 let indices = [60, 62, 64];
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -11606,7 +11702,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 62, 64
                 let indices = [60, 62, 64];
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
                 return Ok(value_after)
 
@@ -11845,7 +11944,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 62, 64
                 let indices = [60, 62, 64];
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
                 return Ok(value_after)
 
@@ -12084,7 +12186,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 62, 64
                 let indices = [60, 62, 64];
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
     
                 return Ok(value_after)
@@ -12324,7 +12429,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 62, 64
                 let indices = [60, 62, 64];
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -13625,7 +13733,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
             
             return Ok(value_after)
@@ -13898,7 +14009,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
             return Ok(value_after)
 
@@ -14170,7 +14284,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
             return Ok(value_after)
 
@@ -14442,7 +14559,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
 
             return Ok(value_after)
@@ -14714,7 +14834,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
 
             return Ok(value_after)
@@ -14986,7 +15109,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
 
             return Ok(value_after)
@@ -16231,7 +16357,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 62, 63
                 let indices = [60, 62, 63];
                 let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
 
             return Ok(value_after)
@@ -16491,7 +16620,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 62, 63
                 let indices = [60, 62, 63];
                 let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
 
             return Ok(value_after)
@@ -16750,7 +16882,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //  60, 62, 63
             let indices = [60, 62, 63];
             let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-            neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
 
             return Ok(value_after)
@@ -17010,7 +17145,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //  60, 62, 63
             let indices = [60, 62, 63];
             let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-            neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
 
             return Ok(value_after)
@@ -17270,7 +17408,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //  60, 62, 63
             let indices = [60, 62, 63];
             let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-            neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
 
             return Ok(value_after)
@@ -17530,7 +17671,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //  60, 62, 63
             let indices = [60, 62, 63];
             let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-            neural_network.update_input(&indices, &new_values);
+            //01/24/24 - removed and added:
+                //neural_network.update_input(&indices, &new_values);
+                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                neural_network.update_input(&indices, &transformed_values).await;
 
 
             return Ok(value_after)
@@ -17774,7 +17918,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
     
                 return Ok(value_after)
@@ -18019,7 +18166,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -18261,7 +18411,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
     
                 return Ok(value_after)
@@ -18505,7 +18658,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -18748,7 +18904,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -18991,7 +19150,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -19227,7 +19389,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 62
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -19464,7 +19629,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 62
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
 
                 return Ok(value_after)
@@ -19702,7 +19870,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 62
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -19939,7 +20110,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 62
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
                 return Ok(value_after)
 
@@ -20176,7 +20350,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 62
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -20413,7 +20590,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 62
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -20650,7 +20830,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 62
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
 
                 return Ok(value_after)
 
@@ -20887,7 +21070,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 62
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
                 return Ok(value_after)
 
@@ -21148,8 +21334,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
-    
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
+        
     
             return Ok(value_after)
 
@@ -21410,7 +21599,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
     
             return Ok(value_after)
@@ -21673,7 +21865,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
             return Ok(value_after)
 
@@ -21935,7 +22130,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
             return Ok(value_after)
 
@@ -22197,7 +22395,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
             return Ok(value_after)
 
@@ -22459,7 +22660,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 63];
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
-                neural_network.update_input(&indices, &new_values);
+                //01/24/24 - removed and added:
+                    //neural_network.update_input(&indices, &new_values);
+                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    neural_network.update_input(&indices, &transformed_values).await;
     
             return Ok(value_after)
 
@@ -22693,7 +22897,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //  60, 62, 63
         let indices = [60, 62, 63];
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        neural_network.update_input(&indices, &new_values);
+        //01/24/24 - removed and added:
+            //neural_network.update_input(&indices, &new_values);
+            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            neural_network.update_input(&indices, &transformed_values).await;
         
         return Ok(value_after)
 
@@ -22928,7 +23135,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //  60, 62, 63
         let indices = [60, 62, 63];
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        neural_network.update_input(&indices, &new_values);
+        //01/24/24 - removed and added:
+            //neural_network.update_input(&indices, &new_values);
+            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            neural_network.update_input(&indices, &transformed_values).await;
     
     return Ok(value_after)
 
@@ -23163,7 +23373,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //  60, 62, 63
         let indices = [60, 62, 63];
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        neural_network.update_input(&indices, &new_values);
+        //01/24/24 - removed and added:
+            //neural_network.update_input(&indices, &new_values);
+            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            neural_network.update_input(&indices, &transformed_values).await;
     
     return Ok(value_after)
 
@@ -23398,7 +23611,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //  60, 62, 63
         let indices = [60, 62, 63];
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        neural_network.update_input(&indices, &new_values);
+        //01/24/24 - removed and added:
+            //neural_network.update_input(&indices, &new_values);
+            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            neural_network.update_input(&indices, &transformed_values).await;
     
     return Ok(value_after)
 
@@ -23633,7 +23849,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //  60, 62, 63
         let indices = [60, 62, 63];
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        neural_network.update_input(&indices, &new_values);
+        //01/24/24 - removed and added:
+            //neural_network.update_input(&indices, &new_values);
+            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            neural_network.update_input(&indices, &transformed_values).await;
     
     return Ok(value_after)
 
@@ -23868,7 +24087,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //  60, 62, 63
         let indices = [60, 62, 63];
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        neural_network.update_input(&indices, &new_values);
+        //01/24/24 - removed and added:
+            //neural_network.update_input(&indices, &new_values);
+            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            neural_network.update_input(&indices, &transformed_values).await;
     
     return Ok(value_after)
 

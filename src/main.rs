@@ -147,11 +147,13 @@ async fn handle_sol_coinbase(message: &str, shared_neural_network: Arc<Mutex<Neu
                     coinbase_high_24h, 
                     coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h,];
 
-
-        //01/16/24 - added 1st line below this:
+		//01/24/24 - added log transform to shrink inputs for no more exploding gradients
+			let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //01/16/24 - added lock:
         let mut neural_network = shared_neural_network.lock().await;
-
-        neural_network.update_input(&indices, &new_values).await;
+		//01/24/24 - removed and added:
+        	//neural_network.update_input(&indices, &new_values).await;
+			neural_network.update_input(&indices, &transformed_values).await;
         //to mark the inputs as changed
         for index in indices {
             updated[index] = true;
@@ -237,11 +239,13 @@ async fn handle_xlm_coinbase(message: &str, shared_neural_network: Arc<Mutex<Neu
             coinbase_high_24h, 
             coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h,];
 
-
-            //01/16/24 - added 1st line below this:
+			//01/24/24 - added log transform to shrink inputs:
+				let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //01/16/24 - added lock:
             let mut neural_network = shared_neural_network.lock().await;
-
-            neural_network.update_input(&indices, &new_values).await;
+			//01/24/24 - removed and added:
+            	//neural_network.update_input(&indices, &new_values).await;
+				neural_network.update_input(&indices, &transformed_values).await;
             //to mark the inputs as changed
             for index in indices {
                 updated[index] = true;
@@ -459,10 +463,15 @@ async fn handle_sol_kraken(message: &str, shared_neural_network: Arc<Mutex<Neura
     //    &t_last24hours, &l_today, &l_last24hours, &h_today, &h_last24hours, 
     //    &o_today, &o_last24hours];
 
-    //01/16/24 - added 1st line below this:
+	//01/24/24 - added log transform to shrink inputs:
+		let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+    //01/16/24 - added lock:
     let mut neural_network = shared_neural_network.lock().await;
+	//01/24/24 - removed and added:
+    	//neural_network.update_input(&indices, &new_values).await;
+		neural_network.update_input(&indices, &transformed_values).await;
+	
 
-    neural_network.update_input(&indices, &new_values).await;
     //to mark the inputs as changed
     for index in indices {
         updated[index] = true;
@@ -683,11 +692,13 @@ async fn handle_xlm_kraken(message: &str, shared_neural_network: Arc<Mutex<Neura
     let new_values = [a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1, 
         v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1];
 
-
-    //01/16/24 - added 1st line below this:
+	//01/24/24 - added to log transform values to shrink inputs
+		let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+    //01/16/24 - added lock:
     let mut neural_network = shared_neural_network.lock().await;
-
-    neural_network.update_input(&indices, &new_values).await;
+	//01/24/24 - removed and added:
+    	//neural_network.update_input(&indices, &new_values).await;
+		neural_network.update_input(&indices, &transformed_values).await;
     //to mark the inputs as changed
     for index in indices {
         updated[index] = true;
@@ -764,11 +775,13 @@ async fn handle_sol_bitstamp(message: &str, shared_neural_network: Arc<Mutex<Neu
 
     let indices: [usize; 2] = [54, 55];
     let new_values = [amount, price];
-
-    //01/16/24 - added 1st line below this:
+	//01/24/24 - added tranformed_values to shrink inputs
+	let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+    //01/16/24 - added lock:
     let mut neural_network = shared_neural_network.lock().await;
-
-    neural_network.update_input(&indices, &new_values).await;
+	//01/24/24 - removed and added:
+    	//neural_network.update_input(&indices, &new_values).await;
+		neural_network.update_input(&indices, &transformed_values).await;
     //to mark the inputs as changed
     for index in indices {
         updated[index] = true;
@@ -838,10 +851,13 @@ async fn handle_xlm_bitstamp(message: &str, shared_neural_network: Arc<Mutex<Neu
 
     let indices: [usize; 2] = [56, 57];
     let new_values = [amount, price];
-
-    //01/16/24 - added 1st line below this:
+	//01/24/24 - added to accomplish log transorm:
+	let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+    //01/16/24 - added lock:
     let mut neural_network = shared_neural_network.lock().await;
-    neural_network.update_input(&indices, &new_values).await;
+	//01/24/24 - removed update input and added new rendition
+    	//neural_network.update_input(&indices, &new_values).await;
+		neural_network.update_input(&indices, &transformed_values).await;
     //to mark the inputs as changed
     for index in indices {
         updated[index] = true;
@@ -908,9 +924,14 @@ async fn handle_sol_gemini(message: &str, shared_neural_network: Arc<Mutex<Neura
     if let (Some(amount), Some(price)) = (amount, price) {
         let indices = [58, 59];
         let new_values = [amount, price];
-        //01/16/24 - added 1st line under this:
+        //01/16/24 - added lock:
+		//01/24/24 - added transformed_values and new rendition of update_input using transformed_values
+		let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+		
         let mut neural_network = shared_neural_network.lock().await;
-        neural_network.update_input(&indices, &new_values).await;
+		//01/24/24 - removed:
+        	//neural_network.update_input(&indices, &new_values).await;
+		neural_network.update_input(&indices, &transformed_values).await;
         //to mark the inputs as changed
         for index in indices {
             updated[index] = true;
@@ -1328,8 +1349,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
 								// expReplay
 								neural_network.layers[0] = current_state;
 								//01/24/24 - for debugging:
-								println!("iteratrion number is: {}", i);
-								println!("just did an exp replay");
+									println!("iteratrion number is: {}", i);
+									println!("just did an exp replay");
 							}
 							else {
 								panic!("error when making transition");
@@ -1399,8 +1420,9 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                             let indices = [60, 61, 62, 63, 64];
                             let new_values = [value_prior, coinbase_wallet, 
                                 bitstamp_wallet, kraken_wallet, gemini_wallet];
-                            neural_network.update_input(&indices, &new_values).await;
-        
+							let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+							neural_network.update_input(&indices, &transformed_values).await;
+							neural_network.print_input_layer();
                                 //01/20/24 - added: 
                             let (index_chosen_for_current_state, q_value_for_current_state, 
                                 the_reward);

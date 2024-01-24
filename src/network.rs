@@ -2671,8 +2671,17 @@
 				panic!("No layers in the network");
 			}
 		}
-
-
+		
+		pub fn print_input_layer(&self) {
+			println!("printing first input layer:\n");
+			if let Some(first_layer) = self.layers.first() {
+				println!("Data: {:?}", first_layer.data);
+			}
+			else {
+				panic!("self.layers.first did not exist. 
+				So no layers in network");
+			}
+		}
 
 
 

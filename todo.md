@@ -139,9 +139,11 @@ Make it so there are functions built into 1 function so that it does the initial
      o   in my main, find a way to make it do less checks when checking if the indices have been updated.
      o   in bitstamp and gemini to maintain uptime, do a request to just get the price and amount instead of waiting like 5 minutes for gemini or bitstamp to finally get a trade. If I did I would have to add a mutex just in case it did happen to be that it updated from the websocket client at the same time the request was updating it.
      o  not entirely sure if I need all of the messages in action_functions. I should see which ones I dont need for the functions to continue working, and remove the messages I do not need so it loads less into RAM.
-     o  figure out how to use no mutex. manual checks may be faster
+     o  figure out how to use no mutex. manual checks may be faster. i think i already fixed htis.
      o  figure out how to choose "better" experience replays vs just picking random ones, aka exp replays that had unexpected outcomes
-     o  
+     o  remove "updated" in main because I'm not using it.
+     o  remove print methods where the impl is literally only the print
+     o  change update_input so it isn't .await. async functions only optimal when they aren't cpu bound. so when the function's max speed is not dependent on your CPU. So, like any time we do a REST request and are WAITING for a response. or in websocket. so in network, remove async word from function. then correct resulting errors. probably over 100. then see if network breaks.
 21. change all things to be warning free obviously, but also to change all initializations to be not 0, but Option<var type> instead. Except for the neurons of course.
 22.
         
@@ -272,3 +274,4 @@ Log of what I've done:
 01/23/24 - in process of fixing modifications. Next step is to run it and see if its doing everything correctly. Then finally, next step is to do Remove solana-bitstamp functions. Then add xrp functions to all. I got this!
 01/24/24 - finished with modifications. Next step is to run it and see if its doing everything correctly. Then finally, next step is to do Remove solana-bitstamp functions. Then add xrp functions to all. I got this!
 01/24/24 - heavy modifications in main and network and added more error finding code. Neural network crashes at 4th iteration. I think the issue is my present replay buffer is fucked so I need to delete all of them. However, I still have another issue of my gradients exploding. I will try to do z-score normalization (standardization) after this commit.
+01/24/24 - modified every occurence of update_input to do log transformation. instead of z-score normalization I am doing log transofmraiton because I dont know mean or std. dev for ANY of my data. Also, log transformation seems easier to implement. I dont want to add a max to my gradient becuase it seems like a crude fix for xploding weights given that I already have the learning rate at something tiny like 0.0001.

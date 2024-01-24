@@ -1265,70 +1265,82 @@ async fn main() ->Result<(), Box<dyn Error>>  {
 
             let when = tokio::time::Instant::now() + Duration::from_secs(10);
             delay_until(when).await;
-            for i in 0..100_000 {
+            for i in 0..15 {
                 //01/22/24 - removed:
                     //is_empty = network::is_folder_empty(folder);
                     //if let Some(false) = is_empty {
                 //01/22/24 - added:
 				//01/24/24 - last modification:
                 let is_empty_result = network::is_folder_empty(folder);
-                if let Ok(_is_empty) = is_empty_result {
-                    if i%10 == 0 {
-                        //=====NEURAL NETWORK LOCKED=====//
-                        //===============================//
-                            let mut neural_network = 
-                                shared_neural_network.lock().await;
-                            let current_state = neural_network.layers[0].clone();
-                            let transition_result = neural_network.replay_buffer
-                                .sample_random_replay_buffer();
-                            if let Ok(transition) = transition_result {
-                                //now ready to use sampled transition for training
-                                let state = transition.state.clone();
-                                let index_chosen_for_current_state = transition.action;
-                                let reward = transition.reward;
-                                let next_state = transition.next_state.clone();
+                if let Ok(is_empty) = is_empty_result {
+					//if it's not empty & it's the 10th, then sample from transition
+					if is_empty == false && i%10 == 0 {
+						//=====NEURAL NETWORK LOCKED=====//
+						//===============================//
+							let mut neural_network = 
+								shared_neural_network.lock().await;
+							println!("I am in process of doing an experience replay");
+							let current_state = neural_network.layers[0].clone();
+							let transition_result = neural_network.replay_buffer
+								.sample_random_replay_buffer();
+							if let Ok(transition) = transition_result {
+								//now ready to use sampled transition for training
+								let state = transition.state.clone();
+								let index_chosen_for_current_state = transition.action;
+								let reward = transition.reward;
+								let next_state = transition.next_state.clone();
 
-                                //why self.layers[0] = 0?
-                                //  so that it uses the exp replay's input as the input
+								//why self.layers[0] = 0?
+								//  so that it uses the exp replay's input as the input
 								//set as input
-                                neural_network.layers[0] = state;
+								neural_network.layers[0] = state;
 								//feed to make output layer new version of q-values.
 								//Why?
 								//	so basically we're going through the transition
 								//	again so that we can calculate more accurate
 								//	 q-values with our newer weights.
-                                neural_network.feed_forward();
+								neural_network.feed_forward();
+								//for debugging
+								neural_network.print_last_network_layer();
 								//get new q_value 
-                                let q_value_for_current_state = neural_network.layers
-                                    .last().unwrap().data[0][index_chosen_for_current_state];
+								let q_value_for_current_state = neural_network.layers
+									.last().unwrap().data[0][index_chosen_for_current_state];
 								//set next state as input to get target q value.
 								//aka the next state's max q-value with some
 								//	 other numbers added in there.
 								neural_network.layers[0] = next_state;
-                                let target_q_value = neural_network
-                                    .calculate_target_q_value(reward);
+								let target_q_value = neural_network
+									.calculate_target_q_value(reward);
 								//calculate gradients so we can update weights
-                                neural_network
-                                    .el_backpropagation(&index_chosen_for_current_state, 
-                                        &q_value_for_current_state, &target_q_value);
+								neural_network
+									.el_backpropagation(&index_chosen_for_current_state, 
+										&q_value_for_current_state, &target_q_value);
 								//make our neural network learn from replay buffer
-                                let learning_rate = 0.0001;
-                                neural_network.el_update_weights(&learning_rate);
+								let learning_rate = 0.0001;
+								neural_network.el_update_weights(&learning_rate);
 
 
 
 
 
 
-                                //this is to reset my input layer to what it was before the
-                                // expReplay
-                                neural_network.layers[0] = current_state;
-                            }
-                            else {
-                                panic!("error when making transition");
-                            }
-                            
-                    }
+								//this is to reset my input layer to what it was before the
+								// expReplay
+								neural_network.layers[0] = current_state;
+								//01/24/24 - for debugging:
+								println!("iteratrion number is: {}", i);
+								println!("just did an exp replay");
+							}
+							else {
+								panic!("error when making transition");
+							}
+								
+					}
+					//code wont reach here if first condition is met. so will
+					//	 change top so it's if is_empty == false && i%10 == 0.
+					//code will now reach here if one of the top conditions
+					//	 is not met. so folder can be non-empty and not 10th
+					//	 iteration of loop and it will go to this "else"
                     else {
                     
                         //=====NEURAL NETWORK LOCKED=====//
@@ -1392,7 +1404,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                                 //01/20/24 - added: 
                             let (index_chosen_for_current_state, q_value_for_current_state, 
                                 the_reward);
-        
+							println!("iteration number is this: {}", i);
                             //this is to get us the values that part two is going ot use
                             let result = neural_network.cycle_part_one_of_two(i, &mut epsilon, 
                                 &mut value_prior, &mut coinbase_wallet, &mut kraken_wallet,
@@ -1413,7 +1425,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                             index_chosen_for_current_state = result.0;
                             q_value_for_current_state = result.1;
                             the_reward = result.2;
-        
+							//01/24/24 - added line directly below:
+							println!("chosen index:{}", &index_chosen_for_current_state);
         
                         //----------------NEURAL-NETWORK-DROPPED-----------------//
                             drop(neural_network);

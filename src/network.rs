@@ -153,7 +153,8 @@
 		//added 12/26/23
 		//why? to load from disk instead of clogging up ram
 		pub fn load_from_file(filename: &str) -> std::io::Result<Self> {
-			let file = File::open(filename)?;
+			let file = File::open(filename)
+				.expect(&format!("could not open file with filename:\n{}", filename));
 			let reader = BufReader::new(file);
 			let replay_buffer = serde_json::from_reader(reader)?;
 			Ok(replay_buffer)
@@ -183,9 +184,21 @@
 			}
 	
 			if let Some(most_recent_file) = most_recent_file {
-				let file = fs::File::open(most_recent_file)?;
+				//01/24/24 - removed:
+					//let file = fs::File::open(most_recent_file)?;
+				//01/24/24 - added:
+					//added file_path variable so I could do .expect with more information.
+					//	 this may be costly in terms of time though.
+					let file_path = most_recent_file.clone();
+					let file = fs::File::open(file_path)
+						.expect(&format!("could not open most recent file named:\n{:?}",
+							&most_recent_file));
 				let reader = BufReader::new(file);
-				let replay_buffer = serde_json::from_reader(reader)?;
+				//01/24/24 - removed:
+					//let replay_buffer = serde_json::from_reader(reader)?;
+				//01/24/24 - added expect in this line
+				let replay_buffer = serde_json::from_reader(reader)
+					.expect("serde json reader didn't read");
 				Ok(replay_buffer)
 			} else {
 				Err(std::io::Error::new(std::io::ErrorKind::Other, "No replay buffer found"))
@@ -221,7 +234,8 @@
 			// Load the selected replay buffer
 			let file = fs::File::open(random_file)?;
 			let reader = BufReader::new(file);
-			let replay_buffer: ReplayBuffer = serde_json::from_reader(reader)?;
+			//01/24/24 - added expect in this line
+			let replay_buffer: ReplayBuffer = serde_json::from_reader(reader).expect("serde json reader didn't read");
 		
 			// Randomly select a transition from the replay buffer
 			let random_index = rng.gen_range(0..replay_buffer.buffer.len());
@@ -659,7 +673,12 @@
 		let timestamp = now.timestamp_millis().to_string();
 		let base_path = "D:\\Downloads\\PxOmni\\rust_neural_network_rewards";
 		let file_path = Path::new(base_path).join("rewards.txt");
-		let mut file = fs::OpenOptions::new().write(true).append(true).open(file_path)?;
+		//01/24/24 - added line directly below this for debugging
+			println!("reward saved to:{}", file_path.display());
+		//01/24/24 - removed:
+			//let mut file = fs::OpenOptions::new().write(true).append(true).open(file_path)?;
+		//01/24/24 - added in its place:
+			let mut file = fs::OpenOptions::new().write(true).append(true).create(true).open(file_path)?;
 		writeln!(file, "{},{}", reward, timestamp)?;
 		Ok(())
 	}
@@ -907,9 +926,14 @@
 				if let Some(last_layer) = self.layers.last() {
 					//aka interate over the data in the last layer. aka over the values of the
 					//		neurons of the last layer. aka over the Q_VALUES of the last layer
-					//all my neuron  are stored in the first inner vector of each layer,
+					//all my neurons  are stored in the first inner vector of each network layer,
 					//		hence the .data[0]
 					for value in &last_layer.data[0] {
+						//01/24/24 - got an error thanks to the "let index match" statement below.
+						//	the last layer existed because thankfully I added error handling for it.
+						//	I can only think of 2 ways this is possible, the feed forward
+						//		 didn't work properly or somehow the largest_q_value in
+						//		 the output layer was f64::MIN.
 						if value > &largest_qvalue_so_far {
 							largest_qvalue_so_far = *value;	//just to document that we hit a new max
 							index_of_largest_qvalue = Some(indexx);	//to know where the new max was
@@ -919,7 +943,9 @@
 					}
 				}
 				else {
-					panic!("last_layer.data is empty. this is in fn exploration_or_exploration when
+					//01/24/24 - modified to say last layer didnt exist
+					//		instead of was empty
+					panic!("last_layer.data did not exist. this is in fn exploration_or_exploration when
 					 exploit_or_explore == true");
 				}
 
@@ -965,7 +991,8 @@
 				//		index_of_largest_qvalue is of type Option<usize>
 				let index = match index_of_largest_qvalue {
 					Some(index) => index,
-					None => panic!("index_of_largest_qvalue was never initialized"),
+					//01/24/24 - modified to include indexx
+					None => panic!("index_of_largest_qvalue was never initialized. Indexx is:\n{}", indexx),
 				};
 				//this returns both the index and the largest_q_value_so_far.
 				//why no semicolon?
@@ -2622,9 +2649,28 @@
 				println!("Invalid layer index");
 			}
 		}
-
-
-
+		//01/24/24 - added because got error in explor/exploit function saying
+		//		index of larget q value was never initialized.
+		//		I think this is only possible if feed_forward didnt feed
+		//		properly. last layer wasn't empty
+		pub fn print_last_network_layer(&self) {
+			if let Some(last_layer) = self.layers.last() {
+				println!("last network layer information:");
+				println!("Rows: {}", last_layer.rows);
+				println!("Columns: {}", last_layer.columns);
+				println!("Data: {:?}", last_layer.data);
+				if let Some(last_column) = last_layer.data.last() {
+					println!("Index of last column: {}", last_layer.data.len() - 1);
+					println!("Last column data: {:?}", last_column);
+				}
+				else {
+					panic!("last_layer.data.last did not exist.
+					 use data print statement above to debug this ");
+				}
+			} else {
+				panic!("No layers in the network");
+			}
+		}
 
 
 
@@ -3240,7 +3286,10 @@
 
 
 			self.feed_forward();
-
+			//01/24/24 - added because encountered error saying index of 
+			//		largest q value was never initialized. 
+			//		so use this to debug.
+			self.print_last_network_layer();
 			let (index_chosen_for_current_state, q_value_for_current_state) = 
 				self.exploration_or_exploitation(epsilon);
 
@@ -3261,7 +3310,15 @@
 			};
 
 			let the_reward = reward(*value_prior, value_after);
-			let _unused_variable = save_reward(&the_reward);
+			//01/24/24 - removed so I can handle error:
+				//let _unused_variable = save_reward(&the_reward);
+				//let _unused_variable = save_reward(&the_reward);
+			//01/24/24 - added:
+				println!("reward:{}", &the_reward);
+				match save_reward(&the_reward) {
+					Ok(_) => println!("Reward saved successfully."),
+					Err(e) => println!("Failed to save reward: {}\n\n\n\n\n", e),
+				}
 			*value_prior = value_after;
 
 			(index_chosen_for_current_state, q_value_for_current_state, 
@@ -3653,7 +3710,13 @@
 					let gemini_wallet_immutable = &*gemini_wallet;
 					action_functions::s_i110_xlm_10_kraken_bitstamp(&coinbase_wallet_immutable, kraken_wallet, bitstamp_wallet, &gemini_wallet_immutable, &bitstamp_secret, &bitstamp_api_key, client, &kraken_secret, &kraken_api_key, self ).await?
 				},
-				_ => todo!(),
+				//01/24/24 - removed:
+					// _ => todo!(),
+				//01/24/24 - added:
+						//val will match any value not covered by the other arms and bind it to the variable
+					val => {
+						panic!("got action function to be above 74. it is: {}", val);
+					},
 			};
 
 

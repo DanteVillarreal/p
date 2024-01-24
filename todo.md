@@ -270,3 +270,4 @@ Log of what I've done:
 01/21/24 - added the i%10 part. Next step is to run it and see if its doing everything correctly. Then finally, next step is to do Remove solana-bitstamp functions. Then add xrp functions to all. I got this!
 01/22/24 - in the process of fixing the modifications in main. Next step is to run it and see if its doing everything correctly. Then finally, next step is to do Remove solana-bitstamp functions. Then add xrp functions to all. I got this!
 01/23/24 - in process of fixing modifications. Next step is to run it and see if its doing everything correctly. Then finally, next step is to do Remove solana-bitstamp functions. Then add xrp functions to all. I got this!
+01/24/24 - finished with modifications. Next step is to run it and see if its doing everything correctly. Then finally, next step is to do Remove solana-bitstamp functions. Then add xrp functions to all. I got this!

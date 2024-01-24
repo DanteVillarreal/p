@@ -1270,6 +1270,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                     //is_empty = network::is_folder_empty(folder);
                     //if let Some(false) = is_empty {
                 //01/22/24 - added:
+				//01/24/24 - last modification:
                 let is_empty_result = network::is_folder_empty(folder);
                 if let Ok(_is_empty) = is_empty_result {
                     if i%10 == 0 {
@@ -1289,16 +1290,28 @@ async fn main() ->Result<(), Box<dyn Error>>  {
 
                                 //why self.layers[0] = 0?
                                 //  so that it uses the exp replay's input as the input
+								//set as input
                                 neural_network.layers[0] = state;
+								//feed to make output layer new version of q-values.
+								//Why?
+								//	so basically we're going through the transition
+								//	again so that we can calculate more accurate
+								//	 q-values with our newer weights.
                                 neural_network.feed_forward();
+								//get new q_value 
                                 let q_value_for_current_state = neural_network.layers
                                     .last().unwrap().data[0][index_chosen_for_current_state];
+								//set next state as input to get target q value.
+								//aka the next state's max q-value with some
+								//	 other numbers added in there.
+								neural_network.layers[0] = next_state;
                                 let target_q_value = neural_network
                                     .calculate_target_q_value(reward);
+								//calculate gradients so we can update weights
                                 neural_network
                                     .el_backpropagation(&index_chosen_for_current_state, 
                                         &q_value_for_current_state, &target_q_value);
-
+								//make our neural network learn from replay buffer
                                 let learning_rate = 0.0001;
                                 neural_network.el_update_weights(&learning_rate);
 
@@ -1434,6 +1447,13 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                             drop(neural_network);
         
                             //save replay
+                            //I have to make a new replay buffer variable because if I dont then
+                            //   Im doing an illegal move.
+                            //I dont think this will be an issue with the 2 replay buffers
+                            //	because I'm not getting the transition from the buffer itself.
+							//Instead, I'm getting/writing the transition from/to the file
+							//	 that contains all the transitions.
+                            let mut replay_buffer = ReplayBuffer::new(1);
                             replay_buffer.push(transition);
                             let _dummyvar = replay_buffer.save_replay_buffer_v2();
                         }

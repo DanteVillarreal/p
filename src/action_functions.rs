@@ -1066,7 +1066,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i5_sol_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64 )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1302,8 +1302,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
             //this will count as value after
     
@@ -1314,7 +1316,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i6_sol_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1550,8 +1552,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
     
                 return Ok(value_after)
@@ -1559,7 +1563,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i7_sol_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -1795,8 +1799,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
     
                 return Ok(value_after)
@@ -1804,7 +1810,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i8_sol_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -2040,8 +2046,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
     
                 return Ok(value_after)
@@ -2049,7 +2057,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i9_sol_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -2285,8 +2293,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
     
                 return Ok(value_after)
@@ -2294,7 +2304,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i10_sol_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -2530,8 +2540,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
     
                 return Ok(value_after)
@@ -3005,7 +3017,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i13_sol_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3243,8 +3255,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
     
                 return Ok(value_after)
@@ -3252,7 +3266,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i14_sol_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3490,15 +3504,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i15_sol_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3736,15 +3752,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i16_sol_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -3983,8 +4001,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
     
                 return Ok(value_after)
@@ -3992,7 +4012,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i17_sol_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4231,8 +4251,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
                 return Ok(value_after)
@@ -4240,7 +4262,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i18_sol_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4480,8 +4502,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -4489,7 +4513,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i19_sol_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4728,8 +4752,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
     
@@ -4738,7 +4764,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i20_sol_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -4977,8 +5003,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -5448,7 +5476,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i23_sol_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -5685,8 +5713,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -5694,7 +5724,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i24_sol_4_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -5932,8 +5962,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -5941,7 +5973,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i25_sol_5_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6179,8 +6211,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
     
@@ -6189,7 +6223,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i26_sol_6_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6426,8 +6460,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -6435,7 +6471,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i27_sol_7_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6674,8 +6710,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -6683,7 +6721,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i28_sol_8_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -6921,8 +6959,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
                 return Ok(value_after)
@@ -6930,7 +6970,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i29_sol_9_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -7167,8 +7207,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
                 return Ok(value_after)
@@ -7176,7 +7218,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i30_sol_10_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -7412,8 +7454,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
@@ -8433,7 +8477,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i35_sol_5_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -8692,8 +8736,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -8701,7 +8747,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i36_sol_6_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -8960,8 +9006,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
                 return Ok(value_after)
@@ -8969,7 +9017,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i37_sol_7_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9228,8 +9276,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
     
@@ -9238,7 +9288,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i38_sol_8_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9498,8 +9548,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -9507,7 +9559,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i39_sol_9_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9767,8 +9819,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
                 return Ok(value_after)
@@ -9776,7 +9830,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i40_sol_10_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10036,8 +10090,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *kraken_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -10501,7 +10557,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i43_sol_3_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10734,8 +10790,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -10743,7 +10801,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i44_sol_4_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10977,8 +11035,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
 
                 return Ok(value_after)
@@ -10986,7 +11046,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i45_sol_5_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11220,15 +11280,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
                 return Ok(value_after)
 
     }
 
     pub async fn s_i46_sol_6_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11462,15 +11524,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i47_sol_7_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11704,15 +11768,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
                 return Ok(value_after)
 
     }
 
     pub async fn s_i48_sol_8_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11946,15 +12012,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
                 return Ok(value_after)
 
     }
 
     pub async fn s_i49_sol_9_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -12188,8 +12256,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
     
                 return Ok(value_after)
@@ -12197,7 +12267,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i50_sol_10_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -12431,8 +12501,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
@@ -13468,7 +13540,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
      */
      pub async fn s_i55_sol_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -13735,8 +13807,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
             
             return Ok(value_after)
@@ -13744,7 +13818,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
      pub async fn s_i56_sol_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -14011,15 +14085,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
             return Ok(value_after)
 
      }
 
      pub async fn s_i57_sol_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -14286,15 +14362,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
             return Ok(value_after)
 
      }
 
      pub async fn s_i58_sol_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -14561,8 +14639,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
 
             return Ok(value_after)
@@ -14570,7 +14650,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
      pub async fn s_i59_sol_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -14836,8 +14916,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
 
             return Ok(value_after)
@@ -14845,7 +14927,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
      pub async fn s_i60_sol_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -15111,8 +15193,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
 
             return Ok(value_after)
@@ -16105,7 +16189,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i65_sol_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16359,8 +16443,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
 
             return Ok(value_after)
@@ -16368,7 +16454,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i66_sol_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16622,8 +16708,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
 
             return Ok(value_after)
@@ -16631,7 +16719,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i67_sol_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -16884,8 +16972,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
 
             return Ok(value_after)
@@ -16893,7 +16983,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i68_sol_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -17147,8 +17237,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                //neural_network.update_input(&indices, &transformed_values).await;
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                neural_network.update_input(&indices, &scaled_values).await;
 
 
             return Ok(value_after)
@@ -17156,7 +17248,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i69_sol_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -17410,8 +17502,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
             return Ok(value_after)
@@ -17419,7 +17513,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i70_sol_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -17673,8 +17767,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
             //01/24/24 - removed and added:
                 //neural_network.update_input(&indices, &new_values);
-                let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
             return Ok(value_after)
@@ -17682,7 +17778,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i75_xlm_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -17920,8 +18016,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
     
                 return Ok(value_after)
@@ -17929,7 +18027,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i76_xlm_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18168,15 +18266,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i77_xlm_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18413,8 +18513,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
     
                 return Ok(value_after)
@@ -18422,7 +18524,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i78_xlm_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18660,15 +18762,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i79_xlm_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -18906,15 +19010,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i80_xlm_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19152,15 +19258,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i83_xlm_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19391,15 +19499,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i84_xlm_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19631,8 +19741,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
 
                 return Ok(value_after)
@@ -19640,7 +19752,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i85_xlm_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -19872,15 +19984,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i86_xlm_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -20112,15 +20226,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
                 return Ok(value_after)
 
     }
 
     pub async fn s_i87_xlm_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -20352,15 +20468,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i88_xlm_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -20592,15 +20710,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i89_xlm_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -20832,15 +20952,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
 
                 return Ok(value_after)
 
     }
 
     pub async fn s_i90_xlm_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             let now = Utc::now();
             let time_stamp = now.timestamp().to_string();
@@ -21072,15 +21194,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
                 return Ok(value_after)
 
     }
 
     pub async fn s_i95_xlm_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -21336,8 +21460,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
         
     
             return Ok(value_after)
@@ -21345,7 +21471,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i96_xlm_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -21601,8 +21727,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
     
             return Ok(value_after)
@@ -21610,7 +21738,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i97_xlm_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -21867,15 +21995,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
             return Ok(value_after)
 
     }
 
     pub async fn s_i98_xlm_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -22132,15 +22262,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
             return Ok(value_after)
 
     }
 
     pub async fn s_i99_xlm_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -22397,15 +22529,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
             return Ok(value_after)
 
     }
 
     pub async fn s_i100_xlm_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -22662,15 +22796,17 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
-                    let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    neural_network.update_input(&indices, &transformed_values).await;
+                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                    //neural_network.update_input(&indices, &transformed_values).await;
+                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                    neural_network.update_input(&indices, &scaled_values).await;
     
             return Ok(value_after)
 
     }
 
     pub async fn s_i105_xlm_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -22859,7 +22995,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
         println!("Bid: {}", bitstamp_sell_price_bid, );
         //println!("Ask: {}", bitstamp_buy_price_ask);
-        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
@@ -22899,8 +23035,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //01/24/24 - removed and added:
             //neural_network.update_input(&indices, &new_values);
-            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            neural_network.update_input(&indices, &transformed_values).await;
+            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //neural_network.update_input(&indices, &transformed_values).await;
+            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            neural_network.update_input(&indices, &scaled_values).await;
         
         return Ok(value_after)
 
@@ -22908,7 +23046,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i106_xlm_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -23097,7 +23235,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
         println!("Bid: {}", bitstamp_sell_price_bid, );
         //println!("Ask: {}", bitstamp_buy_price_ask);
-        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
@@ -23137,8 +23275,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //01/24/24 - removed and added:
             //neural_network.update_input(&indices, &new_values);
-            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            neural_network.update_input(&indices, &transformed_values).await;
+            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //neural_network.update_input(&indices, &transformed_values).await;
+            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            neural_network.update_input(&indices, &scaled_values).await;
     
     return Ok(value_after)
 
@@ -23146,7 +23286,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i107_xlm_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -23335,7 +23475,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
         println!("Bid: {}", bitstamp_sell_price_bid, );
         //println!("Ask: {}", bitstamp_buy_price_ask);
-        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
@@ -23375,8 +23515,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //01/24/24 - removed and added:
             //neural_network.update_input(&indices, &new_values);
-            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            neural_network.update_input(&indices, &transformed_values).await;
+            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //neural_network.update_input(&indices, &transformed_values).await;
+            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            neural_network.update_input(&indices, &scaled_values).await;
     
     return Ok(value_after)
 
@@ -23384,7 +23526,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i108_xlm_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -23573,7 +23715,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
         println!("Bid: {}", bitstamp_sell_price_bid, );
         //println!("Ask: {}", bitstamp_buy_price_ask);
-        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
@@ -23613,8 +23755,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //01/24/24 - removed and added:
             //neural_network.update_input(&indices, &new_values);
-            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            neural_network.update_input(&indices, &transformed_values).await;
+            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //neural_network.update_input(&indices, &transformed_values).await;
+            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            neural_network.update_input(&indices, &scaled_values).await;
     
     return Ok(value_after)
 
@@ -23622,7 +23766,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i109_xlm_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -23811,7 +23955,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
         println!("Bid: {}", bitstamp_sell_price_bid, );
         //println!("Ask: {}", bitstamp_buy_price_ask);
-        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
@@ -23851,8 +23995,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //01/24/24 - removed and added:
             //neural_network.update_input(&indices, &new_values);
-            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            neural_network.update_input(&indices, &transformed_values).await;
+            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //neural_network.update_input(&indices, &transformed_values).await;
+            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            neural_network.update_input(&indices, &scaled_values).await;
     
     return Ok(value_after)
 
@@ -23860,7 +24006,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i110_xlm_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -24049,7 +24195,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
         println!("Bid: {}", bitstamp_sell_price_bid, );
         //println!("Ask: {}", bitstamp_buy_price_ask);
-        println!("Bitstamp response:\n{:?}", bitstamp_response_text);
+        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
@@ -24089,8 +24235,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //01/24/24 - removed and added:
             //neural_network.update_input(&indices, &new_values);
-            let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            neural_network.update_input(&indices, &transformed_values).await;
+            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //neural_network.update_input(&indices, &transformed_values).await;
+            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            neural_network.update_input(&indices, &scaled_values).await;
     
     return Ok(value_after)
 

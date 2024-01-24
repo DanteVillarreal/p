@@ -1257,7 +1257,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         //  moved experience replay out of cycle functions
         //  added functionality to accomodate for changes
     let folder = "D:\\Downloads\\PxOmni\\rust_replay_buffers";
-    let is_empty: Option<bool>;
+    //let is_empty: Option<bool>;
     let cycle_task = task::spawn( {
         let shared_neural_network = 
             Arc::clone(&shared_neural_network);
@@ -1271,7 +1271,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                     //if let Some(false) = is_empty {
                 //01/22/24 - added:
                 let is_empty_result = network::is_folder_empty(folder);
-                if let Ok(is_empty) = is_empty_result {
+                if let Ok(_is_empty) = is_empty_result {
                     if i%10 == 0 {
                         //=====NEURAL NETWORK LOCKED=====//
                         //===============================//
@@ -1387,15 +1387,19 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                                 &coinbase_api_key, &kraken_secret, &kraken_api_key, &gemini_secret,
                                 &gemini_api_key, &bitstamp_secret, &bitstamp_api_key).await;
         
-                            match result {
-                                Ok(values) => {
-                                    index_chosen_for_current_state = values.0;
-                                    q_value_for_current_state = values.1;
-                                    the_reward = values.2;
-                                },
-                                Err(e) => eprintln!("An error occurred: {}", e),
-                            }
-                            
+                            //01/23/24 - removed:
+                                //match result {
+                                    //Ok(values) => {
+                                        //index_chosen_for_current_state = values.0;
+                                        //q_value_for_current_state = values.1;
+                                        //the_reward = values.2;
+                                    //},
+                                    //Err(e) => eprintln!("An error occurred: {}", e),
+                                //}
+                            //01/23/24 - added:
+                            index_chosen_for_current_state = result.0;
+                            q_value_for_current_state = result.1;
+                            the_reward = result.2;
         
         
                         //----------------NEURAL-NETWORK-DROPPED-----------------//
@@ -1414,7 +1418,10 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                             let next_state_input_layer_clone = neural_network.layers[0].clone();
                             let transition = Transition {
                                 state,
-                                action,
+                                //01/23/24 - removed:
+                                    //action,
+                                //01/23/24 - added:
+                                action: index_chosen_for_current_state,
                                 reward : the_reward,
                                 next_state : next_state_input_layer_clone,
                             };

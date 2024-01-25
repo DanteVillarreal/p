@@ -32,7 +32,7 @@ use std::time::{Duration, Instant};                            //for use in conj
 use tokio::task;                                    //to do child spawns
 use std::error::Error;                              //to do box error 
 use tokio::sync::Mutex;                             // Use async Mutex from Tokio
-use std::sync::Arc;  // Use Arc to share Mutex among multiple tasks
+use std::sync::Arc;  								// Use Arc to share Mutex among multiple tasks
 use tokio::sync::MutexGuard;
 use tokio::time::delay_until;
 
@@ -988,7 +988,7 @@ async fn handle_sol_gemini(message: &str, shared_neural_network: Arc<Mutex<Neura
 	//	shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60]) {    
 //01/24/24 - changed to:
 async fn read_lines(reader: BufReader<ChildStdout>, 
-    shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60], divisor: &f64) {    
+    shared_neural_network: Arc<Mutex<NeuralNetwork>>, divisor: &f64) {    
 
     for line_being_read in reader.lines() {
         //01/16/24 - added line right below this
@@ -1043,17 +1043,73 @@ async fn read_lines(reader: BufReader<ChildStdout>,
                     //    "Gemini received" => handle_sol_gemini(message, neural_network, updated).await,
                     //    _ => panic!("Unknown prefix: {}", prefix),
                     //}
-                //01/16/24 - added in its place:
-                    match prefix {
-                        "SOL Coinbase Received" => handle_sol_coinbase(message, shared_neural_network.clone(), updated, divisor).await,
-                        "XLM Coinbase Received" => handle_xlm_coinbase(message, shared_neural_network.clone(), updated, divisor).await,
-                        "SOL Kraken Received" => handle_sol_kraken(message, shared_neural_network.clone(), updated, divisor).await,
-                        "XLM Kraken Received" => handle_xlm_kraken(message, shared_neural_network.clone(), updated, divisor).await,
-                        "SOL Bitstamp received" => handle_sol_bitstamp(message, shared_neural_network.clone(), updated, divisor).await,
-                        "XLM Bitstamp received" => handle_xlm_bitstamp(message, shared_neural_network.clone(), updated, divisor).await,
-                        "Gemini received" => handle_sol_gemini(message, shared_neural_network.clone(), updated, divisor).await,
-                        _ => panic!("Unknown prefix: {}", prefix),
-                    }
+                //01/16/24 - added in its place. then removed on 01/24/24:
+					//match prefix {
+					//	"SOL Coinbase Received" => handle_sol_coinbase(message, shared_neural_network.clone(), updated, divisor).await,
+					//	"XLM Coinbase Received" => handle_xlm_coinbase(message, shared_neural_network.clone(), updated, divisor).await,
+					//	"SOL Kraken Received" => handle_sol_kraken(message, shared_neural_network.clone(), updated, divisor).await,
+					//	"XLM Kraken Received" => handle_xlm_kraken(message, shared_neural_network.clone(), updated, divisor).await,
+					//	"SOL Bitstamp received" => handle_sol_bitstamp(message, shared_neural_network.clone(), updated, divisor).await,
+					//	"XLM Bitstamp received" => handle_xlm_bitstamp(message, shared_neural_network.clone(), updated, divisor).await,
+					//	"Gemini received" => handle_sol_gemini(message, shared_neural_network.clone(), updated, divisor).await,
+					//	_ => panic!("Unknown prefix: {}", prefix),
+					//}
+					//01/24/24 - was thinking of adding it like this, but changed it to do the below:
+						//match prefix {
+						//	"SOL Coinbase Received" => handle_sol_coinbase(message, shared_neural_network.clone(), divisor).await,
+						//	"XLM Coinbase Received" => handle_xlm_coinbase(message, shared_neural_network.clone(), divisor).await,
+						//	"XRP Coinbase Received"
+						//	"Coinbase consolidated heartbeat"
+						//	"Coinbase subscriptions"
+						//	"Coinbase unknown message received"
+						//	"Coinbase had non-text message"
+						//	"Error reading Coinbase"
+						//	"SOL Kraken Received" => handle_sol_kraken(message, shared_neural_network.clone(), divisor).await,
+						//	"XLM Kraken Received" => handle_xlm_kraken(message, shared_neural_network.clone(), divisor).await,
+						//	"XRP Kraken Received"
+						//	"Kraken consolidated heartbeat"
+						//	"Kraken system status received"
+						//	"Kraken unknown message received"
+						//	"Kraken had non-text message"
+						//	"Error reading Kraken"
+						//	"Bitstamp empty message"
+						//	"Bitstamp subscription received"
+						//	//"SOL Bitstamp received" => handle_sol_bitstamp(message, shared_neural_network.clone(), updated, divisor).await,
+						//	"XLM Bitstamp received" => handle_xlm_bitstamp(message, shared_neural_network.clone(), divisor).await,
+						//	"XRP Bitstamp received"
+						//	"Bitstamp consolidated heartbeat"
+						//	"Bitstamp Unknown message received"
+						//	"Bitstamp had non-text message"
+						//	"Error reading Bitstamp"
+						//	"Gemini received solana" => handle_sol_gemini(message, shared_neural_network.clone(), divisor).await,
+						//	"Error reading Gemini solana"
+						//	"Gemini received xrp"
+						//	"Error reading Gemini xrp"
+						//	"didn't come from any of big four"
+						//	"Error reading message not from big four"
+						//	"Failed to connect"
+						//	_ => panic!("Unknown prefix: {}", prefix),
+						//}
+						match prefix {
+							prefix if prefix.contains("Coinbase") => 
+                            execute_action_functions::handle_all_coinbase(prefix, 
+                                message, shared_neural_network
+                                    .clone(), divisor).await,
+							prefix if prefix.contains("Kraken") => 
+                            execute_action_functions::handle_all_kraken(prefix, 
+                                message, shared_neural_network
+                                    .clone(), divisor).await,
+							prefix if prefix.contains("Bitstamp") => 
+                            execute_action_functions::handle_all_bitstamp(prefix, 
+                                message, shared_neural_network
+                                    .clone(), divisor).await,
+							prefix if prefix.contains("Gemini") => 
+                            execute_action_functions::handle_all_gemini(prefix, 
+                                message, shared_neural_network
+                                    .clone(), divisor).await,
+							_ => execute_action_functions::handle_all_others(prefix, 
+                                message),
+						}
 
             },
             Err(e) => {
@@ -1122,18 +1178,28 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         //01/20/24 - added:
         replay_buffer,
     };
-    neural_network.initialization(65, 75, 2); // Initialize with [input size], [output size], [# hidden layers]
+    //01/24/24 - was: (65, 75, 2) now it's below. 
+    neural_network.initialization(94, 75, 2); // Initialize with [input size], [output size], [# hidden layers]
     //the first number in the initialization and the number below MUST be the same size
-    let mut updated = [false; 60];
+    //01/24/24 - removed
+        //let mut updated = [false; 60];
     let mut value_prior = 2000.0;
     let mut coinbase_wallet = 500.0;
     let mut bitstamp_wallet = 500.0;
     let mut kraken_wallet = 500.0;
     let mut gemini_wallet = 500.0;
 
+
 	//01/24/24 - added:
-	//IF YOU EVER CHANGE THIS NUMBER, MAKE SURE TO PUT ALL REPLAY BUFFERS IN NEW FOLDER WITH ORIGINAL DIVISOR
-	//		or else neural network will fuck up and even crash
+	//---------------VERY IMPORTANT-------------//
+
+	//---------------VERY IMPORTANT-------------//
+
+	//---------------VERY IMPORTANT-------------//
+
+	//---------------VERY IMPORTANT-------------//
+	//IF YOU EVER CHANGE THIS NUMBER, MAKE SURE TO PUT ALL REPLAY BUFFERS IN NEW
+	//	 FOLDER WITH ORIGINAL DIVISOR VALUE or else neural network will get wrong inputs
 		let divisor = 1_000_000.0;
 
     //this will allow me to do async mutex
@@ -1750,14 +1816,17 @@ async fn main() ->Result<(), Box<dyn Error>>  {
     //});
     let read_lines_task = task::spawn( {
         let shared_neural_network = Arc::clone(&shared_neural_network);
-        let mut updated = updated.clone();
+        //01/24/24 - removed:
+            //let mut updated = updated.clone();
         async move{
             //01/16/24 - removed
                 //read_lines(reader, &mut shared_neural_network.lock().await, &mut updated).await;
             //01/16/24 - added in its place
                 //read_lines(reader, shared_neural_network, &mut updated).await;
 			//01/16/24 - changed to:
-				read_lines(reader, shared_neural_network, &mut updated, &divisor).await;
+				//read_lines(reader, shared_neural_network, &mut updated).await;
+            //01/24/24 - changed to:
+            read_lines(reader, shared_neural_network, &divisor).await;
 
         }
     });

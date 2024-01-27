@@ -144,6 +144,8 @@ Make it so there are functions built into 1 function so that it does the initial
      o  remove "updated" in main because I'm not using it.
      o  remove print methods where the impl is literally only the print
      o  change update_input so it isn't .await. async functions only optimal when they aren't cpu bound. so when the function's max speed is not dependent on your CPU. So, like any time we do a REST request and are WAITING for a response. or in websocket. so in network, remove async word from function. then correct resulting errors. probably over 100. then see if network breaks.
+     o  change every .unwrap_or and .unwrap to a .expect(&format!("...{}", &var)) with a message of what went wrong and a variable that helps figure out what went wrong
+     o  change every .expect that doesn't have a var to have one so we can have HELLA information when we get an error and aren't guessing what the issue is.
 21. change all things to be warning free obviously, but also to change all initializations to be not 0, but Option<var type> instead. Except for the neurons of course.
 22.
         
@@ -277,6 +279,4 @@ Log of what I've done:
 01/24/24 - modified every occurence of update_input to do log transformation. instead of z-score normalization I am doing log transofmraiton because I dont know mean or std. dev for ANY of my data. Also, log transformation seems easier to implement. I dont want to add a max to my gradient becuase it seems like a crude fix for xploding weights given that I already have the learning rate at something tiny like 0.0001.
 01/24/24 - massive modifications because changed to constant transformation because cant do log of a negative number. next step is to do Remove solana-bitstamp functions. Remove solana bitstamp from websocket client. Then add xrp functions to websocket client, action_functions.rs, in network.rs: choose_action_functions, in main.rs: all the new function headers in main without updated, then add all the new functions. Lowkey, might just move all the main functions, aside from read_lines to execute_action_functions so it looks cleaner. I got this!
 01/25/24 - changed the websocket client. Then made changes in main and modified read_lines, then revamped all of "handle" functions and put them in execute_action_functions.rs so it can be more modular. Next step is to make the action_functions and change the choose_action_function in network.rs, then change initialization in main.rs to account for total indexes in output. I got this!
-
-
-01/24/24 - dont forget about the different fees and minimums too
+01/26/24 - added all of the xrp functions in action_functions.rs with the knew kraken fee. Then I added the kraken fee for xlm. Next step is to change the choose_action_function in network.rs, then change initialization in main.rs to account for total indexes in output. I got this!

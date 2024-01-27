@@ -31,13 +31,13 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
         let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
         //variable declaration so I can have a larger scope
-        let mut coinbase_price: Option<f64> = None;
-        let mut coinbase_volume_24h: Option<f64>= None;
-        let mut coinbase_low_24h: Option<f64>= None;
-        let mut coinbase_high_24h: Option<f64>= None;
-        let mut coinbase_low_52w: Option<f64>= None;
-        let mut coinbase_high_52w: Option<f64>= None;
-        let mut coinbase_price_percent_chg_24h: Option<f64> = None;
+        let coinbase_price: Option<f64>;
+        let coinbase_volume_24h: Option<f64>;
+        let coinbase_low_24h: Option<f64>;
+        let coinbase_high_24h: Option<f64>;
+        let coinbase_low_52w: Option<f64>;
+        let coinbase_high_52w: Option<f64>;
+        let coinbase_price_percent_chg_24h: Option<f64>;
 
         match data {
             Ok(value) => {
@@ -349,8 +349,8 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
 
     if prefix.contains("Bitstamp received") {
         let v: Result<Value, serde_json::Error> = serde_json::from_str(message);
-        let mut amount: Option<f64> = None;
-        let mut price: Option<f64> = None;
+        let amount: Option<f64>;
+        let price: Option<f64>;
         match v {
             Ok(value) => {
                 if let Value::Object(map) = &value {
@@ -425,8 +425,8 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
         else {
             let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
-            let mut amount: Option<f64>;
-            let mut price: Option<f64>;
+            let amount: Option<f64>;
+            let price: Option<f64>;
 
             match data {
                 Ok(value) => {

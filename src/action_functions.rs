@@ -29090,7 +29090,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         return Ok(value_after)
     }
-
+    //-----NEED-TO-APPEND-TO-END-----//
     pub async fn s_i140_xrp_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
 

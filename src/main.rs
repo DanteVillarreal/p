@@ -1178,8 +1178,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         //01/20/24 - added:
         replay_buffer,
     };
-    //01/24/24 - was: (65, 75, 2) now it's below. 
-    neural_network.initialization(94, 75, 2); // Initialize with [input size], [output size], [# hidden layers]
+    //01/24/24 - was: (65, 75, 2) now it's below. input size from execute_action_functions.
+    neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
     //the first number in the initialization and the number below MUST be the same size
     //01/24/24 - removed
         //let mut updated = [false; 60];

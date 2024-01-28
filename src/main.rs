@@ -1374,8 +1374,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
             Arc::clone(&shared_neural_network);
         async move{
             println!("original delay to warm up neural network...
-            This will take 10 minutes...");
-            let when = tokio::time::Instant::now() + Duration::from_secs(10*60);
+            This will take 15 minutes...");
+            let when = tokio::time::Instant::now() + Duration::from_secs(15*60);
             delay_until(when).await;
             for i in 0..100_000 {
                 //01/22/24 - removed:

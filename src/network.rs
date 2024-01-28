@@ -2406,7 +2406,10 @@
 							let output_of_from_neuron = &self.layers[i].data[0][j];
 
 							gradient_layer.data[j][k] = loss_derivative*derivative_of_to_neuron*output_of_from_neuron;
-
+						//01/28/24 - added:
+							if gradient_layer.data[j][k] > 1.0 {
+								gradient_layer.data[j][k] = 1.0;
+							}
 
 
 					}

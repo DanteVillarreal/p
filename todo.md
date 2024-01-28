@@ -285,3 +285,4 @@ Log of what I've done:
 01/27/24 - made final changes. This is the last commit before the first one. Weve done great so far, but jobs not over mother fucker. You aint done yet you fat piece of lard. After the 100,000 iterations, next step is to evaluate the rewards and see if its consistently over 0. If not, we need to do it again but introduce gradient clipping. I got this!
 01/28/24 - made some new changes to epsilon, exploit_or_explore and save reward to further evaluate effectiveness of neural network. I got this!
 01/28/24 - made further changes to exploit_or_explore function. I got this!
+01/28/24 - added gradient cap and increased because its still exploding. Changed time to 15 minutes too. I got this!

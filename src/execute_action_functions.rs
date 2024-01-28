@@ -5,20 +5,22 @@ use serde_json::Value;                              // for parsing input form we
 
 
 //helper function
-pub fn parse_f64(value: Option<&str>, message: &str) -> Option<f64> {
+pub fn parse_f64(value: Option<&str>, message: &str, prefix: &str) -> Option<f64> {
     match value {
         Some(str_value) => {
             match str_value.parse::<f64>() {
                 Ok(parsed_value) => Some(parsed_value),
                 Err(e) => {
                     panic!("Failed to parse as f64: {:?}
-                    message: {}", e, message);
+                    message: {}
+                    prefix: {}", e, message, prefix);
                 }
             }
         },
         None => {
             panic!("Value is not a string. 
-            message: {}", message);
+            message: {}
+            prefix: {}", message, prefix);
         }
     }
 }
@@ -43,19 +45,19 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
             Ok(value) => {
                 let ticker = &value["events"][0]["tickers"][0];
                 coinbase_price = parse_f64(ticker["price"]
-                    .as_str(), message);
+                    .as_str(), message, prefix);
                 coinbase_volume_24h = parse_f64(ticker["volume_24_h"]
-                    .as_str(), message);
+                    .as_str(), message, prefix);
                 coinbase_low_24h = parse_f64(ticker["low_24_h"]
-                    .as_str(), message);
+                    .as_str(), message, prefix);
                 coinbase_high_24h = parse_f64(ticker["high_24_h"]
-                    .as_str(), message);
+                    .as_str(), message, prefix);
                 coinbase_low_52w = parse_f64(ticker["low_52_w"]
-                    .as_str(), message);
+                    .as_str(), message, prefix);
                 coinbase_high_52w = parse_f64(ticker["high_52_w"]
-                    .as_str(), message);
+                    .as_str(), message, prefix);
                 coinbase_price_percent_chg_24h = parse_f64(ticker["price_percent_chg_24_h"]
-                    .as_str(), message);
+                    .as_str(), message, prefix);
             },
             Err(e) => panic!("Failed to get data from COINBASE message.
                 Error {}\n{}", e, message),
@@ -83,6 +85,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
         if prefix.contains("SOL") {
             //do the indices and update input and lock
             let indices: [usize; 7] = [0, 1, 2, 3, 4, 5, 6];
+            println!("updating input 0 to 6");
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -90,6 +93,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
         else if prefix.contains("XLM") {
             //do the indices and update input and lock
             let indices: [usize; 7] = [7, 8, 9, 10, 11, 12, 13];
+            println!("updating input 7 to 13");
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -97,6 +101,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
         }
         else if prefix.contains("XRP") {
             //first indices larger than last time
+            println!("updating input 65 to 71");
             let indices: [usize; 7] = [65, 66, 67, 68, 69, 70, 71];
             let mut neural_network = 
                 shared_neural_network.lock().await;
@@ -122,7 +127,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
 pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, divisor: &f64) {
 
 
-    if prefix.contains("Kraken received") {
+    if prefix.contains("Kraken Received") {
         let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
     
         let mut a_0: Option<f64> = None;
@@ -309,6 +314,7 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
         if prefix.contains("SOL") {
             let indices: [usize; 20] = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
                 25, 26, 27, 28, 29, 30, 31, 32, 33];
+            println!("updating input 14 to 33");
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -316,6 +322,7 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
         else if prefix.contains("XLM") {
             let indices: [usize; 20] = [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
                 46, 47, 48, 49, 50, 51, 52, 53];
+            println!("updating input 34 to 53");
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -325,6 +332,7 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
             //  65 to 71 is in coinbase
             let indices: [usize; 20] = [72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83,
                 84, 85, 86, 87, 88, 89, 90, 91];
+            println!("updating input 72 to 91");
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -336,12 +344,11 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
         }
     }
     else if prefix.contains("consolidated heartbeat") ||
-        prefix.contains("system status received") {
-
+        prefix.contains("system status received") || prefix.contains("subscription status received"){
         println!("Kraken: standard server messages. Ignoring...");
     }
     else {
-        println!("Kraken: got a weird message: {}", message);
+        println!("Kraken: got a weird message: {}\nprefix: {}", message, prefix);
     }
 }
 
@@ -390,12 +397,14 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
         if prefix.contains("XRP") {
             //going to use SOL indices as XRP
             let indices: [usize; 2] = [54, 55];
+            println!("updating input 54, 55");
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
         }
         else if prefix.contains("XLM") {
             let indices: [usize; 2] = [56, 57];
+            println!("updating input 56, 57");
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -481,6 +490,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
             }
             if prefix.contains("sol") {
                 let indices = [58, 59];
+                println!("updating input 58, 59");
                 let mut neural_network = 
                     shared_neural_network.lock().await;
                 neural_network.update_input(&indices, &scaled_values)
@@ -488,6 +498,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
             }
             else if prefix.contains("xrp") {
                 let indices = [92, 93];
+                println!("updating input 92, 93");
                 let mut neural_network = 
                     shared_neural_network.lock().await;
                 neural_network.update_input(&indices, &scaled_values)

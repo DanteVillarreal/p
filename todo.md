@@ -146,6 +146,7 @@ Make it so there are functions built into 1 function so that it does the initial
      o  change update_input so it isn't .await. async functions only optimal when they aren't cpu bound. so when the function's max speed is not dependent on your CPU. So, like any time we do a REST request and are WAITING for a response. or in websocket. so in network, remove async word from function. then correct resulting errors. probably over 100. then see if network breaks.
      o  change every .unwrap_or and .unwrap to a .expect(&format!("...{}", &var)) with a message of what went wrong and a variable that helps figure out what went wrong
      o  change every .expect that doesn't have a var to have one so we can have HELLA information when we get an error and aren't guessing what the issue is.
+     o  change every delay_for in action_functions.rs to delay_until
 21. change all things to be warning free obviously, but also to change all initializations to be not 0, but Option<var type> instead. Except for the neurons of course.
 22.
         
@@ -281,3 +282,4 @@ Log of what I've done:
 01/25/24 - changed the websocket client. Then made changes in main and modified read_lines, then revamped all of "handle" functions and put them in execute_action_functions.rs so it can be more modular. Next step is to make the action_functions and change the choose_action_function in network.rs, then change initialization in main.rs to account for total indexes in output. I got this!
 01/26/24 - added all of the xrp functions in action_functions.rs with the knew kraken fee. Then I added the kraken fee for xlm. Next step is to change the choose_action_function in network.rs, then change initialization in main.rs to account for total indexes in output. I got this!
 01/27/24 - appended xrp functions to end of choose_action_functions and adjusted initialization in main.rs to account for total index in output. Next step is to run it. I got this!
+01/27/24 - made final changes. This is the last commit before the first one. Weve done great so far, but jobs not over mother fucker. You aint done yet you fat piece of lard. After the 100,000 iterations, next step is to evaluate the rewards and see if its consistently over 0. If not, we need to do it again but introduce gradient clipping. I got this!

@@ -1373,10 +1373,11 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         let shared_neural_network = 
             Arc::clone(&shared_neural_network);
         async move{
-
-            let when = tokio::time::Instant::now() + Duration::from_secs(10);
+            println!("original delay to warm up neural network...
+            This will take 10 minutes...");
+            let when = tokio::time::Instant::now() + Duration::from_secs(10*60);
             delay_until(when).await;
-            for i in 0..15 {
+            for i in 0..100_000 {
                 //01/22/24 - removed:
                     //is_empty = network::is_folder_empty(folder);
                     //if let Some(false) = is_empty {
@@ -1669,7 +1670,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                             },
                             Err(e) => eprintln!("An error occurred: {}", e),
                         }
-                        
+
 
 
                     //----------------NEURAL-NETWORK-DROPPED-----------------//

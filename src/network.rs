@@ -3293,8 +3293,11 @@
 			bitstamp_api_key: &str, divisor: &f64) -> (usize, f64, f64) {
 
 
-
+			let start = std::time::Instant::now();   //to measure execution time
+			//neural_network.feed_forward();
 			self.feed_forward();
+			let elapsed = start.elapsed();
+			println!("Elapsed: {:?}", elapsed);
 			//01/24/24 - added because encountered error saying index of 
 			//		largest q value was never initialized. 
 			//		so use this to debug.

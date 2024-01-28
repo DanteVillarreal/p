@@ -429,6 +429,11 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
 
     if prefix.contains("Gemini received") {
         if message.contains("heartbeat") {
+            println!("gemini heartbeat. ignoring...");
+            return;
+        }
+        else if message.is_empty() {
+            println!("gemini empty message. ignoring...");
             return;
         }
         else {
@@ -458,22 +463,26 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                             } 
                             else {
                                 panic!("Gemini: event is not an object.
-                                message: {}", message);
+                                message: {}
+                                prefix: {}", message, prefix);
                             }
                         } 
                         else {
                             panic!("Gemini: events is not an array.
-                            message: {}", message);
+                            message: {}
+                            prefix: {}", message, prefix);
                         }
                     } 
                     else {
                         panic!("Gemini: Value is not an object.
-                        message: {}", message);
+                        message: {}
+                        prefix: {}", message, prefix);
                     }
                 },
                 Err(e) => {
                     panic!("Failed to parse JSON Gemini message\nError: {}
-                    Message: {}", e, message);
+                    Message: {}
+                    Prefix: {}", e, message, prefix);
                 },
             }
 

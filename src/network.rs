@@ -441,7 +441,8 @@
 		//a return of true means perform exploitation.
 		//remember to check if epsilon is initialized in main and it is initialized to 1. 
 	pub fn epsilon_greedy(epsilon: &mut f64) -> bool {
-		let is_epsilon_bigger: bool;
+		//01/28/24 - changed name from bigger to smaller
+		let is_epsilon_smaller: bool;
 		let p: f64 = rand::thread_rng().gen_range(0.0..=1.0);
 
 		// *epsilon is used instead of just epsilon because in order to change epsilon
@@ -452,12 +453,14 @@
 		*epsilon -= 0.0001;
 
 		if p >= *epsilon {
-			is_epsilon_bigger = false; //--> so explore
-			is_epsilon_bigger	//return the bool
+			//01/28/24 - changed false to true here. 
+			//	and reverse below so true = exploit like in exploration fun.
+			is_epsilon_smaller = true; //--> so exploit
+			is_epsilon_smaller	//return the bool
 		}
 		else {
-			is_epsilon_bigger = true; //--> so exploit
-			is_epsilon_bigger	//return the bool
+			is_epsilon_smaller = false; //--> so explore
+			is_epsilon_smaller	//return the bool
 		}
 	}
 
@@ -667,8 +670,16 @@
 	*/
 
 	//01/20/24 added-
-	pub fn save_reward(reward: &f64) -> std::io::Result<()> {
-
+	//01/28/24 - added the bool and the new functionality
+	pub fn save_reward(reward: &f64, exploration_or_exploitation: bool) -> std::io::Result<()> {
+		//01/28/24 - added:
+		let exploit_or_explore: Option<&str>;
+		if exploration_or_exploitation == true {
+			exploit_or_explore = Some("exploit");
+		}
+		else {
+			exploit_or_explore = Some("explore");
+		}
 		let now = Utc::now();
 		let timestamp = now.timestamp_millis().to_string();
 		let base_path = "D:\\Downloads\\PxOmni\\rust_neural_network_rewards";
@@ -679,7 +690,7 @@
 			//let mut file = fs::OpenOptions::new().write(true).append(true).open(file_path)?;
 		//01/24/24 - added in its place:
 			let mut file = fs::OpenOptions::new().write(true).append(true).create(true).open(file_path)?;
-		writeln!(file, "{},{}", reward, timestamp)?;
+		writeln!(file, "{},{}\t{:?}", reward, timestamp, exploit_or_explore)?;
 		Ok(())
 	}
 
@@ -899,7 +910,9 @@
 		//12/15/23 update:
 		//I want it to also return the actual q value so that we can use it to update our
 		//		 "current Q-value estimate" in the "temporal difference error"
-		pub fn exploration_or_exploitation(&self, epsilon: &mut f64) -> (usize, f64) {
+		//01/28/24 - added another return of the bool being exploit_or_explore
+		//	so in my reward function I can see if it made money on an exploit
+		pub fn exploration_or_exploitation(&self, epsilon: &mut f64) -> (usize, f64, bool) {
 			
 			// want to see if epsilon greedy returns true or not so that I explore or exploit
 			let exploit_or_explore: bool = epsilon_greedy(epsilon);
@@ -999,7 +1012,8 @@
 				//		(index, largest_qvalue_so_far) is an expression, aka it returns a value.
 				//		 if you add a semicolon, it makes it a statement and doesn't return
 				//		 a value
-				(index, largest_qvalue_so_far)
+				//01/28/24 - added exploit_or_explore as a return value
+				(index, largest_qvalue_so_far, exploit_or_explore)
 				//in this point in the code, i now have the index of the largest q value.
 				//This value is now returned.
 				//In the next function or module, I must then choose the function
@@ -1027,7 +1041,7 @@
 
 				match self.layers.last() {
 					Some(last_layer) =>  {
-						return (index_of_random_qvalue, last_layer.data[0][index_of_random_qvalue]);
+						return (index_of_random_qvalue, last_layer.data[0][index_of_random_qvalue], exploit_or_explore);
 					},
 					None => panic!("No layers in the network!"),
 				}
@@ -3302,7 +3316,7 @@
 			//		largest q value was never initialized. 
 			//		so use this to debug.
 			self.print_last_network_layer();
-			let (index_chosen_for_current_state, q_value_for_current_state) = 
+			let (index_chosen_for_current_state, q_value_for_current_state, exploration_or_exploitation) = 
 				self.exploration_or_exploitation(epsilon);
 
 
@@ -3327,7 +3341,7 @@
 				//let _unused_variable = save_reward(&the_reward);
 			//01/24/24 - added:
 				println!("reward:{}", &the_reward);
-				match save_reward(&the_reward) {
+				match save_reward(&the_reward, exploration_or_exploitation) {
 					Ok(_) => println!("Reward saved successfully."),
 					Err(e) => println!("Failed to save reward: {}\n\n\n\n\n", e),
 				}

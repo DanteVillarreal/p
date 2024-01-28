@@ -924,6 +924,10 @@
 
 			let mut indexx: usize = 0;		//this will function as the index in the for loop below
 
+			//01/28/24 - added:
+				let last_layer = self.layers.last().expect("last layer didn't exist");
+				let last_index = last_layer.columns - 1;
+
 			if exploit_or_explore == true {
 				//Below: I will choose the neuron with the top q value.
 				//		this would then call another function that executes the specific task
@@ -1030,7 +1034,9 @@
 				//		because we want to return a random "neuron" because we're doing
 				//		explore. explore means do some random shit, so we can then document
 				//		if it was good or not
-				let index_of_random_qvalue = rand::thread_rng().gen_range(0..=indexx);
+				//01/28/24 - changed 0..=indexx
+				//	to 0..=last_index
+				let index_of_random_qvalue = rand::thread_rng().gen_range(0..=last_index);
 
 				//not even sure if this is needed. I think I can just delete this and in the
 				//	 bottom do index_of_random_qvalue instead of index

@@ -286,3 +286,4 @@ Log of what I've done:
 01/28/24 - made some new changes to epsilon, exploit_or_explore and save reward to further evaluate effectiveness of neural network. I got this!
 01/28/24 - made further changes to exploit_or_explore function. I got this!
 01/28/24 - added gradient cap and increased because its still exploding. Changed time to 15 minutes too. I got this!
+01/28/24 - for panic=>file functionality. Next step is to run it. I got this!

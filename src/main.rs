@@ -34,7 +34,12 @@ use std::error::Error;                              //to do box error
 use tokio::sync::Mutex;                             // Use async Mutex from Tokio
 use std::sync::Arc;  								// Use Arc to share Mutex among multiple tasks
 use tokio::sync::MutexGuard;
-use tokio::time::delay_until;
+use tokio::time::delay_until;                       //for async "waits"
+use simplelog;                                      //to have panics in a file
+use log_panics;                                     //to have panics in a file
+use std::fs;                                  //for file handling
+
+
 
 
 ///-----FOR PARSING-----////
@@ -1152,10 +1157,28 @@ async fn read_lines(reader: BufReader<ChildStdout>,
 //12/23/23 code commented everything, added the new lines of code labelled below then added the return to fn main()
 #[tokio::main]
 async fn main() ->Result<(), Box<dyn Error>>  {
-    
-//-----ALL-FOR-PARSING-UNDER-THIS//
-    
+
     env::set_var("RUST_BACKTRACE", "1");
+
+    //01/28/24 - added: saves panics to a file instead of stdout or stderr
+    //  so when panics occur and the websocket client continues running,
+    //  I will actually be able to see what the original panic was.
+    let log_file = fs::OpenOptions::new()
+    .append(true)
+    .create(true)
+    .open(r"D:\Downloads\PxOmni\rust_log_panics\p.log")
+    .unwrap();
+
+    simplelog::CombinedLogger::init(
+        vec![
+            simplelog::WriteLogger::new(simplelog::LevelFilter::Info, simplelog::Config::default(), log_file),
+        ]
+    ).unwrap();
+
+    log_panics::init();
+
+
+
 
     //this is just example code to evaluate if save and load of network works and it does  
     

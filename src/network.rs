@@ -2410,8 +2410,9 @@
 							if gradient_layer.data[j][k] > 1.0 {
 								gradient_layer.data[j][k] = 1.0;
 							}
-
-
+							else if gradient_layer.data[j][k] < -1.0 {
+								gradient_layer.data[j][k] = -1.0;
+							} 
 					}
 				}
 			}

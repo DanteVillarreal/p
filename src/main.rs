@@ -1409,7 +1409,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                 let is_empty_result = network::is_folder_empty(folder);
                 if let Ok(is_empty) = is_empty_result {
 					//if it's not empty & it's the 10th, then sample from transition
-					if is_empty == false && i%10 == 0 {
+                    //01/29/24 - added if i > 200 just in case.
+					if i > 200  && is_empty == false && i%10 == 0 {
 						//=====NEURAL NETWORK LOCKED=====//
 						//===============================//
 							let mut neural_network = 

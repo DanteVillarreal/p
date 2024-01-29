@@ -287,3 +287,4 @@ Log of what I've done:
 01/28/24 - made further changes to exploit_or_explore function. I got this!
 01/28/24 - added gradient cap and increased because its still exploding. Changed time to 15 minutes too. I got this!
 01/28/24 - for panic=>file functionality. Next step is to run it. I got this!
+01/29/24 - made gradient cap smaller and then added "if i > 200" to start doing exp replay. If q value still diverges, I will decrease learning rate by factor of 10. if still diverges, I will look into more methods and try those. I got this!

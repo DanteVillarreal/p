@@ -35839,6 +35839,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
+        //01/30/24 - added:
+        //THIS IS WHERE i WILL BEGIN TO DO A LOOP so that it doesn't panic immediately when it encounters an error,
+        //      instead, it will try to do the request 3 times. if it still doesn't work, then yeah panic.
+        let mut attempts = 0;
+
         let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)

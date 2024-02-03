@@ -289,3 +289,4 @@ Log of what I've done:
 01/28/24 - for panic=>file functionality. Next step is to run it. I got this!
 01/29/24 - made gradient cap smaller and then added "if i > 200" to start doing exp replay. If q value still diverges, I will decrease learning rate by factor of 10. if still diverges, I will look into more methods and try those. I got this!
 01/30/24 - tiny tiny commit. beginning the addition of the loop in i177_xrp_7. Next step is to finish it there and do it to all the other functions as well, then run it. I got this!
+02/02/24 - changed all xrp_kraken_coinbase. I added code that protects against errors caused by corruption of some value. Next step is to do it for the rest. I got this!

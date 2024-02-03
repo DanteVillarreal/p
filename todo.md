@@ -291,3 +291,4 @@ Log of what I've done:
 01/30/24 - tiny tiny commit. beginning the addition of the loop in i177_xrp_7. Next step is to finish it there and do it to all the other functions as well, then run it. I got this!
 02/02/24 - changed all xrp_kraken_coinbase. I added code that protects against errors caused by corruption of some value. Next step is to do it for the rest. I got this!
 02/03/24 - added conditional for reward so I can see if it ever makes money. Next step is to finish the loops for all the other functions as well. I got this!
+02/03/24 - gamma=0.8;learning_rate=0.00001;EpsilonDecay=0.000001;gradientCap=0.1;AccessReplayAfter=400; Running to see if this will stop exploding q values. I got this!

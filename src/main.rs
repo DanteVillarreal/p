@@ -1202,10 +1202,14 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         replay_buffer,
     };
     //01/24/24 - was: (65, 75, 2) now it's below. input size from execute_action_functions.
-    //neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
-    let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1706949238237"; // Replace with your file path
-    neural_network = NeuralNetwork::load(path)?;
-    neural_network.print_layers();
+
+    //uncomment this if you want to initialize the network from new
+        neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
+
+    //uncomment this if you want to load from a saved state
+        //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1706980113473"; // Replace with your file path
+        //neural_network = NeuralNetwork::load(path)?;
+        //neural_network.print_layers();
     //the first number in the initialization and the number below MUST be the same size
     //01/24/24 - removed
         //let mut updated = [false; 60];
@@ -1413,7 +1417,8 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                 if let Ok(is_empty) = is_empty_result {
 					//if it's not empty & it's the 10th, then sample from transition
                     //01/29/24 - added if i > 200 just in case.
-					if i > 200  && is_empty == false && i%10 == 0 {
+                    //02/03/24 - changed to 400
+					if i > 400  && is_empty == false && i%10 == 0 {
 						//=====NEURAL NETWORK LOCKED=====//
 						//===============================//
 							let mut neural_network = 

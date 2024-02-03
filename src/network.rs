@@ -526,15 +526,6 @@
 		//	that get the total portfolio size and 
 
 		//changed 12/27/23:
-//HOW TO USE THIS FUNCTION:
-		//have it in main where you have two variables: value_after/prior. and value prior is set at a value. 
-		//		Then have mut index, current_q_value initialized to exploration_or_exploitation and its parameters.
-		//		Then put connect it to execute_functions so it picks which function to execute based on the index from before, and SOMEHOW give the value_prior as a parameter
-		//		Then value_after = action_function(value_prior);
-		//		Then reward = reward(value_prior, value_after);
-		//		Then value_prior = value_after;
-		//		Then the rest.
-		//So the action functions 
 	pub fn reward(value_prior: f64, value_after: f64 ) -> f64 {
 		let multiplier = 1.3;
 		let absolute_change = value_after - value_prior;
@@ -1495,7 +1486,8 @@
 			//		The higher the gamma the more I value the future rewards
 			//0.9 is standard and I wasnt sure what to pick, so I just picked it. 
 			//		if I want to change it, I'll change it later.
-			let gamma = 0.9;
+			//02/03/24 - changed to 0.8
+			let gamma = 0.8;
 			//initialize the largest Q-value so far and its index
 			//let mut index_of_largest_qvalue_in_next_state: Option<usize> = None;
 			let mut largest_qvalue_so_far_in_next_state = f64::MIN;
@@ -2335,6 +2327,10 @@
 	//01/19/24 - added
 	pub fn el_backpropagation(&mut self, current_q_value_index: &usize,
 		current_q_value: &f64, target_q_value: &f64) {
+		
+		//02/03/24 - added lambda.
+		//common values are between 0 and 0.1.
+		//let lambda = 0.01;
 		//initialize gradient layer to 0
 		//iterate through weight layer in reverse and apply formula to calculate gradient
 
@@ -2350,7 +2346,7 @@
 		//setting up formulas
 		let loss_derivative = calculate_loss_derivative(&current_q_value, &target_q_value);
 		let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
-		let mut derivative_of_to_neuron: Option<f64>;
+		//let mut derivative_of_to_neuron: Option<f64>;
 
 
 		//setting up readability:
@@ -2416,11 +2412,11 @@
 							gradient_layer.data[j][k] = loss_derivative*derivative_of_to_neuron*output_of_from_neuron;
 						//01/28/24 - added:. 01/29/24 - changed to 0.2 instead of 1.0
 						//02/02/24 - changed from 0.2 to 0.1
-							if gradient_layer.data[j][k] > 0.2 {
-								gradient_layer.data[j][k] = 0.2;
+							if gradient_layer.data[j][k] > 0.1 {
+								gradient_layer.data[j][k] = 0.1;
 							}
-							else if gradient_layer.data[j][k] < -0.2 {
-								gradient_layer.data[j][k] = -0.2;
+							else if gradient_layer.data[j][k] < -0.1 {
+								gradient_layer.data[j][k] = -0.1;
 							} 
 					}
 				}

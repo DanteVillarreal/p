@@ -450,7 +450,8 @@
 		//		and then subtract .0001 from it.
 		// just epsilon would be like saying, go to this address in memory, and 
 		//		subtract 0.0001 from it. NANI?? ARE YOU SURE YOU WANT TO DO THAT
-		*epsilon -= 0.0001;
+		//02/03/24 - changed to 0.000001
+		*epsilon -= 0.000001;
 
 		if p >= *epsilon {
 			//01/28/24 - changed false to true here. 
@@ -690,7 +691,14 @@
 			//let mut file = fs::OpenOptions::new().write(true).append(true).open(file_path)?;
 		//01/24/24 - added in its place:
 			let mut file = fs::OpenOptions::new().write(true).append(true).create(true).open(file_path)?;
-		writeln!(file, "{},{}\t{:?}", reward, timestamp, exploit_or_explore)?;
+		//02/03/24 - added the if condition
+			if reward <= &0.0 {
+				writeln!(file, "{},{}\t{:?}", reward, timestamp, exploit_or_explore)?;
+			}
+			else {
+				writeln!(file, "+{},{}\t{:?}", reward, timestamp, exploit_or_explore)?;
+			}
+		//writeln!(file, "{},{}\t{:?}", reward, timestamp, exploit_or_explore)?;
 		Ok(())
 	}
 
@@ -2407,6 +2415,7 @@
 
 							gradient_layer.data[j][k] = loss_derivative*derivative_of_to_neuron*output_of_from_neuron;
 						//01/28/24 - added:. 01/29/24 - changed to 0.2 instead of 1.0
+						//02/02/24 - changed from 0.2 to 0.1
 							if gradient_layer.data[j][k] > 0.2 {
 								gradient_layer.data[j][k] = 0.2;
 							}
@@ -3931,7 +3940,8 @@
 			let target_q_value = self.calculate_target_q_value(the_reward);
 			self.el_backpropagation(&index_chosen_for_current_state,
 				&q_value_for_current_state, &target_q_value);
-			let learning_rate = 0.0001;
+			//02/02/24 - changed from 0.0001 to 0.00001
+			let learning_rate = 0.00001;
 			self.el_update_weights(&learning_rate);
 		}
 

@@ -34762,7 +34762,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         hex::encode(code_bytes)
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
-
+        //02/04/24 - need to add loop here
         let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)

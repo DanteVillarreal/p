@@ -1204,12 +1204,12 @@ async fn main() ->Result<(), Box<dyn Error>>  {
     //01/24/24 - was: (65, 75, 2) now it's below. input size from execute_action_functions.
 
     //uncomment this if you want to initialize the network from new
-        neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
+        //neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
 
     //uncomment this if you want to load from a saved state
-        //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1706980113473"; // Replace with your file path
-        //neural_network = NeuralNetwork::load(path)?;
-        //neural_network.print_layers();
+        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1707056446352"; // Replace with your file path
+        neural_network = NeuralNetwork::load(path)?;
+        neural_network.print_layers();
     //the first number in the initialization and the number below MUST be the same size
     //01/24/24 - removed
         //let mut updated = [false; 60];

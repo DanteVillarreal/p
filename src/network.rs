@@ -1067,6 +1067,323 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		//02/06/24 - added: new exploration or exploitation function because I think
+		//		this may be a cause in the explosion of the q values as it doesnt
+		//		have a chance to stabilize its q values
+		pub fn exploration_or_exploitation_v2(&self, i: &usize) -> (usize, f64, bool) {
+			
+			// want to see if epsilon greedy returns true or not so that I explore or exploit
+			//let exploit_or_explore: bool = epsilon_greedy(epsilon);
+			let exploit_or_explore: Option<bool>;
+			if i <= &1000 {
+				exploit_or_explore = Some(false);
+			}
+			else  {
+				//for the first 300...
+				if i <= &1300 {
+					//every 10 iterations, make it exploit. aka true
+					if i%10 == 0 {
+						exploit_or_explore = Some(true);
+					}
+					else {
+						exploit_or_explore = Some(false);
+					}
+				}
+				//for the next 400...
+				else if i <= &1700 {
+					//every 9 iterations, make it exploit. aka true
+					if i%9 == 0 {
+						exploit_or_explore = Some(true);
+					}
+					else {
+						exploit_or_explore = Some(false);
+					}
+				}
+				//for the next 500...
+				else if i <= &2200 {
+					//every 8 iterations, make it exploit. aka true
+					if i%8 == 0 {
+						exploit_or_explore = Some(true);
+					}
+					else {
+						exploit_or_explore = Some(false);
+					}
+				}
+				//for the next 600...
+				else if i <= &2800 {
+					//every 7 iterations, make it exploit. aka true
+					if i%7 == 0 {
+						exploit_or_explore = Some(true);
+					}
+					else {
+						exploit_or_explore = Some(false);
+					}
+				}
+				//for the next 700...
+				else if i <= &3500 {
+					//every 6 iterations, make it exploit. aka true
+					if i%6 == 0 {
+						exploit_or_explore = Some(true);
+					}
+					else {
+						exploit_or_explore = Some(false);
+					}
+				}
+				//for the next 800...
+				else if i <= &4300 {
+					//every 5 iterations, make it exploit. aka true
+					if i%5 == 0 {
+						exploit_or_explore = Some(true);
+					}
+					else {
+						exploit_or_explore = Some(false);
+					}
+				}
+				//for the next 900...
+				else if i <= &5200 {
+					//every 4 iterations, make it exploit. aka true
+					if i%4 == 0 {
+						exploit_or_explore = Some(true);
+					}
+					else {
+						exploit_or_explore = Some(false);
+					}
+				}
+				//for the next 1000...
+				else if i <= &6200 {
+					//every 3 iterations, make it exploit. aka true
+					if i%3 == 0 {
+						exploit_or_explore = Some(true);
+					}
+					else {
+						exploit_or_explore = Some(false);
+					}
+				}
+				//for the next 5000...
+				else if i <= &11_200 {
+					// if divisible by 2 or 3, make it exploit
+					if i%2==0 || i%3 == 0  {
+						exploit_or_explore = Some(true);
+					}
+					else {
+						exploit_or_explore = Some(false);
+					}
+				}
+				//for the next whenever...
+				else {
+					// if divisible by 2 or 3 or 5, make it exploit
+					if i%2==0 || i%3 == 0 || i%5 == 0  {
+						exploit_or_explore = Some(true);
+					}
+					else {
+						exploit_or_explore = Some(false);
+					}
+				}
+			}
+
+
+
+			//True = exploit
+			//establishes values to work with for-loop
+			let mut index_of_largest_qvalue: Option<usize> = None;
+			let mut largest_qvalue_so_far = f64::MIN;
+
+			let mut indexx: usize = 0;		//this will function as the index in the for loop below
+
+			//01/28/24 - added:
+				let last_layer = self.layers.last().expect("last layer didn't exist");
+				let last_index = last_layer.columns - 1;
+
+			if exploit_or_explore == Some(true) {
+				//Below: I will choose the neuron with the top q value.
+				//		this would then call another function that executes the specific task
+
+
+
+				//let Some(last_layer) = self.layers.last()		means set last_layer 
+				//		equal to self.layers.last() aka the last layer aka the output layer.
+				//The reason we have the	"if"	is because we want to handle errors
+				//		like if somehow there weren't any layers in the first place
+				//		Then it would go to the corresponding else block and tell us the error
+				//The more error checking the better
+				if let Some(last_layer) = self.layers.last() {
+					//aka interate over the data in the last layer. aka over the values of the
+					//		neurons of the last layer. aka over the Q_VALUES of the last layer
+					//all my neurons  are stored in the first inner vector of each network layer,
+					//		hence the .data[0]
+					for value in &last_layer.data[0] {
+						//01/24/24 - got an error thanks to the "let index match" statement below.
+						//	the last layer existed because thankfully I added error handling for it.
+						//	I can only think of 2 ways this is possible, the feed forward
+						//		 didn't work properly or somehow the largest_q_value in
+						//		 the output layer was f64::MIN.
+						if value > &largest_qvalue_so_far {
+							largest_qvalue_so_far = *value;	//just to document that we hit a new max
+							index_of_largest_qvalue = Some(indexx);	//to know where the new max was
+						}
+
+						indexx += 1;					//to iterate the index value NO MATTER WHAT
+					}
+				}
+				else {
+					//01/24/24 - modified to say last layer didnt exist
+					//		instead of was empty
+					panic!("last_layer.data did not exist. this is in fn exploration_or_exploration when
+					 exploit_or_explore == true");
+				}
+
+				//-----the original of the above-----//
+						//if let Some(last_layer) = self.layers.last() {
+						//	for value in &last_layer.data[0] {
+						//		if value > &largest_qvalue_so_far {
+						//			largest_qvalue_so_far = *value;		//just to document that we hit a new max
+						//			index_of_largest_qvalue = Some(indexx);	//to know where the new max was
+						//			indexx += 1;						//to iterate the index value
+						//
+						//		}
+						//		else {		//this block executes only if the value isn't bigger
+						//					//		than the largest qvalue we have so far.
+						//					//Because:	we dont care about storing the index 
+						//					//		of a smaller q value,
+						//					//		and instead we jsut want to show we visited 
+						//					//		another value, then We do this by 
+						//					//		just incrementing the index
+						//			indexx+=1;		
+						//		}
+						//	}
+						//}
+						//else {
+						//	panic!("last_layer.data is empty. this is in fn exploration_or_exploration when exploit_or_explore == true");
+						//}
+				//------end of the original---------//
+
+
+
+
+
+				//this deals wtih returning the index_of_largest_qvalue value
+				//basically "match" is saying "let's look at the value of 
+				//		index_of_largest_qvalue, and do different things depending on what it is"
+				//the 	Some(index) => index,	means if index_of_largest_qvalue contains
+				//		 a usize value, (usize is the type of variable indexes are)
+				//		then return the value that index_of_largest_qvalue holds.
+				//the	None => panic!("index_of_largest_qvalue was never initialized"), 
+				//		means: if there is no value inside index_of_largest_qvalue, then
+				//		quit the program and display the following message.
+				//We need to do a match because the variable
+				//		index_of_largest_qvalue is of type Option<usize>
+				let index = match index_of_largest_qvalue {
+					Some(index) => index,
+					//01/24/24 - modified to include indexx
+					None => panic!("index_of_largest_qvalue was never initialized. Indexx is:\n{}", indexx),
+				};
+				//this returns both the index and the largest_q_value_so_far.
+				//why no semicolon?
+				//		(index, largest_qvalue_so_far) is an expression, aka it returns a value.
+				//		 if you add a semicolon, it makes it a statement and doesn't return
+				//		 a value
+				//01/28/24 - added exploit_or_explore as a return value
+
+				if let Some(exploit_or_explore) = exploit_or_explore {
+					(index, largest_qvalue_so_far, exploit_or_explore)
+				} else {
+					panic!("exploit_or_explore is somehow none\nexploit_or_explore:{:?}
+					index:{}
+					largest_qvalue_so_far:{}
+					iteration:{}", exploit_or_explore, index, largest_qvalue_so_far, &i );
+				}
+				//in this point in the code, i now have the index of the largest q value.
+				//This value is now returned.
+				//In the next function or module, I must then choose the function
+				//		that corresponds to said q value.
+				//I will do that in another funciton. I might even make an entire 
+				//		module just for that function
+				
+			}
+			//so if doing explore
+			else {
+				//turn exploit_or_explore form Option<bool> to bool
+				if let Some(exploit_or_explore) = exploit_or_explore {
+					//choose one of the outputs randomly. the specific output would then
+					//		call another function to execute said task
+
+					//attaches a random value between 0 and the last neuron to index_of_random_qvalue
+					//		because we want to return a random "neuron" because we're doing
+					//		explore. explore means do some random shit, so we can then document
+					//		if it was good or not
+					//01/28/24 - changed 0..=indexx
+					//	to 0..=last_index
+					let index_of_random_qvalue = rand::thread_rng().gen_range(0..=last_index);
+
+
+					match self.layers.last() {
+						Some(last_layer) =>  {
+							return (index_of_random_qvalue, last_layer.data[0][index_of_random_qvalue],
+								 exploit_or_explore);
+						},
+						None => panic!("No layers in the network!"),
+					}
+				}
+				//if exploit_or_explore never had a value attached to it
+				else {
+					panic!("exploit_or_explore is somehow none\nexploit_or_explore:{:?}
+					iteration:{}", exploit_or_explore, &i);
+				}
+
+			}
+			
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		/*
 		pub fn initialization(&mut self, input_size: usize, output_size: usize, number_of_hidden_layers: usize) {
 			//intiialization of weights and biases and what not
@@ -3313,6 +3630,7 @@
 
 		//01/21/24 - added:
 		//this feed forwards,
+
 		pub  async fn cycle_part_one_of_two(&mut self, i: usize, 
 			epsilon: &mut f64, value_prior: &mut f64, coinbase_wallet: &mut f64,
 			kraken_wallet: &mut f64, bitstamp_wallet: &mut f64, 
@@ -3331,9 +3649,12 @@
 			//		largest q value was never initialized. 
 			//		so use this to debug.
 			self.print_last_network_layer();
+			//02/06/24 - removed:
+				//let (index_chosen_for_current_state, q_value_for_current_state, exploration_or_exploitation) = 
+				//	self.exploration_or_exploitation(epsilon);
+			//02/06/24 - added in its place:
 			let (index_chosen_for_current_state, q_value_for_current_state, exploration_or_exploitation) = 
-				self.exploration_or_exploitation(epsilon);
-
+				self.exploration_or_exploitation_v2(&i);
 
 
 			let value_after = self.choose_action_function(value_prior, 

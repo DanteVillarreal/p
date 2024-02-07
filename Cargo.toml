@@ -22,3 +22,4 @@ base64 = "0.13.0"
 uuid = {version = "1.6.1", features = ["v4"]}
 simplelog = "0.10.0"
 log-panics = { version = "2", features = ["with-backtrace"]}
+log = "0.4.20"

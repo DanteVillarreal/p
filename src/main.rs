@@ -1207,7 +1207,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         //neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
 
     //uncomment this if you want to load from a saved state
-        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1707056446352"; // Replace with your file path
+        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1707289874939"; // Replace with your file path
         neural_network = NeuralNetwork::load(path)?;
         neural_network.print_layers();
     //the first number in the initialization and the number below MUST be the same size
@@ -1407,7 +1407,19 @@ async fn main() ->Result<(), Box<dyn Error>>  {
             This will take 15 minutes...");
             let when = tokio::time::Instant::now() + Duration::from_secs(15*60);
             delay_until(when).await;
-            for i in 0..100_000 {
+
+
+
+
+
+
+            //CHANGE BACK TO 0..100_000
+
+
+
+
+
+            for i in 1445..100_000 {
                 //01/22/24 - removed:
                     //is_empty = network::is_folder_empty(folder);
                     //if let Some(false) = is_empty {

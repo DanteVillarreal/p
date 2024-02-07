@@ -38,6 +38,7 @@ use tokio::time::delay_until;                       //for async "waits"
 use simplelog;                                      //to have panics in a file
 use log_panics;                                     //to have panics in a file
 use std::fs;                                  //for file handling
+use log;                                            //for logging errors to panic file
 
 
 
@@ -909,71 +910,99 @@ async fn handle_xlm_bitstamp(message: &str, shared_neural_network: Arc<Mutex<Neu
     //async fn handle_sol_gemini(message: &str, neural_network: &mut NeuralNetwork, updated: &mut [bool; 60]) {
 //01/16/24 - added in its place:. 01/24/24 - added divisor
 async fn handle_sol_gemini(message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60], divisor: &f64) {
-    if message.contains("heartbeat") {
-        println!("Gemini heartbeat message. ignoring...");
-        return;
-    }
-    if message.trim().is_empty() {
-        println!("Gemini: blank message received\nmessage: {}", message);
-        return;
-    }
-    let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
+    //02/07/24 - added loop to handle random error:
+    let mut attempts = 0;
+    loop {
+        if message.contains("heartbeat") {
+            println!("Gemini heartbeat message. ignoring...");
+            return;
+        }
+        if message.trim().is_empty() {
+            println!("Gemini: blank message received\nmessage: {}", message);
+            return;
+        }
+        let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
-    let mut amount: Option<f64> = None;
-    let mut price: Option<f64> = None;
+        let mut amount: Option<f64> = None;
+        let mut price: Option<f64> = None;
 
-    match data {
-        Ok(value) => {
-            if value.get("socket_sequence").and_then(Value::as_i64) == Some(0) {
-                println!("Gemini: socket sequence is 0, ignoring...");
-                return;
-            }
-            if let Value::Object(map) = &value {
-                if let Some(Value::Array(events)) = map.get("events") {
-                    if let Some(Value::Object(event)) = events.get(0) {
-                        amount = event.get("amount").and_then(|v| v.as_str()).and_then(|s| s.parse::<f64>().ok());
-                        price = event.get("price").and_then(|v| v.as_str()).and_then(|s| s.parse::<f64>().ok());
+        match data {
+            Ok(value) => {
+                if value.get("socket_sequence").and_then(Value::as_i64) == Some(0) {
+                    println!("Gemini: socket sequence is 0, ignoring...");
+                    return;
+                }
+                if let Value::Object(map) = &value {
+                    if let Some(Value::Array(events)) = map.get("events") {
+                        if let Some(Value::Object(event)) = events.get(0) {
+                            amount = event.get("amount").and_then(|v| v.as_str()).and_then(|s| s.parse::<f64>().ok());
+                            price = event.get("price").and_then(|v| v.as_str()).and_then(|s| s.parse::<f64>().ok());
+                            //02/07/24 - added:
+                            if amount.is_none() || price.is_none() {
+                                attempts += 1;
+                                if attempts >= 3 {
+                                    panic!("Failed to parse amount: {:?} and/or price: {:?} after 3 attempts\nGemini message:\n{}", amount, price, &message);
+                                }
+                                continue;
+                            }
+                        }
                     }
                 }
-            }
-        },
-        Err(e) => {
-            println!("Failed to parse JSON Gemini message\nError: {}\nMessage: {}", e, message);
-        },
-    }
-
-    if let (Some(amount), Some(price)) = (amount, price) {
-        let indices = [58, 59];
-        let new_values = [amount, price];
-        //01/16/24 - added lock:
-		//01/24/24 - added transformed_values. then removed and added scaled_values
-			//let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-			let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-        let mut neural_network = shared_neural_network.lock().await;
-		//01/24/24 - removed and added transformed. then removed and added scaled
-        	//neural_network.update_input(&indices, &new_values).await;
-			//neural_network.update_input(&indices, &transformed_values).await;
-			neural_network.update_input(&indices, &scaled_values).await;
-        //to mark the inputs as changed
-        for index in indices {
-            updated[index] = true;
+            },
+            Err(e) => {
+                println!("Failed to parse JSON Gemini message\nError: {}\nMessage: {}", e, message);
+                //02/07/24 - added:
+                attempts += 1;
+                if attempts >= 3 {
+                    panic!("Failed to parse JSON Gemini message after 3 attempts\nError: {}\nMessage: {}", e, message);
+                }
+                continue;
+            },
         }
-        //if updated.iter().all(|&x| x) {
-        //    neural_network.print_layers();
-        //} 
-        //else {
-        //    let not_updated: Vec<String> = updated.iter()
-        //    .enumerate()
-        //    .filter_map(|(index, &updated)| if !updated { Some(index.to_string()) } else { None })
-        //    .collect();
-        //    println!("Neurons: {} have not been updated", not_updated.join(", "));
+        //02/07/24 - removed if let and resulting else branch:
+            //if let (Some(amount), Some(price)) = (amount, price) {
+        //02/07/24 - added in its place:
+        match (amount, price) {
+            (Some(amount), Some(price)) => {
+            let indices = [58, 59];
+            let new_values = [amount, price];
+            //01/16/24 - added lock:
+            //01/24/24 - added transformed_values. then removed and added scaled_values
+                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            let mut neural_network = shared_neural_network.lock().await;
+            //01/24/24 - removed and added transformed. then removed and added scaled
+                //neural_network.update_input(&indices, &new_values).await;
+                //neural_network.update_input(&indices, &transformed_values).await;
+                neural_network.update_input(&indices, &scaled_values).await;
+            //02/07/24 - added break and end of match
+                break;
+            },
+            _ => {
+                attempts += 1;
+                if attempts >= 3 {
+                    panic!("Failed to parse amount: {:?} and/or price: {:?} after 3 attempts\nGemini message:\n{}", amount, price, &message);
+                }
+                continue;
+            },
+        }
+            //to mark the inputs as changed
+            //02/07/24 - removed:
+                //for index in indices {
+                //    updated[index] = true;
+                //}
+        //} else {
+            //02/07/24 - changed from:
+                //println!("Failed to parse amount and/or price");
+                //println!("Gemini message:\n{}", message);
+                //panic!();
+            //to:
+                //panic!("Failed to parse amount: {:?} and/or price: {:?}
+                //Gemini message:\n{}", amount, price, &message);
+
         //}
-    } else {
-        println!("Failed to parse amount and/or price");
-        println!("Gemini message:\n{}", message);
-        panic!();
+        //counting the neurons for the the amount in each wallet, I will have 40 input neurons.
     }
-    //counting the neurons for the the amount in each wallet, I will have 40 input neurons.
 
 }
 
@@ -1024,8 +1053,12 @@ async fn read_lines(reader: BufReader<ChildStdout>,
                 //WILL NEED to implement a save state before the panic
                 
                 if parts.len() != 2 {
-                    panic!("got a weird line of input. The input was\n
+                    //02/07/24 - changed from panic! to log::error. 
+                    //      Then added "continue" so it skips to next 
+                    //      iteration of loop
+                    log::error!("got a weird line of input. The input was\n
                             {:?}", parts);
+                    continue
                 }
                 //gets the first element of the parts and trims leading or
                 //  trailing whitespace
@@ -1118,17 +1151,9 @@ async fn read_lines(reader: BufReader<ChildStdout>,
 
             },
             Err(e) => {
-                eprintln!("Error reading line from stdin: {}", e);
-                panic!();
-                //it will panic because it may be crucial to read every
-                //  line. so exit program if it doesn't. but now that I think
-                //  about it I should probably save the state of the DQN
-                //  if I am implementing this program into the DQN later
-                //why?
-                //  so that it doesn't have to relearn everything.
-                //HOWEVER:
-                //  I dont have a function to save the state of the DQN
-                //  but I should add it here though
+                //02/07/24 - changed to log::error from eprintln!
+                //      do not need continue as it is last thing in loop
+                log::error!("Error reading line from stdin: {}", e);
             },
         }
     }
@@ -1489,7 +1514,11 @@ async fn main() ->Result<(), Box<dyn Error>>  {
 									println!("just did an exp replay");
 							}
 							else {
-								panic!("error when making transition");
+                                //02/07/24 - replaced:
+								    //panic!("error when making transition");
+                                    panic!("Error when making transition at iteration number {}
+                                    could not sample from replay buffer. 
+                                    The current state of the neural network is: {:?}", i, neural_network);
 							}
 								
 					}
@@ -1631,7 +1660,11 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                         }
                 }
                 else {
-                    panic!("there was no empty_result");
+                    //upgraded panic to log error from just saying there was no empty result to:
+                    log::error!("there was no empty_result.
+                    iteration number: {}
+                    folder path: {}", &i, &folder);
+
                 }
                 //01/22/24 - removed:
                 /*

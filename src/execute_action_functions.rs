@@ -425,103 +425,139 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
     }
 }
 pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, divisor: &f64) {
+    //02/07/24 - loop and "attempts" mechanics added
+    //      loop is so if there is a random error due to corrupted value, it will be processed again
+    let mut attempts = 0;
+    loop {
+        if prefix.contains("Gemini received") {
+            if message.contains("heartbeat") {
+                println!("gemini heartbeat. ignoring...");
+                return;
+            }
+            else if message.is_empty() {
+                println!("gemini empty message. ignoring...");
+                return;
+            }
+            else {
+                let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
+                let amount: Option<f64>;
+                let price: Option<f64>;
 
-    if prefix.contains("Gemini received") {
-        if message.contains("heartbeat") {
-            println!("gemini heartbeat. ignoring...");
-            return;
-        }
-        else if message.is_empty() {
-            println!("gemini empty message. ignoring...");
-            return;
-        }
-        else {
-            let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
-
-            let amount: Option<f64>;
-            let price: Option<f64>;
-
-            match data {
-                Ok(value) => {
-                    if value.get("socket_sequence")
-                    .and_then(Value::as_i64) == Some(0) {
-                        println!("Gemini: socket sequence is 0, ignoring...");
-                        return;
-                    }
-                    if let Value::Object(map) = &value {
-                        if let Some(Value::Array(events)) = map
-                        .get("events") {
-                            if let Some(Value::Object(event)) =
-                             events.get(0) {
-                                amount = event.get("amount")
-                                    .and_then(|v| v.as_str())
-                                    .and_then(|s| s.parse::<f64>().ok());
-                                price = event.get("price")
-                                    .and_then(|v| v.as_str())
-                                    .and_then(|s| s.parse::<f64>().ok());
+                match data {
+                    Ok(value) => {
+                        if value.get("socket_sequence")
+                        .and_then(Value::as_i64) == Some(0) {
+                            println!("Gemini: socket sequence is 0, ignoring...");
+                            return;
+                        }
+                        if let Value::Object(map) = &value {
+                            if let Some(Value::Array(events)) = map
+                            .get("events") {
+                                if let Some(Value::Object(event)) =
+                                events.get(0) {
+                                    amount = event.get("amount")
+                                        .and_then(|v| v.as_str())
+                                        .and_then(|s| s.parse::<f64>().ok());
+                                    price = event.get("price")
+                                        .and_then(|v| v.as_str())
+                                        .and_then(|s| s.parse::<f64>().ok());
+                                    //02/07/24 - added if block
+                                    if amount.is_none() || price.is_none() {
+                                        attempts += 1;
+                                        if attempts >= 3 {
+                                            panic!("Failed to parse amount: {:?} and/or price: {:?} after 3 attempts\nGemini message:\n{}", amount, price, &message);
+                                        }
+                                        continue;
+                                    }
+                                } 
+                                else {
+                                    attempts += 1;
+                                    log::error!("Gemini: event is not an object after 3 attempts. message: 
+                                    {}
+                                    , prefix: {}
+                                    attempt #:{}", message, prefix, &attempts);
+                                    if attempts >= 3 {
+                                        panic!("Gemini: event is not an object after 3 attempts. message: {}, prefix: {}", message, prefix);
+                                    }
+                                    continue;
+                                }
                             } 
                             else {
-                                panic!("Gemini: event is not an object.
+                                attempts += 1;
+                                log::error!("Gemini: events is not an array after 3 attempts. 
                                 message: {}
-                                prefix: {}", message, prefix);
+                                , prefix: {}
+                                attempt#:{}", message, prefix, &attempts);
+                                if attempts >= 3 {
+                                    panic!("Gemini: events is not an array after 3 attempts. message: {}, prefix: {}", message, prefix);
+                                }
+                                continue;
                             }
                         } 
                         else {
-                            panic!("Gemini: events is not an array.
+                            attempts += 1;
+                            log::error!("Gemini: Value is not an object after 3 attempts.
                             message: {}
-                            prefix: {}", message, prefix);
+                            , prefix: {}
+                            attempt#:{}", message, prefix, &attempts);
+                            if attempts >= 3 {
+                                panic!("Gemini: Value is not an object after 3 attempts. message: {}, prefix: {}", message, prefix);
+                            }
+                            continue;
                         }
+                    },
+                    Err(e) => {
+                        attempts += 1;
+                        log::error!("Failed to parse JSON Gemini message after 3 attempts.
+                        Error: {}
+                        , Message: {}
+                        , Prefix: {}
+                        attempt#:{}", e, message, prefix, &attempts);
+                        if attempts >= 3 {
+                            panic!("Failed to parse JSON Gemini message after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
+                        }
+                        continue;
+                    },
+                }
+
+                let new_values = [amount, price];
+                let mut scaled_values: Vec<f64> = Vec::new();
+                for value in &new_values {
+                    if let Some(val) = value {
+                        scaled_values.push(val / divisor);
                     } 
                     else {
-                        panic!("Gemini: Value is not an object.
-                        message: {}
-                        prefix: {}", message, prefix);
+                        println!("One of the values was None");
+                        panic!("amount: {:?}, price: {:?}", &amount, &price);
                     }
-                },
-                Err(e) => {
-                    panic!("Failed to parse JSON Gemini message\nError: {}
-                    Message: {}
-                    Prefix: {}", e, message, prefix);
-                },
-            }
-
-            let new_values = [amount, price];
-            let mut scaled_values: Vec<f64> = Vec::new();
-            for value in &new_values {
-                if let Some(val) = value {
-                    scaled_values.push(val / divisor);
-                } 
+                }
+                if prefix.contains("sol") {
+                    let indices = [58, 59];
+                    println!("updating input 58, 59");
+                    let mut neural_network = 
+                        shared_neural_network.lock().await;
+                    neural_network.update_input(&indices, &scaled_values)
+                    .await;
+                }
+                else if prefix.contains("xrp") {
+                    let indices = [92, 93];
+                    println!("updating input 92, 93");
+                    let mut neural_network = 
+                        shared_neural_network.lock().await;
+                    neural_network.update_input(&indices, &scaled_values)
+                .await;
+                }
                 else {
-                    println!("One of the values was None");
-                    panic!("amount: {:?}, price: {:?}", &amount, &price);
+                    panic!("This shouid never occur. Somehow prefix cointained phrase
+                    Gemini received but didn't contain the phrases XLM or XRP.
+                    prefix is: {}\nmessage: {}", prefix, message);
                 }
             }
-            if prefix.contains("sol") {
-                let indices = [58, 59];
-                println!("updating input 58, 59");
-                let mut neural_network = 
-                    shared_neural_network.lock().await;
-                neural_network.update_input(&indices, &scaled_values)
-                .await;
-            }
-            else if prefix.contains("xrp") {
-                let indices = [92, 93];
-                println!("updating input 92, 93");
-                let mut neural_network = 
-                    shared_neural_network.lock().await;
-                neural_network.update_input(&indices, &scaled_values)
-            .await;
-            }
-            else {
-                panic!("This shouid never occur. Somehow prefix cointained phrase
-                Gemini received but didn't contain the phrases XLM or XRP.
-                prefix is: {}\nmessage: {}", prefix, message);
-            }
         }
-    }
-    else {
-        println!("Gemini: got a weird message: {}\nprefix:{}", message, prefix);
+        else {
+            println!("Gemini: got a weird message: {}\nprefix:{}", message, prefix);
+        }
     }
 }
 pub fn handle_all_others(prefix: &str, message: &str) {

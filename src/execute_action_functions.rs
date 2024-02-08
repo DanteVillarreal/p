@@ -539,6 +539,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values)
                     .await;
+                    break;
                 }
                 else if prefix.contains("xrp") {
                     let indices = [92, 93];
@@ -546,7 +547,8 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values)
-                .await;
+                    .await;
+                    break;
                 }
                 else {
                     panic!("This shouid never occur. Somehow prefix cointained phrase
@@ -557,6 +559,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
         }
         else {
             println!("Gemini: got a weird message: {}\nprefix:{}", message, prefix);
+            break;
         }
     }
 }

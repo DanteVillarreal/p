@@ -31318,7 +31318,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
     //02/07/24 - replaced with:
         let mut kraken_sell_price_bid: Option<f64> = None;
         let mut kraken_buy_price_ask: Option<f64> = None;
-        let value_after: Option<f64> = None;
+        let mut value_after: Option<f64> = None;
         let mut attempts = 0;
         
         loop {
@@ -31366,25 +31366,25 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                 
                                                 
                                                         //this will count as value after
-                                                            let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 
-                                                
-                                                
-                                                            //value_after = 60
-                                                            //coinbase = 61
-                                                            //bitstamp = 62
-                                                            //kraken = 63
-                                                            //gemini = 64
-                                                            //since this is kraken and gemini being updated, I will update:
-                                                            //  60, 63, 64
-                                                            let indices = [60, 63, 64];
-                                                            let new_values = [value_after, *kraken_wallet, *gemini_wallet];
-                                                            //01/24/24 - removed and added:
-                                                                //neural_network.update_input(&indices, &new_values);
-                                                                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                                                                //neural_network.update_input(&indices, &transformed_values).await;
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
+                                                    
+                                                    
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is kraken and gemini being updated, I will update:
+                                                                //  60, 63, 64
+                                                                let indices = [60, 63, 64];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+                                                                //01/24/24 - removed and added:
+                                                                    //neural_network.update_input(&indices, &new_values);
+                                                                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+                                                                    //neural_network.update_input(&indices, &transformed_values).await;
+                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                    neural_network.update_input(&indices, &scaled_values).await;
                                                     }
                                                     else {
                                                         log::error!("Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -31741,7 +31741,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         //02/07/24 - replaced with:
             let mut kraken_sell_price_bid: Option<f64> = None;
             let mut kraken_buy_price_ask: Option<f64> = None;
-            let value_after: Option<f64> = None;
+            let mut value_after: Option<f64> = None;
             let mut attempts = 0;
             
             loop {
@@ -31789,7 +31789,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                     
                                                     
                                                             //this will count as value after
-                                                                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 
                                                     
                                                     
@@ -31801,12 +31801,12 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                 //since this is kraken and gemini being updated, I will update:
                                                                 //  60, 63, 64
                                                                 let indices = [60, 63, 64];
-                                                                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
                                                                 //01/24/24 - removed and added:
                                                                     //neural_network.update_input(&indices, &new_values);
                                                                     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
                                                                     //neural_network.update_input(&indices, &transformed_values).await;
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
@@ -32164,7 +32164,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         //02/07/24 - replaced with:
             let mut kraken_sell_price_bid: Option<f64> = None;
             let mut kraken_buy_price_ask: Option<f64> = None;
-            let value_after: Option<f64> = None;
+            let mut value_after: Option<f64> = None;
             let mut attempts = 0;
             
             loop {
@@ -32212,7 +32212,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                     
                                                     
                                                             //this will count as value after
-                                                                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 
                                                     
                                                     
@@ -32224,12 +32224,12 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                 //since this is kraken and gemini being updated, I will update:
                                                                 //  60, 63, 64
                                                                 let indices = [60, 63, 64];
-                                                                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
                                                                 //01/24/24 - removed and added:
                                                                     //neural_network.update_input(&indices, &new_values);
                                                                     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
                                                                     //neural_network.update_input(&indices, &transformed_values).await;
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
@@ -32587,7 +32587,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         //02/07/24 - replaced with:
             let mut kraken_sell_price_bid: Option<f64> = None;
             let mut kraken_buy_price_ask: Option<f64> = None;
-            let value_after: Option<f64> = None;
+            let mut value_after: Option<f64> = None;
             let mut attempts = 0;
             
             loop {
@@ -32635,7 +32635,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                     
                                                     
                                                             //this will count as value after
-                                                                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 
                                                     
                                                     
@@ -32647,12 +32647,12 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                 //since this is kraken and gemini being updated, I will update:
                                                                 //  60, 63, 64
                                                                 let indices = [60, 63, 64];
-                                                                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
                                                                 //01/24/24 - removed and added:
                                                                     //neural_network.update_input(&indices, &new_values);
                                                                     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
                                                                     //neural_network.update_input(&indices, &transformed_values).await;
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
@@ -33010,7 +33010,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         //02/07/24 - replaced with:
             let mut kraken_sell_price_bid: Option<f64> = None;
             let mut kraken_buy_price_ask: Option<f64> = None;
-            let value_after: Option<f64> = None;
+            let mut value_after: Option<f64> = None;
             let mut attempts = 0;
             
             loop {
@@ -33058,7 +33058,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                     
                                                     
                                                             //this will count as value after
-                                                                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 
                                                     
                                                     
@@ -33070,12 +33070,12 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                 //since this is kraken and gemini being updated, I will update:
                                                                 //  60, 63, 64
                                                                 let indices = [60, 63, 64];
-                                                                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
                                                                 //01/24/24 - removed and added:
                                                                     //neural_network.update_input(&indices, &new_values);
                                                                     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
                                                                     //neural_network.update_input(&indices, &transformed_values).await;
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
@@ -33433,7 +33433,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         //02/07/24 - replaced with:
             let mut kraken_sell_price_bid: Option<f64> = None;
             let mut kraken_buy_price_ask: Option<f64> = None;
-            let value_after: Option<f64> = None;
+            let mut value_after: Option<f64> = None;
             let mut attempts = 0;
             
             loop {
@@ -33481,7 +33481,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                     
                                                     
                                                             //this will count as value after
-                                                                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 
                                                     
                                                     
@@ -33493,12 +33493,12 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                 //since this is kraken and gemini being updated, I will update:
                                                                 //  60, 63, 64
                                                                 let indices = [60, 63, 64];
-                                                                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
                                                                 //01/24/24 - removed and added:
                                                                     //neural_network.update_input(&indices, &new_values);
                                                                     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
                                                                     //neural_network.update_input(&indices, &transformed_values).await;
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
@@ -33856,7 +33856,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         //02/07/24 - replaced with:
             let mut kraken_sell_price_bid: Option<f64> = None;
             let mut kraken_buy_price_ask: Option<f64> = None;
-            let value_after: Option<f64> = None;
+            let mut value_after: Option<f64> = None;
             let mut attempts = 0;
             
             loop {
@@ -33904,7 +33904,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                     
                                                     
                                                             //this will count as value after
-                                                                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 
                                                     
                                                     
@@ -33916,12 +33916,12 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                 //since this is kraken and gemini being updated, I will update:
                                                                 //  60, 63, 64
                                                                 let indices = [60, 63, 64];
-                                                                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
                                                                 //01/24/24 - removed and added:
                                                                     //neural_network.update_input(&indices, &new_values);
                                                                     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
                                                                     //neural_network.update_input(&indices, &transformed_values).await;
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
@@ -34279,7 +34279,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         //02/07/24 - replaced with:
             let mut kraken_sell_price_bid: Option<f64> = None;
             let mut kraken_buy_price_ask: Option<f64> = None;
-            let value_after: Option<f64> = None;
+            let mut value_after: Option<f64> = None;
             let mut attempts = 0;
             
             loop {
@@ -34327,7 +34327,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                     
                                                     
                                                             //this will count as value after
-                                                                let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 
                                                     
                                                     
@@ -34339,12 +34339,12 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                 //since this is kraken and gemini being updated, I will update:
                                                                 //  60, 63, 64
                                                                 let indices = [60, 63, 64];
-                                                                let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
                                                                 //01/24/24 - removed and added:
                                                                     //neural_network.update_input(&indices, &new_values);
                                                                     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
                                                                     //neural_network.update_input(&indices, &transformed_values).await;
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {

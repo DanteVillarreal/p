@@ -300,3 +300,6 @@ Log of what I've done:
 02/07/24 - fixed infinite loop, lol.
 02/07/24 - added new loop for xrp gemini_kraken. Next step is to run starting from 0. Already removed the replay buffers. I got this!
 02/07/24 - retard alert! I for some reason re-initialized value_after after I initialized it so I got an error pretty fast. I have removed it from the xrp gemini kraken action_functions.              I AM STARTING network FROM 0. I WILL REMOVE REPLAY BUFFERS IF ANY. I got this!
+02/08/24 - added more info on print statements saying updating input. I got this!
+02/09/24 - NOT A COMMIT. restarted run and removed ALL replay buffers because I added new log errors that were once print ln and I think I got a lot of previous panics of some urls that didnt cause entire program to crash JUST the TASK SPAWN. so I am restarting the run from 0 and removing ALL replay buffers. starting from 0.     I got this!
+02/09/24 - UPDATED TOKIO commit. Removed deprecated functions in main.          Starting from 0. removing ALL replay buffers. I got this!

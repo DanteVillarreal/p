@@ -85,7 +85,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
         if prefix.contains("SOL") {
             //do the indices and update input and lock
             let indices: [usize; 7] = [0, 1, 2, 3, 4, 5, 6];
-            println!("updating input 0 to 6");
+            println!("updating input 0 to 6. price:{:?}", &coinbase_price);
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -93,7 +93,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
         else if prefix.contains("XLM") {
             //do the indices and update input and lock
             let indices: [usize; 7] = [7, 8, 9, 10, 11, 12, 13];
-            println!("updating input 7 to 13");
+            println!("updating input 7 to 13. price:{:?}", &coinbase_price);
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -101,7 +101,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
         }
         else if prefix.contains("XRP") {
             //first indices larger than last time
-            println!("updating input 65 to 71");
+            println!("updating input 65 to 71. price:{:?}", &coinbase_price);
             let indices: [usize; 7] = [65, 66, 67, 68, 69, 70, 71];
             let mut neural_network = 
                 shared_neural_network.lock().await;
@@ -314,7 +314,7 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
         if prefix.contains("SOL") {
             let indices: [usize; 20] = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
                 25, 26, 27, 28, 29, 30, 31, 32, 33];
-            println!("updating input 14 to 33");
+            println!("updating input 14 to 33. best ask:{:?} best bid: {:?}", &a_0, &b_0);
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -322,7 +322,7 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
         else if prefix.contains("XLM") {
             let indices: [usize; 20] = [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
                 46, 47, 48, 49, 50, 51, 52, 53];
-            println!("updating input 34 to 53");
+            println!("updating input 34 to 53. best ask:{:?} best bid: {:?}", &a_0, &b_0);
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -332,7 +332,7 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
             //  65 to 71 is in coinbase
             let indices: [usize; 20] = [72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83,
                 84, 85, 86, 87, 88, 89, 90, 91];
-            println!("updating input 72 to 91");
+            println!("updating input 72 to 91. best ask:{:?} best bid: {:?}", &a_0, &b_0);
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -397,14 +397,14 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
         if prefix.contains("XRP") {
             //going to use SOL indices as XRP
             let indices: [usize; 2] = [54, 55];
-            println!("updating input 54, 55");
+            println!("updating input 54, 55. price:{:?}", &price);
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
         }
         else if prefix.contains("XLM") {
             let indices: [usize; 2] = [56, 57];
-            println!("updating input 56, 57");
+            println!("updating input 56, 57. price:{:?}", &price);
             let mut neural_network = 
                 shared_neural_network.lock().await;
             neural_network.update_input(&indices, &scaled_values).await;
@@ -534,7 +534,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                 }
                 if prefix.contains("sol") {
                     let indices = [58, 59];
-                    println!("updating input 58, 59");
+                    println!("updating input 58, 59. price:{:?}", &price);
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values)
@@ -543,7 +543,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                 }
                 else if prefix.contains("xrp") {
                     let indices = [92, 93];
-                    println!("updating input 92, 93");
+                    println!("updating input 92, 93. price:{:?}", &price);
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values)

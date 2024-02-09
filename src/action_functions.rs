@@ -13,10 +13,11 @@ use base64;
 use base64::encode;
 use serde_json::json;                               //use for gemini formatting
 use uuid::Uuid;										//this is for bitstamp. part of the input for the signature needs to have a weird nonce
-use std::time::Instant;                             //this is to record time for execution
-use std::time::Duration;                            //for "sleep"
-use std::thread::sleep;                          
-use tokio::time::delay_for;
+//use std::time::Instant;                             //this is to record time for execution
+//02/09/24 - changed from std::time to tokio::time
+use tokio::time::Duration;                            //for "sleep"
+//use std::thread::sleep;                          
+//use tokio::time::delay_for;                       //02/09/24 - tokip updated. not in it
 
 use crate::network::NeuralNetwork;                         //to take in neuralNetwork as parameter
 
@@ -1161,8 +1162,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-    
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 5 coinbase kraken: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
     
     
     
@@ -1411,8 +1416,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-    
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 6 coinbase kraken: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -1660,7 +1669,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 7 coinbase kraken: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -1907,7 +1921,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 8 coinbase kraken: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -2154,7 +2173,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 9 coinbase kraken: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -2401,7 +2425,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 10 coinbase kraken: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -3113,7 +3142,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 3 coinbase bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -3362,7 +3396,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 4 coinbase bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -3612,7 +3651,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 5 coinbase bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -3859,7 +3903,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 6 coinbase bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -4109,7 +4158,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 7 coinbase bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -4360,7 +4414,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 8 coinbase bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -4611,7 +4670,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 9 coinbase bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -4861,7 +4925,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 10 coinbase bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
     
     
     
@@ -5539,7 +5608,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 3 gemini coinbase: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
         //---------------------------Coinbase---------------------------------------------//
@@ -5787,7 +5861,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 4 gemini coinbase: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
         //---------------------------Coinbase---------------------------------------------//
@@ -6035,7 +6114,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 5 gemini coinbase: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -6285,7 +6369,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 6 gemini coinbase: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -6533,7 +6622,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 7 gemini coinbase: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -6783,7 +6877,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 8 gemini coinbase: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -7032,7 +7131,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 9 gemini coinbase: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -7280,7 +7384,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 10 gemini coinbase: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -8539,7 +8648,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 5 gemini kraken: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -8810,7 +8924,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 6 gemini kraken: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
         //---------------------------Kraken---------------------------------------------//
@@ -9080,7 +9199,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 7 gemini kraken: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
         //---------------------------Kraken---------------------------------------------//
@@ -9351,7 +9475,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 8 gemini kraken: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
         //---------------------------Kraken---------------------------------------------//
@@ -9622,7 +9751,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 9 gemini kraken: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
         //---------------------------Kraken---------------------------------------------//
@@ -9892,7 +10026,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 10 gemini kraken: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -10624,7 +10763,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 3 gemini bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -10868,7 +11012,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 4 gemini bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -11113,7 +11262,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 5 gemini bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -11357,7 +11511,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 6 gemini bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -11601,7 +11760,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 7 gemini bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -11845,7 +12009,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 8 gemini bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -12089,7 +12258,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 9 gemini bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -12334,7 +12508,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 10 gemini bitstamp: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -13656,7 +13835,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 5 kraken coinbase: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -13933,7 +14117,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 6 kraken coinbase: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -14211,7 +14400,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("sol 7 kraken coinbase: 3 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(3);
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -14487,7 +14681,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 8 kraken coinbase: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -14766,7 +14965,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 9 kraken coinbase: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -15042,7 +15246,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 10 kraken coinbase: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -16287,7 +16496,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 5 kraken bitstamp: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -16552,7 +16766,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 6 kraken bitstamp: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -16817,7 +17036,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 7 kraken bitstamp: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -17082,7 +17306,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 8 kraken bitstamp: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -17346,7 +17575,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 9 kraken bitstamp: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -17611,7 +17845,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
         //serves as transaction time
-        delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("sol 10 kraken bitstamp: 3 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(3);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -17877,8 +18116,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 5 coinbase kraken: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
             
     
     
@@ -18126,8 +18369,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 6 coinbase kraken: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
             
     
     
@@ -18374,8 +18621,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 7 coinbase kraken: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
             
     
     
@@ -18622,8 +18873,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 8 coinbase kraken: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
             
     
     
@@ -18870,8 +19125,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 9 coinbase kraken: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
             
     
     
@@ -19118,8 +19377,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+            println!("xlm 10 coinbase kraken: 5 sec delay");
+            let when = tokio::time::Instant::now() + Duration::from_secs(5);
+            tokio::time::sleep_until(when).await;
             
     
     
@@ -19366,8 +19629,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 3 coinbase bitstamp: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -19607,8 +19874,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 4 coinbase bitstamp: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -19850,8 +20121,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 5 coinbase bitstamp: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -20092,8 +20367,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 6 coinbase bitstamp: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -20334,8 +20613,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 7 coinbase bitstamp: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -20576,8 +20859,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 8 coinbase bitstamp: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -20818,8 +21105,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 9 coinbase bitstamp: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -21060,8 +21351,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 10 coinbase bitstamp: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -21319,8 +21614,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 5 kraken coinbase: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -21586,8 +21885,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 6 kraken coinbase: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -21853,8 +22156,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 7 kraken coinbase: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -22120,8 +22427,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 8 kraken coinbase: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -22387,8 +22698,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 9 kraken coinbase: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -22654,8 +22969,12 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
     
-            println!("3 second wait");
-            delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. removed:  
+                //delay_for(Duration::from_secs(3)).await;
+            //02/09/24 - updated tokio. added in its place:
+                println!("xlm 10 kraken coinbase: 5 sec delay");
+                let when = tokio::time::Instant::now() + Duration::from_secs(5);
+                tokio::time::sleep_until(when).await;
 
 
 
@@ -24348,7 +24667,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 3 coinbase bitstamp: 8 sec delay");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -24598,7 +24918,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 4 coinbase bitstamp: 8 sec delay");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -24848,7 +25169,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 5 coinbase bitstamp: 8 sec delay");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -25098,7 +25420,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 6 coinbase bitstamp: 8 sec delay");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -25348,7 +25671,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 7 coinbase bitstamp: 8 sec delay");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -25598,7 +25922,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 8 coinbase bitstamp: 8 sec delay");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -25848,7 +26173,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 9 coinbase bitstamp: 8 sec delay");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -26098,7 +26424,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 10 coinbase bitstamp: 8 sec delay...");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -26313,7 +26640,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 3 gemini bitstamp  delay: 8 sec...");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -26493,7 +26821,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 4 gemini bitstamp  delay: 8 sec...");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -26673,7 +27002,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 5 gemini bitstamp  delay: 8 sec...");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -26853,7 +27183,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 6 gemini bitstamp  delay: 8 sec...");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -27033,7 +27364,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 7 gemini bitstamp  delay: 8 sec...");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -27214,7 +27546,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 8 gemini bitstamp  delay: 8 sec...");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -27394,7 +27727,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 9 gemini bitstamp  delay: 8 sec...");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -27574,7 +27908,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 10 gemini bitstamp  delay: 8 sec...");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -27799,7 +28134,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             println!("xrp 4 kraken bitstamp  delay: 8 sec...");
             let when = tokio::time::Instant::now() + Duration::from_secs(8);
-            tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -28032,7 +28368,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         println!("xrp 5 kraken bitstamp  delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
 
 
 
@@ -28265,7 +28602,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         println!("xrp 6 kraken bitstamp  delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -28498,7 +28836,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         println!("xrp 7 kraken bitstamp  delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -28731,7 +29070,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         println!("xrp 8 kraken bitstamp  delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -28964,7 +29304,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         println!("xrp 9 kraken bitstamp  delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -29197,7 +29538,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         println!("xrp 10 kraken bitstamp  delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -29385,7 +29727,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         println!("xrp 3 gemini coinbase simulated exchange delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -29604,9 +29947,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        println!("xrp 4 gemini coinbase simulated exchange delay: 8 sec...");
+        println!("xrp 4 gemini coinbase 8 sec delay...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -29825,9 +30169,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        println!("xrp 5 gemini coinbase simulated exchange delay: 8 sec...");
+        println!("xrp 5 gemini coinbase simulated 8 sec delay...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -30046,9 +30391,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        println!("xrp 6 gemini coinbase simulated exchange delay: 8 sec...");
+        println!("xrp 6 gemini coinbase simulated 8 sec delay...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -30267,9 +30613,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        println!("xrp 7 gemini coinbase simulated exchange delay: 8 sec...");
+        println!("xrp 7 gemini coinbase simulated 8 sec delay...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -30488,9 +30835,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        println!("xrp 8 gemini coinbase simulated exchange delay: 8 sec...");
+        println!("xrp 8 gemini coinbase simulated 8 sec delay...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -30709,9 +31057,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        println!("xrp 9 gemini coinbase simulated exchange delay: 8 sec...");
+        println!("xrp 9 gemini coinbase simulated 8 sec delay...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -30930,9 +31279,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        println!("xrp 10 gemini coinbase simulated exchange delay: 8 sec...");
+        println!("xrp 10 gemini coinbase simulated 8 sec delay...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -31212,7 +31562,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
     println!("xrp 3 gemini kraken simulated exchange delay: 8 sec...");
     let when = tokio::time::Instant::now() + Duration::from_secs(8);
-    tokio::time::delay_until(when).await;
+    //02/09/24 - updated tokio. changed to sleep_until
+    tokio::time::sleep_until(when).await;
 
 
 
@@ -31633,9 +31984,10 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
 
 
-        println!("xrp 4 gemini kraken simulated exchange delay: 8 sec...");
+        println!("xrp 4 gemini kraken simulated 8 sec delay...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -32058,7 +32410,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 5 gemini kraken simulated exchange delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -32481,7 +32834,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 6 gemini kraken simulated exchange delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -32904,7 +33258,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 7 gemini kraken simulated exchange delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -33327,7 +33682,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 8 gemini kraken simulated exchange delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -33750,7 +34106,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 9 gemini kraken simulated exchange delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -34173,7 +34530,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 10 gemini kraken simulated exchange delay: 8 sec...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -34573,7 +34931,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 3 coinbase kraken: 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -34815,7 +35174,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 4 coinbase kraken: 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -35057,7 +35417,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 5 coinbase kraken: 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -35299,7 +35660,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 6 coinbase kraken: 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -35540,7 +35902,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 7 coinbase kraken: 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -35781,7 +36144,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 8 coinbase kraken: 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -36022,7 +36386,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 9 coinbase kraken: 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -36263,7 +36628,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 
         println!("xrp 10 coinbase kraken: 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -36586,7 +36952,8 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
 
     println!("xrp 4 kraken coinbase : 8 sec delay");
     let when = tokio::time::Instant::now() + Duration::from_secs(8);
-    tokio::time::delay_until(when).await;
+    //02/09/21 - tokio update. changed from delay_until to sleep_until
+    tokio::time::sleep_until(when).await;
 
 
 
@@ -37038,7 +37405,8 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
 
         println!("xrp 5 kraken coinbase : 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -37490,7 +37858,8 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
 
         println!("xrp 6 kraken coinbase : 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -37942,7 +38311,8 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
 
         println!("xrp 7 kraken coinbase : 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -38394,7 +38764,8 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
 
         println!("xrp 8 kraken coinbase : 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -38846,7 +39217,8 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
 
         println!("xrp 9 kraken coinbase : 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 
@@ -39298,7 +39670,8 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
 
         println!("xrp 10 kraken coinbase : 8 sec delay");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        tokio::time::delay_until(when).await;
+        //02/09/21 - tokio update. changed from delay_until to sleep_until
+        tokio::time::sleep_until(when).await;
 
 
 

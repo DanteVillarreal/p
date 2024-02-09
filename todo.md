@@ -303,3 +303,4 @@ Log of what I've done:
 02/08/24 - added more info on print statements saying updating input. I got this!
 02/09/24 - NOT A COMMIT. restarted run and removed ALL replay buffers because I added new log errors that were once print ln and I think I got a lot of previous panics of some urls that didnt cause entire program to crash JUST the TASK SPAWN. so I am restarting the run from 0 and removing ALL replay buffers. starting from 0.     I got this!
 02/09/24 - UPDATED TOKIO commit. Removed deprecated functions in main.          Starting from 0. removing ALL replay buffers. I got this!
+02/09/24 - UPDATED REQWEST commit. Starting from 0. removing ALL replay buffers. I got this!

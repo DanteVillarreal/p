@@ -25,7 +25,7 @@ use dotenv::dotenv;
 //use std::time::Instant;                             //this is to record time for execution
 use std::process::{Command, Stdio, ChildStdout};                 //for piping websocket client
 use std::io::{BufRead, BufReader};//this is to help us read from stdin
-use serde_json::Value;          //good for parsing intput in JSON format
+//use serde_json::Value;          //good for parsing intput in JSON format
 //use tokio::time::delay_for;                         //for "sleep", but in async functions. 02/09/24 - removed for tokio update
 //use std::time::Duration;                            //for use in conjunction with delay_for
 //use std::sync::Mutex;                             //cant use this because not async
@@ -1215,7 +1215,7 @@ async fn main() ->Result<(), Box<dyn Error>>  {
     };
 
     //01/19/24 - added:
-    let mut gradient_network = GradientNetwork {
+    let gradient_network = GradientNetwork {
         layers: Vec::new(),
     };
     let mut neural_network = NeuralNetwork {
@@ -1271,6 +1271,25 @@ async fn main() ->Result<(), Box<dyn Error>>  {
     //NOT FOR PARSING BUT I NEED THIS BEFORE THE FOR LOOP STARTS
     let mut epsilon = 1.0;
     //---------beginning of code so I can execute functions----------//
+
+
+
+
+    //02/13/24 - for testing purposes. will remove once done:
+    // let start_time = tokio::time::Instant::now(); // Capture the time before the line executes
+
+    // let mut neural_network = shared_neural_network.lock().await; // The line of code
+
+    // let elapsed_time = start_time.elapsed(); // Calculate the elapsed time
+
+    // println!("Time taken: {:?}", elapsed_time); // Print the elapsed time
+
+
+
+
+
+
+
     
     dotenv().expect("Failed to load .env file");
     let coinbase_secret = env::var("COINBASE_SECRET_KEY").expect("SECRET_KEY must be set. check if even have .env file and if that is in it");
@@ -1620,9 +1639,12 @@ async fn main() ->Result<(), Box<dyn Error>>  {
         
                         //----------------NEURAL-NETWORK-DROPPED-----------------//
                             drop(neural_network);
-                            println!("1 sec delay for new inputs");
+                            //02/13/24 - changed from 1 sec to 50 millisec. this should allow for more
+                            //      immediate state to be seen. I just want enough time for all the inputs
+                            //      in the queue to be realized. Hopefully this is enough time
+                            println!("target q value 50 millisec delay for input queue to be finished");
                             //02/09/24 - changed Duration from std::time::duration to tokio::time::Duration
-                            let when = tokio::time::Instant::now() + tokio::time::Duration::from_secs(1);
+                            let when = tokio::time::Instant::now() + tokio::time::Duration::from_millis(50);
                             //02/09/24 - tokio updated. removed delay_until. replaced with sleep_until
                             tokio::time::sleep_until(when).await;
         
@@ -1661,6 +1683,10 @@ async fn main() ->Result<(), Box<dyn Error>>  {
                             let mut replay_buffer = ReplayBuffer::new(1);
                             replay_buffer.push(transition);
                             let _dummyvar = replay_buffer.save_replay_buffer_v2();
+                            //02/13/24 - added:
+                                println!("200 millisec delay for new inputs");
+                                let when = tokio::time::Instant::now() + tokio::time::Duration::from_millis(200);
+                                tokio::time::sleep_until(when).await;
                         }
                 }
                 else {

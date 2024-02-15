@@ -1030,7 +1030,8 @@
 				let index = match index_of_largest_qvalue {
 					Some(index) => index,
 					//01/24/24 - modified to include indexx
-					None => panic!("index_of_largest_qvalue was never initialized. Indexx is:\n{}", indexx),
+					None => panic!("index_of_largest_qvalue was never initialized. Indexx is:\n{}
+					check waht the q values were. they were probably -inf or NaN", indexx),
 				};
 				//this returns both the index and the largest_q_value_so_far.
 				//why no semicolon?

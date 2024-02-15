@@ -245,29 +245,29 @@
 			let random_transition = &replay_buffer.buffer[random_index];
 		
 			Ok(random_transition.clone())
-		}
-		//02/14/24 - added:
-		pub fn delete_most_recent_files(base_path: &str, x: usize) -> std::io::Result<()> {
-			let mut heap = std::collections::BinaryHeap::new();
-		
-			for entry in std::fs::read_dir(base_path)? {
-				let entry = entry?;
-				let metadata = std::fs::metadata(entry.path())?;
-				let timestamp = metadata.modified()?;
-				heap.push((timestamp, entry.path()));
-			}
-		
-			for _ in 0..x {
-				if let Some((_, path)) = heap.pop() {
-					fs::remove_file(path)?;
-				}
-			}
-		
-			Ok(())
-		}
-	
+		}	
 	}
+	//02/14/24 - added:
+	pub fn delete_most_recent_replay_buffers( x: usize) -> std::io::Result<()> {
+		let base_path = "D:\\Downloads\\PxOmni\\rust_replay_buffers";
+		let mut heap = std::collections::BinaryHeap::new();
 	
+		for entry in std::fs::read_dir(base_path)? {
+			let entry = entry?;
+			let metadata = std::fs::metadata(entry.path())?;
+			let timestamp = metadata.modified()?;
+			heap.push((timestamp, entry.path()));
+		}
+	
+		for _ in 0..x {
+			if let Some((_, path)) = heap.pop() {
+				fs::remove_file(&path)?;
+				log::info!("Deleted replay_buffer: {:?}", &path);
+			}
+		}
+	
+		Ok(())
+	}
 
 
 

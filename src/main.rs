@@ -11,7 +11,7 @@ use std::env;                                       //so I can use .env files an
 // use rand::Rng;
 // use hmac::{Hmac, Mac,};	                            //so I can do the signature stuff
 // use sha2::{Sha256, Sha384, Sha512, Digest};	        //so I can do signature stuff
-use p::network::{NeuralNetwork, NetworkLayer, ReplayBuffer, GradientNetwork, Transition};
+use p::network::{NeuralNetwork, NetworkLayer, ReplayBuffer, GradientNetwork, Transition, delete_most_recent_replay_buffers};
 //use p::network::NetworkLayer;
 //use p::network::ReplayBuffer;
 //use p::network::GradientNetwork;                    //to use gradients
@@ -2205,8 +2205,8 @@ async fn main()   {
                                 let mut replay_buffer = ReplayBuffer::new(1);
                                 replay_buffer.push(transition);
                                 //02/14/24 - changed to actually do something wtih error
-                                let save_replay = match replay_buffer.save_replay_buffer_v2() {
-                                    Ok(value) => {
+                                match replay_buffer.save_replay_buffer_v2() {
+                                    Ok(_) => {
                                         log::info!("successfully saved replay_buffer at this loop's 
                                         iteration: {}
                                         total iteration: {}",
@@ -2249,81 +2249,91 @@ async fn main()   {
             }
         });
         
-        let websocket_client = 
-            Command::new(r"C:\Users\djv60\projects\testw\target\debug\testw.exe")
-                .stdout(Stdio::piped())
-                .spawn()
-                .expect("Failed to start WebSocket client");
-    
-        if let Some(ref mut client) = websocket_client {
-            let stdout = client.stdout.take().expect("Failed to get stdout");
-            let reader = BufReader::new(stdout);
-        
-            let shared_neural_network_clone2 = 
-                Arc::clone(&shared_neural_network);
-            let read_lines_task = task::spawn({
-                let shared_neural_network = shared_neural_network_clone2;
-                async move{
-                    read_lines(reader, shared_neural_network, &divisor).await;
-                }
-            });
-        
+        let mut websocket_client = 
+        Command::new(r"C:\Users\djv60\projects\testw\target\debug\testw.exe")
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("Failed to start WebSocket client");
 
-            tokio::select! {
-                _ = read_lines_task => {
-                    // This branch is executed if read_lines_task finishes first (either 
-                    //      successfully or with a panic)
-                    // Handle panic in read_lines_task here
-                        // Stop cycle_task from doing more loops
-                            stop1.store(true, Ordering::Relaxed); 
-                        //if replay_buffer_counter_for_this_iteration >= 9, delete most recent 9
-                        //else  delete those
-                        //if iteration_counter_for_for_loop_this_iteration > 8, delete most
-                        //      recent 8. then add this number to 
-                        //      iteration_counter_for_for_loop_total
-                        //kill websocket_client
-                            let kill_result = websocket_client.kill();
-                            match kill_result {
-                                Ok(_) => {
-                                    log::info!("Successfully killed the websocket client
-                                        at iteration: {}
-                                        this loop's iteration: {}.", &iteration_counter_for_for_loop_total, 
-                                        &iteration_counter_for_for_loop_this_iteration);
-                                },
-                                Err(e) => {
-                                    panic!("Failed to kill the websocket client: {:?}
-                                    total iteration: {}
-                                    this loop's iteration: {}", e, &iteration_counter_for_for_loop_total, 
-                                    &iteration_counter_for_for_loop_this_iteration);
-                                }
-                            }
-                        //wait 5 minutes
-                        let when = tokio::time::Instant::now() + tokio::time::Duration::from_secs(5*60);
-                        tokio::time::sleep_until(when).await;
-                        //restart loop
-                            //continue;
-                }
-                res = cycle_task => {
-                    // This branch is executed if cycle_task finishes first (either successfully or with a panic)
-                    iteration_counter_for_for_loop_total += iteration_counter_for_for_loop_this_iteration;
-                    match res {
-                        Ok(_) => {
-                            // If cycle_task finishes, panic the whole program
-                            panic!("cycle_task finished. total iteration count was {}.
-                            check if this is equal to the max that Im iterating for.
-                            if it is that means it finished successfully", 
-                                &iteration_counter_for_for_loop_total );
-                        }
-                        Err(e) => {
-                            // If cycle_task panics, panic the whole program
-                            panic!("cycle_task panicked: {:?}
-                            total iteration count was {}", e, &iteration_counter_for_for_loop_total);
-                        }
+    
+        let websocket_client_stdout = websocket_client.stdout.take().expect("Failed to get stdout");
+        let reader = BufReader::new(websocket_client_stdout);
+    
+        let shared_neural_network_clone2 = 
+            Arc::clone(&shared_neural_network);
+        let read_lines_task = task::spawn({
+            let shared_neural_network = shared_neural_network_clone2;
+            async move{
+                read_lines(reader, shared_neural_network, &divisor).await;
+            }
+        });
+    
+
+        tokio::select! {
+            _ = read_lines_task => {
+                // This branch is executed if read_lines_task finishes first (either 
+                //      successfully or with a panic)
+                // Handle panic in read_lines_task here
+                    // Stop cycle_task from doing more loops
+                        stop1.store(true, Ordering::Relaxed); 
+                    //if replay_buffer_counter_for_this_iteration >= 9, delete most recent 9
+                    //else  delete those
+                    //if iteration_counter_for_for_loop_this_iteration > 8, delete most
+                    //      recent 8. then add this number to 
+                    //      iteration_counter_for_for_loop_total
+                    //kill websocket_client
+                    if replay_buffer_counter_for_this_iteration >= 9 {
+                        delete_most_recent_replay_buffers(9);
+                    }
+                    else {
+                        delete_most_recent_replay_buffers(replay_buffer_counter_for_this_iteration);
+                    }
+                    if iteration_counter_for_for_loop_this_iteration > 8 {
+                        iteration_counter_for_for_loop_total += iteration_counter_for_for_loop_this_iteration - 8;
                     }
 
+                        let kill_result = websocket_client.kill();
+                        match kill_result {
+                            Ok(_) => {
+                                log::info!("Successfully killed the websocket client
+                                    at iteration: {}
+                                    this loop's iteration: {}.", &iteration_counter_for_for_loop_total, 
+                                    &iteration_counter_for_for_loop_this_iteration);
+                            },
+                            Err(e) => {
+                                panic!("Failed to kill the websocket client: {:?}
+                                total iteration: {}
+                                this loop's iteration: {}", e, &iteration_counter_for_for_loop_total, 
+                                &iteration_counter_for_for_loop_this_iteration);
+                            }
+                        }
+                    //wait 5 minutes
+                    let when = tokio::time::Instant::now() + tokio::time::Duration::from_secs(5*60);
+                    tokio::time::sleep_until(when).await;
+                    //restart loop
+                        //continue;
+            }
+            res = cycle_task => {
+                // This branch is executed if cycle_task finishes first (either successfully or with a panic)
+                iteration_counter_for_for_loop_total += iteration_counter_for_for_loop_this_iteration;
+                match res {
+                    Ok(_) => {
+                        // If cycle_task finishes, panic the whole program
+                        panic!("cycle_task finished. total iteration count was {}.
+                        check if this is equal to the max that Im iterating for.
+                        if it is that means it finished successfully", 
+                            &iteration_counter_for_for_loop_total );
+                    }
+                    Err(e) => {
+                        // If cycle_task panics, panic the whole program
+                        panic!("cycle_task panicked: {:?}
+                        total iteration count was {}", e, &iteration_counter_for_for_loop_total);
+                    }
                 }
+
             }
         }
+        
     }
 
 

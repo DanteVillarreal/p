@@ -14,6 +14,8 @@
 	use std::fs;														//for replay_buffer
 	use tokio::sync::Mutex;                             // Use async Mutex from Tokio
 	use std::sync::Arc;  // Use Arc to share Mutex among multiple tasks
+	use std::collections::BinaryHeap;					//02/14/24 - added: to help delete replay buffers
+	use std::time::SystemTime;							//02/14/24 - added: to help delete replay buffers
 
 	//STANDARD INITIALIZATION OF PARTS OF NEURAL NETWORK
 	
@@ -213,6 +215,7 @@
 			}
 		}
 		//01/20/24 added:
+		//DEPRECATED. NEVER ONCE USED. DO NOT USE
 		pub fn sample_random_replay_buffer(&self) -> std::io::Result<Transition> {
 			let base_path = Path::new("D:\\Downloads\\PxOmni\\rust_replay_buffers");
 			let mut rng = rand::thread_rng();
@@ -242,6 +245,25 @@
 			let random_transition = &replay_buffer.buffer[random_index];
 		
 			Ok(random_transition.clone())
+		}
+		//02/14/24 - added:
+		pub fn delete_most_recent_files(base_path: &str, x: usize) -> std::io::Result<()> {
+			let mut heap = std::collections::BinaryHeap::new();
+		
+			for entry in std::fs::read_dir(base_path)? {
+				let entry = entry?;
+				let metadata = std::fs::metadata(entry.path())?;
+				let timestamp = metadata.modified()?;
+				heap.push((timestamp, entry.path()));
+			}
+		
+			for _ in 0..x {
+				if let Some((_, path)) = heap.pop() {
+					fs::remove_file(path)?;
+				}
+			}
+		
+			Ok(())
 		}
 	
 	}

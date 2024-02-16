@@ -685,7 +685,8 @@
 
 	//01/20/24 added-
 	//01/28/24 - added the bool and the new functionality
-	pub fn save_reward(reward: &f64, exploration_or_exploitation: bool, i: &usize) -> std::io::Result<()> {
+	//02/16/24 - added index_chosen_for_current_state: &usize as another parameter
+	pub fn save_reward(reward: &f64, exploration_or_exploitation: bool, i: &usize, index_chosen_for_current_state: &usize) -> std::io::Result<()> {
 		//01/28/24 - added:
 		let exploit_or_explore: Option<&str>;
 		if exploration_or_exploitation == true {
@@ -706,10 +707,11 @@
 			let mut file = fs::OpenOptions::new().write(true).append(true).create(true).open(file_path)?;
 		//02/03/24 - added the if condition
 			if reward <= &0.0 {
-				writeln!(file, "{},{}\t{:?}\ti:{}", reward, timestamp, exploit_or_explore, i)?;
+				//02/16/24 - added \tindex_chosen: {} and the var
+				writeln!(file, "{},{}\t{:?}\ti:{}\tindex_chosen: {}", reward, timestamp, exploit_or_explore, i, index_chosen_for_current_state)?;
 			}
 			else {
-				writeln!(file, "+{},{}\t{:?}\ti:{}", reward, timestamp, exploit_or_explore, i)?;
+				writeln!(file, "+{},{}\t{:?}\ti:{}\tindex_chosen: {}", reward, timestamp, exploit_or_explore, i, index_chosen_for_current_state)?;
 			}
 		//writeln!(file, "{},{}\t{:?}", reward, timestamp, exploit_or_explore)?;
 		Ok(())
@@ -3706,7 +3708,9 @@
 				//let _unused_variable = save_reward(&the_reward);
 			//01/24/24 - added:
 				println!("reward:{}", &the_reward);
-				match save_reward(&the_reward, exploration_or_exploitation, &i) {
+				//02/16/24 - added: index_chosen_for_current_state as parameter
+				match save_reward(&the_reward, exploration_or_exploitation, &i,
+				&index_chosen_for_current_state) {
 					Ok(_) => println!("Reward saved successfully."),
 					Err(e) => println!("Failed to save reward: {}\n\n\n\n\n", e),
 				}

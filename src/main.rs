@@ -2283,10 +2283,10 @@ async fn main()   {
                     //      iteration_counter_for_for_loop_total
                     //kill websocket_client
                     if replay_buffer_counter_for_this_iteration >= 9 {
-                        delete_most_recent_replay_buffers(9);
+                        let _ = delete_most_recent_replay_buffers(9);
                     }
                     else {
-                        delete_most_recent_replay_buffers(replay_buffer_counter_for_this_iteration);
+                        let _ = delete_most_recent_replay_buffers(replay_buffer_counter_for_this_iteration);
                     }
                     if iteration_counter_for_for_loop_this_iteration > 8 {
                         iteration_counter_for_for_loop_total += iteration_counter_for_for_loop_this_iteration - 8;
@@ -2311,7 +2311,7 @@ async fn main()   {
                     let when = tokio::time::Instant::now() + tokio::time::Duration::from_secs(5*60);
                     tokio::time::sleep_until(when).await;
                     //restart loop
-                        //continue;
+                    //continue;
             }
             res = cycle_task => {
                 // This branch is executed if cycle_task finishes first (either successfully or with a panic)

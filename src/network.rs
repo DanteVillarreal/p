@@ -1136,7 +1136,8 @@
 			}
 			else  {
 				//for the first 300...
-				if i <= &1300 {
+				//02/17/24 - changed from 1300 to 3000
+				if i <= &3000 {
 					//every 10 iterations, make it exploit. aka true
 					if i%10 == 0 {
 						exploit_or_explore = Some(true);
@@ -1146,7 +1147,8 @@
 					}
 				}
 				//for the next 400...
-				else if i <= &1700 {
+				//02/17/24 - changed from 1700 to 7_000
+				else if i <= &7_000 {
 					//every 9 iterations, make it exploit. aka true
 					if i%9 == 0 {
 						exploit_or_explore = Some(true);
@@ -1156,7 +1158,8 @@
 					}
 				}
 				//for the next 500...
-				else if i <= &2200 {
+				//02/17/24 - changed from 2200 to 15_000
+				else if i <= &15_000 {
 					//every 8 iterations, make it exploit. aka true
 					if i%8 == 0 {
 						exploit_or_explore = Some(true);
@@ -1166,7 +1169,8 @@
 					}
 				}
 				//for the next 600...
-				else if i <= &2800 {
+				//02/17/24 - changed from 2800 to 31_000
+				else if i <= &31_000 {
 					//every 7 iterations, make it exploit. aka true
 					if i%7 == 0 {
 						exploit_or_explore = Some(true);
@@ -1176,7 +1180,8 @@
 					}
 				}
 				//for the next 700...
-				else if i <= &3500 {
+				//02/17/24 - changed from 3500 to 60_000
+				else if i <= &60_000 {
 					//every 6 iterations, make it exploit. aka true
 					if i%6 == 0 {
 						exploit_or_explore = Some(true);
@@ -1186,7 +1191,8 @@
 					}
 				}
 				//for the next 800...
-				else if i <= &4300 {
+				//02/17/24 - changed from 4300 to 80_000
+				else if i <= &80_000 {
 					//every 5 iterations, make it exploit. aka true
 					if i%5 == 0 {
 						exploit_or_explore = Some(true);
@@ -1196,7 +1202,8 @@
 					}
 				}
 				//for the next 900...
-				else if i <= &5200 {
+				//02/17/24 - changed from 5200 to 100_000
+				else if i <= &100_000 {
 					//every 4 iterations, make it exploit. aka true
 					if i%4 == 0 {
 						exploit_or_explore = Some(true);
@@ -1206,7 +1213,8 @@
 					}
 				}
 				//for the next 1000...
-				else if i <= &6200 {
+				//02/17/24 - changed from: 6200 to 120_000
+				else if i <= &120_000 {
 					//every 3 iterations, make it exploit. aka true
 					if i%3 == 0 {
 						exploit_or_explore = Some(true);
@@ -1217,7 +1225,8 @@
 				}
 				//for the next 5000...
 				//02/16/24 - changed to next 20000
-				else if i <= &26_200 {
+				//02/17/24 - changed from: 26200 "until 140_000"
+				else if i <= &140_000 {
 					// if divisible by 2 or 3, make it exploit
 					//02/16/24 - changed from 2 or 3, to just 2
 					if i%2==0 {
@@ -1230,7 +1239,7 @@
 				//for the next whenever...
 				else {
 					// if divisible by 2 or 3 or 5, make it exploit
-					//02/16/24 - changed from 2,3,5 to 2 or 3
+					//02/16/24 - changed from 2,3,5  to  2 or 3
 					if i%2==0 || i%3 == 0 {
 						exploit_or_explore = Some(true);
 					}

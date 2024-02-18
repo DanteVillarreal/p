@@ -1945,8 +1945,8 @@ async fn main()   {
 
 //02/14/24 - added all of it:
     //this is to go back to the iteration I was previously at. 
-    //02/16/24 - changed from 0 to 6033 because I ended at 6043.
-    let mut iteration_counter_for_for_loop_total: usize = 6033;
+    //02/16/24 - changed from 0 to 6033 because I ended at 6043. then at 6775.
+    let mut iteration_counter_for_for_loop_total: usize = 6765;
     
     
     loop {
@@ -2004,8 +2004,9 @@ async fn main()   {
             tokio::time::sleep_until(when).await;
 
                 //start loop at whatever number the counter is at
+                //02/17/24 - changed from ..100_000 to 200_000
                 for i in 
-                iteration_counter_for_for_loop_total..100_000 {
+                iteration_counter_for_for_loop_total..200_000 {
                     // Check the should_stop flag at the beginning of 
                     //  each iteration
                     if stop1.load(Ordering::Relaxed) {

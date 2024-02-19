@@ -1844,7 +1844,8 @@
 			//02/15/24 - changed to 0.7. I have 50 ms and 200 ms intervals. 
 			//02/15/24 - changed to 0.6. at 3165 iterations, i saw 10^25
 			//02/16/24 - changed to 0.5
-			let gamma = 0.5;
+			//02/19/24 - changed to 0.4
+			let gamma = 0.4;
 			//initialize the largest Q-value so far and its index
 			//let mut index_of_largest_qvalue_in_next_state: Option<usize> = None;
 			let mut largest_qvalue_so_far_in_next_state = f64::MIN;

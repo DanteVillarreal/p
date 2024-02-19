@@ -320,3 +320,8 @@ Log of what I've done:
 02/16/24 - NOT A COMMIT. just an update. iteration 7529: q values seem to be getting closer to 0 which is good because the difference between rewards isnt the difference between -33 and 33. its more like -2 and 2.           JESUS IS GOOD. I got this! iteration 9653: q values +- 29.2 Update: iteration 10644: +-17.
 02/17/24 - NOT A COMMIT. just an update. iteration: 11509: +- 27 :O
 02/17/24 - changed epsilon decay in exploration_or_exploitation. made it slower. I think I want convergence to happen slower than I originally thought.         REMOVING LAST 10 REPLAY_BUFFERS and iterations. REMOVING FIRST 10_000 save states. Restarting p and websocket_client log panics. I was at 22360 and +-24.
+02/17/24 - NOT A COMMIT. forgot to LOAD the previous neural network. \
+Starting back from 22360, and 1708221167515
+removing all new replay buffers
+making new websocket_client and p log_panic
+02/19/24 - q values diverged with new epsilon decay, lol. Thats fine though. I think the bigger issue may actually be the gamma. I decreased it from 0.5 to 0.4.                JESUS IS GOOD.  I got this!

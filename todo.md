@@ -327,4 +327,5 @@ making new websocket_client and p log_panic
 02/19/24 - q values diverged with new epsilon decay, lol. Thats fine though. I think the bigger issue may actually be the gamma. I decreased it from 0.5 to 0.4. Of course Im removing every replay buffer and restarting main.rs from 0 and not loading it.                JESUS IS GOOD.  I got this!
 02/19/24 - NOT A COMMIT. just an update. gamma = 0.4, learning_rate = 0.00001; gradient cap = 0.1. iteration: 11385, +-13
 02/20/24 - NOT A COMMIT. just an update. gamma = 0.4, learning_rate = 0.00001; gradient cap = 0.1. iteration: 16356, +- 35
-02/20/24 - restarting from: gamma = 0.4, learning_rate = 0.00001; gradient cap = 0.1. iteration: 22,000. For some reason, my neural network glitched out after this save state. It may have been my replay buffers. I will run it with no replay buffer. p and websocket_client log panics restarted. 
+02/20/24 - restarting from: gamma = 0.4, learning_rate = 0.00001; gradient cap = 0.1. iteration: 22,000. For some reason, my neural network glitched out after this save state. It may have been my replay buffers. I will run it with no replay buffer. p and websocket_client log panics restarted. Starting from save_state: 1708461652030 
+02/21/24 - error occured. i am in the process of fixing it. i should have some new code in a few hours.         JESUS IS GOOD. I got this!

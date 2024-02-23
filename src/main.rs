@@ -30,7 +30,7 @@ use std::io::{BufRead, BufReader};//this is to help us read from stdin
 //use std::time::Duration;                            //for use in conjunction with delay_for
 //use std::sync::Mutex;                             //cant use this because not async
 use tokio::task;                                    //to do child spawns
-use std::error::Error;                              //to do box error 
+//use std::error::Error;                              //to do box error 
 use tokio::sync::Mutex;                             // Use async Mutex from Tokio
 use std::sync::Arc;  								// Use Arc to share Mutex among multiple tasks
 //use tokio::sync::MutexGuard;
@@ -1232,12 +1232,12 @@ async fn main()   {
     //01/24/24 - was: (65, 75, 2) now it's below. input size from execute_action_functions.
 
     //uncomment this if you want to initialize the network from new
-        //neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
+        neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
 
     //uncomment this if you want to load from a saved state
-        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1708461652030"; // Replace with your file path
-        neural_network = NeuralNetwork::load(path).expect("couldn't load network");
-        neural_network.print_layers();
+        //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1708461652030"; // Replace with your file path
+        //neural_network = NeuralNetwork::load(path).expect("couldn't load network");
+        //neural_network.print_layers();
     //the first number in the initialization and the number below MUST be the same size
     //01/24/24 - removed
         //let mut updated = [false; 60];
@@ -2233,7 +2233,7 @@ async fn main()   {
                                 match replay_buffer.save_replay_buffer_v2() {
                                     Ok(_) => {
 										//02/23/24 - added:
-											let mut iteration_counter_for_for_loop_this_iteration = 
+											let iteration_counter_for_for_loop_this_iteration = 
 												iteration_counter_for_for_loop_this_iteration.lock().await;
 											let iteration_counter_for_for_loop_total = 
 												iteration_counter_for_for_loop_total.lock().await;
@@ -2403,7 +2403,7 @@ async fn main()   {
                 	//iteration_counter_for_for_loop_total += iteration_counter_for_for_loop_this_iteration;
 				//02/23/24 - to:
 					let mut iteration_counter_for_for_loop_total = iteration_counter_for_for_loop_total.lock().await;
-					let mut iteration_counter_for_for_loop_this_iteration = iteration_counter_for_for_loop_this_iteration.lock().await;
+					let iteration_counter_for_for_loop_this_iteration = iteration_counter_for_for_loop_this_iteration.lock().await;
 
 					*iteration_counter_for_for_loop_total += *iteration_counter_for_for_loop_this_iteration;
                 match res {

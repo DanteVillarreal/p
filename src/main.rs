@@ -1948,8 +1948,11 @@ async fn main()   {
     //02/16/24 - changed from 0 to 6033 because I ended at 6043. then at 6775.
     //02/17/24 - changed to 22350
     //02/19/24 - chagned to 0. 02/20/24 - 22000
-    let mut iteration_counter_for_for_loop_total: usize = 22_000;
-    
+	//02/23/24 - removed:
+    	//let mut iteration_counter_for_for_loop_total: usize = 22_000;
+    //02/23/24 - added in its place:
+		let iteration_counter_for_for_loop_total = 
+			Arc::new(Mutex::new(0));
     
     loop {
         // Create a new AtomicBool wrapped in an Arc for each iteration
@@ -1961,10 +1964,16 @@ async fn main()   {
         //  This gives each task its own reference to the shared AtomicBool.
             let stop1 = should_stop.clone();
             let stop1_clone = Arc::clone(&stop1);
-        //to see how many NEW iterations of neural network we got
-        let mut iteration_counter_for_for_loop_this_iteration: usize = 0;
-        //this is to count how many NEW replay buffers we made.
-        let mut replay_buffer_counter_for_this_iteration: usize = 0;
+
+		//02/23/24 - removed:
+        	//let mut iteration_counter_for_for_loop_this_iteration: usize = 0;
+			//let mut replay_buffer_counter_for_this_iteration: usize = 0;
+		//02/23/24 - added in its place:
+			let iteration_counter_for_for_loop_this_iteration =
+				Arc::new(Mutex::new(0));
+			let replay_buffer_counter_for_this_iteration =
+				Arc::new(Mutex::new(0));
+
 
         // Clone the Arc for cycle_task. This does not create a deep copy of 
         //  the NeuralNetwork.
@@ -1973,6 +1982,9 @@ async fn main()   {
         // Any modifications made to the NeuralNetwork through this Arc will
         // be visible through the original Arc.
         let shared_neural_network_clone1 = Arc::clone(&shared_neural_network);
+		let iteration_counter_for_for_loop_total_clone = Arc::clone(&iteration_counter_for_for_loop_total);
+		let replay_buffer_counter_for_this_iteration_clone = Arc::clone(&replay_buffer_counter_for_this_iteration);
+		let iteration_counter_for_for_loop_this_iteration_clone = Arc::clone(&iteration_counter_for_for_loop_this_iteration);
 
         let coinbase_secret_clone = coinbase_secret.clone(); // Clone coinbase_secret
         let kraken_secret_clone = kraken_secret.clone();
@@ -1998,6 +2010,10 @@ async fn main()   {
             let gemini_api_key = gemini_api_key_clone;
             let bitstamp_api_key = bitstamp_api_key_clone;
 
+			let replay_buffer_counter_for_this_iteration = replay_buffer_counter_for_this_iteration_clone;
+			let iteration_counter_for_for_loop_this_iteration = iteration_counter_for_for_loop_this_iteration_clone;
+			let iteration_counter_for_for_loop_total = iteration_counter_for_for_loop_total_clone;
+
             async move{
                 println!(" delay to warm up neural network...
             This will take 15 minutes...");
@@ -2007,8 +2023,13 @@ async fn main()   {
 
                 //start loop at whatever number the counter is at
                 //02/17/24 - changed from ..100_000 to 200_000
-                for i in 
-                iteration_counter_for_for_loop_total..200_000 {
+				//02/23/24 - modified from:
+					// for i in 
+					// iteration_counter_for_for_loop_total..200_000 {
+				//02/23/24 - to this to accomodate for changing it for mutex
+
+				let start = *iteration_counter_for_for_loop_total.lock().await;
+				for i in start..200_000 {
                     // Check the should_stop flag at the beginning of 
                     //  each iteration
                     if stop1.load(Ordering::Relaxed) {
@@ -2211,21 +2232,35 @@ async fn main()   {
                                 //02/14/24 - changed to actually do something wtih error
                                 match replay_buffer.save_replay_buffer_v2() {
                                     Ok(_) => {
+										//02/23/24 - added:
+											let mut iteration_counter_for_for_loop_this_iteration = 
+												iteration_counter_for_for_loop_this_iteration.lock().await;
+											let iteration_counter_for_for_loop_total = 
+												iteration_counter_for_for_loop_total.lock().await;
                                         log::info!("successfully saved replay_buffer at this loop's 
                                         iteration: {}
                                         total iteration: {}",
-                                         &iteration_counter_for_for_loop_this_iteration, 
-                                         &iteration_counter_for_for_loop_total );
+                                         *iteration_counter_for_for_loop_this_iteration, 
+                                         *iteration_counter_for_for_loop_total );
 
-                                        replay_buffer_counter_for_this_iteration+=1;
+										 let mut replay_buffer_counter_for_this_iteration = 
+										 	replay_buffer_counter_for_this_iteration.lock().await;
+
+										 *replay_buffer_counter_for_this_iteration+=1;
                                     },
                                     Err(e) => {
                                         // Handle the error case here.
+										let iteration_counter_for_for_loop_this_iteration = 
+											iteration_counter_for_for_loop_this_iteration.lock().await;
+										let iteration_counter_for_for_loop_total = 
+											iteration_counter_for_for_loop_total.lock().await;
+
                                         log::error!("An error occurred while saving replay buffer at this loop's
                                         iteration: {}
                                         total iteration: {}
-                                        error: {}", &iteration_counter_for_for_loop_this_iteration, 
-                                        &iteration_counter_for_for_loop_total, e);
+                                        error: {}", 
+										*iteration_counter_for_for_loop_this_iteration, 
+                                        *iteration_counter_for_for_loop_total, e);
                                         return;
                                     },
                                 };
@@ -2247,7 +2282,12 @@ async fn main()   {
                 //end of original code. also removed the Ok() box error thing
                     //this is to get how many times it was incremented this
                     // go-around
-                    iteration_counter_for_for_loop_this_iteration+=1;
+					//02/23/24 - from:
+                    	//iteration_counter_for_for_loop_this_iteration+=1;
+					//02/23/24 - changed to:
+					let mut iteration_counter_for_for_loop_this_iteration = 
+						iteration_counter_for_for_loop_this_iteration.lock().await;
+					*iteration_counter_for_for_loop_this_iteration+=1;
                 }
             
             }
@@ -2273,6 +2313,23 @@ async fn main()   {
         });
     
 
+
+        //02/23/24 - added:
+        //	super complicated but basically tokio::select! creates its own
+        //      context so it captures variables by value, not by reference.
+		//	so because replay_buffer_counter_for_this_iteration was initialized
+		//		as 0 initially, tokio::select! has it now as 0.
+		//That being said:
+		//	the way to bypass this is to *WRAP* the data so tokio::select! takes
+		//		a snapshot of the wrapper so that we can then go forth with
+		//		"interior mutability". 
+		//How do we do this?
+		//	You use Cell to wrap it. I will need to do this to the following vars:
+		//		replay_buffer_counter
+		//		both iteration_counter's
+
+
+
         tokio::select! {
             _ = read_lines_task => {
                 // This branch is executed if read_lines_task finishes first (either 
@@ -2286,14 +2343,35 @@ async fn main()   {
                     //      recent 8. then add this number to 
                     //      iteration_counter_for_for_loop_total
                     //kill websocket_client
-                    if replay_buffer_counter_for_this_iteration >= 9 {
+					//02/23/24 - generic update everywhere that adds .get() to almost any call to
+					//		replay_buffer_counter
+					//02/23/24 - added:
+					let replay_buffer_counter_for_this_iteration =
+						replay_buffer_counter_for_this_iteration.lock().await;
+					let iteration_counter_for_for_loop_this_iteration = 
+						iteration_counter_for_for_loop_this_iteration.lock().await;
+					let mut iteration_counter_for_for_loop_total = 
+						iteration_counter_for_for_loop_total.lock().await;
+
+
+
+                    if *replay_buffer_counter_for_this_iteration >= 9 {
+                        //02/23/24 - added:
+                        log::info!("deleting last 9 replays");
                         let _ = delete_most_recent_replay_buffers(9);
                     }
                     else {
-                        let _ = delete_most_recent_replay_buffers(replay_buffer_counter_for_this_iteration);
+                        log::info!("there weren't 9 replays so only deleting:
+                        {}", *replay_buffer_counter_for_this_iteration);
+                        let _ = delete_most_recent_replay_buffers(*replay_buffer_counter_for_this_iteration);
                     }
-                    if iteration_counter_for_for_loop_this_iteration > 8 {
-                        iteration_counter_for_for_loop_total += iteration_counter_for_for_loop_this_iteration - 8;
+                    if *iteration_counter_for_for_loop_this_iteration > 8 {
+						//02/23/24 - removed and replaced with
+                        	//iteration_counter_for_for_loop_total += 
+							//iteration_counter_for_for_loop_this_iteration - 8;
+							*iteration_counter_for_for_loop_total +=
+								*iteration_counter_for_for_loop_this_iteration - 8;
+
                     }
 
                         let kill_result = websocket_client.kill();
@@ -2301,14 +2379,16 @@ async fn main()   {
                             Ok(_) => {
                                 log::info!("Successfully killed the websocket client
                                     at iteration: {}
-                                    this loop's iteration: {}.", &iteration_counter_for_for_loop_total, 
-                                    &iteration_counter_for_for_loop_this_iteration);
+                                    this loop's iteration: {}.", 
+									*iteration_counter_for_for_loop_total, 
+                                    *iteration_counter_for_for_loop_this_iteration);
                             },
                             Err(e) => {
                                 panic!("Failed to kill the websocket client: {:?}
                                 total iteration: {}
-                                this loop's iteration: {}", e, &iteration_counter_for_for_loop_total, 
-                                &iteration_counter_for_for_loop_this_iteration);
+                                this loop's iteration: {}", e,
+								*iteration_counter_for_for_loop_total, 
+                                *iteration_counter_for_for_loop_this_iteration);
                             }
                         }
                     //wait 5 minutes
@@ -2319,19 +2399,26 @@ async fn main()   {
             }
             res = cycle_task => {
                 // This branch is executed if cycle_task finishes first (either successfully or with a panic)
-                iteration_counter_for_for_loop_total += iteration_counter_for_for_loop_this_iteration;
+				//02/23/24 - from:
+                	//iteration_counter_for_for_loop_total += iteration_counter_for_for_loop_this_iteration;
+				//02/23/24 - to:
+					let mut iteration_counter_for_for_loop_total = iteration_counter_for_for_loop_total.lock().await;
+					let mut iteration_counter_for_for_loop_this_iteration = iteration_counter_for_for_loop_this_iteration.lock().await;
+
+					*iteration_counter_for_for_loop_total += *iteration_counter_for_for_loop_this_iteration;
                 match res {
                     Ok(_) => {
                         // If cycle_task finishes, panic the whole program
                         panic!("cycle_task finished. total iteration count was {}.
                         check if this is equal to the max that Im iterating for.
                         if it is that means it finished successfully", 
-                            &iteration_counter_for_for_loop_total );
+                        *iteration_counter_for_for_loop_total );
                     }
                     Err(e) => {
                         // If cycle_task panics, panic the whole program
                         panic!("cycle_task panicked: {:?}
-                        total iteration count was {}", e, &iteration_counter_for_for_loop_total);
+                        total iteration count was {}", e, 
+						*iteration_counter_for_for_loop_total);
                     }
                 }
 

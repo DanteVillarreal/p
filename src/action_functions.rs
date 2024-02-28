@@ -25813,6 +25813,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 //  60, 61, 63
                 let indices = [60, 61, 62];
                 let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+                log::info!("state of: coinbase wallet: {}
+                    kraken wallet: {}
+                    gemini wallet: {}
+                    bitstamp wallet: {}
+                    coinbase buy price ask: {}
+                    bitstamp sell price bid: {}", 
+                        &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                        &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
                 //01/24/24 - removed and added:
                     //neural_network.update_input(&indices, &new_values);
                     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();

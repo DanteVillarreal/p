@@ -29666,97 +29666,211 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         return Ok(value_after)
     }
 //gemini coinbase   = 3 AND UP for gemini/coin
-    pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+    gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
-        fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
-            let encoded_payload = encode(gemini_payload.to_string());
-            let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
-                            .expect("HMAC can take key of any size");
-            mac.update(encoded_payload.as_bytes());
-            let result = mac.finalize();
-            let code_bytes = result.into_bytes();
-            let gemini_signature = hex::encode(code_bytes);
-            println!("Gemini signature:\n{}", &gemini_signature);
-            gemini_signature
-    
-        }
-        //if no "now" in scope when moving file, 
-        //	the code is this:
-        ////returns current time.
-        //		let now = Utc::now();
-        let now = Utc::now();
-        let gemini_time_stamp = now.timestamp().to_string();
-        let gemini_nonce = gemini_time_stamp;
-        let gemini_url = "https://api.gemini.com/v1/pubticker/xrpusd";
-        let gemini_payload = json!({
-            "request": "/v1/mytrades",
-            "nonce": &gemini_nonce
-        });
-        let base64_encoded_payload = encode(gemini_payload.to_string());
-        let gemini_content_type = "text/plain";
-        let gemini_content_length = "0";
-        let gemini_cache_control = "no-cache";
-        let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
-        
-        let gemini_request = client.get(gemini_url)
-                .header("Content-Type", gemini_content_type)
-                .header("Content-Length", gemini_content_length)
-                .header("X-GEMINI-APIKEY", gemini_api_key)
-                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-                .header("X-GEMINI-SIGNATURE", &gemini_signature)
-                .header("Cache-Control", gemini_cache_control)
-                .build()
-                .expect("couldn't build gemini request");
-    
-    
-        let gemini_response = client.execute(gemini_request).await
-                                .expect("Failed to execute Gemini request");
-        let gemini_response_text = gemini_response.text().await
-                                .expect("Failed to turn response into text");
-        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                .expect("Failed to parse JSON");
-        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-        //CAN ONLY BUY. NOT SELL
-        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-        //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
-
-
-
-
-
-        println!("xrp 3 gemini coinbase simulated exchange delay: 8 sec...");
-        let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        //02/09/21 - tokio update. changed from delay_until to sleep_until
-        tokio::time::sleep_until(when).await;
-
-
-
-        //------------COINBASE------------//
-        let now = Utc::now();
-        let time_stamp = now.timestamp().to_string();
-        let method = "GET";
-        let request_path = "/api/v3/brokerage/best_bid_ask";
-        let body = "";
-        let message = format!("{}{}{}{}", &time_stamp, 
-        &method, &request_path, &body);
-        type HmacSha256 = Hmac<Sha256>;
-        fn sign(message: &str, coinbase_secret: &str) -> String {
-        let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-                    .expect("HMAC can take key of any size");
-        mac.update(message.as_bytes());
+    fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+        let encoded_payload = encode(gemini_payload.to_string());
+        let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+                        .expect("HMAC can take key of any size");
+        mac.update(encoded_payload.as_bytes());
         let result = mac.finalize();
         let code_bytes = result.into_bytes();
-        hex::encode(code_bytes)
-        }
-        let coinbase_signature = sign(&message, &coinbase_secret);
+        let gemini_signature = hex::encode(code_bytes);
+        println!("Gemini signature:\n{}", &gemini_signature);
+        gemini_signature
 
+    }
+    //if no "now" in scope when moving file, 
+    //	the code is this:
+    ////returns current time.
+    //		let now = Utc::now();
+    let now = Utc::now();
+    let gemini_time_stamp = now.timestamp().to_string();
+    let gemini_nonce = gemini_time_stamp;
+    let gemini_url = "https://api.gemini.com/v1/pubticker/xrpusd";
+    let gemini_payload = json!({
+        "request": "/v1/mytrades",
+        "nonce": &gemini_nonce
+    });
+    let base64_encoded_payload = encode(gemini_payload.to_string());
+    let gemini_content_type = "text/plain";
+    let gemini_content_length = "0";
+    let gemini_cache_control = "no-cache";
+    let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+    
+    // let gemini_request = client.get(gemini_url)
+    //         .header("Content-Type", gemini_content_type)
+    //         .header("Content-Length", gemini_content_length)
+    //         .header("X-GEMINI-APIKEY", gemini_api_key)
+    //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+    //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+    //         .header("Cache-Control", gemini_cache_control)
+    //         .build()
+    //         .expect("couldn't build gemini request");
+
+
+    // let gemini_response = client.execute(gemini_request).await
+    //                         .expect("Failed to execute Gemini request");
+    // let gemini_response_text = gemini_response.text().await
+    //                         .expect("Failed to turn response into text");
+    // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+    //                         .expect("Failed to parse JSON");
+    // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+    // //CAN ONLY BUY. NOT SELL
+    // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+    // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+//02/27/24 - added:
+    let mut attempts = 0;
+    let gemini_buy_ask: Option<f64>;
+    loop {
+        let gemini_request = client.get(gemini_url)
+            .header("Content-Type", gemini_content_type)
+            .header("Content-Length", gemini_content_length)
+            .header("X-GEMINI-APIKEY", gemini_api_key)
+            .header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+            .header("X-GEMINI-SIGNATURE", &gemini_signature)
+            .header("Cache-Control", gemini_cache_control)
+            .build();
+    
+        match gemini_request {
+            Ok(request) => {
+                match client.execute(request).await {
+                    Ok(response) => {
+                        let gemini_response_text = response.text().await;
+                        match gemini_response_text {
+                            Ok(text) => {
+
+                                match serde_json::from_str::<Value>(&text) {
+                                    Ok(value) => {
+                                        let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
+                                            .ok_or_else(|| "Failed to get ask as string")
+                                            .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
+                            
+                                        match gemini_buy_ask_result {
+                                            Ok(ask) => {
+                                                gemini_buy_ask = Some(ask);
+                                                // Continue with your logic here using `ask`
+                                                break; // Exit the loop if everything is successful
+                                            },
+                                            Err(e) => log::error!("{}", e),
+                                        }
+                                    },
+                                    Err(_) => log::error!("Failed to parse JSON"),
+                                }
+                            },
+                            Err(_) => log::error!("Failed to turn response into text"),
+                        }
+                    },
+                    Err(_) => log::error!("Failed to execute Gemini request"),
+                }
+            },
+            Err(_) => log::error!("Couldn't build gemini request"),
+        }
+    
+        attempts += 1;
+        if attempts >= 3 {
+            panic!("Failed after 3 attempts");
+        }
+    }
+
+
+
+
+    println!("xrp 3 gemini coinbase simulated 8 sec delay...");
+    let when = tokio::time::Instant::now() + Duration::from_secs(8);
+    //02/09/21 - tokio update. changed from delay_until to sleep_until
+    tokio::time::sleep_until(when).await;
+
+
+
+    //------------COINBASE------------//
+    let now = Utc::now();
+    let time_stamp = now.timestamp().to_string();
+    let method = "GET";
+    let request_path = "/api/v3/brokerage/best_bid_ask";
+    let body = "";
+    let message = format!("{}{}{}{}", &time_stamp, 
+    &method, &request_path, &body);
+    type HmacSha256 = Hmac<Sha256>;
+    fn sign(message: &str, coinbase_secret: &str) -> String {
+    let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+                .expect("HMAC can take key of any size");
+    mac.update(message.as_bytes());
+    let result = mac.finalize();
+    let code_bytes = result.into_bytes();
+    hex::encode(code_bytes)
+    }
+    let coinbase_signature = sign(&message, &coinbase_secret);
+
+//02/27/24 - removed:
+    // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+    // .header("CB-ACCESS-KEY", coinbase_api_key)
+    // .header("CB-ACCESS-SIGN", &coinbase_signature)
+    // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+    // .build()
+    // .expect("couldn't build Coinbase request");
+    // //manages the error I described above
+    // //let request = match request {
+    // //Ok(req) => req,
+    // //Err(e) => {
+    // //eprintln!("Failed to build request: \n{}", e);
+    // //return Err(e);
+    // //}
+    // //};
+
+    // let response = client.execute(request).await.expect("couldn't build response");
+    // //let response = match response {
+    // //    Ok(resp) => resp,
+    // //    Err(e) => {
+    // //        eprintln!("Failed to execute request: \n{}", e);
+    // //        return Err(e);
+    // //    }
+    // //};
+
+
+    // let response_text = response.text().await.expect("couldn't build response_text");
+
+    // //added 12/29/23
+    // //this is the parsing
+    // let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
+    // let mut coinbase_sell_price_bid = 0.0;
+    // let mut coinbase_buy_price_ask = 0.0;
+
+    // // Access the pricebooks array
+    // if let Some(pricebooks) = v["pricebooks"].as_array() {
+    //     // Iterate over each pricebook
+    //     for pricebook in pricebooks {
+    //         // Access the product_id, bids, and asks
+    //         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
+    //         let bids = &pricebook["bids"][0];
+    //         let asks = &pricebook["asks"][0];
+    
+    //         // Access the price and size of the bids and asks
+    //         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
+    //         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
+    //         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
+    //         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
+    
+    //         //println!("Product ID: {}", product_id);
+    //         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+    //         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+    //     }
+    // }
+//02/27/24 - added in its place:
+    let mut attempts = 0;
+    let mut coinbase_sell_price_bid: Option<f64> = None;
+    //let coinbase_buy_price_ask: Option<f64>;
+    let mut value_after: Option<f64> = None;
+    let mut success = true;
+    loop {
+        attempts +=1;
         let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()
-        .expect("couldn't build request");
+        .build();
+        //.expect("couldn't build request");
         //manages the error I described above
         //let request = match request {
         //Ok(req) => req,
@@ -29765,128 +29879,215 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //return Err(e);
         //}
         //};
+        match request {
+            Ok(req) => {
+        //      response_text, v, coinbase_sell_price_bid, coinbase_buy_price_ask, bid/ask size
+                let response = client.execute(req).await;
+                match response {
+                    Ok(resp) => {
+                        let response_text = resp.text().await;
+                        match response_text {
+                            Ok(text) => {
+                                match serde_json::from_str::<Value>(&text) {
+                                    Ok(v) => {
+                                        if let Some(pricebooks) = v["pricebooks"].as_array() {
+                                            for pricebook in pricebooks {
+                                                //let product_id = pricebook["product_id"].as_str();
+                                                let bids = &pricebook["bids"][0];
+                                                //let asks = &pricebook["asks"][0];
+                                                let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+                                                //let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+    
+                                                match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
+                                                    (Some(bid_str), /*Some(ask_str)*/) => {
+                                                        match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
+                                                            (Ok(bid_str), /*Ok(ask_str)*/) => {
+                                                                coinbase_sell_price_bid = Some(bid_str);
+                                                                //coinbase_buy_price_ask = Some(ask_str);
 
-        let response = client.execute(request).await.expect("couldn't build response");
-        //let response = match response {
-        //    Ok(resp) => resp,
-        //    Err(e) => {
-        //        eprintln!("Failed to execute request: \n{}", e);
-        //        return Err(e);
-        //    }
-        //};
+                                                                // Place your calculations and updates here
+                                                                    let gemini_taker_fee = 0.004;
+                                                                    let fraction_of_wallet_im_using = 0.03; //aka 3 percent
+                                                                    let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+                                                                    let fee_for_purchase = total_spent*gemini_taker_fee;
+                                                                    let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+                                                                    *gemini_wallet -= total_spent;
 
+                                                                    let amount_of_xrp = 
+                                                                    money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                    .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                    even though to get to this point it had to be Some. 
+                                                                                                    gemini_buy_ask: {:?}
+                                                                                                    Honestly restart the program from the last saved state. 
+                                                                                                    The most likely error is a bit got flipped after the loop",
+                                                                                                    &gemini_buy_ask));
 
-        let response_text = response.text().await.expect("couldn't build response_text");
+                                                                    //coinbase calculations for sell
 
-        //added 12/29/23
-        //this is the parsing
-        let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
-        let mut coinbase_sell_price_bid = 0.0;
-        let mut coinbase_buy_price_ask = 0.0;
+                                                                    let coinbase_taker_fee = 0.008;
+                                                                    let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid.unwrap();
+                                                                    let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                                                                    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                    *coinbase_wallet += money_from_sell_after_fees;
+                                                                    value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+                                                                    println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
 
-        // Access the pricebooks array
-        if let Some(pricebooks) = v["pricebooks"].as_array() {
-            // Iterate over each pricebook
-            for pricebook in pricebooks {
-                // Access the product_id, bids, and asks
-                let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
-                let bids = &pricebook["bids"][0];
-                let asks = &pricebook["asks"][0];
-        
-                // Access the price and size of the bids and asks
-                coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
-                let bid_size = bids["size"].as_str().expect("could not find bids[size]");
-                coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
-                let ask_size = asks["size"].as_str().expect("could not find asks[size]");
-        
-                //println!("Product ID: {}", product_id);
-                //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
-                //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+                                                                    //value_after = 60
+                                                                    //coinbase = 61
+                                                                    //bitstamp = 62
+                                                                    //kraken = 63
+                                                                    //gemini = 64
+                                                                    //since this is coinbase and gemini being updated, I will update:
+                                                                    //  60, 61, 64
+                                                                    let indices = [60, 61, 64];
+                                                                    let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                    neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                    success = true;
+                                                            },
+                                                            _ => {
+                                                                if attempts > 3 {
+                                                                    panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                                }
+                                                                continue ;
+                                                            }
+                                                        }
+                                                    },
+                                                    _ => {
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+                                                        }
+                                                        continue ;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    Err(_) => {
+                                        if attempts > 3 {
+                                            panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                        }
+                                        continue ; // Continue to the next iteration if parsing fails
+                                    }
+                                }
+                            },
+                            Err(_) => {
+                                if attempts > 3 {
+                                    panic!("Failed to get response text after 3 attempts");
+                                }
+                                continue ; // Continue to the next iteration if getting response text fails
+                            }
+                        }
+                    },
+                    Err(_) => {
+                        if attempts > 3 {
+                            panic!("Failed to execute request after 3 attempts");
+                        }
+                        continue; // Continue to the next iteration if executing request fails
+                    }
+                }
+            },
+            Err(_) => {
+                if attempts > 3 {
+                    panic!("Failed to build request after 3 attempts");
+                }
+                continue; // Continue to the next iteration if building request fails
             }
         }
-
-
-
-                    //gemini calculations for buy 
-                //this should equal 0.4%
-                let gemini_taker_fee = 0.004;
-                let fraction_of_wallet_im_using = 0.03; //aka 3 percent
-
-                let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                let fee_for_purchase = total_spent*gemini_taker_fee;
-                let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                //new state of gemini wallet below
-                *gemini_wallet -= total_spent;
-                let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
-    
-    
-    
-
-            //coinbase calculations for sell
-
-                let coinbase_taker_fee = 0.008;
-                let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
-                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                *coinbase_wallet += money_from_sell_after_fees;
-    
-    
-    
-    
-
-
-            //coinbase calculations for buy - not needed in this so code commented out
-            
-                //let coinbase_taker_fee = 0.008;
-    
-                //let total_spent = 0.10*(*coinbase_wallet);
-                //let fee_for_purchase = total_spent*coinbase_taker_fee;
-                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-                ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
-                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-    
-            //kraken calculations - for sell
-                //let kraken_taker_fee = 0.0026;
-                
-                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
-    
-                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            //bitstamp calculations - for sell
-                //let bitstamp_taker_fee = 0.004;
-                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
-
-
-
-            //this will count as value after
-                let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    
-                //value_after = 60
-                //coinbase = 61
-                //bitstamp = 62
-                //kraken = 63
-                //gemini = 64
-                //since this is coinbase and gemini being updated, I will update:
-                //  60, 61, 64
-                let indices = [60, 61, 64];
-                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                //01/24/24 - removed and added:
-                    //neural_network.update_input(&indices, &new_values);
-                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    //neural_network.update_input(&indices, &transformed_values).await;
-                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                    neural_network.update_input(&indices, &scaled_values).await;
-    
-        return Ok(value_after)
+        if success == true {
+            break;
+        }
     }
+
+    match value_after {
+        Some(value) => return Ok(value),
+        None => {
+            //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+            panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+        }
+    }
+    //02/27/24 - removed and placed above^
+        //         //gemini calculations for buy 
+        //     //this should equal 0.4%
+        //     let gemini_taker_fee = 0.004;
+        //     let fraction_of_wallet_im_using = 0.06; //aka 6 percent
+
+        //     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+        //     let fee_for_purchase = total_spent*gemini_taker_fee;
+        //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //     //new state of gemini wallet below
+        //     *gemini_wallet -= total_spent;
+        //     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+
+
+
+
+        // //coinbase calculations for sell
+
+        //     let coinbase_taker_fee = 0.008;
+        //     let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
+        //     let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+        //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     *coinbase_wallet += money_from_sell_after_fees;
+
+
+
+
+
+
+        //     //coinbase calculations for buy - not needed in this so code commented out
+            
+        //         //let coinbase_taker_fee = 0.008;
+    
+        //         //let total_spent = 0.10*(*coinbase_wallet);
+        //         //let fee_for_purchase = total_spent*coinbase_taker_fee;
+        //         //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+        //         ////new state of coinbase wallet below
+        //         //*coinbase_wallet -= total_spent;
+        //         //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+    
+        //     //kraken calculations - for sell
+        //         //let kraken_taker_fee = 0.0026;
+                
+        //         //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+        //         //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+        //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+        //         //*kraken_wallet += money_from_sell_after_fees;
+    
+        //         //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+    
+    
+        //     //bitstamp calculations - for sell
+        //         //let bitstamp_taker_fee = 0.004;
+        //         //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+        //         //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //         //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+        //     //this will count as value after
+        //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+    
+        //         //value_after = 60
+        //         //coinbase = 61
+        //         //bitstamp = 62
+        //         //kraken = 63
+        //         //gemini = 64
+        //         //since this is coinbase and gemini being updated, I will update:
+        //         //  60, 61, 64
+        //         let indices = [60, 61, 64];
+        //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+        //         //01/24/24 - removed and added:
+        //             //neural_network.update_input(&indices, &new_values);
+        //             //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //             //neural_network.update_input(&indices, &transformed_values).await;
+        //             let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //             neural_network.update_input(&indices, &scaled_values).await;
+    
+        // return Ok(value_after)
+}
 
     pub async fn s_i144_xrp_4_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
@@ -29921,33 +30122,85 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let gemini_cache_control = "no-cache";
         let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
         
-        let gemini_request = client.get(gemini_url)
+        // let gemini_request = client.get(gemini_url)
+        //         .header("Content-Type", gemini_content_type)
+        //         .header("Content-Length", gemini_content_length)
+        //         .header("X-GEMINI-APIKEY", gemini_api_key)
+        //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+        //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+        //         .header("Cache-Control", gemini_cache_control)
+        //         .build()
+        //         .expect("couldn't build gemini request");
+    
+    
+        // let gemini_response = client.execute(gemini_request).await
+        //                         .expect("Failed to execute Gemini request");
+        // let gemini_response_text = gemini_response.text().await
+        //                         .expect("Failed to turn response into text");
+        // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+        //                         .expect("Failed to parse JSON");
+        // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        // //CAN ONLY BUY. NOT SELL
+        // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+    //02/27/24 - added:
+        let mut attempts = 0;
+        let gemini_buy_ask: Option<f64>;
+        loop {
+            let gemini_request = client.get(gemini_url)
                 .header("Content-Type", gemini_content_type)
                 .header("Content-Length", gemini_content_length)
                 .header("X-GEMINI-APIKEY", gemini_api_key)
-                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
                 .header("X-GEMINI-SIGNATURE", &gemini_signature)
                 .header("Cache-Control", gemini_cache_control)
-                .build()
-                .expect("couldn't build gemini request");
-    
-    
-        let gemini_response = client.execute(gemini_request).await
-                                .expect("Failed to execute Gemini request");
-        let gemini_response_text = gemini_response.text().await
-                                .expect("Failed to turn response into text");
-        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                .expect("Failed to parse JSON");
-        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-        //CAN ONLY BUY. NOT SELL
-        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-        //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+                .build();
+        
+            match gemini_request {
+                Ok(request) => {
+                    match client.execute(request).await {
+                        Ok(response) => {
+                            let gemini_response_text = response.text().await;
+                            match gemini_response_text {
+                                Ok(text) => {
+
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(value) => {
+                                            let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
+                                                .ok_or_else(|| "Failed to get ask as string")
+                                                .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
+                                
+                                            match gemini_buy_ask_result {
+                                                Ok(ask) => {
+                                                    gemini_buy_ask = Some(ask);
+                                                    // Continue with your logic here using `ask`
+                                                    break; // Exit the loop if everything is successful
+                                                },
+                                                Err(e) => log::error!("{}", e),
+                                            }
+                                        },
+                                        Err(_) => log::error!("Failed to parse JSON"),
+                                    }
+                                },
+                                Err(_) => log::error!("Failed to turn response into text"),
+                            }
+                        },
+                        Err(_) => log::error!("Failed to execute Gemini request"),
+                    }
+                },
+                Err(_) => log::error!("Couldn't build gemini request"),
+            }
+        
+            attempts += 1;
+            if attempts >= 3 {
+                panic!("Failed after 3 attempts");
+            }
+        }
 
 
 
 
-
-        println!("xrp 4 gemini coinbase 8 sec delay...");
+        println!("xrp 4 gemini coinbase simulated 8 sec delay...");
         let when = tokio::time::Instant::now() + Duration::from_secs(8);
         //02/09/21 - tokio update. changed from delay_until to sleep_until
         tokio::time::sleep_until(when).await;
@@ -29973,141 +30226,290 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
-        .header("CB-ACCESS-KEY", coinbase_api_key)
-        .header("CB-ACCESS-SIGN", &coinbase_signature)
-        .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()
-        .expect("couldn't build request");
-        //manages the error I described above
-        //let request = match request {
-        //Ok(req) => req,
-        //Err(e) => {
-        //eprintln!("Failed to build request: \n{}", e);
-        //return Err(e);
-        //}
-        //};
+    //02/27/24 - removed:
+        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // .header("CB-ACCESS-KEY", coinbase_api_key)
+        // .header("CB-ACCESS-SIGN", &coinbase_signature)
+        // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+        // .build()
+        // .expect("couldn't build Coinbase request");
+        // //manages the error I described above
+        // //let request = match request {
+        // //Ok(req) => req,
+        // //Err(e) => {
+        // //eprintln!("Failed to build request: \n{}", e);
+        // //return Err(e);
+        // //}
+        // //};
 
-        let response = client.execute(request).await.expect("couldn't build response");
-        //let response = match response {
-        //    Ok(resp) => resp,
-        //    Err(e) => {
-        //        eprintln!("Failed to execute request: \n{}", e);
-        //        return Err(e);
-        //    }
-        //};
+        // let response = client.execute(request).await.expect("couldn't build response");
+        // //let response = match response {
+        // //    Ok(resp) => resp,
+        // //    Err(e) => {
+        // //        eprintln!("Failed to execute request: \n{}", e);
+        // //        return Err(e);
+        // //    }
+        // //};
 
 
-        let response_text = response.text().await.expect("couldn't build response_text");
+        // let response_text = response.text().await.expect("couldn't build response_text");
 
-        //added 12/29/23
-        //this is the parsing
-        let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
-        let mut coinbase_sell_price_bid = 0.0;
-        let mut coinbase_buy_price_ask = 0.0;
+        // //added 12/29/23
+        // //this is the parsing
+        // let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
+        // let mut coinbase_sell_price_bid = 0.0;
+        // let mut coinbase_buy_price_ask = 0.0;
 
-        // Access the pricebooks array
-        if let Some(pricebooks) = v["pricebooks"].as_array() {
-            // Iterate over each pricebook
-            for pricebook in pricebooks {
-                // Access the product_id, bids, and asks
-                let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
-                let bids = &pricebook["bids"][0];
-                let asks = &pricebook["asks"][0];
+        // // Access the pricebooks array
+        // if let Some(pricebooks) = v["pricebooks"].as_array() {
+        //     // Iterate over each pricebook
+        //     for pricebook in pricebooks {
+        //         // Access the product_id, bids, and asks
+        //         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
+        //         let bids = &pricebook["bids"][0];
+        //         let asks = &pricebook["asks"][0];
         
-                // Access the price and size of the bids and asks
-                coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
-                let bid_size = bids["size"].as_str().expect("could not find bids[size]");
-                coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
-                let ask_size = asks["size"].as_str().expect("could not find asks[size]");
+        //         // Access the price and size of the bids and asks
+        //         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
+        //         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
+        //         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
+        //         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
         
-                //println!("Product ID: {}", product_id);
-                //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
-                //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //         //println!("Product ID: {}", product_id);
+        //         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+        //         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //     }
+        // }
+    //02/27/24 - added in its place:
+        let mut attempts = 0;
+        let mut coinbase_sell_price_bid: Option<f64> = None;
+        //let coinbase_buy_price_ask: Option<f64>;
+        let mut value_after: Option<f64> = None;
+        let mut success = true;
+        loop {
+            attempts +=1;
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build();
+            //.expect("couldn't build request");
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+            match request {
+                Ok(req) => {
+            //      response_text, v, coinbase_sell_price_bid, coinbase_buy_price_ask, bid/ask size
+                    let response = client.execute(req).await;
+                    match response {
+                        Ok(resp) => {
+                            let response_text = resp.text().await;
+                            match response_text {
+                                Ok(text) => {
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(v) => {
+                                            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                                                for pricebook in pricebooks {
+                                                    //let product_id = pricebook["product_id"].as_str();
+                                                    let bids = &pricebook["bids"][0];
+                                                    //let asks = &pricebook["asks"][0];
+                                                    let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+                                                    //let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+        
+                                                    match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
+                                                        (Some(bid_str), /*Some(ask_str)*/) => {
+                                                            match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
+                                                                (Ok(bid_str), /*Ok(ask_str)*/) => {
+                                                                    coinbase_sell_price_bid = Some(bid_str);
+                                                                    //coinbase_buy_price_ask = Some(ask_str);
+
+                                                                    // Place your calculations and updates here
+                                                                        let gemini_taker_fee = 0.004;
+                                                                        let fraction_of_wallet_im_using = 0.04; //aka 4 percent
+                                                                        let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+                                                                        let fee_for_purchase = total_spent*gemini_taker_fee;
+                                                                        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+                                                                        *gemini_wallet -= total_spent;
+
+                                                                        let amount_of_xrp = 
+                                                                        money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                        .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                        even though to get to this point it had to be Some. 
+                                                                                                        gemini_buy_ask: {:?}
+                                                                                                        Honestly restart the program from the last saved state. 
+                                                                                                        The most likely error is a bit got flipped after the loop",
+                                                                                                        &gemini_buy_ask));
+
+                                                                        //coinbase calculations for sell
+
+                                                                        let coinbase_taker_fee = 0.008;
+                                                                        let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid.unwrap();
+                                                                        let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                                                                        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                        *coinbase_wallet += money_from_sell_after_fees;
+                                                                        value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                        //value_after = 60
+                                                                        //coinbase = 61
+                                                                        //bitstamp = 62
+                                                                        //kraken = 63
+                                                                        //gemini = 64
+                                                                        //since this is coinbase and gemini being updated, I will update:
+                                                                        //  60, 61, 64
+                                                                        let indices = [60, 61, 64];
+                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                        neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                        success = true;
+                                                                },
+                                                                _ => {
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                                    }
+                                                                    continue ;
+                                                                }
+                                                            }
+                                                        },
+                                                        _ => {
+                                                            if attempts > 3 {
+                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+                                                            }
+                                                            continue ;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        Err(_) => {
+                                            if attempts > 3 {
+                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                            }
+                                            continue ; // Continue to the next iteration if parsing fails
+                                        }
+                                    }
+                                },
+                                Err(_) => {
+                                    if attempts > 3 {
+                                        panic!("Failed to get response text after 3 attempts");
+                                    }
+                                    continue ; // Continue to the next iteration if getting response text fails
+                                }
+                            }
+                        },
+                        Err(_) => {
+                            if attempts > 3 {
+                                panic!("Failed to execute request after 3 attempts");
+                            }
+                            continue; // Continue to the next iteration if executing request fails
+                        }
+                    }
+                },
+                Err(_) => {
+                    if attempts > 3 {
+                        panic!("Failed to build request after 3 attempts");
+                    }
+                    continue; // Continue to the next iteration if building request fails
+                }
+            }
+            if success == true {
+                break;
             }
         }
 
+        match value_after {
+            Some(value) => return Ok(value),
+            None => {
+                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+            }
+        }
+        //02/27/24 - removed and placed above^
+            //         //gemini calculations for buy 
+            //     //this should equal 0.4%
+            //     let gemini_taker_fee = 0.004;
+            //     let fraction_of_wallet_im_using = 0.06; //aka 6 percent
 
-
-                    //gemini calculations for buy 
-                //this should equal 0.4%
-                let gemini_taker_fee = 0.004;
-                let fraction_of_wallet_im_using = 0.04; //aka 4 percent
-
-                let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                let fee_for_purchase = total_spent*gemini_taker_fee;
-                let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                //new state of gemini wallet below
-                *gemini_wallet -= total_spent;
-                let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
-    
-    
-    
-
-            //coinbase calculations for sell
-
-                let coinbase_taker_fee = 0.008;
-                let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
-                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                *coinbase_wallet += money_from_sell_after_fees;
-    
+            //     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+            //     let fee_for_purchase = total_spent*gemini_taker_fee;
+            //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+            //     //new state of gemini wallet below
+            //     *gemini_wallet -= total_spent;
+            //     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
     
     
     
 
+            // //coinbase calculations for sell
 
-            //coinbase calculations for buy - not needed in this so code commented out
-            
-                //let coinbase_taker_fee = 0.008;
+            //     let coinbase_taker_fee = 0.008;
+            //     let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
+            //     let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //     *coinbase_wallet += money_from_sell_after_fees;
     
-                //let total_spent = 0.10*(*coinbase_wallet);
-                //let fee_for_purchase = total_spent*coinbase_taker_fee;
-                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-                ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
-                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
-            //kraken calculations - for sell
-                //let kraken_taker_fee = 0.0026;
+    
+    
+
+
+            //     //coinbase calculations for buy - not needed in this so code commented out
                 
-                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
-    
-                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            //bitstamp calculations - for sell
-                //let bitstamp_taker_fee = 0.004;
-                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+            //         //let coinbase_taker_fee = 0.008;
+        
+            //         //let total_spent = 0.10*(*coinbase_wallet);
+            //         //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //         //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            //         ////new state of coinbase wallet below
+            //         //*coinbase_wallet -= total_spent;
+            //         //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+        
+            //     //kraken calculations - for sell
+            //         //let kraken_taker_fee = 0.0026;
+                    
+            //         //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //         //*kraken_wallet += money_from_sell_after_fees;
+        
+            //         //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        
+            //     //bitstamp calculations - for sell
+            //         //let bitstamp_taker_fee = 0.004;
+            //         //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //         //*bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-            //this will count as value after
-                let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    
-                //value_after = 60
-                //coinbase = 61
-                //bitstamp = 62
-                //kraken = 63
-                //gemini = 64
-                //since this is coinbase and gemini being updated, I will update:
-                //  60, 61, 64
-                let indices = [60, 61, 64];
-                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                //01/24/24 - removed and added:
-                    //neural_network.update_input(&indices, &new_values);
-                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    //neural_network.update_input(&indices, &transformed_values).await;
-                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                    neural_network.update_input(&indices, &scaled_values).await;
-    
-        return Ok(value_after)
+            //     //this will count as value after
+            //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+        
+            //         //value_after = 60
+            //         //coinbase = 61
+            //         //bitstamp = 62
+            //         //kraken = 63
+            //         //gemini = 64
+            //         //since this is coinbase and gemini being updated, I will update:
+            //         //  60, 61, 64
+            //         let indices = [60, 61, 64];
+            //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+            //         //01/24/24 - removed and added:
+            //             //neural_network.update_input(&indices, &new_values);
+            //             //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //             //neural_network.update_input(&indices, &transformed_values).await;
+            //             let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            //             neural_network.update_input(&indices, &scaled_values).await;
+        
+            // return Ok(value_after)
     }
 
     pub async fn s_i145_xrp_5_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
@@ -30143,28 +30545,80 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let gemini_cache_control = "no-cache";
         let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
         
-        let gemini_request = client.get(gemini_url)
+        // let gemini_request = client.get(gemini_url)
+        //         .header("Content-Type", gemini_content_type)
+        //         .header("Content-Length", gemini_content_length)
+        //         .header("X-GEMINI-APIKEY", gemini_api_key)
+        //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+        //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+        //         .header("Cache-Control", gemini_cache_control)
+        //         .build()
+        //         .expect("couldn't build gemini request");
+    
+    
+        // let gemini_response = client.execute(gemini_request).await
+        //                         .expect("Failed to execute Gemini request");
+        // let gemini_response_text = gemini_response.text().await
+        //                         .expect("Failed to turn response into text");
+        // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+        //                         .expect("Failed to parse JSON");
+        // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        // //CAN ONLY BUY. NOT SELL
+        // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+    //02/27/24 - added:
+        let mut attempts = 0;
+        let gemini_buy_ask: Option<f64>;
+        loop {
+            let gemini_request = client.get(gemini_url)
                 .header("Content-Type", gemini_content_type)
                 .header("Content-Length", gemini_content_length)
                 .header("X-GEMINI-APIKEY", gemini_api_key)
-                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
                 .header("X-GEMINI-SIGNATURE", &gemini_signature)
                 .header("Cache-Control", gemini_cache_control)
-                .build()
-                .expect("couldn't build gemini request");
-    
-    
-        let gemini_response = client.execute(gemini_request).await
-                                .expect("Failed to execute Gemini request");
-        let gemini_response_text = gemini_response.text().await
-                                .expect("Failed to turn response into text");
-        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                .expect("Failed to parse JSON");
-        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-        //CAN ONLY BUY. NOT SELL
-        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-        //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+                .build();
+        
+            match gemini_request {
+                Ok(request) => {
+                    match client.execute(request).await {
+                        Ok(response) => {
+                            let gemini_response_text = response.text().await;
+                            match gemini_response_text {
+                                Ok(text) => {
 
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(value) => {
+                                            let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
+                                                .ok_or_else(|| "Failed to get ask as string")
+                                                .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
+                                
+                                            match gemini_buy_ask_result {
+                                                Ok(ask) => {
+                                                    gemini_buy_ask = Some(ask);
+                                                    // Continue with your logic here using `ask`
+                                                    break; // Exit the loop if everything is successful
+                                                },
+                                                Err(e) => log::error!("{}", e),
+                                            }
+                                        },
+                                        Err(_) => log::error!("Failed to parse JSON"),
+                                    }
+                                },
+                                Err(_) => log::error!("Failed to turn response into text"),
+                            }
+                        },
+                        Err(_) => log::error!("Failed to execute Gemini request"),
+                    }
+                },
+                Err(_) => log::error!("Couldn't build gemini request"),
+            }
+        
+            attempts += 1;
+            if attempts >= 3 {
+                panic!("Failed after 3 attempts");
+            }
+        }
 
 
 
@@ -30195,141 +30649,290 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
-        .header("CB-ACCESS-KEY", coinbase_api_key)
-        .header("CB-ACCESS-SIGN", &coinbase_signature)
-        .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()
-        .expect("couldn't build request");
-        //manages the error I described above
-        //let request = match request {
-        //Ok(req) => req,
-        //Err(e) => {
-        //eprintln!("Failed to build request: \n{}", e);
-        //return Err(e);
-        //}
-        //};
+    //02/27/24 - removed:
+        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // .header("CB-ACCESS-KEY", coinbase_api_key)
+        // .header("CB-ACCESS-SIGN", &coinbase_signature)
+        // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+        // .build()
+        // .expect("couldn't build Coinbase request");
+        // //manages the error I described above
+        // //let request = match request {
+        // //Ok(req) => req,
+        // //Err(e) => {
+        // //eprintln!("Failed to build request: \n{}", e);
+        // //return Err(e);
+        // //}
+        // //};
 
-        let response = client.execute(request).await.expect("couldn't build response");
-        //let response = match response {
-        //    Ok(resp) => resp,
-        //    Err(e) => {
-        //        eprintln!("Failed to execute request: \n{}", e);
-        //        return Err(e);
-        //    }
-        //};
+        // let response = client.execute(request).await.expect("couldn't build response");
+        // //let response = match response {
+        // //    Ok(resp) => resp,
+        // //    Err(e) => {
+        // //        eprintln!("Failed to execute request: \n{}", e);
+        // //        return Err(e);
+        // //    }
+        // //};
 
 
-        let response_text = response.text().await.expect("couldn't build response_text");
+        // let response_text = response.text().await.expect("couldn't build response_text");
 
-        //added 12/29/23
-        //this is the parsing
-        let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
-        let mut coinbase_sell_price_bid = 0.0;
-        let mut coinbase_buy_price_ask = 0.0;
+        // //added 12/29/23
+        // //this is the parsing
+        // let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
+        // let mut coinbase_sell_price_bid = 0.0;
+        // let mut coinbase_buy_price_ask = 0.0;
 
-        // Access the pricebooks array
-        if let Some(pricebooks) = v["pricebooks"].as_array() {
-            // Iterate over each pricebook
-            for pricebook in pricebooks {
-                // Access the product_id, bids, and asks
-                let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
-                let bids = &pricebook["bids"][0];
-                let asks = &pricebook["asks"][0];
+        // // Access the pricebooks array
+        // if let Some(pricebooks) = v["pricebooks"].as_array() {
+        //     // Iterate over each pricebook
+        //     for pricebook in pricebooks {
+        //         // Access the product_id, bids, and asks
+        //         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
+        //         let bids = &pricebook["bids"][0];
+        //         let asks = &pricebook["asks"][0];
         
-                // Access the price and size of the bids and asks
-                coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
-                let bid_size = bids["size"].as_str().expect("could not find bids[size]");
-                coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
-                let ask_size = asks["size"].as_str().expect("could not find asks[size]");
+        //         // Access the price and size of the bids and asks
+        //         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
+        //         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
+        //         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
+        //         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
         
-                //println!("Product ID: {}", product_id);
-                //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
-                //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //         //println!("Product ID: {}", product_id);
+        //         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+        //         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //     }
+        // }
+    //02/27/24 - added in its place:
+        let mut attempts = 0;
+        let mut coinbase_sell_price_bid: Option<f64> = None;
+        //let coinbase_buy_price_ask: Option<f64>;
+        let mut value_after: Option<f64> = None;
+        let mut success = true;
+        loop {
+            attempts +=1;
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build();
+            //.expect("couldn't build request");
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+            match request {
+                Ok(req) => {
+            //      response_text, v, coinbase_sell_price_bid, coinbase_buy_price_ask, bid/ask size
+                    let response = client.execute(req).await;
+                    match response {
+                        Ok(resp) => {
+                            let response_text = resp.text().await;
+                            match response_text {
+                                Ok(text) => {
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(v) => {
+                                            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                                                for pricebook in pricebooks {
+                                                    //let product_id = pricebook["product_id"].as_str();
+                                                    let bids = &pricebook["bids"][0];
+                                                    //let asks = &pricebook["asks"][0];
+                                                    let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+                                                    //let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+        
+                                                    match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
+                                                        (Some(bid_str), /*Some(ask_str)*/) => {
+                                                            match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
+                                                                (Ok(bid_str), /*Ok(ask_str)*/) => {
+                                                                    coinbase_sell_price_bid = Some(bid_str);
+                                                                    //coinbase_buy_price_ask = Some(ask_str);
+
+                                                                    // Place your calculations and updates here
+                                                                        let gemini_taker_fee = 0.004;
+                                                                        let fraction_of_wallet_im_using = 0.05; //aka 5 percent
+                                                                        let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+                                                                        let fee_for_purchase = total_spent*gemini_taker_fee;
+                                                                        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+                                                                        *gemini_wallet -= total_spent;
+
+                                                                        let amount_of_xrp = 
+                                                                        money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                        .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                        even though to get to this point it had to be Some. 
+                                                                                                        gemini_buy_ask: {:?}
+                                                                                                        Honestly restart the program from the last saved state. 
+                                                                                                        The most likely error is a bit got flipped after the loop",
+                                                                                                        &gemini_buy_ask));
+
+                                                                        //coinbase calculations for sell
+
+                                                                        let coinbase_taker_fee = 0.008;
+                                                                        let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid.unwrap();
+                                                                        let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                                                                        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                        *coinbase_wallet += money_from_sell_after_fees;
+                                                                        value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                        //value_after = 60
+                                                                        //coinbase = 61
+                                                                        //bitstamp = 62
+                                                                        //kraken = 63
+                                                                        //gemini = 64
+                                                                        //since this is coinbase and gemini being updated, I will update:
+                                                                        //  60, 61, 64
+                                                                        let indices = [60, 61, 64];
+                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                        neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                        success = true;
+                                                                },
+                                                                _ => {
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                                    }
+                                                                    continue ;
+                                                                }
+                                                            }
+                                                        },
+                                                        _ => {
+                                                            if attempts > 3 {
+                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+                                                            }
+                                                            continue ;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        Err(_) => {
+                                            if attempts > 3 {
+                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                            }
+                                            continue ; // Continue to the next iteration if parsing fails
+                                        }
+                                    }
+                                },
+                                Err(_) => {
+                                    if attempts > 3 {
+                                        panic!("Failed to get response text after 3 attempts");
+                                    }
+                                    continue ; // Continue to the next iteration if getting response text fails
+                                }
+                            }
+                        },
+                        Err(_) => {
+                            if attempts > 3 {
+                                panic!("Failed to execute request after 3 attempts");
+                            }
+                            continue; // Continue to the next iteration if executing request fails
+                        }
+                    }
+                },
+                Err(_) => {
+                    if attempts > 3 {
+                        panic!("Failed to build request after 3 attempts");
+                    }
+                    continue; // Continue to the next iteration if building request fails
+                }
+            }
+            if success == true {
+                break;
             }
         }
 
+        match value_after {
+            Some(value) => return Ok(value),
+            None => {
+                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+            }
+        }
+        //02/27/24 - removed and placed above^
+            //         //gemini calculations for buy 
+            //     //this should equal 0.4%
+            //     let gemini_taker_fee = 0.004;
+            //     let fraction_of_wallet_im_using = 0.06; //aka 6 percent
 
-
-                    //gemini calculations for buy 
-                //this should equal 0.4%
-                let gemini_taker_fee = 0.004;
-                let fraction_of_wallet_im_using = 0.05; //aka 5 percent
-
-                let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                let fee_for_purchase = total_spent*gemini_taker_fee;
-                let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                //new state of gemini wallet below
-                *gemini_wallet -= total_spent;
-                let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
-    
-    
-    
-
-            //coinbase calculations for sell
-
-                let coinbase_taker_fee = 0.008;
-                let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
-                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                *coinbase_wallet += money_from_sell_after_fees;
-    
+            //     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+            //     let fee_for_purchase = total_spent*gemini_taker_fee;
+            //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+            //     //new state of gemini wallet below
+            //     *gemini_wallet -= total_spent;
+            //     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
     
     
     
 
+            // //coinbase calculations for sell
 
-            //coinbase calculations for buy - not needed in this so code commented out
-            
-                //let coinbase_taker_fee = 0.008;
+            //     let coinbase_taker_fee = 0.008;
+            //     let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
+            //     let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //     *coinbase_wallet += money_from_sell_after_fees;
     
-                //let total_spent = 0.10*(*coinbase_wallet);
-                //let fee_for_purchase = total_spent*coinbase_taker_fee;
-                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-                ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
-                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
-            //kraken calculations - for sell
-                //let kraken_taker_fee = 0.0026;
+    
+    
+
+
+            //     //coinbase calculations for buy - not needed in this so code commented out
                 
-                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
-    
-                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            //bitstamp calculations - for sell
-                //let bitstamp_taker_fee = 0.004;
-                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+            //         //let coinbase_taker_fee = 0.008;
+        
+            //         //let total_spent = 0.10*(*coinbase_wallet);
+            //         //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //         //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            //         ////new state of coinbase wallet below
+            //         //*coinbase_wallet -= total_spent;
+            //         //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+        
+            //     //kraken calculations - for sell
+            //         //let kraken_taker_fee = 0.0026;
+                    
+            //         //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //         //*kraken_wallet += money_from_sell_after_fees;
+        
+            //         //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        
+            //     //bitstamp calculations - for sell
+            //         //let bitstamp_taker_fee = 0.004;
+            //         //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //         //*bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-            //this will count as value after
-                let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    
-                //value_after = 60
-                //coinbase = 61
-                //bitstamp = 62
-                //kraken = 63
-                //gemini = 64
-                //since this is coinbase and gemini being updated, I will update:
-                //  60, 61, 64
-                let indices = [60, 61, 64];
-                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                //01/24/24 - removed and added:
-                    //neural_network.update_input(&indices, &new_values);
-                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    //neural_network.update_input(&indices, &transformed_values).await;
-                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                    neural_network.update_input(&indices, &scaled_values).await;
-    
-        return Ok(value_after)
+            //     //this will count as value after
+            //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+        
+            //         //value_after = 60
+            //         //coinbase = 61
+            //         //bitstamp = 62
+            //         //kraken = 63
+            //         //gemini = 64
+            //         //since this is coinbase and gemini being updated, I will update:
+            //         //  60, 61, 64
+            //         let indices = [60, 61, 64];
+            //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+            //         //01/24/24 - removed and added:
+            //             //neural_network.update_input(&indices, &new_values);
+            //             //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //             //neural_network.update_input(&indices, &transformed_values).await;
+            //             let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            //             neural_network.update_input(&indices, &scaled_values).await;
+        
+            // return Ok(value_after)
     }
 
     pub async fn s_i146_xrp_6_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
@@ -30365,28 +30968,80 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let gemini_cache_control = "no-cache";
         let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
         
-        let gemini_request = client.get(gemini_url)
+        // let gemini_request = client.get(gemini_url)
+        //         .header("Content-Type", gemini_content_type)
+        //         .header("Content-Length", gemini_content_length)
+        //         .header("X-GEMINI-APIKEY", gemini_api_key)
+        //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+        //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+        //         .header("Cache-Control", gemini_cache_control)
+        //         .build()
+        //         .expect("couldn't build gemini request");
+    
+    
+        // let gemini_response = client.execute(gemini_request).await
+        //                         .expect("Failed to execute Gemini request");
+        // let gemini_response_text = gemini_response.text().await
+        //                         .expect("Failed to turn response into text");
+        // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+        //                         .expect("Failed to parse JSON");
+        // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        // //CAN ONLY BUY. NOT SELL
+        // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+    //02/27/24 - added:
+        let mut attempts = 0;
+        let gemini_buy_ask: Option<f64>;
+        loop {
+            let gemini_request = client.get(gemini_url)
                 .header("Content-Type", gemini_content_type)
                 .header("Content-Length", gemini_content_length)
                 .header("X-GEMINI-APIKEY", gemini_api_key)
-                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
                 .header("X-GEMINI-SIGNATURE", &gemini_signature)
                 .header("Cache-Control", gemini_cache_control)
-                .build()
-                .expect("couldn't build gemini request");
-    
-    
-        let gemini_response = client.execute(gemini_request).await
-                                .expect("Failed to execute Gemini request");
-        let gemini_response_text = gemini_response.text().await
-                                .expect("Failed to turn response into text");
-        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                .expect("Failed to parse JSON");
-        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-        //CAN ONLY BUY. NOT SELL
-        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-        //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+                .build();
+        
+            match gemini_request {
+                Ok(request) => {
+                    match client.execute(request).await {
+                        Ok(response) => {
+                            let gemini_response_text = response.text().await;
+                            match gemini_response_text {
+                                Ok(text) => {
 
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(value) => {
+                                            let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
+                                                .ok_or_else(|| "Failed to get ask as string")
+                                                .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
+                                
+                                            match gemini_buy_ask_result {
+                                                Ok(ask) => {
+                                                    gemini_buy_ask = Some(ask);
+                                                    // Continue with your logic here using `ask`
+                                                    break; // Exit the loop if everything is successful
+                                                },
+                                                Err(e) => log::error!("{}", e),
+                                            }
+                                        },
+                                        Err(_) => log::error!("Failed to parse JSON"),
+                                    }
+                                },
+                                Err(_) => log::error!("Failed to turn response into text"),
+                            }
+                        },
+                        Err(_) => log::error!("Failed to execute Gemini request"),
+                    }
+                },
+                Err(_) => log::error!("Couldn't build gemini request"),
+            }
+        
+            attempts += 1;
+            if attempts >= 3 {
+                panic!("Failed after 3 attempts");
+            }
+        }
 
 
 
@@ -30417,141 +31072,290 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
-        .header("CB-ACCESS-KEY", coinbase_api_key)
-        .header("CB-ACCESS-SIGN", &coinbase_signature)
-        .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()
-        .expect("couldn't build request");
-        //manages the error I described above
-        //let request = match request {
-        //Ok(req) => req,
-        //Err(e) => {
-        //eprintln!("Failed to build request: \n{}", e);
-        //return Err(e);
-        //}
-        //};
+    //02/27/24 - removed:
+        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // .header("CB-ACCESS-KEY", coinbase_api_key)
+        // .header("CB-ACCESS-SIGN", &coinbase_signature)
+        // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+        // .build()
+        // .expect("couldn't build Coinbase request");
+        // //manages the error I described above
+        // //let request = match request {
+        // //Ok(req) => req,
+        // //Err(e) => {
+        // //eprintln!("Failed to build request: \n{}", e);
+        // //return Err(e);
+        // //}
+        // //};
 
-        let response = client.execute(request).await.expect("couldn't build response");
-        //let response = match response {
-        //    Ok(resp) => resp,
-        //    Err(e) => {
-        //        eprintln!("Failed to execute request: \n{}", e);
-        //        return Err(e);
-        //    }
-        //};
+        // let response = client.execute(request).await.expect("couldn't build response");
+        // //let response = match response {
+        // //    Ok(resp) => resp,
+        // //    Err(e) => {
+        // //        eprintln!("Failed to execute request: \n{}", e);
+        // //        return Err(e);
+        // //    }
+        // //};
 
 
-        let response_text = response.text().await.expect("couldn't build response_text");
+        // let response_text = response.text().await.expect("couldn't build response_text");
 
-        //added 12/29/23
-        //this is the parsing
-        let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
-        let mut coinbase_sell_price_bid = 0.0;
-        let mut coinbase_buy_price_ask = 0.0;
+        // //added 12/29/23
+        // //this is the parsing
+        // let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
+        // let mut coinbase_sell_price_bid = 0.0;
+        // let mut coinbase_buy_price_ask = 0.0;
 
-        // Access the pricebooks array
-        if let Some(pricebooks) = v["pricebooks"].as_array() {
-            // Iterate over each pricebook
-            for pricebook in pricebooks {
-                // Access the product_id, bids, and asks
-                let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
-                let bids = &pricebook["bids"][0];
-                let asks = &pricebook["asks"][0];
+        // // Access the pricebooks array
+        // if let Some(pricebooks) = v["pricebooks"].as_array() {
+        //     // Iterate over each pricebook
+        //     for pricebook in pricebooks {
+        //         // Access the product_id, bids, and asks
+        //         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
+        //         let bids = &pricebook["bids"][0];
+        //         let asks = &pricebook["asks"][0];
         
-                // Access the price and size of the bids and asks
-                coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
-                let bid_size = bids["size"].as_str().expect("could not find bids[size]");
-                coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
-                let ask_size = asks["size"].as_str().expect("could not find asks[size]");
+        //         // Access the price and size of the bids and asks
+        //         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
+        //         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
+        //         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
+        //         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
         
-                //println!("Product ID: {}", product_id);
-                //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
-                //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //         //println!("Product ID: {}", product_id);
+        //         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+        //         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //     }
+        // }
+    //02/27/24 - added in its place:
+        let mut attempts = 0;
+        let mut coinbase_sell_price_bid: Option<f64> = None;
+        //let coinbase_buy_price_ask: Option<f64>;
+        let mut value_after: Option<f64> = None;
+        let mut success = true;
+        loop {
+            attempts +=1;
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build();
+            //.expect("couldn't build request");
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+            match request {
+                Ok(req) => {
+            //      response_text, v, coinbase_sell_price_bid, coinbase_buy_price_ask, bid/ask size
+                    let response = client.execute(req).await;
+                    match response {
+                        Ok(resp) => {
+                            let response_text = resp.text().await;
+                            match response_text {
+                                Ok(text) => {
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(v) => {
+                                            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                                                for pricebook in pricebooks {
+                                                    //let product_id = pricebook["product_id"].as_str();
+                                                    let bids = &pricebook["bids"][0];
+                                                    //let asks = &pricebook["asks"][0];
+                                                    let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+                                                    //let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+        
+                                                    match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
+                                                        (Some(bid_str), /*Some(ask_str)*/) => {
+                                                            match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
+                                                                (Ok(bid_str), /*Ok(ask_str)*/) => {
+                                                                    coinbase_sell_price_bid = Some(bid_str);
+                                                                    //coinbase_buy_price_ask = Some(ask_str);
+
+                                                                    // Place your calculations and updates here
+                                                                        let gemini_taker_fee = 0.004;
+                                                                        let fraction_of_wallet_im_using = 0.06; //aka 6 percent
+                                                                        let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+                                                                        let fee_for_purchase = total_spent*gemini_taker_fee;
+                                                                        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+                                                                        *gemini_wallet -= total_spent;
+
+                                                                        let amount_of_xrp = 
+                                                                        money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                        .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                        even though to get to this point it had to be Some. 
+                                                                                                        gemini_buy_ask: {:?}
+                                                                                                        Honestly restart the program from the last saved state. 
+                                                                                                        The most likely error is a bit got flipped after the loop",
+                                                                                                        &gemini_buy_ask));
+
+                                                                        //coinbase calculations for sell
+
+                                                                        let coinbase_taker_fee = 0.008;
+                                                                        let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid.unwrap();
+                                                                        let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                                                                        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                        *coinbase_wallet += money_from_sell_after_fees;
+                                                                        value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                        //value_after = 60
+                                                                        //coinbase = 61
+                                                                        //bitstamp = 62
+                                                                        //kraken = 63
+                                                                        //gemini = 64
+                                                                        //since this is coinbase and gemini being updated, I will update:
+                                                                        //  60, 61, 64
+                                                                        let indices = [60, 61, 64];
+                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                        neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                        success = true;
+                                                                },
+                                                                _ => {
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                                    }
+                                                                    continue ;
+                                                                }
+                                                            }
+                                                        },
+                                                        _ => {
+                                                            if attempts > 3 {
+                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+                                                            }
+                                                            continue ;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        Err(_) => {
+                                            if attempts > 3 {
+                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                            }
+                                            continue ; // Continue to the next iteration if parsing fails
+                                        }
+                                    }
+                                },
+                                Err(_) => {
+                                    if attempts > 3 {
+                                        panic!("Failed to get response text after 3 attempts");
+                                    }
+                                    continue ; // Continue to the next iteration if getting response text fails
+                                }
+                            }
+                        },
+                        Err(_) => {
+                            if attempts > 3 {
+                                panic!("Failed to execute request after 3 attempts");
+                            }
+                            continue; // Continue to the next iteration if executing request fails
+                        }
+                    }
+                },
+                Err(_) => {
+                    if attempts > 3 {
+                        panic!("Failed to build request after 3 attempts");
+                    }
+                    continue; // Continue to the next iteration if building request fails
+                }
+            }
+            if success == true {
+                break;
             }
         }
 
+        match value_after {
+            Some(value) => return Ok(value),
+            None => {
+                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+            }
+        }
+        //02/27/24 - removed and placed above^
+            //         //gemini calculations for buy 
+            //     //this should equal 0.4%
+            //     let gemini_taker_fee = 0.004;
+            //     let fraction_of_wallet_im_using = 0.06; //aka 6 percent
 
-
-                    //gemini calculations for buy 
-                //this should equal 0.4%
-                let gemini_taker_fee = 0.004;
-                let fraction_of_wallet_im_using = 0.06; //aka 6 percent
-
-                let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                let fee_for_purchase = total_spent*gemini_taker_fee;
-                let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                //new state of gemini wallet below
-                *gemini_wallet -= total_spent;
-                let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
-    
-    
-    
-
-            //coinbase calculations for sell
-
-                let coinbase_taker_fee = 0.008;
-                let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
-                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                *coinbase_wallet += money_from_sell_after_fees;
-    
+            //     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+            //     let fee_for_purchase = total_spent*gemini_taker_fee;
+            //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+            //     //new state of gemini wallet below
+            //     *gemini_wallet -= total_spent;
+            //     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
     
     
     
 
+            // //coinbase calculations for sell
 
-            //coinbase calculations for buy - not needed in this so code commented out
-            
-                //let coinbase_taker_fee = 0.008;
+            //     let coinbase_taker_fee = 0.008;
+            //     let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
+            //     let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //     *coinbase_wallet += money_from_sell_after_fees;
     
-                //let total_spent = 0.10*(*coinbase_wallet);
-                //let fee_for_purchase = total_spent*coinbase_taker_fee;
-                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-                ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
-                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
-            //kraken calculations - for sell
-                //let kraken_taker_fee = 0.0026;
+    
+    
+
+
+            //     //coinbase calculations for buy - not needed in this so code commented out
                 
-                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
-    
-                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            //bitstamp calculations - for sell
-                //let bitstamp_taker_fee = 0.004;
-                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+            //         //let coinbase_taker_fee = 0.008;
+        
+            //         //let total_spent = 0.10*(*coinbase_wallet);
+            //         //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //         //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            //         ////new state of coinbase wallet below
+            //         //*coinbase_wallet -= total_spent;
+            //         //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+        
+            //     //kraken calculations - for sell
+            //         //let kraken_taker_fee = 0.0026;
+                    
+            //         //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //         //*kraken_wallet += money_from_sell_after_fees;
+        
+            //         //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        
+            //     //bitstamp calculations - for sell
+            //         //let bitstamp_taker_fee = 0.004;
+            //         //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //         //*bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-            //this will count as value after
-                let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    
-                //value_after = 60
-                //coinbase = 61
-                //bitstamp = 62
-                //kraken = 63
-                //gemini = 64
-                //since this is coinbase and gemini being updated, I will update:
-                //  60, 61, 64
-                let indices = [60, 61, 64];
-                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                //01/24/24 - removed and added:
-                    //neural_network.update_input(&indices, &new_values);
-                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    //neural_network.update_input(&indices, &transformed_values).await;
-                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                    neural_network.update_input(&indices, &scaled_values).await;
-    
-        return Ok(value_after)
+            //     //this will count as value after
+            //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+        
+            //         //value_after = 60
+            //         //coinbase = 61
+            //         //bitstamp = 62
+            //         //kraken = 63
+            //         //gemini = 64
+            //         //since this is coinbase and gemini being updated, I will update:
+            //         //  60, 61, 64
+            //         let indices = [60, 61, 64];
+            //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+            //         //01/24/24 - removed and added:
+            //             //neural_network.update_input(&indices, &new_values);
+            //             //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //             //neural_network.update_input(&indices, &transformed_values).await;
+            //             let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            //             neural_network.update_input(&indices, &scaled_values).await;
+        
+            // return Ok(value_after)
     }
 
     pub async fn s_i147_xrp_7_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
@@ -30587,28 +31391,80 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let gemini_cache_control = "no-cache";
         let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
         
-        let gemini_request = client.get(gemini_url)
+        // let gemini_request = client.get(gemini_url)
+        //         .header("Content-Type", gemini_content_type)
+        //         .header("Content-Length", gemini_content_length)
+        //         .header("X-GEMINI-APIKEY", gemini_api_key)
+        //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+        //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+        //         .header("Cache-Control", gemini_cache_control)
+        //         .build()
+        //         .expect("couldn't build gemini request");
+    
+    
+        // let gemini_response = client.execute(gemini_request).await
+        //                         .expect("Failed to execute Gemini request");
+        // let gemini_response_text = gemini_response.text().await
+        //                         .expect("Failed to turn response into text");
+        // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+        //                         .expect("Failed to parse JSON");
+        // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        // //CAN ONLY BUY. NOT SELL
+        // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+    //02/27/24 - added:
+        let mut attempts = 0;
+        let gemini_buy_ask: Option<f64>;
+        loop {
+            let gemini_request = client.get(gemini_url)
                 .header("Content-Type", gemini_content_type)
                 .header("Content-Length", gemini_content_length)
                 .header("X-GEMINI-APIKEY", gemini_api_key)
-                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
                 .header("X-GEMINI-SIGNATURE", &gemini_signature)
                 .header("Cache-Control", gemini_cache_control)
-                .build()
-                .expect("couldn't build gemini request");
-    
-    
-        let gemini_response = client.execute(gemini_request).await
-                                .expect("Failed to execute Gemini request");
-        let gemini_response_text = gemini_response.text().await
-                                .expect("Failed to turn response into text");
-        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                .expect("Failed to parse JSON");
-        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-        //CAN ONLY BUY. NOT SELL
-        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-        //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+                .build();
+        
+            match gemini_request {
+                Ok(request) => {
+                    match client.execute(request).await {
+                        Ok(response) => {
+                            let gemini_response_text = response.text().await;
+                            match gemini_response_text {
+                                Ok(text) => {
 
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(value) => {
+                                            let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
+                                                .ok_or_else(|| "Failed to get ask as string")
+                                                .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
+                                
+                                            match gemini_buy_ask_result {
+                                                Ok(ask) => {
+                                                    gemini_buy_ask = Some(ask);
+                                                    // Continue with your logic here using `ask`
+                                                    break; // Exit the loop if everything is successful
+                                                },
+                                                Err(e) => log::error!("{}", e),
+                                            }
+                                        },
+                                        Err(_) => log::error!("Failed to parse JSON"),
+                                    }
+                                },
+                                Err(_) => log::error!("Failed to turn response into text"),
+                            }
+                        },
+                        Err(_) => log::error!("Failed to execute Gemini request"),
+                    }
+                },
+                Err(_) => log::error!("Couldn't build gemini request"),
+            }
+        
+            attempts += 1;
+            if attempts >= 3 {
+                panic!("Failed after 3 attempts");
+            }
+        }
 
 
 
@@ -30639,141 +31495,290 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
-        .header("CB-ACCESS-KEY", coinbase_api_key)
-        .header("CB-ACCESS-SIGN", &coinbase_signature)
-        .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()
-        .expect("couldn't build request");
-        //manages the error I described above
-        //let request = match request {
-        //Ok(req) => req,
-        //Err(e) => {
-        //eprintln!("Failed to build request: \n{}", e);
-        //return Err(e);
-        //}
-        //};
+    //02/27/24 - removed:
+        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // .header("CB-ACCESS-KEY", coinbase_api_key)
+        // .header("CB-ACCESS-SIGN", &coinbase_signature)
+        // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+        // .build()
+        // .expect("couldn't build Coinbase request");
+        // //manages the error I described above
+        // //let request = match request {
+        // //Ok(req) => req,
+        // //Err(e) => {
+        // //eprintln!("Failed to build request: \n{}", e);
+        // //return Err(e);
+        // //}
+        // //};
 
-        let response = client.execute(request).await.expect("couldn't build response");
-        //let response = match response {
-        //    Ok(resp) => resp,
-        //    Err(e) => {
-        //        eprintln!("Failed to execute request: \n{}", e);
-        //        return Err(e);
-        //    }
-        //};
+        // let response = client.execute(request).await.expect("couldn't build response");
+        // //let response = match response {
+        // //    Ok(resp) => resp,
+        // //    Err(e) => {
+        // //        eprintln!("Failed to execute request: \n{}", e);
+        // //        return Err(e);
+        // //    }
+        // //};
 
 
-        let response_text = response.text().await.expect("couldn't build response_text");
+        // let response_text = response.text().await.expect("couldn't build response_text");
 
-        //added 12/29/23
-        //this is the parsing
-        let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
-        let mut coinbase_sell_price_bid = 0.0;
-        let mut coinbase_buy_price_ask = 0.0;
+        // //added 12/29/23
+        // //this is the parsing
+        // let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
+        // let mut coinbase_sell_price_bid = 0.0;
+        // let mut coinbase_buy_price_ask = 0.0;
 
-        // Access the pricebooks array
-        if let Some(pricebooks) = v["pricebooks"].as_array() {
-            // Iterate over each pricebook
-            for pricebook in pricebooks {
-                // Access the product_id, bids, and asks
-                let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
-                let bids = &pricebook["bids"][0];
-                let asks = &pricebook["asks"][0];
+        // // Access the pricebooks array
+        // if let Some(pricebooks) = v["pricebooks"].as_array() {
+        //     // Iterate over each pricebook
+        //     for pricebook in pricebooks {
+        //         // Access the product_id, bids, and asks
+        //         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
+        //         let bids = &pricebook["bids"][0];
+        //         let asks = &pricebook["asks"][0];
         
-                // Access the price and size of the bids and asks
-                coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
-                let bid_size = bids["size"].as_str().expect("could not find bids[size]");
-                coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
-                let ask_size = asks["size"].as_str().expect("could not find asks[size]");
+        //         // Access the price and size of the bids and asks
+        //         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
+        //         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
+        //         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
+        //         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
         
-                //println!("Product ID: {}", product_id);
-                //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
-                //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //         //println!("Product ID: {}", product_id);
+        //         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+        //         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //     }
+        // }
+    //02/27/24 - added in its place:
+        let mut attempts = 0;
+        let mut coinbase_sell_price_bid: Option<f64> = None;
+        //let coinbase_buy_price_ask: Option<f64>;
+        let mut value_after: Option<f64> = None;
+        let mut success = true;
+        loop {
+            attempts +=1;
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build();
+            //.expect("couldn't build request");
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+            match request {
+                Ok(req) => {
+            //      response_text, v, coinbase_sell_price_bid, coinbase_buy_price_ask, bid/ask size
+                    let response = client.execute(req).await;
+                    match response {
+                        Ok(resp) => {
+                            let response_text = resp.text().await;
+                            match response_text {
+                                Ok(text) => {
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(v) => {
+                                            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                                                for pricebook in pricebooks {
+                                                    //let product_id = pricebook["product_id"].as_str();
+                                                    let bids = &pricebook["bids"][0];
+                                                    //let asks = &pricebook["asks"][0];
+                                                    let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+                                                    //let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+        
+                                                    match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
+                                                        (Some(bid_str), /*Some(ask_str)*/) => {
+                                                            match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
+                                                                (Ok(bid_str), /*Ok(ask_str)*/) => {
+                                                                    coinbase_sell_price_bid = Some(bid_str);
+                                                                    //coinbase_buy_price_ask = Some(ask_str);
+
+                                                                    // Place your calculations and updates here
+                                                                        let gemini_taker_fee = 0.004;
+                                                                        let fraction_of_wallet_im_using = 0.07; //aka 7 percent
+                                                                        let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+                                                                        let fee_for_purchase = total_spent*gemini_taker_fee;
+                                                                        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+                                                                        *gemini_wallet -= total_spent;
+
+                                                                        let amount_of_xrp = 
+                                                                        money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                        .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                        even though to get to this point it had to be Some. 
+                                                                                                        gemini_buy_ask: {:?}
+                                                                                                        Honestly restart the program from the last saved state. 
+                                                                                                        The most likely error is a bit got flipped after the loop",
+                                                                                                        &gemini_buy_ask));
+
+                                                                        //coinbase calculations for sell
+
+                                                                        let coinbase_taker_fee = 0.008;
+                                                                        let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid.unwrap();
+                                                                        let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                                                                        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                        *coinbase_wallet += money_from_sell_after_fees;
+                                                                        value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                        //value_after = 60
+                                                                        //coinbase = 61
+                                                                        //bitstamp = 62
+                                                                        //kraken = 63
+                                                                        //gemini = 64
+                                                                        //since this is coinbase and gemini being updated, I will update:
+                                                                        //  60, 61, 64
+                                                                        let indices = [60, 61, 64];
+                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                        neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                        success = true;
+                                                                },
+                                                                _ => {
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                                    }
+                                                                    continue ;
+                                                                }
+                                                            }
+                                                        },
+                                                        _ => {
+                                                            if attempts > 3 {
+                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+                                                            }
+                                                            continue ;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        Err(_) => {
+                                            if attempts > 3 {
+                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                            }
+                                            continue ; // Continue to the next iteration if parsing fails
+                                        }
+                                    }
+                                },
+                                Err(_) => {
+                                    if attempts > 3 {
+                                        panic!("Failed to get response text after 3 attempts");
+                                    }
+                                    continue ; // Continue to the next iteration if getting response text fails
+                                }
+                            }
+                        },
+                        Err(_) => {
+                            if attempts > 3 {
+                                panic!("Failed to execute request after 3 attempts");
+                            }
+                            continue; // Continue to the next iteration if executing request fails
+                        }
+                    }
+                },
+                Err(_) => {
+                    if attempts > 3 {
+                        panic!("Failed to build request after 3 attempts");
+                    }
+                    continue; // Continue to the next iteration if building request fails
+                }
+            }
+            if success == true {
+                break;
             }
         }
 
+        match value_after {
+            Some(value) => return Ok(value),
+            None => {
+                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+            }
+        }
+        //02/27/24 - removed and placed above^
+            //         //gemini calculations for buy 
+            //     //this should equal 0.4%
+            //     let gemini_taker_fee = 0.004;
+            //     let fraction_of_wallet_im_using = 0.06; //aka 6 percent
 
-
-                    //gemini calculations for buy 
-                //this should equal 0.4%
-                let gemini_taker_fee = 0.004;
-                let fraction_of_wallet_im_using = 0.07; //aka 7 percent
-
-                let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                let fee_for_purchase = total_spent*gemini_taker_fee;
-                let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                //new state of gemini wallet below
-                *gemini_wallet -= total_spent;
-                let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
-    
-    
-    
-
-            //coinbase calculations for sell
-
-                let coinbase_taker_fee = 0.008;
-                let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
-                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                *coinbase_wallet += money_from_sell_after_fees;
-    
+            //     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+            //     let fee_for_purchase = total_spent*gemini_taker_fee;
+            //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+            //     //new state of gemini wallet below
+            //     *gemini_wallet -= total_spent;
+            //     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
     
     
     
 
+            // //coinbase calculations for sell
 
-            //coinbase calculations for buy - not needed in this so code commented out
-            
-                //let coinbase_taker_fee = 0.008;
+            //     let coinbase_taker_fee = 0.008;
+            //     let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
+            //     let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //     *coinbase_wallet += money_from_sell_after_fees;
     
-                //let total_spent = 0.10*(*coinbase_wallet);
-                //let fee_for_purchase = total_spent*coinbase_taker_fee;
-                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-                ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
-                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
-            //kraken calculations - for sell
-                //let kraken_taker_fee = 0.0026;
+    
+    
+
+
+            //     //coinbase calculations for buy - not needed in this so code commented out
                 
-                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
-    
-                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            //bitstamp calculations - for sell
-                //let bitstamp_taker_fee = 0.004;
-                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+            //         //let coinbase_taker_fee = 0.008;
+        
+            //         //let total_spent = 0.10*(*coinbase_wallet);
+            //         //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //         //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            //         ////new state of coinbase wallet below
+            //         //*coinbase_wallet -= total_spent;
+            //         //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+        
+            //     //kraken calculations - for sell
+            //         //let kraken_taker_fee = 0.0026;
+                    
+            //         //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //         //*kraken_wallet += money_from_sell_after_fees;
+        
+            //         //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        
+            //     //bitstamp calculations - for sell
+            //         //let bitstamp_taker_fee = 0.004;
+            //         //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //         //*bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-            //this will count as value after
-                let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    
-                //value_after = 60
-                //coinbase = 61
-                //bitstamp = 62
-                //kraken = 63
-                //gemini = 64
-                //since this is coinbase and gemini being updated, I will update:
-                //  60, 61, 64
-                let indices = [60, 61, 64];
-                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                //01/24/24 - removed and added:
-                    //neural_network.update_input(&indices, &new_values);
-                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    //neural_network.update_input(&indices, &transformed_values).await;
-                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                    neural_network.update_input(&indices, &scaled_values).await;
-    
-        return Ok(value_after)
+            //     //this will count as value after
+            //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+        
+            //         //value_after = 60
+            //         //coinbase = 61
+            //         //bitstamp = 62
+            //         //kraken = 63
+            //         //gemini = 64
+            //         //since this is coinbase and gemini being updated, I will update:
+            //         //  60, 61, 64
+            //         let indices = [60, 61, 64];
+            //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+            //         //01/24/24 - removed and added:
+            //             //neural_network.update_input(&indices, &new_values);
+            //             //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //             //neural_network.update_input(&indices, &transformed_values).await;
+            //             let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            //             neural_network.update_input(&indices, &scaled_values).await;
+        
+            // return Ok(value_after)
     }
 
     pub async fn s_i148_xrp_8_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
@@ -30809,28 +31814,80 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let gemini_cache_control = "no-cache";
         let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
         
-        let gemini_request = client.get(gemini_url)
+        // let gemini_request = client.get(gemini_url)
+        //         .header("Content-Type", gemini_content_type)
+        //         .header("Content-Length", gemini_content_length)
+        //         .header("X-GEMINI-APIKEY", gemini_api_key)
+        //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+        //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+        //         .header("Cache-Control", gemini_cache_control)
+        //         .build()
+        //         .expect("couldn't build gemini request");
+    
+    
+        // let gemini_response = client.execute(gemini_request).await
+        //                         .expect("Failed to execute Gemini request");
+        // let gemini_response_text = gemini_response.text().await
+        //                         .expect("Failed to turn response into text");
+        // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+        //                         .expect("Failed to parse JSON");
+        // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        // //CAN ONLY BUY. NOT SELL
+        // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+    //02/27/24 - added:
+        let mut attempts = 0;
+        let gemini_buy_ask: Option<f64>;
+        loop {
+            let gemini_request = client.get(gemini_url)
                 .header("Content-Type", gemini_content_type)
                 .header("Content-Length", gemini_content_length)
                 .header("X-GEMINI-APIKEY", gemini_api_key)
-                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
                 .header("X-GEMINI-SIGNATURE", &gemini_signature)
                 .header("Cache-Control", gemini_cache_control)
-                .build()
-                .expect("couldn't build gemini request");
-    
-    
-        let gemini_response = client.execute(gemini_request).await
-                                .expect("Failed to execute Gemini request");
-        let gemini_response_text = gemini_response.text().await
-                                .expect("Failed to turn response into text");
-        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                .expect("Failed to parse JSON");
-        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-        //CAN ONLY BUY. NOT SELL
-        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-        //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+                .build();
+        
+            match gemini_request {
+                Ok(request) => {
+                    match client.execute(request).await {
+                        Ok(response) => {
+                            let gemini_response_text = response.text().await;
+                            match gemini_response_text {
+                                Ok(text) => {
 
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(value) => {
+                                            let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
+                                                .ok_or_else(|| "Failed to get ask as string")
+                                                .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
+                                
+                                            match gemini_buy_ask_result {
+                                                Ok(ask) => {
+                                                    gemini_buy_ask = Some(ask);
+                                                    // Continue with your logic here using `ask`
+                                                    break; // Exit the loop if everything is successful
+                                                },
+                                                Err(e) => log::error!("{}", e),
+                                            }
+                                        },
+                                        Err(_) => log::error!("Failed to parse JSON"),
+                                    }
+                                },
+                                Err(_) => log::error!("Failed to turn response into text"),
+                            }
+                        },
+                        Err(_) => log::error!("Failed to execute Gemini request"),
+                    }
+                },
+                Err(_) => log::error!("Couldn't build gemini request"),
+            }
+        
+            attempts += 1;
+            if attempts >= 3 {
+                panic!("Failed after 3 attempts");
+            }
+        }
 
 
 
@@ -30861,141 +31918,290 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
-        .header("CB-ACCESS-KEY", coinbase_api_key)
-        .header("CB-ACCESS-SIGN", &coinbase_signature)
-        .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()
-        .expect("couldn't build request");
-        //manages the error I described above
-        //let request = match request {
-        //Ok(req) => req,
-        //Err(e) => {
-        //eprintln!("Failed to build request: \n{}", e);
-        //return Err(e);
-        //}
-        //};
+    //02/27/24 - removed:
+        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // .header("CB-ACCESS-KEY", coinbase_api_key)
+        // .header("CB-ACCESS-SIGN", &coinbase_signature)
+        // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+        // .build()
+        // .expect("couldn't build Coinbase request");
+        // //manages the error I described above
+        // //let request = match request {
+        // //Ok(req) => req,
+        // //Err(e) => {
+        // //eprintln!("Failed to build request: \n{}", e);
+        // //return Err(e);
+        // //}
+        // //};
 
-        let response = client.execute(request).await.expect("couldn't build response");
-        //let response = match response {
-        //    Ok(resp) => resp,
-        //    Err(e) => {
-        //        eprintln!("Failed to execute request: \n{}", e);
-        //        return Err(e);
-        //    }
-        //};
+        // let response = client.execute(request).await.expect("couldn't build response");
+        // //let response = match response {
+        // //    Ok(resp) => resp,
+        // //    Err(e) => {
+        // //        eprintln!("Failed to execute request: \n{}", e);
+        // //        return Err(e);
+        // //    }
+        // //};
 
 
-        let response_text = response.text().await.expect("couldn't build response_text");
+        // let response_text = response.text().await.expect("couldn't build response_text");
 
-        //added 12/29/23
-        //this is the parsing
-        let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
-        let mut coinbase_sell_price_bid = 0.0;
-        let mut coinbase_buy_price_ask = 0.0;
+        // //added 12/29/23
+        // //this is the parsing
+        // let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
+        // let mut coinbase_sell_price_bid = 0.0;
+        // let mut coinbase_buy_price_ask = 0.0;
 
-        // Access the pricebooks array
-        if let Some(pricebooks) = v["pricebooks"].as_array() {
-            // Iterate over each pricebook
-            for pricebook in pricebooks {
-                // Access the product_id, bids, and asks
-                let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
-                let bids = &pricebook["bids"][0];
-                let asks = &pricebook["asks"][0];
+        // // Access the pricebooks array
+        // if let Some(pricebooks) = v["pricebooks"].as_array() {
+        //     // Iterate over each pricebook
+        //     for pricebook in pricebooks {
+        //         // Access the product_id, bids, and asks
+        //         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
+        //         let bids = &pricebook["bids"][0];
+        //         let asks = &pricebook["asks"][0];
         
-                // Access the price and size of the bids and asks
-                coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
-                let bid_size = bids["size"].as_str().expect("could not find bids[size]");
-                coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
-                let ask_size = asks["size"].as_str().expect("could not find asks[size]");
+        //         // Access the price and size of the bids and asks
+        //         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
+        //         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
+        //         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
+        //         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
         
-                //println!("Product ID: {}", product_id);
-                //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
-                //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //         //println!("Product ID: {}", product_id);
+        //         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+        //         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //     }
+        // }
+    //02/27/24 - added in its place:
+        let mut attempts = 0;
+        let mut coinbase_sell_price_bid: Option<f64> = None;
+        //let coinbase_buy_price_ask: Option<f64>;
+        let mut value_after: Option<f64> = None;
+        let mut success = true;
+        loop {
+            attempts +=1;
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build();
+            //.expect("couldn't build request");
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+            match request {
+                Ok(req) => {
+            //      response_text, v, coinbase_sell_price_bid, coinbase_buy_price_ask, bid/ask size
+                    let response = client.execute(req).await;
+                    match response {
+                        Ok(resp) => {
+                            let response_text = resp.text().await;
+                            match response_text {
+                                Ok(text) => {
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(v) => {
+                                            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                                                for pricebook in pricebooks {
+                                                    //let product_id = pricebook["product_id"].as_str();
+                                                    let bids = &pricebook["bids"][0];
+                                                    //let asks = &pricebook["asks"][0];
+                                                    let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+                                                    //let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+        
+                                                    match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
+                                                        (Some(bid_str), /*Some(ask_str)*/) => {
+                                                            match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
+                                                                (Ok(bid_str), /*Ok(ask_str)*/) => {
+                                                                    coinbase_sell_price_bid = Some(bid_str);
+                                                                    //coinbase_buy_price_ask = Some(ask_str);
+
+                                                                    // Place your calculations and updates here
+                                                                        let gemini_taker_fee = 0.004;
+                                                                        let fraction_of_wallet_im_using = 0.08; //aka 8 percent
+                                                                        let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+                                                                        let fee_for_purchase = total_spent*gemini_taker_fee;
+                                                                        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+                                                                        *gemini_wallet -= total_spent;
+
+                                                                        let amount_of_xrp = 
+                                                                        money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                        .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                        even though to get to this point it had to be Some. 
+                                                                                                        gemini_buy_ask: {:?}
+                                                                                                        Honestly restart the program from the last saved state. 
+                                                                                                        The most likely error is a bit got flipped after the loop",
+                                                                                                        &gemini_buy_ask));
+
+                                                                        //coinbase calculations for sell
+
+                                                                        let coinbase_taker_fee = 0.008;
+                                                                        let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid.unwrap();
+                                                                        let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                                                                        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                        *coinbase_wallet += money_from_sell_after_fees;
+                                                                        value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                        //value_after = 60
+                                                                        //coinbase = 61
+                                                                        //bitstamp = 62
+                                                                        //kraken = 63
+                                                                        //gemini = 64
+                                                                        //since this is coinbase and gemini being updated, I will update:
+                                                                        //  60, 61, 64
+                                                                        let indices = [60, 61, 64];
+                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                        neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                        success = true;
+                                                                },
+                                                                _ => {
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                                    }
+                                                                    continue ;
+                                                                }
+                                                            }
+                                                        },
+                                                        _ => {
+                                                            if attempts > 3 {
+                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+                                                            }
+                                                            continue ;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        Err(_) => {
+                                            if attempts > 3 {
+                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                            }
+                                            continue ; // Continue to the next iteration if parsing fails
+                                        }
+                                    }
+                                },
+                                Err(_) => {
+                                    if attempts > 3 {
+                                        panic!("Failed to get response text after 3 attempts");
+                                    }
+                                    continue ; // Continue to the next iteration if getting response text fails
+                                }
+                            }
+                        },
+                        Err(_) => {
+                            if attempts > 3 {
+                                panic!("Failed to execute request after 3 attempts");
+                            }
+                            continue; // Continue to the next iteration if executing request fails
+                        }
+                    }
+                },
+                Err(_) => {
+                    if attempts > 3 {
+                        panic!("Failed to build request after 3 attempts");
+                    }
+                    continue; // Continue to the next iteration if building request fails
+                }
+            }
+            if success == true {
+                break;
             }
         }
 
+        match value_after {
+            Some(value) => return Ok(value),
+            None => {
+                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+            }
+        }
+        //02/27/24 - removed and placed above^
+            //         //gemini calculations for buy 
+            //     //this should equal 0.4%
+            //     let gemini_taker_fee = 0.004;
+            //     let fraction_of_wallet_im_using = 0.06; //aka 6 percent
 
-
-                    //gemini calculations for buy 
-                //this should equal 0.4%
-                let gemini_taker_fee = 0.004;
-                let fraction_of_wallet_im_using = 0.08; //aka 8 percent
-
-                let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                let fee_for_purchase = total_spent*gemini_taker_fee;
-                let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                //new state of gemini wallet below
-                *gemini_wallet -= total_spent;
-                let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
-    
-    
-    
-
-            //coinbase calculations for sell
-
-                let coinbase_taker_fee = 0.008;
-                let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
-                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                *coinbase_wallet += money_from_sell_after_fees;
-    
+            //     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+            //     let fee_for_purchase = total_spent*gemini_taker_fee;
+            //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+            //     //new state of gemini wallet below
+            //     *gemini_wallet -= total_spent;
+            //     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
     
     
     
 
+            // //coinbase calculations for sell
 
-            //coinbase calculations for buy - not needed in this so code commented out
-            
-                //let coinbase_taker_fee = 0.008;
+            //     let coinbase_taker_fee = 0.008;
+            //     let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
+            //     let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //     *coinbase_wallet += money_from_sell_after_fees;
     
-                //let total_spent = 0.10*(*coinbase_wallet);
-                //let fee_for_purchase = total_spent*coinbase_taker_fee;
-                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-                ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
-                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
-            //kraken calculations - for sell
-                //let kraken_taker_fee = 0.0026;
+    
+    
+
+
+            //     //coinbase calculations for buy - not needed in this so code commented out
                 
-                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
-    
-                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            //bitstamp calculations - for sell
-                //let bitstamp_taker_fee = 0.004;
-                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+            //         //let coinbase_taker_fee = 0.008;
+        
+            //         //let total_spent = 0.10*(*coinbase_wallet);
+            //         //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //         //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            //         ////new state of coinbase wallet below
+            //         //*coinbase_wallet -= total_spent;
+            //         //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+        
+            //     //kraken calculations - for sell
+            //         //let kraken_taker_fee = 0.0026;
+                    
+            //         //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //         //*kraken_wallet += money_from_sell_after_fees;
+        
+            //         //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        
+            //     //bitstamp calculations - for sell
+            //         //let bitstamp_taker_fee = 0.004;
+            //         //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //         //*bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-            //this will count as value after
-                let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    
-                //value_after = 60
-                //coinbase = 61
-                //bitstamp = 62
-                //kraken = 63
-                //gemini = 64
-                //since this is coinbase and gemini being updated, I will update:
-                //  60, 61, 64
-                let indices = [60, 61, 64];
-                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                //01/24/24 - removed and added:
-                    //neural_network.update_input(&indices, &new_values);
-                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    //neural_network.update_input(&indices, &transformed_values).await;
-                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                    neural_network.update_input(&indices, &scaled_values).await;
-    
-        return Ok(value_after)
+            //     //this will count as value after
+            //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+        
+            //         //value_after = 60
+            //         //coinbase = 61
+            //         //bitstamp = 62
+            //         //kraken = 63
+            //         //gemini = 64
+            //         //since this is coinbase and gemini being updated, I will update:
+            //         //  60, 61, 64
+            //         let indices = [60, 61, 64];
+            //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+            //         //01/24/24 - removed and added:
+            //             //neural_network.update_input(&indices, &new_values);
+            //             //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //             //neural_network.update_input(&indices, &transformed_values).await;
+            //             let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            //             neural_network.update_input(&indices, &scaled_values).await;
+        
+            // return Ok(value_after)
     }
 
     pub async fn s_i149_xrp_9_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
@@ -31031,28 +32237,80 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let gemini_cache_control = "no-cache";
         let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
         
-        let gemini_request = client.get(gemini_url)
+        // let gemini_request = client.get(gemini_url)
+        //         .header("Content-Type", gemini_content_type)
+        //         .header("Content-Length", gemini_content_length)
+        //         .header("X-GEMINI-APIKEY", gemini_api_key)
+        //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+        //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+        //         .header("Cache-Control", gemini_cache_control)
+        //         .build()
+        //         .expect("couldn't build gemini request");
+    
+    
+        // let gemini_response = client.execute(gemini_request).await
+        //                         .expect("Failed to execute Gemini request");
+        // let gemini_response_text = gemini_response.text().await
+        //                         .expect("Failed to turn response into text");
+        // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+        //                         .expect("Failed to parse JSON");
+        // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        // //CAN ONLY BUY. NOT SELL
+        // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+    //02/27/24 - added:
+        let mut attempts = 0;
+        let gemini_buy_ask: Option<f64>;
+        loop {
+            let gemini_request = client.get(gemini_url)
                 .header("Content-Type", gemini_content_type)
                 .header("Content-Length", gemini_content_length)
                 .header("X-GEMINI-APIKEY", gemini_api_key)
-                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
                 .header("X-GEMINI-SIGNATURE", &gemini_signature)
                 .header("Cache-Control", gemini_cache_control)
-                .build()
-                .expect("couldn't build gemini request");
-    
-    
-        let gemini_response = client.execute(gemini_request).await
-                                .expect("Failed to execute Gemini request");
-        let gemini_response_text = gemini_response.text().await
-                                .expect("Failed to turn response into text");
-        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                .expect("Failed to parse JSON");
-        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-        //CAN ONLY BUY. NOT SELL
-        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-        //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+                .build();
+        
+            match gemini_request {
+                Ok(request) => {
+                    match client.execute(request).await {
+                        Ok(response) => {
+                            let gemini_response_text = response.text().await;
+                            match gemini_response_text {
+                                Ok(text) => {
 
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(value) => {
+                                            let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
+                                                .ok_or_else(|| "Failed to get ask as string")
+                                                .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
+                                
+                                            match gemini_buy_ask_result {
+                                                Ok(ask) => {
+                                                    gemini_buy_ask = Some(ask);
+                                                    // Continue with your logic here using `ask`
+                                                    break; // Exit the loop if everything is successful
+                                                },
+                                                Err(e) => log::error!("{}", e),
+                                            }
+                                        },
+                                        Err(_) => log::error!("Failed to parse JSON"),
+                                    }
+                                },
+                                Err(_) => log::error!("Failed to turn response into text"),
+                            }
+                        },
+                        Err(_) => log::error!("Failed to execute Gemini request"),
+                    }
+                },
+                Err(_) => log::error!("Couldn't build gemini request"),
+            }
+        
+            attempts += 1;
+            if attempts >= 3 {
+                panic!("Failed after 3 attempts");
+            }
+        }
 
 
 
@@ -31083,141 +32341,290 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
-        .header("CB-ACCESS-KEY", coinbase_api_key)
-        .header("CB-ACCESS-SIGN", &coinbase_signature)
-        .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()
-        .expect("couldn't build request");
-        //manages the error I described above
-        //let request = match request {
-        //Ok(req) => req,
-        //Err(e) => {
-        //eprintln!("Failed to build request: \n{}", e);
-        //return Err(e);
-        //}
-        //};
+    //02/27/24 - removed:
+        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // .header("CB-ACCESS-KEY", coinbase_api_key)
+        // .header("CB-ACCESS-SIGN", &coinbase_signature)
+        // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+        // .build()
+        // .expect("couldn't build Coinbase request");
+        // //manages the error I described above
+        // //let request = match request {
+        // //Ok(req) => req,
+        // //Err(e) => {
+        // //eprintln!("Failed to build request: \n{}", e);
+        // //return Err(e);
+        // //}
+        // //};
 
-        let response = client.execute(request).await.expect("couldn't build response");
-        //let response = match response {
-        //    Ok(resp) => resp,
-        //    Err(e) => {
-        //        eprintln!("Failed to execute request: \n{}", e);
-        //        return Err(e);
-        //    }
-        //};
+        // let response = client.execute(request).await.expect("couldn't build response");
+        // //let response = match response {
+        // //    Ok(resp) => resp,
+        // //    Err(e) => {
+        // //        eprintln!("Failed to execute request: \n{}", e);
+        // //        return Err(e);
+        // //    }
+        // //};
 
 
-        let response_text = response.text().await.expect("couldn't build response_text");
+        // let response_text = response.text().await.expect("couldn't build response_text");
 
-        //added 12/29/23
-        //this is the parsing
-        let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
-        let mut coinbase_sell_price_bid = 0.0;
-        let mut coinbase_buy_price_ask = 0.0;
+        // //added 12/29/23
+        // //this is the parsing
+        // let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
+        // let mut coinbase_sell_price_bid = 0.0;
+        // let mut coinbase_buy_price_ask = 0.0;
 
-        // Access the pricebooks array
-        if let Some(pricebooks) = v["pricebooks"].as_array() {
-            // Iterate over each pricebook
-            for pricebook in pricebooks {
-                // Access the product_id, bids, and asks
-                let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
-                let bids = &pricebook["bids"][0];
-                let asks = &pricebook["asks"][0];
+        // // Access the pricebooks array
+        // if let Some(pricebooks) = v["pricebooks"].as_array() {
+        //     // Iterate over each pricebook
+        //     for pricebook in pricebooks {
+        //         // Access the product_id, bids, and asks
+        //         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
+        //         let bids = &pricebook["bids"][0];
+        //         let asks = &pricebook["asks"][0];
         
-                // Access the price and size of the bids and asks
-                coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
-                let bid_size = bids["size"].as_str().expect("could not find bids[size]");
-                coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
-                let ask_size = asks["size"].as_str().expect("could not find asks[size]");
+        //         // Access the price and size of the bids and asks
+        //         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
+        //         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
+        //         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
+        //         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
         
-                //println!("Product ID: {}", product_id);
-                //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
-                //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //         //println!("Product ID: {}", product_id);
+        //         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+        //         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //     }
+        // }
+    //02/27/24 - added in its place:
+        let mut attempts = 0;
+        let mut coinbase_sell_price_bid: Option<f64> = None;
+        //let coinbase_buy_price_ask: Option<f64>;
+        let mut value_after: Option<f64> = None;
+        let mut success = true;
+        loop {
+            attempts +=1;
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build();
+            //.expect("couldn't build request");
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+            match request {
+                Ok(req) => {
+            //      response_text, v, coinbase_sell_price_bid, coinbase_buy_price_ask, bid/ask size
+                    let response = client.execute(req).await;
+                    match response {
+                        Ok(resp) => {
+                            let response_text = resp.text().await;
+                            match response_text {
+                                Ok(text) => {
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(v) => {
+                                            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                                                for pricebook in pricebooks {
+                                                    //let product_id = pricebook["product_id"].as_str();
+                                                    let bids = &pricebook["bids"][0];
+                                                    //let asks = &pricebook["asks"][0];
+                                                    let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+                                                    //let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+        
+                                                    match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
+                                                        (Some(bid_str), /*Some(ask_str)*/) => {
+                                                            match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
+                                                                (Ok(bid_str), /*Ok(ask_str)*/) => {
+                                                                    coinbase_sell_price_bid = Some(bid_str);
+                                                                    //coinbase_buy_price_ask = Some(ask_str);
+
+                                                                    // Place your calculations and updates here
+                                                                        let gemini_taker_fee = 0.004;
+                                                                        let fraction_of_wallet_im_using = 0.09; //aka 9 percent
+                                                                        let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+                                                                        let fee_for_purchase = total_spent*gemini_taker_fee;
+                                                                        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+                                                                        *gemini_wallet -= total_spent;
+
+                                                                        let amount_of_xrp = 
+                                                                        money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                        .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                        even though to get to this point it had to be Some. 
+                                                                                                        gemini_buy_ask: {:?}
+                                                                                                        Honestly restart the program from the last saved state. 
+                                                                                                        The most likely error is a bit got flipped after the loop",
+                                                                                                        &gemini_buy_ask));
+
+                                                                        //coinbase calculations for sell
+
+                                                                        let coinbase_taker_fee = 0.008;
+                                                                        let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid.unwrap();
+                                                                        let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                                                                        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                        *coinbase_wallet += money_from_sell_after_fees;
+                                                                        value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                        //value_after = 60
+                                                                        //coinbase = 61
+                                                                        //bitstamp = 62
+                                                                        //kraken = 63
+                                                                        //gemini = 64
+                                                                        //since this is coinbase and gemini being updated, I will update:
+                                                                        //  60, 61, 64
+                                                                        let indices = [60, 61, 64];
+                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                        neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                        success = true;
+                                                                },
+                                                                _ => {
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                                    }
+                                                                    continue ;
+                                                                }
+                                                            }
+                                                        },
+                                                        _ => {
+                                                            if attempts > 3 {
+                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+                                                            }
+                                                            continue ;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        Err(_) => {
+                                            if attempts > 3 {
+                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                            }
+                                            continue ; // Continue to the next iteration if parsing fails
+                                        }
+                                    }
+                                },
+                                Err(_) => {
+                                    if attempts > 3 {
+                                        panic!("Failed to get response text after 3 attempts");
+                                    }
+                                    continue ; // Continue to the next iteration if getting response text fails
+                                }
+                            }
+                        },
+                        Err(_) => {
+                            if attempts > 3 {
+                                panic!("Failed to execute request after 3 attempts");
+                            }
+                            continue; // Continue to the next iteration if executing request fails
+                        }
+                    }
+                },
+                Err(_) => {
+                    if attempts > 3 {
+                        panic!("Failed to build request after 3 attempts");
+                    }
+                    continue; // Continue to the next iteration if building request fails
+                }
+            }
+            if success == true {
+                break;
             }
         }
 
+        match value_after {
+            Some(value) => return Ok(value),
+            None => {
+                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+            }
+        }
+        //02/27/24 - removed and placed above^
+            //         //gemini calculations for buy 
+            //     //this should equal 0.4%
+            //     let gemini_taker_fee = 0.004;
+            //     let fraction_of_wallet_im_using = 0.06; //aka 6 percent
 
-
-                    //gemini calculations for buy 
-                //this should equal 0.4%
-                let gemini_taker_fee = 0.004;
-                let fraction_of_wallet_im_using = 0.09; //aka 9 percent
-
-                let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                let fee_for_purchase = total_spent*gemini_taker_fee;
-                let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                //new state of gemini wallet below
-                *gemini_wallet -= total_spent;
-                let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
-    
-    
-    
-
-            //coinbase calculations for sell
-
-                let coinbase_taker_fee = 0.008;
-                let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
-                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                *coinbase_wallet += money_from_sell_after_fees;
-    
+            //     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+            //     let fee_for_purchase = total_spent*gemini_taker_fee;
+            //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+            //     //new state of gemini wallet below
+            //     *gemini_wallet -= total_spent;
+            //     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
     
     
     
 
+            // //coinbase calculations for sell
 
-            //coinbase calculations for buy - not needed in this so code commented out
-            
-                //let coinbase_taker_fee = 0.008;
+            //     let coinbase_taker_fee = 0.008;
+            //     let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
+            //     let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //     *coinbase_wallet += money_from_sell_after_fees;
     
-                //let total_spent = 0.10*(*coinbase_wallet);
-                //let fee_for_purchase = total_spent*coinbase_taker_fee;
-                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-                ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
-                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
-            //kraken calculations - for sell
-                //let kraken_taker_fee = 0.0026;
+    
+    
+
+
+            //     //coinbase calculations for buy - not needed in this so code commented out
                 
-                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
-    
-                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            //bitstamp calculations - for sell
-                //let bitstamp_taker_fee = 0.004;
-                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+            //         //let coinbase_taker_fee = 0.008;
+        
+            //         //let total_spent = 0.10*(*coinbase_wallet);
+            //         //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //         //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            //         ////new state of coinbase wallet below
+            //         //*coinbase_wallet -= total_spent;
+            //         //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+        
+            //     //kraken calculations - for sell
+            //         //let kraken_taker_fee = 0.0026;
+                    
+            //         //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //         //*kraken_wallet += money_from_sell_after_fees;
+        
+            //         //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        
+            //     //bitstamp calculations - for sell
+            //         //let bitstamp_taker_fee = 0.004;
+            //         //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //         //*bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-            //this will count as value after
-                let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    
-                //value_after = 60
-                //coinbase = 61
-                //bitstamp = 62
-                //kraken = 63
-                //gemini = 64
-                //since this is coinbase and gemini being updated, I will update:
-                //  60, 61, 64
-                let indices = [60, 61, 64];
-                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                //01/24/24 - removed and added:
-                    //neural_network.update_input(&indices, &new_values);
-                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    //neural_network.update_input(&indices, &transformed_values).await;
-                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                    neural_network.update_input(&indices, &scaled_values).await;
-    
-        return Ok(value_after)
+            //     //this will count as value after
+            //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+        
+            //         //value_after = 60
+            //         //coinbase = 61
+            //         //bitstamp = 62
+            //         //kraken = 63
+            //         //gemini = 64
+            //         //since this is coinbase and gemini being updated, I will update:
+            //         //  60, 61, 64
+            //         let indices = [60, 61, 64];
+            //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+            //         //01/24/24 - removed and added:
+            //             //neural_network.update_input(&indices, &new_values);
+            //             //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //             //neural_network.update_input(&indices, &transformed_values).await;
+            //             let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            //             neural_network.update_input(&indices, &scaled_values).await;
+        
+            // return Ok(value_after)
     }
 
     pub async fn s_i150_xrp_10_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
@@ -31253,28 +32660,80 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         let gemini_cache_control = "no-cache";
         let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
         
-        let gemini_request = client.get(gemini_url)
+        // let gemini_request = client.get(gemini_url)
+        //         .header("Content-Type", gemini_content_type)
+        //         .header("Content-Length", gemini_content_length)
+        //         .header("X-GEMINI-APIKEY", gemini_api_key)
+        //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+        //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+        //         .header("Cache-Control", gemini_cache_control)
+        //         .build()
+        //         .expect("couldn't build gemini request");
+    
+    
+        // let gemini_response = client.execute(gemini_request).await
+        //                         .expect("Failed to execute Gemini request");
+        // let gemini_response_text = gemini_response.text().await
+        //                         .expect("Failed to turn response into text");
+        // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+        //                         .expect("Failed to parse JSON");
+        // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+        // //CAN ONLY BUY. NOT SELL
+        // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+        // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+    //02/27/24 - added:
+        let mut attempts = 0;
+        let gemini_buy_ask: Option<f64>;
+        loop {
+            let gemini_request = client.get(gemini_url)
                 .header("Content-Type", gemini_content_type)
                 .header("Content-Length", gemini_content_length)
                 .header("X-GEMINI-APIKEY", gemini_api_key)
-                .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+                .header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
                 .header("X-GEMINI-SIGNATURE", &gemini_signature)
                 .header("Cache-Control", gemini_cache_control)
-                .build()
-                .expect("couldn't build gemini request");
-    
-    
-        let gemini_response = client.execute(gemini_request).await
-                                .expect("Failed to execute Gemini request");
-        let gemini_response_text = gemini_response.text().await
-                                .expect("Failed to turn response into text");
-        let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                .expect("Failed to parse JSON");
-        let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-        //CAN ONLY BUY. NOT SELL
-        let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-        //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+                .build();
+        
+            match gemini_request {
+                Ok(request) => {
+                    match client.execute(request).await {
+                        Ok(response) => {
+                            let gemini_response_text = response.text().await;
+                            match gemini_response_text {
+                                Ok(text) => {
 
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(value) => {
+                                            let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
+                                                .ok_or_else(|| "Failed to get ask as string")
+                                                .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
+                                
+                                            match gemini_buy_ask_result {
+                                                Ok(ask) => {
+                                                    gemini_buy_ask = Some(ask);
+                                                    // Continue with your logic here using `ask`
+                                                    break; // Exit the loop if everything is successful
+                                                },
+                                                Err(e) => log::error!("{}", e),
+                                            }
+                                        },
+                                        Err(_) => log::error!("Failed to parse JSON"),
+                                    }
+                                },
+                                Err(_) => log::error!("Failed to turn response into text"),
+                            }
+                        },
+                        Err(_) => log::error!("Failed to execute Gemini request"),
+                    }
+                },
+                Err(_) => log::error!("Couldn't build gemini request"),
+            }
+        
+            attempts += 1;
+            if attempts >= 3 {
+                panic!("Failed after 3 attempts");
+            }
+        }
 
 
 
@@ -31305,141 +32764,290 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
-        .header("CB-ACCESS-KEY", coinbase_api_key)
-        .header("CB-ACCESS-SIGN", &coinbase_signature)
-        .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()
-        .expect("couldn't build request");
-        //manages the error I described above
-        //let request = match request {
-        //Ok(req) => req,
-        //Err(e) => {
-        //eprintln!("Failed to build request: \n{}", e);
-        //return Err(e);
-        //}
-        //};
+    //02/27/24 - removed:
+        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // .header("CB-ACCESS-KEY", coinbase_api_key)
+        // .header("CB-ACCESS-SIGN", &coinbase_signature)
+        // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+        // .build()
+        // .expect("couldn't build Coinbase request");
+        // //manages the error I described above
+        // //let request = match request {
+        // //Ok(req) => req,
+        // //Err(e) => {
+        // //eprintln!("Failed to build request: \n{}", e);
+        // //return Err(e);
+        // //}
+        // //};
 
-        let response = client.execute(request).await.expect("couldn't build response");
-        //let response = match response {
-        //    Ok(resp) => resp,
-        //    Err(e) => {
-        //        eprintln!("Failed to execute request: \n{}", e);
-        //        return Err(e);
-        //    }
-        //};
+        // let response = client.execute(request).await.expect("couldn't build response");
+        // //let response = match response {
+        // //    Ok(resp) => resp,
+        // //    Err(e) => {
+        // //        eprintln!("Failed to execute request: \n{}", e);
+        // //        return Err(e);
+        // //    }
+        // //};
 
 
-        let response_text = response.text().await.expect("couldn't build response_text");
+        // let response_text = response.text().await.expect("couldn't build response_text");
 
-        //added 12/29/23
-        //this is the parsing
-        let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
-        let mut coinbase_sell_price_bid = 0.0;
-        let mut coinbase_buy_price_ask = 0.0;
+        // //added 12/29/23
+        // //this is the parsing
+        // let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
+        // let mut coinbase_sell_price_bid = 0.0;
+        // let mut coinbase_buy_price_ask = 0.0;
 
-        // Access the pricebooks array
-        if let Some(pricebooks) = v["pricebooks"].as_array() {
-            // Iterate over each pricebook
-            for pricebook in pricebooks {
-                // Access the product_id, bids, and asks
-                let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
-                let bids = &pricebook["bids"][0];
-                let asks = &pricebook["asks"][0];
+        // // Access the pricebooks array
+        // if let Some(pricebooks) = v["pricebooks"].as_array() {
+        //     // Iterate over each pricebook
+        //     for pricebook in pricebooks {
+        //         // Access the product_id, bids, and asks
+        //         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
+        //         let bids = &pricebook["bids"][0];
+        //         let asks = &pricebook["asks"][0];
         
-                // Access the price and size of the bids and asks
-                coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
-                let bid_size = bids["size"].as_str().expect("could not find bids[size]");
-                coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
-                let ask_size = asks["size"].as_str().expect("could not find asks[size]");
+        //         // Access the price and size of the bids and asks
+        //         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
+        //         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
+        //         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
+        //         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
         
-                //println!("Product ID: {}", product_id);
-                //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
-                //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //         //println!("Product ID: {}", product_id);
+        //         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+        //         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //     }
+        // }
+    //02/27/24 - added in its place:
+        let mut attempts = 0;
+        let mut coinbase_sell_price_bid: Option<f64> = None;
+        //let coinbase_buy_price_ask: Option<f64>;
+        let mut value_after: Option<f64> = None;
+        let mut success = true;
+        loop {
+            attempts +=1;
+            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            .header("CB-ACCESS-KEY", coinbase_api_key)
+            .header("CB-ACCESS-SIGN", &coinbase_signature)
+            .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+            .build();
+            //.expect("couldn't build request");
+            //manages the error I described above
+            //let request = match request {
+            //Ok(req) => req,
+            //Err(e) => {
+            //eprintln!("Failed to build request: \n{}", e);
+            //return Err(e);
+            //}
+            //};
+            match request {
+                Ok(req) => {
+            //      response_text, v, coinbase_sell_price_bid, coinbase_buy_price_ask, bid/ask size
+                    let response = client.execute(req).await;
+                    match response {
+                        Ok(resp) => {
+                            let response_text = resp.text().await;
+                            match response_text {
+                                Ok(text) => {
+                                    match serde_json::from_str::<Value>(&text) {
+                                        Ok(v) => {
+                                            if let Some(pricebooks) = v["pricebooks"].as_array() {
+                                                for pricebook in pricebooks {
+                                                    //let product_id = pricebook["product_id"].as_str();
+                                                    let bids = &pricebook["bids"][0];
+                                                    //let asks = &pricebook["asks"][0];
+                                                    let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+                                                    //let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+        
+                                                    match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
+                                                        (Some(bid_str), /*Some(ask_str)*/) => {
+                                                            match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
+                                                                (Ok(bid_str), /*Ok(ask_str)*/) => {
+                                                                    coinbase_sell_price_bid = Some(bid_str);
+                                                                    //coinbase_buy_price_ask = Some(ask_str);
+
+                                                                    // Place your calculations and updates here
+                                                                        let gemini_taker_fee = 0.004;
+                                                                        let fraction_of_wallet_im_using = 0.10; //aka 10 percent
+                                                                        let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+                                                                        let fee_for_purchase = total_spent*gemini_taker_fee;
+                                                                        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+                                                                        *gemini_wallet -= total_spent;
+
+                                                                        let amount_of_xrp = 
+                                                                        money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                        .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                        even though to get to this point it had to be Some. 
+                                                                                                        gemini_buy_ask: {:?}
+                                                                                                        Honestly restart the program from the last saved state. 
+                                                                                                        The most likely error is a bit got flipped after the loop",
+                                                                                                        &gemini_buy_ask));
+
+                                                                        //coinbase calculations for sell
+
+                                                                        let coinbase_taker_fee = 0.008;
+                                                                        let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid.unwrap();
+                                                                        let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+                                                                        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                        *coinbase_wallet += money_from_sell_after_fees;
+                                                                        value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                        //value_after = 60
+                                                                        //coinbase = 61
+                                                                        //bitstamp = 62
+                                                                        //kraken = 63
+                                                                        //gemini = 64
+                                                                        //since this is coinbase and gemini being updated, I will update:
+                                                                        //  60, 61, 64
+                                                                        let indices = [60, 61, 64];
+                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                        neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                        success = true;
+                                                                },
+                                                                _ => {
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                                    }
+                                                                    continue ;
+                                                                }
+                                                            }
+                                                        },
+                                                        _ => {
+                                                            if attempts > 3 {
+                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+                                                            }
+                                                            continue ;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        Err(_) => {
+                                            if attempts > 3 {
+                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                            }
+                                            continue ; // Continue to the next iteration if parsing fails
+                                        }
+                                    }
+                                },
+                                Err(_) => {
+                                    if attempts > 3 {
+                                        panic!("Failed to get response text after 3 attempts");
+                                    }
+                                    continue ; // Continue to the next iteration if getting response text fails
+                                }
+                            }
+                        },
+                        Err(_) => {
+                            if attempts > 3 {
+                                panic!("Failed to execute request after 3 attempts");
+                            }
+                            continue; // Continue to the next iteration if executing request fails
+                        }
+                    }
+                },
+                Err(_) => {
+                    if attempts > 3 {
+                        panic!("Failed to build request after 3 attempts");
+                    }
+                    continue; // Continue to the next iteration if building request fails
+                }
+            }
+            if success == true {
+                break;
             }
         }
 
+        match value_after {
+            Some(value) => return Ok(value),
+            None => {
+                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+            }
+        }
+        //02/27/24 - removed and placed above^
+            //         //gemini calculations for buy 
+            //     //this should equal 0.4%
+            //     let gemini_taker_fee = 0.004;
+            //     let fraction_of_wallet_im_using = 0.06; //aka 6 percent
 
-
-                    //gemini calculations for buy 
-                //this should equal 0.4%
-                let gemini_taker_fee = 0.004;
-                let fraction_of_wallet_im_using = 0.10; //aka 10 percent
-
-                let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                let fee_for_purchase = total_spent*gemini_taker_fee;
-                let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                //new state of gemini wallet below
-                *gemini_wallet -= total_spent;
-                let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
-    
-    
-    
-
-            //coinbase calculations for sell
-
-                let coinbase_taker_fee = 0.008;
-                let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
-                let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                *coinbase_wallet += money_from_sell_after_fees;
-    
+            //     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+            //     let fee_for_purchase = total_spent*gemini_taker_fee;
+            //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+            //     //new state of gemini wallet below
+            //     *gemini_wallet -= total_spent;
+            //     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
     
     
     
 
+            // //coinbase calculations for sell
 
-            //coinbase calculations for buy - not needed in this so code commented out
-            
-                //let coinbase_taker_fee = 0.008;
+            //     let coinbase_taker_fee = 0.008;
+            //     let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
+            //     let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //     *coinbase_wallet += money_from_sell_after_fees;
     
-                //let total_spent = 0.10*(*coinbase_wallet);
-                //let fee_for_purchase = total_spent*coinbase_taker_fee;
-                //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-                ////new state of coinbase wallet below
-                //*coinbase_wallet -= total_spent;
-                //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
     
-            //kraken calculations - for sell
-                //let kraken_taker_fee = 0.0026;
+    
+    
+
+
+            //     //coinbase calculations for buy - not needed in this so code commented out
                 
-                //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                //*kraken_wallet += money_from_sell_after_fees;
-    
-                //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            //bitstamp calculations - for sell
-                //let bitstamp_taker_fee = 0.004;
-                //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-                //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                //*bitstamp_wallet += money_from_sell_after_fees;
+            //         //let coinbase_taker_fee = 0.008;
+        
+            //         //let total_spent = 0.10*(*coinbase_wallet);
+            //         //let fee_for_purchase = total_spent*coinbase_taker_fee;
+            //         //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+            //         ////new state of coinbase wallet below
+            //         //*coinbase_wallet -= total_spent;
+            //         //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+        
+            //     //kraken calculations - for sell
+            //         //let kraken_taker_fee = 0.0026;
+                    
+            //         //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+            //         //*kraken_wallet += money_from_sell_after_fees;
+        
+            //         //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        
+            //     //bitstamp calculations - for sell
+            //         //let bitstamp_taker_fee = 0.004;
+            //         //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+            //         //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+            //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+            //         //*bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-            //this will count as value after
-                let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    
-                //value_after = 60
-                //coinbase = 61
-                //bitstamp = 62
-                //kraken = 63
-                //gemini = 64
-                //since this is coinbase and gemini being updated, I will update:
-                //  60, 61, 64
-                let indices = [60, 61, 64];
-                let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-                //01/24/24 - removed and added:
-                    //neural_network.update_input(&indices, &new_values);
-                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                    //neural_network.update_input(&indices, &transformed_values).await;
-                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                    neural_network.update_input(&indices, &scaled_values).await;
-    
-        return Ok(value_after)
+            //     //this will count as value after
+            //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+        
+            //         //value_after = 60
+            //         //coinbase = 61
+            //         //bitstamp = 62
+            //         //kraken = 63
+            //         //gemini = 64
+            //         //since this is coinbase and gemini being updated, I will update:
+            //         //  60, 61, 64
+            //         let indices = [60, 61, 64];
+            //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+            //         //01/24/24 - removed and added:
+            //             //neural_network.update_input(&indices, &new_values);
+            //             //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+            //             //neural_network.update_input(&indices, &transformed_values).await;
+            //             let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+            //             neural_network.update_input(&indices, &scaled_values).await;
+        
+            // return Ok(value_after)
     }
 //gemini kraken     = 3 AND UP for min of 10 USD for gemini. min buy of 10 XRP for kraken so maximal min is 6 dollars.
 pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,

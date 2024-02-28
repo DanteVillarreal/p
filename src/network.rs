@@ -576,6 +576,10 @@
 		//so why dont we multiply it by like 1.3 or some constant 
 			-1.0 *multiplier* (1.0 / (1.0 - relative_change.abs())) * absolute_change.abs()
 		};
+		//02/27/24 - added. I'm trying to figure out how I'm getting nan for the rewards.
+			if reward.is_nan() {
+				log::error!("Reward is NaN. value_after = {}, value_prior = {}", &value_after, &value_prior);
+			}
 		return reward;
 	}
 
@@ -712,6 +716,15 @@
 			}
 			else {
 				writeln!(file, "+{},{}\t{:?}\ti:{}\tindex_chosen: {}", reward, timestamp, exploit_or_explore, i, index_chosen_for_current_state)?;
+			}
+		//02/27/24 - added. I'm trying to figure out how I'm getting nan for the
+		//		reward value so this will help me identify if there are specific 
+		//		indexes that are the culprit.
+			if reward.is_nan() {
+				panic!("In save_reward fn: reward is NaN. index_chosen = {}
+				there should be a log::error above with what the value_after
+				and value_prior were."
+				, &index_chosen_for_current_state);
 			}
 		//writeln!(file, "{},{}\t{:?}", reward, timestamp, exploit_or_explore)?;
 		Ok(())

@@ -154,7 +154,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -391,7 +391,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -623,7 +623,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -855,7 +855,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -1087,7 +1087,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -1341,7 +1341,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -1592,7 +1592,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -1844,7 +1844,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -2096,7 +2096,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -2348,7 +2348,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -2602,7 +2602,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -2834,7 +2834,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -3067,7 +3067,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -3321,7 +3321,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -3574,7 +3574,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -3827,7 +3827,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -4082,7 +4082,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -4337,7 +4337,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -4593,7 +4593,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -4849,7 +4849,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -5169,7 +5169,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -5400,7 +5400,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -5636,7 +5636,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -5889,7 +5889,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -6143,7 +6143,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -6398,7 +6398,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -6651,7 +6651,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -6906,7 +6906,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -7160,7 +7160,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -7413,7 +7413,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -12727,7 +12727,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -12984,7 +12984,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -13241,7 +13241,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -13498,7 +13498,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -13755,7 +13755,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -14038,7 +14038,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -14320,7 +14320,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -14602,7 +14602,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -14885,7 +14885,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -15167,7 +15167,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -18042,7 +18042,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -18295,7 +18295,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -18548,7 +18548,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -18800,7 +18800,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -19052,7 +19052,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -19304,7 +19304,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -19556,7 +19556,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -19801,7 +19801,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -20048,7 +20048,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -20294,7 +20294,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -20540,7 +20540,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -20786,7 +20786,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -21032,7 +21032,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -21278,7 +21278,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -21642,7 +21642,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -21913,7 +21913,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -22184,7 +22184,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -22455,7 +22455,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -22726,7 +22726,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -22997,7 +22997,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             }
             let coinbase_signature = sign(&message, &coinbase_secret);
     
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -24592,7 +24592,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // }
             // let coinbase_signature = sign(&message, &coinbase_secret);
 
-            // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             // .header("CB-ACCESS-KEY", coinbase_api_key)
             // .header("CB-ACCESS-SIGN", &coinbase_signature)
             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -24683,7 +24683,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let mut success = false;
                 loop {
                     attempts +=1;
-                    let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+                    let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
                     .header("CB-ACCESS-KEY", coinbase_api_key)
                     .header("CB-ACCESS-SIGN", &coinbase_signature)
                     .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -25115,7 +25115,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // }
             // let coinbase_signature = sign(&message, &coinbase_secret);
 
-            // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             // .header("CB-ACCESS-KEY", coinbase_api_key)
             // .header("CB-ACCESS-SIGN", &coinbase_signature)
             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -25206,7 +25206,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let mut success = false;
                 loop {
                     attempts +=1;
-                    let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+                    let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
                     .header("CB-ACCESS-KEY", coinbase_api_key)
                     .header("CB-ACCESS-SIGN", &coinbase_signature)
                     .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -25638,7 +25638,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // }
             // let coinbase_signature = sign(&message, &coinbase_secret);
 
-            // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             // .header("CB-ACCESS-KEY", coinbase_api_key)
             // .header("CB-ACCESS-SIGN", &coinbase_signature)
             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -25729,7 +25729,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let mut success = false;
                 loop {
                     attempts +=1;
-                    let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+                    let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
                     .header("CB-ACCESS-KEY", coinbase_api_key)
                     .header("CB-ACCESS-SIGN", &coinbase_signature)
                     .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -26161,7 +26161,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // }
             // let coinbase_signature = sign(&message, &coinbase_secret);
 
-            // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             // .header("CB-ACCESS-KEY", coinbase_api_key)
             // .header("CB-ACCESS-SIGN", &coinbase_signature)
             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -26252,7 +26252,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let mut success = false;
                 loop {
                     attempts +=1;
-                    let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+                    let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
                     .header("CB-ACCESS-KEY", coinbase_api_key)
                     .header("CB-ACCESS-SIGN", &coinbase_signature)
                     .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -26684,7 +26684,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // }
             // let coinbase_signature = sign(&message, &coinbase_secret);
 
-            // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             // .header("CB-ACCESS-KEY", coinbase_api_key)
             // .header("CB-ACCESS-SIGN", &coinbase_signature)
             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -26775,7 +26775,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let mut success = false;
                 loop {
                     attempts +=1;
-                    let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+                    let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
                     .header("CB-ACCESS-KEY", coinbase_api_key)
                     .header("CB-ACCESS-SIGN", &coinbase_signature)
                     .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -27207,7 +27207,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // }
             // let coinbase_signature = sign(&message, &coinbase_secret);
 
-            // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             // .header("CB-ACCESS-KEY", coinbase_api_key)
             // .header("CB-ACCESS-SIGN", &coinbase_signature)
             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -27298,7 +27298,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let mut success = false;
                 loop {
                     attempts +=1;
-                    let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+                    let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
                     .header("CB-ACCESS-KEY", coinbase_api_key)
                     .header("CB-ACCESS-SIGN", &coinbase_signature)
                     .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -27730,7 +27730,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // }
             // let coinbase_signature = sign(&message, &coinbase_secret);
 
-            // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             // .header("CB-ACCESS-KEY", coinbase_api_key)
             // .header("CB-ACCESS-SIGN", &coinbase_signature)
             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -27821,7 +27821,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let mut success = false;
                 loop {
                     attempts +=1;
-                    let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+                    let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
                     .header("CB-ACCESS-KEY", coinbase_api_key)
                     .header("CB-ACCESS-SIGN", &coinbase_signature)
                     .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -28253,7 +28253,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // }
             // let coinbase_signature = sign(&message, &coinbase_secret);
 
-            // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             // .header("CB-ACCESS-KEY", coinbase_api_key)
             // .header("CB-ACCESS-SIGN", &coinbase_signature)
             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -28344,7 +28344,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 let mut success = false;
                 loop {
                     attempts +=1;
-                    let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+                    let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
                     .header("CB-ACCESS-KEY", coinbase_api_key)
                     .header("CB-ACCESS-SIGN", &coinbase_signature)
                     .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -31980,7 +31980,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
     let coinbase_signature = sign(&message, &coinbase_secret);
 
 //02/27/24 - removed:
-    // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+    // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
     // .header("CB-ACCESS-KEY", coinbase_api_key)
     // .header("CB-ACCESS-SIGN", &coinbase_signature)
     // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -32042,7 +32042,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
     let mut success = false;
     loop {
         attempts +=1;
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -32404,7 +32404,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let coinbase_signature = sign(&message, &coinbase_secret);
 
     //02/27/24 - removed:
-        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         // .header("CB-ACCESS-KEY", coinbase_api_key)
         // .header("CB-ACCESS-SIGN", &coinbase_signature)
         // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -32465,7 +32465,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -32827,7 +32827,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let coinbase_signature = sign(&message, &coinbase_secret);
 
     //02/27/24 - removed:
-        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         // .header("CB-ACCESS-KEY", coinbase_api_key)
         // .header("CB-ACCESS-SIGN", &coinbase_signature)
         // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -32888,7 +32888,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -33250,7 +33250,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let coinbase_signature = sign(&message, &coinbase_secret);
 
     //02/27/24 - removed:
-        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         // .header("CB-ACCESS-KEY", coinbase_api_key)
         // .header("CB-ACCESS-SIGN", &coinbase_signature)
         // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -33311,7 +33311,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -33673,7 +33673,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let coinbase_signature = sign(&message, &coinbase_secret);
 
     //02/27/24 - removed:
-        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         // .header("CB-ACCESS-KEY", coinbase_api_key)
         // .header("CB-ACCESS-SIGN", &coinbase_signature)
         // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -33734,7 +33734,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -34096,7 +34096,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let coinbase_signature = sign(&message, &coinbase_secret);
 
     //02/27/24 - removed:
-        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         // .header("CB-ACCESS-KEY", coinbase_api_key)
         // .header("CB-ACCESS-SIGN", &coinbase_signature)
         // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -34157,7 +34157,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -34519,7 +34519,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let coinbase_signature = sign(&message, &coinbase_secret);
 
     //02/27/24 - removed:
-        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         // .header("CB-ACCESS-KEY", coinbase_api_key)
         // .header("CB-ACCESS-SIGN", &coinbase_signature)
         // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -34580,7 +34580,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -34942,7 +34942,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let coinbase_signature = sign(&message, &coinbase_secret);
 
     //02/27/24 - removed:
-        // let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         // .header("CB-ACCESS-KEY", coinbase_api_key)
         // .header("CB-ACCESS-SIGN", &coinbase_signature)
         // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -35003,7 +35003,7 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -38640,7 +38640,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -38883,7 +38883,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -39126,7 +39126,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -39369,7 +39369,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -39611,7 +39611,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -39853,7 +39853,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -40095,7 +40095,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -40337,7 +40337,7 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         }
         let coinbase_signature = sign(&message, &coinbase_secret);
         //02/04/24 - need to add loop here
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -40776,7 +40776,7 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
         let mut success = true;
     loop {
         attempts +=1;
-        let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
         .header("CB-ACCESS-KEY", coinbase_api_key)
         .header("CB-ACCESS-SIGN", &coinbase_signature)
         .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -41229,7 +41229,7 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
             let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -41682,7 +41682,7 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
             let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -42135,7 +42135,7 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
             let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -42588,7 +42588,7 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
             let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -43041,7 +43041,7 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
             let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)
@@ -43494,7 +43494,7 @@ pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wal
             let mut success = true;
         loop {
             attempts +=1;
-            let request = client.get("https://coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+            let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
             .header("CB-ACCESS-KEY", coinbase_api_key)
             .header("CB-ACCESS-SIGN", &coinbase_signature)
             .header("CB-ACCESS-TIMESTAMP", &time_stamp)

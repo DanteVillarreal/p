@@ -1232,12 +1232,12 @@ async fn main()   {
     //01/24/24 - was: (65, 75, 2) now it's below. input size from execute_action_functions.
 
     //uncomment this if you want to initialize the network from new
-        //neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
+        neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
 
     //uncomment this if you want to load from a saved state
-        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1708845504745"; // Replace with your file path
-        neural_network = NeuralNetwork::load(path).expect("couldn't load network");
-        neural_network.print_layers();
+        //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1708845504745"; // Replace with your file path
+        //neural_network = NeuralNetwork::load(path).expect("couldn't load network");
+        //neural_network.print_layers();
     //the first number in the initialization and the number below MUST be the same size
     //01/24/24 - removed
         //let mut updated = [false; 60];
@@ -1952,8 +1952,9 @@ async fn main()   {
     	//let mut iteration_counter_for_for_loop_total: usize = 22_000;
     //02/23/24 - added in its place:
     //02/27/24 - changed to 26698.
+    //02/28/24 - restarting at 0
 		let iteration_counter_for_for_loop_total = 
-			Arc::new(Mutex::new(26698));
+			Arc::new(Mutex::new(0));
     
     loop {
         // Create a new AtomicBool wrapped in an Arc for each iteration

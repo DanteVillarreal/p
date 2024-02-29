@@ -3083,6 +3083,43 @@
 				So no layers in network");
 			}
 		}
+		//02/28/24 - added:
+		pub fn save_last_network_layer(&self, i: &usize) {
+			let mut attempts = 0;
+			loop {
+				attempts += 1;
+				if let Some(last_layer) = self.layers.last() {
+					let base_path = "D:\\Downloads\\PxOmni\\rust_neural_network_q_values";
+					let file_path = Path::new(base_path).join("last_network_layer.txt");
+					match fs::OpenOptions::new().write(true).append(true).create(true).open(file_path) {
+						Ok(mut file) => {
+							match writeln!(file, "last network layer information:\titeration: {}\tColumns: {}\nData: {:?}"
+								, &i, last_layer.columns, last_layer.data) {
+								Ok(_) => break,
+								Err(e) => {
+									log::error!("save_last_network_layer: Failed to write to file after {} attempts. Error: {}"
+									, &i, e);
+									if attempts > 3 {
+										panic!("save_last_network_layer: Failed to write to file after 3 attempts. Error: {}", e);
+									}
+									continue;
+								}
+							}
+						},
+						Err(e) => {
+							log::error!("save_last_network_layer: Failed to open file after {} attempts. Error: {}"
+							, &i, e);
+							if attempts > 3 {
+								panic!("save_last_network_layer: Failed to open file after 3 attempts. Error: {}", e);
+							}
+							continue;
+						}
+					}
+				} else {
+					panic!("save_last_network_layer: No layers in the network");
+				}
+			}
+		}
 
 
 
@@ -3703,7 +3740,10 @@
 			//01/24/24 - added because encountered error saying index of 
 			//		largest q value was never initialized. 
 			//		so use this to debug.
-			self.print_last_network_layer();
+			//02/28/24 - removed:
+				//self.print_last_network_layer();
+			//02/28/24 - added:
+				self.save_last_network_layer(&i);
 			//02/06/24 - removed:
 				//let (index_chosen_for_current_state, q_value_for_current_state, exploration_or_exploitation) = 
 				//	self.exploration_or_exploitation(epsilon);

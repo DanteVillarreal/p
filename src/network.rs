@@ -2783,12 +2783,12 @@
 							gradient_layer.data[j][k] = loss_derivative*derivative_of_to_neuron*output_of_from_neuron;
 						//01/28/24 - added:. 01/29/24 - changed to 0.2 instead of 1.0
 						//02/02/24 - changed from 0.2 to 0.1
-						//02/28/24 - changed from 0.1 to 0.001.
-							if gradient_layer.data[j][k] > 0.001 {
-								gradient_layer.data[j][k] = 0.001;
+						//02/28/24 - changed from 0.1 to 0.001 then to 0.00001
+							if gradient_layer.data[j][k] > 0.00001 {
+								gradient_layer.data[j][k] = 0.00001;
 							}
-							else if gradient_layer.data[j][k] < -0.001 {
-								gradient_layer.data[j][k] = -0.001;
+							else if gradient_layer.data[j][k] < -0.00001 {
+								gradient_layer.data[j][k] = -0.00001;
 							} 
 					}
 				}

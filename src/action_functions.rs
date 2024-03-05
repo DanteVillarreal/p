@@ -40846,40 +40846,119 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
 
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
+		//03/05/24 - removed:
+        // //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        // //.body is nonce because in the Kraken code provided in cURL: 
+        // //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        // //--data-urlencode "nonce=<YOUR-NONCE>"
+        // //		this means that nonce is added to the body of the request
+        // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+        //         .header("API-Key", kraken_api_key)
+        //         .header("API-Sign", &kraken_signature)
+        //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+        //         .body(format!("nonce={}", nonce))
+        //         .build()
+        //         .expect("Failed to build kraken request");
 
 
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+        // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
 
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
         
-        //println!("kraken response:{}", kraken_response_text);
+        // //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-        let mut kraken_buy_price_ask = 0.0;
-        //let mut kraken_sell_price_bid = 0.0;
-        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
-            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        // let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+        // let mut kraken_buy_price_ask = 0.0;
+        // //let mut kraken_sell_price_bid = 0.0;
+        // if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+        //     // Access the ask and bid prices
+        //     kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        //     //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
         
-            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
+        //     println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+        //     //println!("Bid price: {}", kraken_sell_price_bid );
+        // }
+        // else {
+        //     println!("didnt parse kraken correctly.");
+        // }
+
+
+
+
+
+	//03/05/24 - added in its place:
+		let mut kraken_buy_price_ask: Option<f64> = None;
+		//let mut kraken_sell_price_bid: Option<f64> = None;
+		let mut attempts = 0;
+		loop {
+			attempts += 1;
+			let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+			.header("API-Key", kraken_api_key)
+			.header("API-Sign", &kraken_signature)
+			.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+			.body(format!("nonce={}", nonce))
+			.build();
+
+			match kraken_basic_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							match response.text().await {
+								Ok(kraken_response_text) => {
+									match serde_json::from_str::<Value>(&kraken_response_text) {
+										Ok(value) => {
+											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
+
+												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+													(Some(ask_str), /*Some(bid_str)*/) => {
+														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+															(Ok(ask), /*Ok(bid)*/) => {
+																kraken_buy_price_ask = Some(ask);
+																//kraken_sell_price_bid = Some(bid);
+
+																break; // Exit the loop if everything is successful
+															},
+															_ => log::error!("i105: Failed to parse ask or bid as f64"),
+														}
+													},
+													_ => log::error!("i105: Failed to get ask or bid as string"),
+												}										
+											}
+											else {
+												log::error!("i105: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+											}
+										},
+										Err(e) => log::error!("i105: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+									}
+								},
+								Err(e) => log::error!("i105: Failed to read response text. Error was: {}", e),
+							}
+						},
+						Err(e) => log::error!("i105: Failed to execute Kraken request. Error was: {}", e),
+					}
+				},
+				Err(e) => log::error!("i105: Failed to build kraken request. Error was: {}", e),
+			}
+			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+				break; // Exit the loop if everything is successful
+			}
+
+			attempts += 1;
+			if attempts >= 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+		println!("xlm 5 kraken bitstamp: 5 sec delay");
+		let when = tokio::time::Instant::now() + Duration::from_secs(5);
+		tokio::time::sleep_until(when).await;
+
+
+
+
+
+
 
 
 
@@ -40946,76 +41025,240 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
+		//03/05/24 - removed:
+        // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+        //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+        //     .header("X-Auth-Signature", bitstamp_signature)
+        //     .header("X-Auth-Nonce", bitstamp_nonce)
+        //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+        //     .header("X-Auth-Version", "v2")
+        //     //.header("Content-Type", content_type)
+        //     //.body(payload_string)
+        //     .build()
+        //     .expect("\ncould not build bitstamp_request");
 
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
+        // let bitstamp_response = client.execute(bitstamp_request).await
+        //     .expect("Failed to execute Bitstamp request");
+        // let bitstamp_response_text = bitstamp_response.text().await
+        //     .expect("Failed to turn response into text");
+        // //probably dont need "bitstamp" once we transfer this to the actual function
+        // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        // .expect("Failed to parse JSON");
 
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        println!("Bid: {}", bitstamp_sell_price_bid, );
-        //println!("Ask: {}", bitstamp_buy_price_ask);
-        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
-
+        // // Extract the bid and ask values
+        // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        // //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        // println!("Bid: {}", bitstamp_sell_price_bid, );
+        // //println!("Ask: {}", bitstamp_buy_price_ask);
+        // //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
-        //kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_used = 0.05;
-        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-        //new state of kraken wallet
-        *kraken_wallet -= total_spent;
-        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
-
-
-        //bitstamp calculations
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+
+
+
+
+
+
+
+
+
+
+
+
+	//03/05/24 - added:
+		let mut success = false;
+		let mut attempts = 0;
+		let mut value_after: Option<f64> = None;
+
+		while !success && attempts <=3 {
+			attempts += 1;
+
+			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+				.header("X-Auth-Signature", &bitstamp_signature)
+				.header("X-Auth-Nonce", &bitstamp_nonce)
+				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+				.header("X-Auth-Version", "v2")
+				.build() {
+				Ok(bitstamp_request) => {
+					match client.execute(bitstamp_request).await {
+						Ok(bitstamp_response) => {
+							match bitstamp_response.text().await {
+								Ok(bitstamp_response_text) => {
+									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+										Ok(v) => {
+											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+												(Some(bid_str), Some(ask_str)) => {
+													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+															// Place your calculations and updates here
+															//kraken calculations - buy
+															let kraken_taker_fee = 0.0026;
+															let fraction_of_wallet_used = 0.05; //aka 5 percent
+															let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+															let fee_for_purchase = total_spent*kraken_taker_fee;
+															let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+															*kraken_wallet -= total_spent;
+
+															let amount_of_xlm_before_withdraw_fee = 
+															money_going_to_xlm_after_fees/kraken_buy_price_ask
+																							.expect(&format!("i105: kraken_buy_price_ask is somehow Not Some. 
+																							even though to get to this point it had to be Some. 
+																							kraken_buy_price_ask: {:?}
+																							Honestly restart the program from the last saved state. 
+																							The most likely error is a bit got flipped after the loop",
+																							&kraken_buy_price_ask));
+
+															let amount_of_xlm = amount_of_xlm_before_withdraw_fee -0.001;
+
+															//bitstamp calculations for sell
+
+															let bitstamp_taker_fee = 0.004;
+															let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+															*bitstamp_wallet += money_from_sell_after_fees;
+															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+
+															//value_after = 60
+															//coinbase = 61
+															//bitstamp = 62
+															//kraken = 63
+															//gemini = 64
+															//since this is coinbase and gemini being updated, I will update:
+															//  60, 62, 63
+															let indices = [60, 62, 63];
+															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+
+															success = true;
+														},
+														_ => {
+															log::error!("i105: Failed to f64 parse bid or ask price");
+															if attempts > 3 {
+																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+															}
+															continue;
+														}
+													}
+												},
+												_ => {
+													log::error!("i105: Failed to originally parse bid or ask price");
+													if attempts > 3 {
+														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+													}
+													continue;
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i105: Failed to parse JSON");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+											}
+											continue;
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i105: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue;
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i105: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue;
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i105: Failed to build request");
+					if attempts > 3 {
+						panic!("Failed to build request after 3 attempts");
+					}
+					continue;
+				}
+			}
+		}
+
+	match value_after {
+		Some(value) => return Ok(value),
+		None => {
+			//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // //kraken calculations - buy
+        // let kraken_taker_fee = 0.0026;
+        // let fraction_of_wallet_used = 0.05;
+        // let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        // let fee_for_purchase = total_spent*kraken_taker_fee;
+        // let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        // //new state of kraken wallet
+        // *kraken_wallet -= total_spent;
+        // let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
+
+
+        // //bitstamp calculations
+        // let bitstamp_taker_fee = 0.004;
+        // let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        // let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        // let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        // *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+        // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
         
-        //value_after = 60
-        //coinbase = 61
-        //bitstamp = 62
-        //kraken = 63
-        //gemini = 64
-        //since this is bitstamp and kraken being updated, I will update:
-        //  60, 62, 63
-        let indices = [60, 62, 63];
-        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
+        // //value_after = 60
+        // //coinbase = 61
+        // //bitstamp = 62
+        // //kraken = 63
+        // //gemini = 64
+        // //since this is bitstamp and kraken being updated, I will update:
+        // //  60, 62, 63
+        // let indices = [60, 62, 63];
+        // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        // //01/24/24 - removed and added:
+        //     //neural_network.update_input(&indices, &new_values);
+        //     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //     //neural_network.update_input(&indices, &transformed_values).await;
+        //     let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //     neural_network.update_input(&indices, &scaled_values).await;
         
-        return Ok(value_after)
+        // return Ok(value_after)
 
 
     }
@@ -41086,40 +41329,119 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
 
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
+		//03/05/24 - removed:
+        // //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        // //.body is nonce because in the Kraken code provided in cURL: 
+        // //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        // //--data-urlencode "nonce=<YOUR-NONCE>"
+        // //		this means that nonce is added to the body of the request
+        // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+        //         .header("API-Key", kraken_api_key)
+        //         .header("API-Sign", &kraken_signature)
+        //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+        //         .body(format!("nonce={}", nonce))
+        //         .build()
+        //         .expect("Failed to build kraken request");
 
 
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+        // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
 
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
         
-        //println!("kraken response:{}", kraken_response_text);
+        // //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-        let mut kraken_buy_price_ask = 0.0;
-        //let mut kraken_sell_price_bid = 0.0;
-        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
-            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        // let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+        // let mut kraken_buy_price_ask = 0.0;
+        // //let mut kraken_sell_price_bid = 0.0;
+        // if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+        //     // Access the ask and bid prices
+        //     kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        //     //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
         
-            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
+        //     println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+        //     //println!("Bid price: {}", kraken_sell_price_bid );
+        // }
+        // else {
+        //     println!("didnt parse kraken correctly.");
+        // }
+
+
+
+
+
+	//03/05/24 - added in its place:
+		let mut kraken_buy_price_ask: Option<f64> = None;
+		//let mut kraken_sell_price_bid: Option<f64> = None;
+		let mut attempts = 0;
+		loop {
+			attempts += 1;
+			let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+			.header("API-Key", kraken_api_key)
+			.header("API-Sign", &kraken_signature)
+			.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+			.body(format!("nonce={}", nonce))
+			.build();
+
+			match kraken_basic_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							match response.text().await {
+								Ok(kraken_response_text) => {
+									match serde_json::from_str::<Value>(&kraken_response_text) {
+										Ok(value) => {
+											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
+
+												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+													(Some(ask_str), /*Some(bid_str)*/) => {
+														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+															(Ok(ask), /*Ok(bid)*/) => {
+																kraken_buy_price_ask = Some(ask);
+																//kraken_sell_price_bid = Some(bid);
+
+																break; // Exit the loop if everything is successful
+															},
+															_ => log::error!("i106: Failed to parse ask or bid as f64"),
+														}
+													},
+													_ => log::error!("i106: Failed to get ask or bid as string"),
+												}										
+											}
+											else {
+												log::error!("i106: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+											}
+										},
+										Err(e) => log::error!("i106: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+									}
+								},
+								Err(e) => log::error!("i106: Failed to read response text. Error was: {}", e),
+							}
+						},
+						Err(e) => log::error!("i106: Failed to execute Kraken request. Error was: {}", e),
+					}
+				},
+				Err(e) => log::error!("i106: Failed to build kraken request. Error was: {}", e),
+			}
+			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+				break; // Exit the loop if everything is successful
+			}
+
+			attempts += 1;
+			if attempts >= 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+		println!("xlm 6 kraken bitstamp: 5 sec delay");
+		let when = tokio::time::Instant::now() + Duration::from_secs(5);
+		tokio::time::sleep_until(when).await;
+
+
+
+
+
+
 
 
 
@@ -41186,76 +41508,240 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
+		//03/05/24 - removed:
+        // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+        //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+        //     .header("X-Auth-Signature", bitstamp_signature)
+        //     .header("X-Auth-Nonce", bitstamp_nonce)
+        //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+        //     .header("X-Auth-Version", "v2")
+        //     //.header("Content-Type", content_type)
+        //     //.body(payload_string)
+        //     .build()
+        //     .expect("\ncould not build bitstamp_request");
 
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
+        // let bitstamp_response = client.execute(bitstamp_request).await
+        //     .expect("Failed to execute Bitstamp request");
+        // let bitstamp_response_text = bitstamp_response.text().await
+        //     .expect("Failed to turn response into text");
+        // //probably dont need "bitstamp" once we transfer this to the actual function
+        // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        // .expect("Failed to parse JSON");
 
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        println!("Bid: {}", bitstamp_sell_price_bid, );
-        //println!("Ask: {}", bitstamp_buy_price_ask);
-        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
-
+        // // Extract the bid and ask values
+        // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        // //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        // println!("Bid: {}", bitstamp_sell_price_bid, );
+        // //println!("Ask: {}", bitstamp_buy_price_ask);
+        // //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
-        //kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_used = 0.06;
-        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-        //new state of kraken wallet
-        *kraken_wallet -= total_spent;
-        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
-
-
-        //bitstamp calculations
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-        //value_after = 60
-        //coinbase = 61
-        //bitstamp = 62
-        //kraken = 63
-        //gemini = 64
-        //since this is bitstamp and kraken being updated, I will update:
-        //  60, 62, 63
-        let indices = [60, 62, 63];
-        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-    
-    return Ok(value_after)
+
+
+
+
+
+
+
+
+
+
+
+
+	//03/05/24 - added:
+		let mut success = false;
+		let mut attempts = 0;
+		let mut value_after: Option<f64> = None;
+
+		while !success && attempts <=3 {
+			attempts += 1;
+
+			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+				.header("X-Auth-Signature", &bitstamp_signature)
+				.header("X-Auth-Nonce", &bitstamp_nonce)
+				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+				.header("X-Auth-Version", "v2")
+				.build() {
+				Ok(bitstamp_request) => {
+					match client.execute(bitstamp_request).await {
+						Ok(bitstamp_response) => {
+							match bitstamp_response.text().await {
+								Ok(bitstamp_response_text) => {
+									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+										Ok(v) => {
+											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+												(Some(bid_str), Some(ask_str)) => {
+													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+															// Place your calculations and updates here
+															//kraken calculations - buy
+															let kraken_taker_fee = 0.0026;
+															let fraction_of_wallet_used = 0.06; //aka 6 percent
+															let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+															let fee_for_purchase = total_spent*kraken_taker_fee;
+															let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+															*kraken_wallet -= total_spent;
+
+															let amount_of_xlm_before_withdraw_fee = 
+															money_going_to_xlm_after_fees/kraken_buy_price_ask
+																							.expect(&format!("i106: kraken_buy_price_ask is somehow Not Some. 
+																							even though to get to this point it had to be Some. 
+																							kraken_buy_price_ask: {:?}
+																							Honestly restart the program from the last saved state. 
+																							The most likely error is a bit got flipped after the loop",
+																							&kraken_buy_price_ask));
+
+															let amount_of_xlm = amount_of_xlm_before_withdraw_fee -0.001;
+
+															//bitstamp calculations for sell
+
+															let bitstamp_taker_fee = 0.004;
+															let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+															*bitstamp_wallet += money_from_sell_after_fees;
+															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+
+															//value_after = 60
+															//coinbase = 61
+															//bitstamp = 62
+															//kraken = 63
+															//gemini = 64
+															//since this is coinbase and gemini being updated, I will update:
+															//  60, 62, 63
+															let indices = [60, 62, 63];
+															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+
+															success = true;
+														},
+														_ => {
+															log::error!("i106: Failed to f64 parse bid or ask price");
+															if attempts > 3 {
+																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+															}
+															continue;
+														}
+													}
+												},
+												_ => {
+													log::error!("i106: Failed to originally parse bid or ask price");
+													if attempts > 3 {
+														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+													}
+													continue;
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i106: Failed to parse JSON");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+											}
+											continue;
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i106: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue;
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i106: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue;
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i106: Failed to build request");
+					if attempts > 3 {
+						panic!("Failed to build request after 3 attempts");
+					}
+					continue;
+				}
+			}
+		}
+
+	match value_after {
+		Some(value) => return Ok(value),
+		None => {
+			//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // //kraken calculations - buy
+        // let kraken_taker_fee = 0.0026;
+        // let fraction_of_wallet_used = 0.05;
+        // let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        // let fee_for_purchase = total_spent*kraken_taker_fee;
+        // let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        // //new state of kraken wallet
+        // *kraken_wallet -= total_spent;
+        // let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
+
+
+        // //bitstamp calculations
+        // let bitstamp_taker_fee = 0.004;
+        // let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        // let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        // let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        // *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+        // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        // //value_after = 60
+        // //coinbase = 61
+        // //bitstamp = 62
+        // //kraken = 63
+        // //gemini = 64
+        // //since this is bitstamp and kraken being updated, I will update:
+        // //  60, 62, 63
+        // let indices = [60, 62, 63];
+        // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        // //01/24/24 - removed and added:
+        //     //neural_network.update_input(&indices, &new_values);
+        //     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //     //neural_network.update_input(&indices, &transformed_values).await;
+        //     let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //     neural_network.update_input(&indices, &scaled_values).await;
+        
+        // return Ok(value_after)
 
 
     }
@@ -41326,40 +41812,119 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
 
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
+		//03/05/24 - removed:
+        // //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        // //.body is nonce because in the Kraken code provided in cURL: 
+        // //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        // //--data-urlencode "nonce=<YOUR-NONCE>"
+        // //		this means that nonce is added to the body of the request
+        // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+        //         .header("API-Key", kraken_api_key)
+        //         .header("API-Sign", &kraken_signature)
+        //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+        //         .body(format!("nonce={}", nonce))
+        //         .build()
+        //         .expect("Failed to build kraken request");
 
 
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+        // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
 
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
         
-        //println!("kraken response:{}", kraken_response_text);
+        // //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-        let mut kraken_buy_price_ask = 0.0;
-        //let mut kraken_sell_price_bid = 0.0;
-        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
-            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        // let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+        // let mut kraken_buy_price_ask = 0.0;
+        // //let mut kraken_sell_price_bid = 0.0;
+        // if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+        //     // Access the ask and bid prices
+        //     kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        //     //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
         
-            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
+        //     println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+        //     //println!("Bid price: {}", kraken_sell_price_bid );
+        // }
+        // else {
+        //     println!("didnt parse kraken correctly.");
+        // }
+
+
+
+
+
+	//03/05/24 - added in its place:
+		let mut kraken_buy_price_ask: Option<f64> = None;
+		//let mut kraken_sell_price_bid: Option<f64> = None;
+		let mut attempts = 0;
+		loop {
+			attempts += 1;
+			let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+			.header("API-Key", kraken_api_key)
+			.header("API-Sign", &kraken_signature)
+			.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+			.body(format!("nonce={}", nonce))
+			.build();
+
+			match kraken_basic_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							match response.text().await {
+								Ok(kraken_response_text) => {
+									match serde_json::from_str::<Value>(&kraken_response_text) {
+										Ok(value) => {
+											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
+
+												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+													(Some(ask_str), /*Some(bid_str)*/) => {
+														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+															(Ok(ask), /*Ok(bid)*/) => {
+																kraken_buy_price_ask = Some(ask);
+																//kraken_sell_price_bid = Some(bid);
+
+																break; // Exit the loop if everything is successful
+															},
+															_ => log::error!("i107: Failed to parse ask or bid as f64"),
+														}
+													},
+													_ => log::error!("i107: Failed to get ask or bid as string"),
+												}										
+											}
+											else {
+												log::error!("i107: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+											}
+										},
+										Err(e) => log::error!("i107: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+									}
+								},
+								Err(e) => log::error!("i107: Failed to read response text. Error was: {}", e),
+							}
+						},
+						Err(e) => log::error!("i107: Failed to execute Kraken request. Error was: {}", e),
+					}
+				},
+				Err(e) => log::error!("i107: Failed to build kraken request. Error was: {}", e),
+			}
+			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+				break; // Exit the loop if everything is successful
+			}
+
+			attempts += 1;
+			if attempts >= 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+		println!("xlm 7 kraken bitstamp: 5 sec delay");
+		let when = tokio::time::Instant::now() + Duration::from_secs(5);
+		tokio::time::sleep_until(when).await;
+
+
+
+
+
+
 
 
 
@@ -41426,76 +41991,240 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
+		//03/05/24 - removed:
+        // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+        //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+        //     .header("X-Auth-Signature", bitstamp_signature)
+        //     .header("X-Auth-Nonce", bitstamp_nonce)
+        //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+        //     .header("X-Auth-Version", "v2")
+        //     //.header("Content-Type", content_type)
+        //     //.body(payload_string)
+        //     .build()
+        //     .expect("\ncould not build bitstamp_request");
 
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
+        // let bitstamp_response = client.execute(bitstamp_request).await
+        //     .expect("Failed to execute Bitstamp request");
+        // let bitstamp_response_text = bitstamp_response.text().await
+        //     .expect("Failed to turn response into text");
+        // //probably dont need "bitstamp" once we transfer this to the actual function
+        // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        // .expect("Failed to parse JSON");
 
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        println!("Bid: {}", bitstamp_sell_price_bid, );
-        //println!("Ask: {}", bitstamp_buy_price_ask);
-        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
-
+        // // Extract the bid and ask values
+        // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        // //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        // println!("Bid: {}", bitstamp_sell_price_bid, );
+        // //println!("Ask: {}", bitstamp_buy_price_ask);
+        // //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
-        //kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_used = 0.07;
-        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-        //new state of kraken wallet
-        *kraken_wallet -= total_spent;
-        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
-
-
-        //bitstamp calculations
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-        //value_after = 60
-        //coinbase = 61
-        //bitstamp = 62
-        //kraken = 63
-        //gemini = 64
-        //since this is bitstamp and kraken being updated, I will update:
-        //  60, 62, 63
-        let indices = [60, 62, 63];
-        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-    
-    return Ok(value_after)
+
+
+
+
+
+
+
+
+
+
+
+
+	//03/05/24 - added:
+		let mut success = false;
+		let mut attempts = 0;
+		let mut value_after: Option<f64> = None;
+
+		while !success && attempts <=3 {
+			attempts += 1;
+
+			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+				.header("X-Auth-Signature", &bitstamp_signature)
+				.header("X-Auth-Nonce", &bitstamp_nonce)
+				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+				.header("X-Auth-Version", "v2")
+				.build() {
+				Ok(bitstamp_request) => {
+					match client.execute(bitstamp_request).await {
+						Ok(bitstamp_response) => {
+							match bitstamp_response.text().await {
+								Ok(bitstamp_response_text) => {
+									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+										Ok(v) => {
+											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+												(Some(bid_str), Some(ask_str)) => {
+													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+															// Place your calculations and updates here
+															//kraken calculations - buy
+															let kraken_taker_fee = 0.0026;
+															let fraction_of_wallet_used = 0.07; //aka 7 percent
+															let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+															let fee_for_purchase = total_spent*kraken_taker_fee;
+															let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+															*kraken_wallet -= total_spent;
+
+															let amount_of_xlm_before_withdraw_fee = 
+															money_going_to_xlm_after_fees/kraken_buy_price_ask
+																							.expect(&format!("i106: kraken_buy_price_ask is somehow Not Some. 
+																							even though to get to this point it had to be Some. 
+																							kraken_buy_price_ask: {:?}
+																							Honestly restart the program from the last saved state. 
+																							The most likely error is a bit got flipped after the loop",
+																							&kraken_buy_price_ask));
+
+															let amount_of_xlm = amount_of_xlm_before_withdraw_fee -0.001;
+
+															//bitstamp calculations for sell
+
+															let bitstamp_taker_fee = 0.004;
+															let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+															*bitstamp_wallet += money_from_sell_after_fees;
+															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+
+															//value_after = 60
+															//coinbase = 61
+															//bitstamp = 62
+															//kraken = 63
+															//gemini = 64
+															//since this is coinbase and gemini being updated, I will update:
+															//  60, 62, 63
+															let indices = [60, 62, 63];
+															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+
+															success = true;
+														},
+														_ => {
+															log::error!("i107: Failed to f64 parse bid or ask price");
+															if attempts > 3 {
+																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+															}
+															continue;
+														}
+													}
+												},
+												_ => {
+													log::error!("i107: Failed to originally parse bid or ask price");
+													if attempts > 3 {
+														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+													}
+													continue;
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i107: Failed to parse JSON");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+											}
+											continue;
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i107: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue;
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i107: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue;
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i107: Failed to build request");
+					if attempts > 3 {
+						panic!("Failed to build request after 3 attempts");
+					}
+					continue;
+				}
+			}
+		}
+
+	match value_after {
+		Some(value) => return Ok(value),
+		None => {
+			//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // //kraken calculations - buy
+        // let kraken_taker_fee = 0.0026;
+        // let fraction_of_wallet_used = 0.05;
+        // let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        // let fee_for_purchase = total_spent*kraken_taker_fee;
+        // let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        // //new state of kraken wallet
+        // *kraken_wallet -= total_spent;
+        // let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
+
+
+        // //bitstamp calculations
+        // let bitstamp_taker_fee = 0.004;
+        // let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        // let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        // let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        // *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+        // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        // //value_after = 60
+        // //coinbase = 61
+        // //bitstamp = 62
+        // //kraken = 63
+        // //gemini = 64
+        // //since this is bitstamp and kraken being updated, I will update:
+        // //  60, 62, 63
+        // let indices = [60, 62, 63];
+        // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        // //01/24/24 - removed and added:
+        //     //neural_network.update_input(&indices, &new_values);
+        //     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //     //neural_network.update_input(&indices, &transformed_values).await;
+        //     let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //     neural_network.update_input(&indices, &scaled_values).await;
+        
+        // return Ok(value_after)
 
 
     }
@@ -41566,40 +42295,119 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
 
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
+		//03/05/24 - removed:
+        // //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        // //.body is nonce because in the Kraken code provided in cURL: 
+        // //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        // //--data-urlencode "nonce=<YOUR-NONCE>"
+        // //		this means that nonce is added to the body of the request
+        // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+        //         .header("API-Key", kraken_api_key)
+        //         .header("API-Sign", &kraken_signature)
+        //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+        //         .body(format!("nonce={}", nonce))
+        //         .build()
+        //         .expect("Failed to build kraken request");
 
 
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+        // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
 
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
         
-        //println!("kraken response:{}", kraken_response_text);
+        // //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-        let mut kraken_buy_price_ask = 0.0;
-        //let mut kraken_sell_price_bid = 0.0;
-        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
-            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        // let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+        // let mut kraken_buy_price_ask = 0.0;
+        // //let mut kraken_sell_price_bid = 0.0;
+        // if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+        //     // Access the ask and bid prices
+        //     kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        //     //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
         
-            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
+        //     println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+        //     //println!("Bid price: {}", kraken_sell_price_bid );
+        // }
+        // else {
+        //     println!("didnt parse kraken correctly.");
+        // }
+
+
+
+
+
+	//03/05/24 - added in its place:
+		let mut kraken_buy_price_ask: Option<f64> = None;
+		//let mut kraken_sell_price_bid: Option<f64> = None;
+		let mut attempts = 0;
+		loop {
+			attempts += 1;
+			let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+			.header("API-Key", kraken_api_key)
+			.header("API-Sign", &kraken_signature)
+			.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+			.body(format!("nonce={}", nonce))
+			.build();
+
+			match kraken_basic_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							match response.text().await {
+								Ok(kraken_response_text) => {
+									match serde_json::from_str::<Value>(&kraken_response_text) {
+										Ok(value) => {
+											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
+
+												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+													(Some(ask_str), /*Some(bid_str)*/) => {
+														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+															(Ok(ask), /*Ok(bid)*/) => {
+																kraken_buy_price_ask = Some(ask);
+																//kraken_sell_price_bid = Some(bid);
+
+																break; // Exit the loop if everything is successful
+															},
+															_ => log::error!("i108: Failed to parse ask or bid as f64"),
+														}
+													},
+													_ => log::error!("i108: Failed to get ask or bid as string"),
+												}										
+											}
+											else {
+												log::error!("i108: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+											}
+										},
+										Err(e) => log::error!("i108: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+									}
+								},
+								Err(e) => log::error!("i108: Failed to read response text. Error was: {}", e),
+							}
+						},
+						Err(e) => log::error!("i108: Failed to execute Kraken request. Error was: {}", e),
+					}
+				},
+				Err(e) => log::error!("i108: Failed to build kraken request. Error was: {}", e),
+			}
+			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+				break; // Exit the loop if everything is successful
+			}
+
+			attempts += 1;
+			if attempts >= 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+		println!("xlm 8 kraken bitstamp: 5 sec delay");
+		let when = tokio::time::Instant::now() + Duration::from_secs(5);
+		tokio::time::sleep_until(when).await;
+
+
+
+
+
+
 
 
 
@@ -41666,76 +42474,240 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
+		//03/05/24 - removed:
+        // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+        //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+        //     .header("X-Auth-Signature", bitstamp_signature)
+        //     .header("X-Auth-Nonce", bitstamp_nonce)
+        //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+        //     .header("X-Auth-Version", "v2")
+        //     //.header("Content-Type", content_type)
+        //     //.body(payload_string)
+        //     .build()
+        //     .expect("\ncould not build bitstamp_request");
 
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
+        // let bitstamp_response = client.execute(bitstamp_request).await
+        //     .expect("Failed to execute Bitstamp request");
+        // let bitstamp_response_text = bitstamp_response.text().await
+        //     .expect("Failed to turn response into text");
+        // //probably dont need "bitstamp" once we transfer this to the actual function
+        // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        // .expect("Failed to parse JSON");
 
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        println!("Bid: {}", bitstamp_sell_price_bid, );
-        //println!("Ask: {}", bitstamp_buy_price_ask);
-        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
-
+        // // Extract the bid and ask values
+        // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        // //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        // println!("Bid: {}", bitstamp_sell_price_bid, );
+        // //println!("Ask: {}", bitstamp_buy_price_ask);
+        // //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
-        //kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_used = 0.08;
-        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-        //new state of kraken wallet
-        *kraken_wallet -= total_spent;
-        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
-
-
-        //bitstamp calculations
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-        //value_after = 60
-        //coinbase = 61
-        //bitstamp = 62
-        //kraken = 63
-        //gemini = 64
-        //since this is bitstamp and kraken being updated, I will update:
-        //  60, 62, 63
-        let indices = [60, 62, 63];
-        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-    
-    return Ok(value_after)
+
+
+
+
+
+
+
+
+
+
+
+
+	//03/05/24 - added:
+		let mut success = false;
+		let mut attempts = 0;
+		let mut value_after: Option<f64> = None;
+
+		while !success && attempts <=3 {
+			attempts += 1;
+
+			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+				.header("X-Auth-Signature", &bitstamp_signature)
+				.header("X-Auth-Nonce", &bitstamp_nonce)
+				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+				.header("X-Auth-Version", "v2")
+				.build() {
+				Ok(bitstamp_request) => {
+					match client.execute(bitstamp_request).await {
+						Ok(bitstamp_response) => {
+							match bitstamp_response.text().await {
+								Ok(bitstamp_response_text) => {
+									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+										Ok(v) => {
+											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+												(Some(bid_str), Some(ask_str)) => {
+													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+															// Place your calculations and updates here
+															//kraken calculations - buy
+															let kraken_taker_fee = 0.0026;
+															let fraction_of_wallet_used = 0.08; //aka 8 percent
+															let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+															let fee_for_purchase = total_spent*kraken_taker_fee;
+															let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+															*kraken_wallet -= total_spent;
+
+															let amount_of_xlm_before_withdraw_fee = 
+															money_going_to_xlm_after_fees/kraken_buy_price_ask
+																							.expect(&format!("i106: kraken_buy_price_ask is somehow Not Some. 
+																							even though to get to this point it had to be Some. 
+																							kraken_buy_price_ask: {:?}
+																							Honestly restart the program from the last saved state. 
+																							The most likely error is a bit got flipped after the loop",
+																							&kraken_buy_price_ask));
+
+															let amount_of_xlm = amount_of_xlm_before_withdraw_fee -0.001;
+
+															//bitstamp calculations for sell
+
+															let bitstamp_taker_fee = 0.004;
+															let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+															*bitstamp_wallet += money_from_sell_after_fees;
+															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+
+															//value_after = 60
+															//coinbase = 61
+															//bitstamp = 62
+															//kraken = 63
+															//gemini = 64
+															//since this is coinbase and gemini being updated, I will update:
+															//  60, 62, 63
+															let indices = [60, 62, 63];
+															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+
+															success = true;
+														},
+														_ => {
+															log::error!("i108: Failed to f64 parse bid or ask price");
+															if attempts > 3 {
+																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+															}
+															continue;
+														}
+													}
+												},
+												_ => {
+													log::error!("i108: Failed to originally parse bid or ask price");
+													if attempts > 3 {
+														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+													}
+													continue;
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i108: Failed to parse JSON");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+											}
+											continue;
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i108: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue;
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i108: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue;
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i108: Failed to build request");
+					if attempts > 3 {
+						panic!("Failed to build request after 3 attempts");
+					}
+					continue;
+				}
+			}
+		}
+
+	match value_after {
+		Some(value) => return Ok(value),
+		None => {
+			//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // //kraken calculations - buy
+        // let kraken_taker_fee = 0.0026;
+        // let fraction_of_wallet_used = 0.05;
+        // let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        // let fee_for_purchase = total_spent*kraken_taker_fee;
+        // let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        // //new state of kraken wallet
+        // *kraken_wallet -= total_spent;
+        // let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
+
+
+        // //bitstamp calculations
+        // let bitstamp_taker_fee = 0.004;
+        // let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        // let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        // let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        // *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+        // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        // //value_after = 60
+        // //coinbase = 61
+        // //bitstamp = 62
+        // //kraken = 63
+        // //gemini = 64
+        // //since this is bitstamp and kraken being updated, I will update:
+        // //  60, 62, 63
+        // let indices = [60, 62, 63];
+        // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        // //01/24/24 - removed and added:
+        //     //neural_network.update_input(&indices, &new_values);
+        //     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //     //neural_network.update_input(&indices, &transformed_values).await;
+        //     let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //     neural_network.update_input(&indices, &scaled_values).await;
+        
+        // return Ok(value_after)
 
 
     }
@@ -41806,40 +42778,119 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
 
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
+		//03/05/24 - removed:
+        // //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        // //.body is nonce because in the Kraken code provided in cURL: 
+        // //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        // //--data-urlencode "nonce=<YOUR-NONCE>"
+        // //		this means that nonce is added to the body of the request
+        // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+        //         .header("API-Key", kraken_api_key)
+        //         .header("API-Sign", &kraken_signature)
+        //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+        //         .body(format!("nonce={}", nonce))
+        //         .build()
+        //         .expect("Failed to build kraken request");
 
 
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+        // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
 
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
         
-        //println!("kraken response:{}", kraken_response_text);
+        // //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-        let mut kraken_buy_price_ask = 0.0;
-        //let mut kraken_sell_price_bid = 0.0;
-        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
-            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        // let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+        // let mut kraken_buy_price_ask = 0.0;
+        // //let mut kraken_sell_price_bid = 0.0;
+        // if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+        //     // Access the ask and bid prices
+        //     kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        //     //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
         
-            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
+        //     println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+        //     //println!("Bid price: {}", kraken_sell_price_bid );
+        // }
+        // else {
+        //     println!("didnt parse kraken correctly.");
+        // }
+
+
+
+
+
+	//03/05/24 - added in its place:
+		let mut kraken_buy_price_ask: Option<f64> = None;
+		//let mut kraken_sell_price_bid: Option<f64> = None;
+		let mut attempts = 0;
+		loop {
+			attempts += 1;
+			let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+			.header("API-Key", kraken_api_key)
+			.header("API-Sign", &kraken_signature)
+			.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+			.body(format!("nonce={}", nonce))
+			.build();
+
+			match kraken_basic_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							match response.text().await {
+								Ok(kraken_response_text) => {
+									match serde_json::from_str::<Value>(&kraken_response_text) {
+										Ok(value) => {
+											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
+
+												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+													(Some(ask_str), /*Some(bid_str)*/) => {
+														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+															(Ok(ask), /*Ok(bid)*/) => {
+																kraken_buy_price_ask = Some(ask);
+																//kraken_sell_price_bid = Some(bid);
+
+																break; // Exit the loop if everything is successful
+															},
+															_ => log::error!("i109: Failed to parse ask or bid as f64"),
+														}
+													},
+													_ => log::error!("i109: Failed to get ask or bid as string"),
+												}										
+											}
+											else {
+												log::error!("i109: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+											}
+										},
+										Err(e) => log::error!("i109: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+									}
+								},
+								Err(e) => log::error!("i109: Failed to read response text. Error was: {}", e),
+							}
+						},
+						Err(e) => log::error!("i106: Failed to execute Kraken request. Error was: {}", e),
+					}
+				},
+				Err(e) => log::error!("i109: Failed to build kraken request. Error was: {}", e),
+			}
+			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+				break; // Exit the loop if everything is successful
+			}
+
+			attempts += 1;
+			if attempts >= 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+		println!("xlm 9 kraken bitstamp: 5 sec delay");
+		let when = tokio::time::Instant::now() + Duration::from_secs(5);
+		tokio::time::sleep_until(when).await;
+
+
+
+
+
+
 
 
 
@@ -41906,76 +42957,240 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
+		//03/05/24 - removed:
+        // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+        //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+        //     .header("X-Auth-Signature", bitstamp_signature)
+        //     .header("X-Auth-Nonce", bitstamp_nonce)
+        //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+        //     .header("X-Auth-Version", "v2")
+        //     //.header("Content-Type", content_type)
+        //     //.body(payload_string)
+        //     .build()
+        //     .expect("\ncould not build bitstamp_request");
 
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
+        // let bitstamp_response = client.execute(bitstamp_request).await
+        //     .expect("Failed to execute Bitstamp request");
+        // let bitstamp_response_text = bitstamp_response.text().await
+        //     .expect("Failed to turn response into text");
+        // //probably dont need "bitstamp" once we transfer this to the actual function
+        // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        // .expect("Failed to parse JSON");
 
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        println!("Bid: {}", bitstamp_sell_price_bid, );
-        //println!("Ask: {}", bitstamp_buy_price_ask);
-        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
-
+        // // Extract the bid and ask values
+        // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        // //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        // println!("Bid: {}", bitstamp_sell_price_bid, );
+        // //println!("Ask: {}", bitstamp_buy_price_ask);
+        // //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
-        //kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_used = 0.09;
-        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-        //new state of kraken wallet
-        *kraken_wallet -= total_spent;
-        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
-
-
-        //bitstamp calculations
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-        //value_after = 60
-        //coinbase = 61
-        //bitstamp = 62
-        //kraken = 63
-        //gemini = 64
-        //since this is bitstamp and kraken being updated, I will update:
-        //  60, 62, 63
-        let indices = [60, 62, 63];
-        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-    
-    return Ok(value_after)
+
+
+
+
+
+
+
+
+
+
+
+
+	//03/05/24 - added:
+		let mut success = false;
+		let mut attempts = 0;
+		let mut value_after: Option<f64> = None;
+
+		while !success && attempts <=3 {
+			attempts += 1;
+
+			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+				.header("X-Auth-Signature", &bitstamp_signature)
+				.header("X-Auth-Nonce", &bitstamp_nonce)
+				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+				.header("X-Auth-Version", "v2")
+				.build() {
+				Ok(bitstamp_request) => {
+					match client.execute(bitstamp_request).await {
+						Ok(bitstamp_response) => {
+							match bitstamp_response.text().await {
+								Ok(bitstamp_response_text) => {
+									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+										Ok(v) => {
+											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+												(Some(bid_str), Some(ask_str)) => {
+													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+															// Place your calculations and updates here
+															//kraken calculations - buy
+															let kraken_taker_fee = 0.0026;
+															let fraction_of_wallet_used = 0.09; //aka 9 percent
+															let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+															let fee_for_purchase = total_spent*kraken_taker_fee;
+															let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+															*kraken_wallet -= total_spent;
+
+															let amount_of_xlm_before_withdraw_fee = 
+															money_going_to_xlm_after_fees/kraken_buy_price_ask
+																							.expect(&format!("i106: kraken_buy_price_ask is somehow Not Some. 
+																							even though to get to this point it had to be Some. 
+																							kraken_buy_price_ask: {:?}
+																							Honestly restart the program from the last saved state. 
+																							The most likely error is a bit got flipped after the loop",
+																							&kraken_buy_price_ask));
+
+															let amount_of_xlm = amount_of_xlm_before_withdraw_fee -0.001;
+
+															//bitstamp calculations for sell
+
+															let bitstamp_taker_fee = 0.004;
+															let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+															*bitstamp_wallet += money_from_sell_after_fees;
+															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+
+															//value_after = 60
+															//coinbase = 61
+															//bitstamp = 62
+															//kraken = 63
+															//gemini = 64
+															//since this is coinbase and gemini being updated, I will update:
+															//  60, 62, 63
+															let indices = [60, 62, 63];
+															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+
+															success = true;
+														},
+														_ => {
+															log::error!("i109: Failed to f64 parse bid or ask price");
+															if attempts > 3 {
+																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+															}
+															continue;
+														}
+													}
+												},
+												_ => {
+													log::error!("i109: Failed to originally parse bid or ask price");
+													if attempts > 3 {
+														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+													}
+													continue;
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i109: Failed to parse JSON");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+											}
+											continue;
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i109: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue;
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i109: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue;
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i109: Failed to build request");
+					if attempts > 3 {
+						panic!("Failed to build request after 3 attempts");
+					}
+					continue;
+				}
+			}
+		}
+
+	match value_after {
+		Some(value) => return Ok(value),
+		None => {
+			//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // //kraken calculations - buy
+        // let kraken_taker_fee = 0.0026;
+        // let fraction_of_wallet_used = 0.05;
+        // let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        // let fee_for_purchase = total_spent*kraken_taker_fee;
+        // let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        // //new state of kraken wallet
+        // *kraken_wallet -= total_spent;
+        // let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
+
+
+        // //bitstamp calculations
+        // let bitstamp_taker_fee = 0.004;
+        // let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        // let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        // let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        // *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+        // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        
+        // //value_after = 60
+        // //coinbase = 61
+        // //bitstamp = 62
+        // //kraken = 63
+        // //gemini = 64
+        // //since this is bitstamp and kraken being updated, I will update:
+        // //  60, 62, 63
+        // let indices = [60, 62, 63];
+        // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        // //01/24/24 - removed and added:
+        //     //neural_network.update_input(&indices, &new_values);
+        //     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //     //neural_network.update_input(&indices, &transformed_values).await;
+        //     let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //     neural_network.update_input(&indices, &scaled_values).await;
+        
+        // return Ok(value_after)
 
 
     }
@@ -42046,40 +43261,119 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
 
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
+		//03/05/24 - removed:
+        // //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+        // //.body is nonce because in the Kraken code provided in cURL: 
+        // //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+        // //--data-urlencode "nonce=<YOUR-NONCE>"
+        // //		this means that nonce is added to the body of the request
+        // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+        //         .header("API-Key", kraken_api_key)
+        //         .header("API-Sign", &kraken_signature)
+        //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+        //         .body(format!("nonce={}", nonce))
+        //         .build()
+        //         .expect("Failed to build kraken request");
 
 
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+        // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
 
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+        // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
         
-        //println!("kraken response:{}", kraken_response_text);
+        // //println!("kraken response:{}", kraken_response_text);
 
-        let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-        let mut kraken_buy_price_ask = 0.0;
-        //let mut kraken_sell_price_bid = 0.0;
-        if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
-            //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        // let v: Value = serde_json::from_str(&kraken_response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+        // let mut kraken_buy_price_ask = 0.0;
+        // //let mut kraken_sell_price_bid = 0.0;
+        // if let Some(xlmusd) = v["result"]["XXLMZUSD"].as_object() {
+        //     // Access the ask and bid prices
+        //     kraken_buy_price_ask = xlmusd["a"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
+        //     //kraken_sell_price_bid = xlmusd["b"][0].as_str().unwrap_or("").parse::<f64>().unwrap_or(0.0);
         
-            println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
+        //     println!("i105 kraken buy  price Ask price: {}", kraken_buy_price_ask);
+        //     //println!("Bid price: {}", kraken_sell_price_bid );
+        // }
+        // else {
+        //     println!("didnt parse kraken correctly.");
+        // }
+
+
+
+
+
+	//03/05/24 - added in its place:
+		let mut kraken_buy_price_ask: Option<f64> = None;
+		//let mut kraken_sell_price_bid: Option<f64> = None;
+		let mut attempts = 0;
+		loop {
+			attempts += 1;
+			let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XLMUSD")
+			.header("API-Key", kraken_api_key)
+			.header("API-Sign", &kraken_signature)
+			.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+			.body(format!("nonce={}", nonce))
+			.build();
+
+			match kraken_basic_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							match response.text().await {
+								Ok(kraken_response_text) => {
+									match serde_json::from_str::<Value>(&kraken_response_text) {
+										Ok(value) => {
+											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
+
+												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+													(Some(ask_str), /*Some(bid_str)*/) => {
+														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+															(Ok(ask), /*Ok(bid)*/) => {
+																kraken_buy_price_ask = Some(ask);
+																//kraken_sell_price_bid = Some(bid);
+
+																break; // Exit the loop if everything is successful
+															},
+															_ => log::error!("i110: Failed to parse ask or bid as f64"),
+														}
+													},
+													_ => log::error!("i110: Failed to get ask or bid as string"),
+												}										
+											}
+											else {
+												log::error!("i110: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+											}
+										},
+										Err(e) => log::error!("i110: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+									}
+								},
+								Err(e) => log::error!("i110: Failed to read response text. Error was: {}", e),
+							}
+						},
+						Err(e) => log::error!("i110: Failed to execute Kraken request. Error was: {}", e),
+					}
+				},
+				Err(e) => log::error!("i110: Failed to build kraken request. Error was: {}", e),
+			}
+			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+				break; // Exit the loop if everything is successful
+			}
+
+			attempts += 1;
+			if attempts >= 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+		println!("xlm 10 kraken bitstamp: 5 sec delay");
+		let when = tokio::time::Instant::now() + Duration::from_secs(5);
+		tokio::time::sleep_until(when).await;
+
+
+
+
+
+
 
 
 
@@ -42146,76 +43440,240 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
+		//03/05/24 - removed:
+        // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+        //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+        //     .header("X-Auth-Signature", bitstamp_signature)
+        //     .header("X-Auth-Nonce", bitstamp_nonce)
+        //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+        //     .header("X-Auth-Version", "v2")
+        //     //.header("Content-Type", content_type)
+        //     //.body(payload_string)
+        //     .build()
+        //     .expect("\ncould not build bitstamp_request");
 
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
+        // let bitstamp_response = client.execute(bitstamp_request).await
+        //     .expect("Failed to execute Bitstamp request");
+        // let bitstamp_response_text = bitstamp_response.text().await
+        //     .expect("Failed to turn response into text");
+        // //probably dont need "bitstamp" once we transfer this to the actual function
+        // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+        // .expect("Failed to parse JSON");
 
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        println!("Bid: {}", bitstamp_sell_price_bid, );
-        //println!("Ask: {}", bitstamp_buy_price_ask);
-        //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
-
-
-
+        // // Extract the bid and ask values
+        // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+        // //let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+        // println!("Bid: {}", bitstamp_sell_price_bid, );
+        // //println!("Ask: {}", bitstamp_buy_price_ask);
+        // //println!("Bitstamp response:\n{:?}", bitstamp_response_text);
 
 
 
-        //kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_used = 0.10;
-        let total_spent = fraction_of_wallet_used*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
-        //new state of kraken wallet
-        *kraken_wallet -= total_spent;
-        let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
-
-
-        //bitstamp calculations
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
 
 
 
-        let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+
+
+
+
+
+
+
+
+
+
+
+
+	//03/05/24 - added:
+		let mut success = false;
+		let mut attempts = 0;
+		let mut value_after: Option<f64> = None;
+
+		while !success && attempts <=3 {
+			attempts += 1;
+
+			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
+				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+				.header("X-Auth-Signature", &bitstamp_signature)
+				.header("X-Auth-Nonce", &bitstamp_nonce)
+				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+				.header("X-Auth-Version", "v2")
+				.build() {
+				Ok(bitstamp_request) => {
+					match client.execute(bitstamp_request).await {
+						Ok(bitstamp_response) => {
+							match bitstamp_response.text().await {
+								Ok(bitstamp_response_text) => {
+									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+										Ok(v) => {
+											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+												(Some(bid_str), Some(ask_str)) => {
+													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+															// Place your calculations and updates here
+															//kraken calculations - buy
+															let kraken_taker_fee = 0.0026;
+															let fraction_of_wallet_used = 0.10; //aka 10 percent
+															let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+															let fee_for_purchase = total_spent*kraken_taker_fee;
+															let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+															*kraken_wallet -= total_spent;
+
+															let amount_of_xlm_before_withdraw_fee = 
+															money_going_to_xlm_after_fees/kraken_buy_price_ask
+																							.expect(&format!("i106: kraken_buy_price_ask is somehow Not Some. 
+																							even though to get to this point it had to be Some. 
+																							kraken_buy_price_ask: {:?}
+																							Honestly restart the program from the last saved state. 
+																							The most likely error is a bit got flipped after the loop",
+																							&kraken_buy_price_ask));
+
+															let amount_of_xlm = amount_of_xlm_before_withdraw_fee -0.001;
+
+															//bitstamp calculations for sell
+
+															let bitstamp_taker_fee = 0.004;
+															let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+															*bitstamp_wallet += money_from_sell_after_fees;
+															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+
+															//value_after = 60
+															//coinbase = 61
+															//bitstamp = 62
+															//kraken = 63
+															//gemini = 64
+															//since this is coinbase and gemini being updated, I will update:
+															//  60, 62, 63
+															let indices = [60, 62, 63];
+															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+
+															success = true;
+														},
+														_ => {
+															log::error!("i110: Failed to f64 parse bid or ask price");
+															if attempts > 3 {
+																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+															}
+															continue;
+														}
+													}
+												},
+												_ => {
+													log::error!("i110: Failed to originally parse bid or ask price");
+													if attempts > 3 {
+														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+													}
+													continue;
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i110: Failed to parse JSON");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+											}
+											continue;
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i110: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue;
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i110: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue;
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i110: Failed to build request");
+					if attempts > 3 {
+						panic!("Failed to build request after 3 attempts");
+					}
+					continue;
+				}
+			}
+		}
+
+	match value_after {
+		Some(value) => return Ok(value),
+		None => {
+			//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // //kraken calculations - buy
+        // let kraken_taker_fee = 0.0026;
+        // let fraction_of_wallet_used = 0.05;
+        // let total_spent = fraction_of_wallet_used*(*kraken_wallet);
+        // let fee_for_purchase = total_spent*kraken_taker_fee;
+        // let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+        // //new state of kraken wallet
+        // *kraken_wallet -= total_spent;
+        // let amount_of_xlm = money_going_to_xlm_after_fees/kraken_buy_price_ask - 0.001;
+
+
+        // //bitstamp calculations
+        // let bitstamp_taker_fee = 0.004;
+        // let money_from_sell_before_fees = amount_of_xlm * bitstamp_sell_price_bid;
+        // let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        // let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        // *bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+        // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
         
-        //value_after = 60
-        //coinbase = 61
-        //bitstamp = 62
-        //kraken = 63
-        //gemini = 64
-        //since this is bitstamp and kraken being updated, I will update:
-        //  60, 62, 63
-        let indices = [60, 62, 63];
-        let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-    
-    return Ok(value_after)
+        // //value_after = 60
+        // //coinbase = 61
+        // //bitstamp = 62
+        // //kraken = 63
+        // //gemini = 64
+        // //since this is bitstamp and kraken being updated, I will update:
+        // //  60, 62, 63
+        // let indices = [60, 62, 63];
+        // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        // //01/24/24 - removed and added:
+        //     //neural_network.update_input(&indices, &new_values);
+        //     //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //     //neural_network.update_input(&indices, &transformed_values).await;
+        //     let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //     neural_network.update_input(&indices, &scaled_values).await;
+        
+        // return Ok(value_after)
 
 
     }
@@ -42364,10 +43822,11 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                         (/*Ok(bid_str),*/ Ok(ask_str)) => {
                                                                             //coinbase_sell_price_bid = Some(bid_str);
                                                                             coinbase_buy_price_ask = Some(ask_str);
-            
+																			
                                                                                 success = true;
                                                                         },
                                                                         _ => {
+																			log::error!("i113: Failed to parse json into f64");
                                                                             if attempts > 3 {
                                                                                 panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
                                                                             }
@@ -42376,9 +43835,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     }
                                                                 },
                                                                 _ => {
+																	log::error!("i113: Failed to get bid price ");
                                                                     if attempts > 3 {
                                                                         //panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                                        panic!("Failed to get bid or ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+                                                                        panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
                                                                     }
                                                                     continue ;
                                                                 }
@@ -42394,6 +43854,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 													}
 												},
                                                 Err(_) => {
+													log::error!("i113: Failed to parse JSON to str");
                                                     if attempts > 3 {
                                                         panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
                                                     }
@@ -42402,6 +43863,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                             }
                                         },
                                         Err(_) => {
+											log::error!("i113: Failed to get response text");
                                             if attempts > 3 {
                                                 panic!("Failed to get response text after 3 attempts");
                                             }
@@ -42410,6 +43872,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                     }
                                 },
                                 Err(_) => {
+									log::error!("i113: Failed to execute request.");
                                     if attempts > 3 {
                                         panic!("Failed to execute request after 3 attempts");
                                     }
@@ -42418,6 +43881,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                             }
                         },
                         Err(_) => {
+							log::error!("i113: Failed to build request");
                             if attempts > 3 {
                                 panic!("Failed to build request after 3 attempts");
                             }
@@ -42617,67 +44081,73 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                log::info!("state of: coinbase wallet: {}
-                                                                kraken wallet: {}
-                                                                gemini wallet: {}
-                                                                bitstamp wallet: {}
-                                                                coinbase buy price ask: {:?}
-                                                                bitstamp sell price bid: {}", 
-                                                                    &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                    &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
 
 
 
                                                                 success = true;
                                                             },
-                                                            _ => {
-                                                                if attempts > 3 {
-                                                                    panic!("Failed to parse bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                                }
-                                                                continue;
-                                                            }
-                                                        }
-                                                    },
-                                                    _ => {
-                                                        if attempts > 3 {
-                                                            panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                        }
-                                                        continue;
-                                                    }
-                                                }
-                                            },
-                                            Err(_) => {
-                                                if attempts > 3 {
-                                                    panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-                                                }
-                                                continue;
-                                            }
-                                        }
-                                    },
-                                    Err(_) => {
-                                        if attempts > 3 {
-                                            panic!("Failed to get response text after 3 attempts");
-                                        }
-                                        continue;
-                                    }
-                                }
-                            },
-                            Err(_) => {
-                                if attempts > 3 {
-                                    panic!("Failed to execute request after 3 attempts");
-                                }
-                                continue;
-                            }
-                        }
-                    },
-                    Err(_) => {
-                        if attempts > 3 {
-                            panic!("Failed to build request after 3 attempts");
-                        }
-                        continue;
-                    }
-                }
-            }
+															_ => {
+																log::error!("i113: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i113: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i113: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i113: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i113: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i113: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -42896,68 +44366,74 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
-                                                                        },
-                                                                        _ => {
-                                                                            if attempts > 3 {
-                                                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                            }
-                                                                            continue ;
-                                                                        }
-                                                                    }
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        //panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                                        panic!("Failed to get bid or ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        }
-													//03/02/24 - added else condition
-													} else {
-														log::error!("i113: Failed to get pricebooks as array.");
-														if attempts > 3 {
-															panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+																			},
+																			_ => {
+																				log::error!("i114: Failed to parse json into f64");
+																				if attempts > 3 {
+																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																				}
+																				continue ;
+																			}
+																		}
+																	},
+																	_ => {
+																		log::error!("i114: Failed to get bid price ");
+																		if attempts > 3 {
+																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+																		}
+																		continue ;
+																	}
+																}
+															}
+														//03/02/24 - added else condition
+														} else {
+															log::error!("i114: Failed to get pricebooks as array.");
+															if attempts > 3 {
+																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+															}
+															continue;
 														}
-														continue;
+													},
+													Err(_) => {
+														log::error!("i114: Failed to parse JSON to str");
+														if attempts > 3 {
+															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+														}
+														continue ; // Continue to the next iteration if parsing fails
 													}
-												},
-                                                Err(_) => {
-                                                    if attempts > 3 {
-                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                    }
-                                                    continue ; // Continue to the next iteration if parsing fails
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to get response text after 3 attempts");
-                                            }
-                                            continue ; // Continue to the next iteration if getting response text fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to execute request after 3 attempts");
-                                    }
-                                    continue; // Continue to the next iteration if executing request fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to build request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if building request fails
-                        }
-                    }
-                    if success == true {
-                        break;
-                    }
-                }
+												}
+											},
+											Err(_) => {
+												log::error!("i114: Failed to get response text");
+												if attempts > 3 {
+													panic!("Failed to get response text after 3 attempts");
+												}
+												continue ; // Continue to the next iteration if getting response text fails
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i114: Failed to execute request.");
+										if attempts > 3 {
+											panic!("Failed to execute request after 3 attempts");
+										}
+										continue; // Continue to the next iteration if executing request fails
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i114: Failed to build request");
+								if attempts > 3 {
+									panic!("Failed to build request after 3 attempts");
+								}
+								continue; // Continue to the next iteration if building request fails
+							}
+						}
+						if success == true {
+							break;
+						}
+					}
 
 
 
@@ -43147,67 +44623,73 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                log::info!("state of: coinbase wallet: {}
-                                                                kraken wallet: {}
-                                                                gemini wallet: {}
-                                                                bitstamp wallet: {}
-                                                                coinbase buy price ask: {:?}
-                                                                bitstamp sell price bid: {}", 
-                                                                    &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                    &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
 
 
 
                                                                 success = true;
                                                             },
-                                                            _ => {
-                                                                if attempts > 3 {
-                                                                    panic!("Failed to parse bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                                }
-                                                                continue;
-                                                            }
-                                                        }
-                                                    },
-                                                    _ => {
-                                                        if attempts > 3 {
-                                                            panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                        }
-                                                        continue;
-                                                    }
-                                                }
-                                            },
-                                            Err(_) => {
-                                                if attempts > 3 {
-                                                    panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-                                                }
-                                                continue;
-                                            }
-                                        }
-                                    },
-                                    Err(_) => {
-                                        if attempts > 3 {
-                                            panic!("Failed to get response text after 3 attempts");
-                                        }
-                                        continue;
-                                    }
-                                }
-                            },
-                            Err(_) => {
-                                if attempts > 3 {
-                                    panic!("Failed to execute request after 3 attempts");
-                                }
-                                continue;
-                            }
-                        }
-                    },
-                    Err(_) => {
-                        if attempts > 3 {
-                            panic!("Failed to build request after 3 attempts");
-                        }
-                        continue;
-                    }
-                }
-            }
+															_ => {
+																log::error!("i114: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i114: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i114: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i114: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i114: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i114: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -43426,68 +44908,74 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
-                                                                        },
-                                                                        _ => {
-                                                                            if attempts > 3 {
-                                                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                            }
-                                                                            continue ;
-                                                                        }
-                                                                    }
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        //panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                                        panic!("Failed to get bid or ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        }
-													//03/02/24 - added else condition
-													} else {
-														log::error!("i113: Failed to get pricebooks as array.");
-														if attempts > 3 {
-															panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+																			},
+																			_ => {
+																				log::error!("i115: Failed to parse json into f64");
+																				if attempts > 3 {
+																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																				}
+																				continue ;
+																			}
+																		}
+																	},
+																	_ => {
+																		log::error!("i115: Failed to get bid price ");
+																		if attempts > 3 {
+																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+																		}
+																		continue ;
+																	}
+																}
+															}
+														//03/02/24 - added else condition
+														} else {
+															log::error!("i115: Failed to get pricebooks as array.");
+															if attempts > 3 {
+																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+															}
+															continue;
 														}
-														continue;
+													},
+													Err(_) => {
+														log::error!("i115: Failed to parse JSON to str");
+														if attempts > 3 {
+															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+														}
+														continue ; // Continue to the next iteration if parsing fails
 													}
-												},
-                                                Err(_) => {
-                                                    if attempts > 3 {
-                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                    }
-                                                    continue ; // Continue to the next iteration if parsing fails
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to get response text after 3 attempts");
-                                            }
-                                            continue ; // Continue to the next iteration if getting response text fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to execute request after 3 attempts");
-                                    }
-                                    continue; // Continue to the next iteration if executing request fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to build request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if building request fails
-                        }
-                    }
-                    if success == true {
-                        break;
-                    }
-                }
+												}
+											},
+											Err(_) => {
+												log::error!("i115: Failed to get response text");
+												if attempts > 3 {
+													panic!("Failed to get response text after 3 attempts");
+												}
+												continue ; // Continue to the next iteration if getting response text fails
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i115: Failed to execute request.");
+										if attempts > 3 {
+											panic!("Failed to execute request after 3 attempts");
+										}
+										continue; // Continue to the next iteration if executing request fails
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i115: Failed to build request");
+								if attempts > 3 {
+									panic!("Failed to build request after 3 attempts");
+								}
+								continue; // Continue to the next iteration if building request fails
+							}
+						}
+						if success == true {
+							break;
+						}
+					}
 
 
 
@@ -43677,67 +45165,73 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                log::info!("state of: coinbase wallet: {}
-                                                                kraken wallet: {}
-                                                                gemini wallet: {}
-                                                                bitstamp wallet: {}
-                                                                coinbase buy price ask: {:?}
-                                                                bitstamp sell price bid: {}", 
-                                                                    &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                    &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
 
 
 
                                                                 success = true;
                                                             },
-                                                            _ => {
-                                                                if attempts > 3 {
-                                                                    panic!("Failed to parse bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                                }
-                                                                continue;
-                                                            }
-                                                        }
-                                                    },
-                                                    _ => {
-                                                        if attempts > 3 {
-                                                            panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                        }
-                                                        continue;
-                                                    }
-                                                }
-                                            },
-                                            Err(_) => {
-                                                if attempts > 3 {
-                                                    panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-                                                }
-                                                continue;
-                                            }
-                                        }
-                                    },
-                                    Err(_) => {
-                                        if attempts > 3 {
-                                            panic!("Failed to get response text after 3 attempts");
-                                        }
-                                        continue;
-                                    }
-                                }
-                            },
-                            Err(_) => {
-                                if attempts > 3 {
-                                    panic!("Failed to execute request after 3 attempts");
-                                }
-                                continue;
-                            }
-                        }
-                    },
-                    Err(_) => {
-                        if attempts > 3 {
-                            panic!("Failed to build request after 3 attempts");
-                        }
-                        continue;
-                    }
-                }
-            }
+															_ => {
+																log::error!("i115: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i115: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i115: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i115: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i115: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i115: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -43956,68 +45450,74 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
-                                                                        },
-                                                                        _ => {
-                                                                            if attempts > 3 {
-                                                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                            }
-                                                                            continue ;
-                                                                        }
-                                                                    }
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        //panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                                        panic!("Failed to get bid or ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        }
-													//03/02/24 - added else condition
-													} else {
-														log::error!("i113: Failed to get pricebooks as array.");
-														if attempts > 3 {
-															panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+																			},
+																			_ => {
+																				log::error!("i116: Failed to parse json into f64");
+																				if attempts > 3 {
+																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																				}
+																				continue ;
+																			}
+																		}
+																	},
+																	_ => {
+																		log::error!("i116: Failed to get bid price ");
+																		if attempts > 3 {
+																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+																		}
+																		continue ;
+																	}
+																}
+															}
+														//03/02/24 - added else condition
+														} else {
+															log::error!("i116: Failed to get pricebooks as array.");
+															if attempts > 3 {
+																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+															}
+															continue;
 														}
-														continue;
+													},
+													Err(_) => {
+														log::error!("i116: Failed to parse JSON to str");
+														if attempts > 3 {
+															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+														}
+														continue ; // Continue to the next iteration if parsing fails
 													}
-												},
-                                                Err(_) => {
-                                                    if attempts > 3 {
-                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                    }
-                                                    continue ; // Continue to the next iteration if parsing fails
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to get response text after 3 attempts");
-                                            }
-                                            continue ; // Continue to the next iteration if getting response text fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to execute request after 3 attempts");
-                                    }
-                                    continue; // Continue to the next iteration if executing request fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to build request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if building request fails
-                        }
-                    }
-                    if success == true {
-                        break;
-                    }
-                }
+												}
+											},
+											Err(_) => {
+												log::error!("i116: Failed to get response text");
+												if attempts > 3 {
+													panic!("Failed to get response text after 3 attempts");
+												}
+												continue ; // Continue to the next iteration if getting response text fails
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i116: Failed to execute request.");
+										if attempts > 3 {
+											panic!("Failed to execute request after 3 attempts");
+										}
+										continue; // Continue to the next iteration if executing request fails
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i116: Failed to build request");
+								if attempts > 3 {
+									panic!("Failed to build request after 3 attempts");
+								}
+								continue; // Continue to the next iteration if building request fails
+							}
+						}
+						if success == true {
+							break;
+						}
+					}
 
 
 
@@ -44207,67 +45707,73 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                log::info!("state of: coinbase wallet: {}
-                                                                kraken wallet: {}
-                                                                gemini wallet: {}
-                                                                bitstamp wallet: {}
-                                                                coinbase buy price ask: {:?}
-                                                                bitstamp sell price bid: {}", 
-                                                                    &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                    &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
 
 
 
                                                                 success = true;
                                                             },
-                                                            _ => {
-                                                                if attempts > 3 {
-                                                                    panic!("Failed to parse bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                                }
-                                                                continue;
-                                                            }
-                                                        }
-                                                    },
-                                                    _ => {
-                                                        if attempts > 3 {
-                                                            panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                        }
-                                                        continue;
-                                                    }
-                                                }
-                                            },
-                                            Err(_) => {
-                                                if attempts > 3 {
-                                                    panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-                                                }
-                                                continue;
-                                            }
-                                        }
-                                    },
-                                    Err(_) => {
-                                        if attempts > 3 {
-                                            panic!("Failed to get response text after 3 attempts");
-                                        }
-                                        continue;
-                                    }
-                                }
-                            },
-                            Err(_) => {
-                                if attempts > 3 {
-                                    panic!("Failed to execute request after 3 attempts");
-                                }
-                                continue;
-                            }
-                        }
-                    },
-                    Err(_) => {
-                        if attempts > 3 {
-                            panic!("Failed to build request after 3 attempts");
-                        }
-                        continue;
-                    }
-                }
-            }
+															_ => {
+																log::error!("i116: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i116: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i116: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i116: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i116: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i116: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -44477,77 +45983,83 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                             let asks = &pricebook["asks"][0];
                                                             //let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
                                                             let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-                
+															
                                                             match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
                                                                 (/*Some(bid_str),*/ Some(ask_str)) => {
                                                                     match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
                                                                         (/*Ok(bid_str),*/ Ok(ask_str)) => {
                                                                             //coinbase_sell_price_bid = Some(bid_str);
                                                                             coinbase_buy_price_ask = Some(ask_str);
-            
+																			
                                                                                 success = true;
-                                                                        },
-                                                                        _ => {
-                                                                            if attempts > 3 {
-                                                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                            }
-                                                                            continue ;
-                                                                        }
-                                                                    }
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        //panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                                        panic!("Failed to get bid or ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        }
-													//03/02/24 - added else condition
-													} else {
-														log::error!("i113: Failed to get pricebooks as array.");
-														if attempts > 3 {
-															panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+																			},
+																			_ => {
+																				log::error!("i117: Failed to parse json into f64");
+																				if attempts > 3 {
+																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																				}
+																				continue ;
+																			}
+																		}
+																	},
+																	_ => {
+																		log::error!("i117: Failed to get bid price ");
+																		if attempts > 3 {
+																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+																		}
+																		continue ;
+																	}
+																}
+															}
+														//03/02/24 - added else condition
+														} else {
+															log::error!("i117: Failed to get pricebooks as array.");
+															if attempts > 3 {
+																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+															}
+															continue;
 														}
-														continue;
+													},
+													Err(_) => {
+														log::error!("i117: Failed to parse JSON to str");
+														if attempts > 3 {
+															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+														}
+														continue ; // Continue to the next iteration if parsing fails
 													}
-												},
-                                                Err(_) => {
-                                                    if attempts > 3 {
-                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                    }
-                                                    continue ; // Continue to the next iteration if parsing fails
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to get response text after 3 attempts");
-                                            }
-                                            continue ; // Continue to the next iteration if getting response text fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to execute request after 3 attempts");
-                                    }
-                                    continue; // Continue to the next iteration if executing request fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to build request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if building request fails
-                        }
-                    }
-                    if success == true {
-                        break;
-                    }
-                }
+												}
+											},
+											Err(_) => {
+												log::error!("i117: Failed to get response text");
+												if attempts > 3 {
+													panic!("Failed to get response text after 3 attempts");
+												}
+												continue ; // Continue to the next iteration if getting response text fails
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i117: Failed to execute request.");
+										if attempts > 3 {
+											panic!("Failed to execute request after 3 attempts");
+										}
+										continue; // Continue to the next iteration if executing request fails
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i117: Failed to build request");
+								if attempts > 3 {
+									panic!("Failed to build request after 3 attempts");
+								}
+								continue; // Continue to the next iteration if building request fails
+							}
+						}
+						if success == true {
+							break;
+						}
+					}
 
 
 
@@ -44737,67 +46249,73 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                log::info!("state of: coinbase wallet: {}
-                                                                kraken wallet: {}
-                                                                gemini wallet: {}
-                                                                bitstamp wallet: {}
-                                                                coinbase buy price ask: {:?}
-                                                                bitstamp sell price bid: {}", 
-                                                                    &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                    &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
 
 
 
                                                                 success = true;
                                                             },
-                                                            _ => {
-                                                                if attempts > 3 {
-                                                                    panic!("Failed to parse bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                                }
-                                                                continue;
-                                                            }
-                                                        }
-                                                    },
-                                                    _ => {
-                                                        if attempts > 3 {
-                                                            panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                        }
-                                                        continue;
-                                                    }
-                                                }
-                                            },
-                                            Err(_) => {
-                                                if attempts > 3 {
-                                                    panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-                                                }
-                                                continue;
-                                            }
-                                        }
-                                    },
-                                    Err(_) => {
-                                        if attempts > 3 {
-                                            panic!("Failed to get response text after 3 attempts");
-                                        }
-                                        continue;
-                                    }
-                                }
-                            },
-                            Err(_) => {
-                                if attempts > 3 {
-                                    panic!("Failed to execute request after 3 attempts");
-                                }
-                                continue;
-                            }
-                        }
-                    },
-                    Err(_) => {
-                        if attempts > 3 {
-                            panic!("Failed to build request after 3 attempts");
-                        }
-                        continue;
-                    }
-                }
-            }
+															_ => {
+																log::error!("i117: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i117: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i117: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i117: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i117: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i117: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -45018,6 +46536,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                                 success = true;
                                                                         },
                                                                         _ => {
+																			log::error!("i118: Failed to parse json into f64");
                                                                             if attempts > 3 {
                                                                                 panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
                                                                             }
@@ -45026,9 +46545,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     }
                                                                 },
                                                                 _ => {
+																	log::error!("i118: Failed to get bid price ");
                                                                     if attempts > 3 {
                                                                         //panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                                        panic!("Failed to get bid or ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+                                                                        panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
                                                                     }
                                                                     continue ;
                                                                 }
@@ -45036,7 +46556,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                         }
 													//03/02/24 - added else condition
 													} else {
-														log::error!("i113: Failed to get pricebooks as array.");
+														log::error!("i118: Failed to get pricebooks as array.");
 														if attempts > 3 {
 															panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
 														}
@@ -45044,6 +46564,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 													}
 												},
                                                 Err(_) => {
+													log::error!("i118: Failed to parse JSON to str");
                                                     if attempts > 3 {
                                                         panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
                                                     }
@@ -45052,6 +46573,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                             }
                                         },
                                         Err(_) => {
+											log::error!("i118: Failed to get response text");
                                             if attempts > 3 {
                                                 panic!("Failed to get response text after 3 attempts");
                                             }
@@ -45060,6 +46582,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                     }
                                 },
                                 Err(_) => {
+									log::error!("i118: Failed to execute request.");
                                     if attempts > 3 {
                                         panic!("Failed to execute request after 3 attempts");
                                     }
@@ -45068,6 +46591,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                             }
                         },
                         Err(_) => {
+							log::error!("i118: Failed to build request");
                             if attempts > 3 {
                                 panic!("Failed to build request after 3 attempts");
                             }
@@ -45267,67 +46791,73 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                log::info!("state of: coinbase wallet: {}
-                                                                kraken wallet: {}
-                                                                gemini wallet: {}
-                                                                bitstamp wallet: {}
-                                                                coinbase buy price ask: {:?}
-                                                                bitstamp sell price bid: {}", 
-                                                                    &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                    &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
 
 
 
                                                                 success = true;
                                                             },
-                                                            _ => {
-                                                                if attempts > 3 {
-                                                                    panic!("Failed to parse bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                                }
-                                                                continue;
-                                                            }
-                                                        }
-                                                    },
-                                                    _ => {
-                                                        if attempts > 3 {
-                                                            panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                        }
-                                                        continue;
-                                                    }
-                                                }
-                                            },
-                                            Err(_) => {
-                                                if attempts > 3 {
-                                                    panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-                                                }
-                                                continue;
-                                            }
-                                        }
-                                    },
-                                    Err(_) => {
-                                        if attempts > 3 {
-                                            panic!("Failed to get response text after 3 attempts");
-                                        }
-                                        continue;
-                                    }
-                                }
-                            },
-                            Err(_) => {
-                                if attempts > 3 {
-                                    panic!("Failed to execute request after 3 attempts");
-                                }
-                                continue;
-                            }
-                        }
-                    },
-                    Err(_) => {
-                        if attempts > 3 {
-                            panic!("Failed to build request after 3 attempts");
-                        }
-                        continue;
-                    }
-                }
-            }
+															_ => {
+																log::error!("i118: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i118: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i118: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i118: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i118: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i118: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -45546,68 +47076,74 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
-                                                                        },
-                                                                        _ => {
-                                                                            if attempts > 3 {
-                                                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                            }
-                                                                            continue ;
-                                                                        }
-                                                                    }
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        //panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                                        panic!("Failed to get bid or ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        }
-													//03/02/24 - added else condition
-													} else {
-														log::error!("i113: Failed to get pricebooks as array.");
-														if attempts > 3 {
-															panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+																			},
+																			_ => {
+																				log::error!("i119: Failed to parse json into f64");
+																				if attempts > 3 {
+																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																				}
+																				continue ;
+																			}
+																		}
+																	},
+																	_ => {
+																		log::error!("i119: Failed to get bid price ");
+																		if attempts > 3 {
+																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+																		}
+																		continue ;
+																	}
+																}
+															}
+														//03/02/24 - added else condition
+														} else {
+															log::error!("i119: Failed to get pricebooks as array.");
+															if attempts > 3 {
+																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+															}
+															continue;
 														}
-														continue;
+													},
+													Err(_) => {
+														log::error!("i119: Failed to parse JSON to str");
+														if attempts > 3 {
+															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+														}
+														continue ; // Continue to the next iteration if parsing fails
 													}
-												},
-                                                Err(_) => {
-                                                    if attempts > 3 {
-                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                    }
-                                                    continue ; // Continue to the next iteration if parsing fails
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to get response text after 3 attempts");
-                                            }
-                                            continue ; // Continue to the next iteration if getting response text fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to execute request after 3 attempts");
-                                    }
-                                    continue; // Continue to the next iteration if executing request fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to build request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if building request fails
-                        }
-                    }
-                    if success == true {
-                        break;
-                    }
-                }
+												}
+											},
+											Err(_) => {
+												log::error!("i119: Failed to get response text");
+												if attempts > 3 {
+													panic!("Failed to get response text after 3 attempts");
+												}
+												continue ; // Continue to the next iteration if getting response text fails
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i119: Failed to execute request.");
+										if attempts > 3 {
+											panic!("Failed to execute request after 3 attempts");
+										}
+										continue; // Continue to the next iteration if executing request fails
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i119: Failed to build request");
+								if attempts > 3 {
+									panic!("Failed to build request after 3 attempts");
+								}
+								continue; // Continue to the next iteration if building request fails
+							}
+						}
+						if success == true {
+							break;
+						}
+					}
 
 
 
@@ -45797,67 +47333,73 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                log::info!("state of: coinbase wallet: {}
-                                                                kraken wallet: {}
-                                                                gemini wallet: {}
-                                                                bitstamp wallet: {}
-                                                                coinbase buy price ask: {:?}
-                                                                bitstamp sell price bid: {}", 
-                                                                    &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                    &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
 
 
 
                                                                 success = true;
                                                             },
-                                                            _ => {
-                                                                if attempts > 3 {
-                                                                    panic!("Failed to parse bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                                }
-                                                                continue;
-                                                            }
-                                                        }
-                                                    },
-                                                    _ => {
-                                                        if attempts > 3 {
-                                                            panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                        }
-                                                        continue;
-                                                    }
-                                                }
-                                            },
-                                            Err(_) => {
-                                                if attempts > 3 {
-                                                    panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-                                                }
-                                                continue;
-                                            }
-                                        }
-                                    },
-                                    Err(_) => {
-                                        if attempts > 3 {
-                                            panic!("Failed to get response text after 3 attempts");
-                                        }
-                                        continue;
-                                    }
-                                }
-                            },
-                            Err(_) => {
-                                if attempts > 3 {
-                                    panic!("Failed to execute request after 3 attempts");
-                                }
-                                continue;
-                            }
-                        }
-                    },
-                    Err(_) => {
-                        if attempts > 3 {
-                            panic!("Failed to build request after 3 attempts");
-                        }
-                        continue;
-                    }
-                }
-            }
+															_ => {
+																log::error!("i119: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i119: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i113: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i119: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i119: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i119: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -46076,68 +47618,74 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
-                                                                        },
-                                                                        _ => {
-                                                                            if attempts > 3 {
-                                                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                            }
-                                                                            continue ;
-                                                                        }
-                                                                    }
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        //panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                                        panic!("Failed to get bid or ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        }
-													//03/02/24 - added else condition
-													} else {
-														log::error!("i113: Failed to get pricebooks as array.");
-														if attempts > 3 {
-															panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+																			},
+																			_ => {
+																				log::error!("i120: Failed to parse json into f64");
+																				if attempts > 3 {
+																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																				}
+																				continue ;
+																			}
+																		}
+																	},
+																	_ => {
+																		log::error!("i120: Failed to get bid price ");
+																		if attempts > 3 {
+																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+																		}
+																		continue ;
+																	}
+																}
+															}
+														//03/02/24 - added else condition
+														} else {
+															log::error!("i120: Failed to get pricebooks as array.");
+															if attempts > 3 {
+																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+															}
+															continue;
 														}
-														continue;
+													},
+													Err(_) => {
+														log::error!("i120: Failed to parse JSON to str");
+														if attempts > 3 {
+															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+														}
+														continue ; // Continue to the next iteration if parsing fails
 													}
-												},
-                                                Err(_) => {
-                                                    if attempts > 3 {
-                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                    }
-                                                    continue ; // Continue to the next iteration if parsing fails
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to get response text after 3 attempts");
-                                            }
-                                            continue ; // Continue to the next iteration if getting response text fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to execute request after 3 attempts");
-                                    }
-                                    continue; // Continue to the next iteration if executing request fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to build request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if building request fails
-                        }
-                    }
-                    if success == true {
-                        break;
-                    }
-                }
+												}
+											},
+											Err(_) => {
+												log::error!("i120: Failed to get response text");
+												if attempts > 3 {
+													panic!("Failed to get response text after 3 attempts");
+												}
+												continue ; // Continue to the next iteration if getting response text fails
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i120: Failed to execute request.");
+										if attempts > 3 {
+											panic!("Failed to execute request after 3 attempts");
+										}
+										continue; // Continue to the next iteration if executing request fails
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i120: Failed to build request");
+								if attempts > 3 {
+									panic!("Failed to build request after 3 attempts");
+								}
+								continue; // Continue to the next iteration if building request fails
+							}
+						}
+						if success == true {
+							break;
+						}
+					}
 
 
 
@@ -46327,67 +47875,73 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                log::info!("state of: coinbase wallet: {}
-                                                                kraken wallet: {}
-                                                                gemini wallet: {}
-                                                                bitstamp wallet: {}
-                                                                coinbase buy price ask: {:?}
-                                                                bitstamp sell price bid: {}", 
-                                                                    &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                    &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
 
 
 
                                                                 success = true;
                                                             },
-                                                            _ => {
-                                                                if attempts > 3 {
-                                                                    panic!("Failed to parse bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                                }
-                                                                continue;
-                                                            }
-                                                        }
-                                                    },
-                                                    _ => {
-                                                        if attempts > 3 {
-                                                            panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-                                                        }
-                                                        continue;
-                                                    }
-                                                }
-                                            },
-                                            Err(_) => {
-                                                if attempts > 3 {
-                                                    panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-                                                }
-                                                continue;
-                                            }
-                                        }
-                                    },
-                                    Err(_) => {
-                                        if attempts > 3 {
-                                            panic!("Failed to get response text after 3 attempts");
-                                        }
-                                        continue;
-                                    }
-                                }
-                            },
-                            Err(_) => {
-                                if attempts > 3 {
-                                    panic!("Failed to execute request after 3 attempts");
-                                }
-                                continue;
-                            }
-                        }
-                    },
-                    Err(_) => {
-                        if attempts > 3 {
-                            panic!("Failed to build request after 3 attempts");
-                        }
-                        continue;
-                    }
-                }
-            }
+															_ => {
+																log::error!("i120: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i120: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i120: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i120: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i120: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i120: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -46494,28 +48048,89 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let gemini_cache_control = "no-cache";
             let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
             
-            let gemini_request = client.get(gemini_url)
-                    .header("Content-Type", gemini_content_type)
-                    .header("Content-Length", gemini_content_length)
-                    .header("X-GEMINI-APIKEY", gemini_api_key)
-                    .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-                    .header("X-GEMINI-SIGNATURE", &gemini_signature)
-                    .header("Cache-Control", gemini_cache_control)
-                    .build()
-                    .expect("couldn't build gemini request");
+			//03/05/24 - removed:
+            // let gemini_request = client.get(gemini_url)
+            //         .header("Content-Type", gemini_content_type)
+            //         .header("Content-Length", gemini_content_length)
+            //         .header("X-GEMINI-APIKEY", gemini_api_key)
+            //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+            //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+            //         .header("Cache-Control", gemini_cache_control)
+            //         .build()
+            //         .expect("couldn't build gemini request");
+            // let gemini_response = client.execute(gemini_request).await
+            //                         .expect("Failed to execute Gemini request");
+            // let gemini_response_text = gemini_response.text().await
+            //                         .expect("Failed to turn response into text");
+            // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+            //                         .expect("Failed to parse JSON");
+            // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+            // //CAN ONLY BUY. NOT SELL
+            // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+            // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
         
-        
-            let gemini_response = client.execute(gemini_request).await
-                                    .expect("Failed to execute Gemini request");
-            let gemini_response_text = gemini_response.text().await
-                                    .expect("Failed to turn response into text");
-            let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                    .expect("Failed to parse JSON");
-            let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-            //CAN ONLY BUY. NOT SELL
-            let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-            //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
-        
+
+
+
+	//03/05/24 - added:
+		let mut attempts = 0;
+		let gemini_buy_ask: Option<f64>;
+		loop {
+			let gemini_request = client.get(gemini_url)
+				.header("Content-Type", gemini_content_type)
+				.header("Content-Length", gemini_content_length)
+				.header("X-GEMINI-APIKEY", gemini_api_key)
+				.header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+				.header("X-GEMINI-SIGNATURE", &gemini_signature)
+				.header("Cache-Control", gemini_cache_control)
+				.build();
+
+			match gemini_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							let gemini_response_text = response.text().await;
+							match gemini_response_text {
+								Ok(text) => {
+									match serde_json::from_str::<Value>(&text) {
+										Ok(value) => {
+											match value["ask"].as_str() {
+												Some(ask_str) => {
+													match ask_str.parse::<f64>() {
+														Ok(ask) => {
+															gemini_buy_ask = Some(ask);
+															break; // Exit the loop if everything is successful
+														},
+														Err(_) => log::error!("i123: Failed to parse ask as f64"),
+													}
+												},
+												None => log::error!("i123: Failed to get ask as string"),
+											}
+										},
+										Err(_) => log::error!("i123: Failed to parse JSON"),
+									}
+								},
+								Err(_) => log::error!("i123: Failed to turn response into text"),
+							}
+						},
+						Err(_) => log::error!("i123: Failed to execute Gemini request"),
+					}
+				},
+				Err(_) => log::error!("i123: Couldn't build gemini request"),
+			}
+
+			attempts += 1;
+			//03/02/24 - changed from >= to >
+			if attempts > 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+
+
+
+
 
 
 
@@ -46570,77 +48185,254 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-            let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-                .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-                .header("X-Auth-Signature", bitstamp_signature)
-                .header("X-Auth-Nonce", bitstamp_nonce)
-                .header("X-Auth-Timestamp", bitstamp_timestamp)
-                .header("X-Auth-Version", "v2")
-                //.header("Content-Type", content_type)
-                //.body(payload_string)
-                .build()
-                .expect("\ncould not build bitstamp_request");
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
 
-            let bitstamp_response = client.execute(bitstamp_request).await
-                .expect("Failed to execute Bitstamp request");
-            let bitstamp_response_text = bitstamp_response.text().await
-                .expect("Failed to turn response into text");
-            //probably dont need "bitstamp" once we transfer this to the actual function
-            let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-            .expect("Failed to parse JSON");
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
 
-            // Extract the bid and ask values
-            let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-            let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-            println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-            println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // println!("Bitstamp:\n{:?}", bitstamp_response_text);
 
 
-                //gemini calculations for buy 
-                    //this should equal 0.4%
-                    let gemini_taker_fee = 0.004;
-                    let fraction_of_wallet_im_using = 0.03;
 
-                    let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                    let fee_for_purchase = total_spent*gemini_taker_fee;
-                    let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                    //new state of gemini wallet below
-                    *gemini_wallet -= total_spent;
-                    let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+
+																let gemini_taker_fee = 0.004;
+																let fraction_of_wallet_im_using = 0.03; // aka 3 percent
+																let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+																let fee_for_purchase = total_spent*gemini_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																//new state of gemini wallet below
+																*gemini_wallet -= total_spent;
+
+
+                                                                let amount_of_xrp = 
+                                                                money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                gemini_buy_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &gemini_buy_ask));
+
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 61, 64
+                                                                let indices = [60, 64, 62];
+                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i123: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i123: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i123: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i123: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i123: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i123: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: gemini_buy_ask = {:?}", attempts, gemini_buy_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //         //gemini calculations for buy 
+        //             //this should equal 0.4%
+        //             let gemini_taker_fee = 0.004;
+        //             let fraction_of_wallet_im_using = 0.03;
+
+        //             let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+        //             let fee_for_purchase = total_spent*gemini_taker_fee;
+        //             let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //             //new state of gemini wallet below
+        //             *gemini_wallet -= total_spent;
+        //             let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
         
 
-                //bitstamp calculations - sell
-                    let bitstamp_taker_fee = 0.004;
-                    let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-                    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                    *bitstamp_wallet += money_from_sell_after_fees;
+        //         //bitstamp calculations - sell
+        //             let bitstamp_taker_fee = 0.004;
+        //             let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //             let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //             let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //             *bitstamp_wallet += money_from_sell_after_fees;
 
-                    //this will count as value after
-                    let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                    //println!("value after:\n\t{}",value_after);
+        //             //this will count as value after
+        //             let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+        //             //println!("value after:\n\t{}",value_after);
         
     
-                    //value_after = 60
-                    //coinbase = 61
-                    //bitstamp = 62
-                    //kraken = 63
-                    //gemini = 64
-                    //since this is bitstamp and gemini being updated, I will update:
-                    //  60, 62, 64
-                    let indices = [60, 62, 64];
-                    let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                    //01/24/24 - removed and added:
-                        //neural_network.update_input(&indices, &new_values);
-                        //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                        //neural_network.update_input(&indices, &transformed_values).await;
-                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                        neural_network.update_input(&indices, &scaled_values).await;
+        //             //value_after = 60
+        //             //coinbase = 61
+        //             //bitstamp = 62
+        //             //kraken = 63
+        //             //gemini = 64
+        //             //since this is bitstamp and gemini being updated, I will update:
+        //             //  60, 62, 64
+        //             let indices = [60, 62, 64];
+        //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+        //             //01/24/24 - removed and added:
+        //                 //neural_network.update_input(&indices, &new_values);
+        //                 //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //                 //neural_network.update_input(&indices, &transformed_values).await;
+        //                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //                 neural_network.update_input(&indices, &scaled_values).await;
     
         
-        return Ok(value_after)
+        // return Ok(value_after)
     }
 
     pub async fn s_i124_xrp_4_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
@@ -46676,28 +48468,90 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let gemini_cache_control = "no-cache";
             let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
             
-            let gemini_request = client.get(gemini_url)
-                    .header("Content-Type", gemini_content_type)
-                    .header("Content-Length", gemini_content_length)
-                    .header("X-GEMINI-APIKEY", gemini_api_key)
-                    .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-                    .header("X-GEMINI-SIGNATURE", &gemini_signature)
-                    .header("Cache-Control", gemini_cache_control)
-                    .build()
-                    .expect("couldn't build gemini request");
+			//03/05/24 - removed:
+            // let gemini_request = client.get(gemini_url)
+            //         .header("Content-Type", gemini_content_type)
+            //         .header("Content-Length", gemini_content_length)
+            //         .header("X-GEMINI-APIKEY", gemini_api_key)
+            //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+            //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+            //         .header("Cache-Control", gemini_cache_control)
+            //         .build()
+            //         .expect("couldn't build gemini request");
+            // let gemini_response = client.execute(gemini_request).await
+            //                         .expect("Failed to execute Gemini request");
+            // let gemini_response_text = gemini_response.text().await
+            //                         .expect("Failed to turn response into text");
+            // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+            //                         .expect("Failed to parse JSON");
+            // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+            // //CAN ONLY BUY. NOT SELL
+            // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+            // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
         
-        
-            let gemini_response = client.execute(gemini_request).await
-                                    .expect("Failed to execute Gemini request");
-            let gemini_response_text = gemini_response.text().await
-                                    .expect("Failed to turn response into text");
-            let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                    .expect("Failed to parse JSON");
-            let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-            //CAN ONLY BUY. NOT SELL
-            let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-            //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
-        
+
+
+
+	//03/05/24 - added:
+		let mut attempts = 0;
+		let gemini_buy_ask: Option<f64>;
+		loop {
+			let gemini_request = client.get(gemini_url)
+				.header("Content-Type", gemini_content_type)
+				.header("Content-Length", gemini_content_length)
+				.header("X-GEMINI-APIKEY", gemini_api_key)
+				.header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+				.header("X-GEMINI-SIGNATURE", &gemini_signature)
+				.header("Cache-Control", gemini_cache_control)
+				.build();
+
+			match gemini_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							let gemini_response_text = response.text().await;
+							match gemini_response_text {
+								Ok(text) => {
+									match serde_json::from_str::<Value>(&text) {
+										Ok(value) => {
+											match value["ask"].as_str() {
+												Some(ask_str) => {
+													match ask_str.parse::<f64>() {
+														Ok(ask) => {
+															gemini_buy_ask = Some(ask);
+															break; // Exit the loop if everything is successful
+														},
+														Err(_) => log::error!("i124: Failed to parse ask as f64"),
+													}
+												},
+												None => log::error!("i124: Failed to get ask as string"),
+											}
+										},
+										Err(_) => log::error!("i124: Failed to parse JSON"),
+									}
+								},
+								Err(_) => log::error!("i124: Failed to turn response into text"),
+							}
+						},
+						Err(_) => log::error!("i124: Failed to execute Gemini request"),
+					}
+				},
+				Err(_) => log::error!("i124: Couldn't build gemini request"),
+			}
+
+			attempts += 1;
+			//03/02/24 - changed from >= to >
+			if attempts > 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+
+
+
+
+
 
 
 
@@ -46751,77 +48605,254 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-            let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-                .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-                .header("X-Auth-Signature", bitstamp_signature)
-                .header("X-Auth-Nonce", bitstamp_nonce)
-                .header("X-Auth-Timestamp", bitstamp_timestamp)
-                .header("X-Auth-Version", "v2")
-                //.header("Content-Type", content_type)
-                //.body(payload_string)
-                .build()
-                .expect("\ncould not build bitstamp_request");
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
 
-            let bitstamp_response = client.execute(bitstamp_request).await
-                .expect("Failed to execute Bitstamp request");
-            let bitstamp_response_text = bitstamp_response.text().await
-                .expect("Failed to turn response into text");
-            //probably dont need "bitstamp" once we transfer this to the actual function
-            let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-            .expect("Failed to parse JSON");
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
 
-            // Extract the bid and ask values
-            let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-            let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-            println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-            println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // println!("Bitstamp:\n{:?}", bitstamp_response_text);
 
 
-                //gemini calculations for buy 
-                    //this should equal 0.4%
-                    let gemini_taker_fee = 0.004;
-                    let fraction_of_wallet_im_using = 0.04;
 
-                    let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                    let fee_for_purchase = total_spent*gemini_taker_fee;
-                    let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                    //new state of gemini wallet below
-                    *gemini_wallet -= total_spent;
-                    let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+
+																let gemini_taker_fee = 0.004;
+																let fraction_of_wallet_im_using = 0.04; // aka 4 percent
+																let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+																let fee_for_purchase = total_spent*gemini_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																//new state of gemini wallet below
+																*gemini_wallet -= total_spent;
+
+
+                                                                let amount_of_xrp = 
+                                                                money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                gemini_buy_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &gemini_buy_ask));
+
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 64, 62
+                                                                let indices = [60, 64, 62];
+                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i124: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i124: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i124: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i124: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i124: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i124: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: gemini_buy_ask = {:?}", attempts, gemini_buy_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //         //gemini calculations for buy 
+        //             //this should equal 0.4%
+        //             let gemini_taker_fee = 0.004;
+        //             let fraction_of_wallet_im_using = 0.03;
+
+        //             let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+        //             let fee_for_purchase = total_spent*gemini_taker_fee;
+        //             let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //             //new state of gemini wallet below
+        //             *gemini_wallet -= total_spent;
+        //             let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
         
 
-                //bitstamp calculations - sell
-                    let bitstamp_taker_fee = 0.004;
-                    let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-                    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                    *bitstamp_wallet += money_from_sell_after_fees;
+        //         //bitstamp calculations - sell
+        //             let bitstamp_taker_fee = 0.004;
+        //             let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //             let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //             let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //             *bitstamp_wallet += money_from_sell_after_fees;
 
-                    //this will count as value after
-                    let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                    //println!("value after:\n\t{}",value_after);
+        //             //this will count as value after
+        //             let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+        //             //println!("value after:\n\t{}",value_after);
         
     
-                    //value_after = 60
-                    //coinbase = 61
-                    //bitstamp = 62
-                    //kraken = 63
-                    //gemini = 64
-                    //since this is bitstamp and gemini being updated, I will update:
-                    //  60, 62, 64
-                    let indices = [60, 62, 64];
-                    let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                    //01/24/24 - removed and added:
-                        //neural_network.update_input(&indices, &new_values);
-                        //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                        //neural_network.update_input(&indices, &transformed_values).await;
-                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                        neural_network.update_input(&indices, &scaled_values).await;
+        //             //value_after = 60
+        //             //coinbase = 61
+        //             //bitstamp = 62
+        //             //kraken = 63
+        //             //gemini = 64
+        //             //since this is bitstamp and gemini being updated, I will update:
+        //             //  60, 62, 64
+        //             let indices = [60, 62, 64];
+        //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+        //             //01/24/24 - removed and added:
+        //                 //neural_network.update_input(&indices, &new_values);
+        //                 //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //                 //neural_network.update_input(&indices, &transformed_values).await;
+        //                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //                 neural_network.update_input(&indices, &scaled_values).await;
     
         
-        return Ok(value_after)
+        // return Ok(value_after)
     }
 
     pub async fn s_i125_xrp_5_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
@@ -46857,28 +48888,90 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let gemini_cache_control = "no-cache";
             let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
             
-            let gemini_request = client.get(gemini_url)
-                    .header("Content-Type", gemini_content_type)
-                    .header("Content-Length", gemini_content_length)
-                    .header("X-GEMINI-APIKEY", gemini_api_key)
-                    .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-                    .header("X-GEMINI-SIGNATURE", &gemini_signature)
-                    .header("Cache-Control", gemini_cache_control)
-                    .build()
-                    .expect("couldn't build gemini request");
+			//03/05/24 - removed:
+            // let gemini_request = client.get(gemini_url)
+            //         .header("Content-Type", gemini_content_type)
+            //         .header("Content-Length", gemini_content_length)
+            //         .header("X-GEMINI-APIKEY", gemini_api_key)
+            //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+            //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+            //         .header("Cache-Control", gemini_cache_control)
+            //         .build()
+            //         .expect("couldn't build gemini request");
+            // let gemini_response = client.execute(gemini_request).await
+            //                         .expect("Failed to execute Gemini request");
+            // let gemini_response_text = gemini_response.text().await
+            //                         .expect("Failed to turn response into text");
+            // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+            //                         .expect("Failed to parse JSON");
+            // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+            // //CAN ONLY BUY. NOT SELL
+            // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+            // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
         
-        
-            let gemini_response = client.execute(gemini_request).await
-                                    .expect("Failed to execute Gemini request");
-            let gemini_response_text = gemini_response.text().await
-                                    .expect("Failed to turn response into text");
-            let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                    .expect("Failed to parse JSON");
-            let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-            //CAN ONLY BUY. NOT SELL
-            let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-            //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
-        
+
+
+
+	//03/05/24 - added:
+		let mut attempts = 0;
+		let gemini_buy_ask: Option<f64>;
+		loop {
+			let gemini_request = client.get(gemini_url)
+				.header("Content-Type", gemini_content_type)
+				.header("Content-Length", gemini_content_length)
+				.header("X-GEMINI-APIKEY", gemini_api_key)
+				.header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+				.header("X-GEMINI-SIGNATURE", &gemini_signature)
+				.header("Cache-Control", gemini_cache_control)
+				.build();
+
+			match gemini_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							let gemini_response_text = response.text().await;
+							match gemini_response_text {
+								Ok(text) => {
+									match serde_json::from_str::<Value>(&text) {
+										Ok(value) => {
+											match value["ask"].as_str() {
+												Some(ask_str) => {
+													match ask_str.parse::<f64>() {
+														Ok(ask) => {
+															gemini_buy_ask = Some(ask);
+															break; // Exit the loop if everything is successful
+														},
+														Err(_) => log::error!("i125: Failed to parse ask as f64"),
+													}
+												},
+												None => log::error!("i125: Failed to get ask as string"),
+											}
+										},
+										Err(_) => log::error!("i125: Failed to parse JSON"),
+									}
+								},
+								Err(_) => log::error!("i125: Failed to turn response into text"),
+							}
+						},
+						Err(_) => log::error!("i125: Failed to execute Gemini request"),
+					}
+				},
+				Err(_) => log::error!("i125: Couldn't build gemini request"),
+			}
+
+			attempts += 1;
+			//03/02/24 - changed from >= to >
+			if attempts > 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+
+
+
+
+
 
 
 
@@ -46932,77 +49025,252 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-            let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-                .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-                .header("X-Auth-Signature", bitstamp_signature)
-                .header("X-Auth-Nonce", bitstamp_nonce)
-                .header("X-Auth-Timestamp", bitstamp_timestamp)
-                .header("X-Auth-Version", "v2")
-                //.header("Content-Type", content_type)
-                //.body(payload_string)
-                .build()
-                .expect("\ncould not build bitstamp_request");
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
 
-            let bitstamp_response = client.execute(bitstamp_request).await
-                .expect("Failed to execute Bitstamp request");
-            let bitstamp_response_text = bitstamp_response.text().await
-                .expect("Failed to turn response into text");
-            //probably dont need "bitstamp" once we transfer this to the actual function
-            let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-            .expect("Failed to parse JSON");
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
 
-            // Extract the bid and ask values
-            let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-            let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-            println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-            println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // println!("Bitstamp:\n{:?}", bitstamp_response_text);
 
 
-                //gemini calculations for buy 
-                    //this should equal 0.4%
-                    let gemini_taker_fee = 0.004;
-                    let fraction_of_wallet_im_using = 0.05;
 
-                    let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                    let fee_for_purchase = total_spent*gemini_taker_fee;
-                    let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                    //new state of gemini wallet below
-                    *gemini_wallet -= total_spent;
-                    let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+																let gemini_taker_fee = 0.004;
+																let fraction_of_wallet_im_using = 0.05; // aka 5 percent
+																let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+																let fee_for_purchase = total_spent*gemini_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																//new state of gemini wallet below
+																*gemini_wallet -= total_spent;
+
+                                                                let amount_of_xrp = 
+                                                                money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                gemini_buy_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &gemini_buy_ask));
+
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 61, 64
+                                                                let indices = [60, 64, 62];
+                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i125: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i125: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i125: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i125: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i125: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i125: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: gemini_buy_ask = {:?}", attempts, gemini_buy_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //         //gemini calculations for buy 
+        //             //this should equal 0.4%
+        //             let gemini_taker_fee = 0.004;
+        //             let fraction_of_wallet_im_using = 0.03;
+
+        //             let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+        //             let fee_for_purchase = total_spent*gemini_taker_fee;
+        //             let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //             //new state of gemini wallet below
+        //             *gemini_wallet -= total_spent;
+        //             let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
         
 
-                //bitstamp calculations - sell
-                    let bitstamp_taker_fee = 0.004;
-                    let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-                    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                    *bitstamp_wallet += money_from_sell_after_fees;
+        //         //bitstamp calculations - sell
+        //             let bitstamp_taker_fee = 0.004;
+        //             let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //             let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //             let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //             *bitstamp_wallet += money_from_sell_after_fees;
 
-                    //this will count as value after
-                    let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                    //println!("value after:\n\t{}",value_after);
+        //             //this will count as value after
+        //             let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+        //             //println!("value after:\n\t{}",value_after);
         
     
-                    //value_after = 60
-                    //coinbase = 61
-                    //bitstamp = 62
-                    //kraken = 63
-                    //gemini = 64
-                    //since this is bitstamp and gemini being updated, I will update:
-                    //  60, 62, 64
-                    let indices = [60, 62, 64];
-                    let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                    //01/24/24 - removed and added:
-                        //neural_network.update_input(&indices, &new_values);
-                        //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                        //neural_network.update_input(&indices, &transformed_values).await;
-                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                        neural_network.update_input(&indices, &scaled_values).await;
+        //             //value_after = 60
+        //             //coinbase = 61
+        //             //bitstamp = 62
+        //             //kraken = 63
+        //             //gemini = 64
+        //             //since this is bitstamp and gemini being updated, I will update:
+        //             //  60, 62, 64
+        //             let indices = [60, 62, 64];
+        //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+        //             //01/24/24 - removed and added:
+        //                 //neural_network.update_input(&indices, &new_values);
+        //                 //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //                 //neural_network.update_input(&indices, &transformed_values).await;
+        //                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //                 neural_network.update_input(&indices, &scaled_values).await;
     
         
-        return Ok(value_after)
+        // return Ok(value_after)
     }
 
     pub async fn s_i126_xrp_6_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
@@ -47038,28 +49306,90 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let gemini_cache_control = "no-cache";
             let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
             
-            let gemini_request = client.get(gemini_url)
-                    .header("Content-Type", gemini_content_type)
-                    .header("Content-Length", gemini_content_length)
-                    .header("X-GEMINI-APIKEY", gemini_api_key)
-                    .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-                    .header("X-GEMINI-SIGNATURE", &gemini_signature)
-                    .header("Cache-Control", gemini_cache_control)
-                    .build()
-                    .expect("couldn't build gemini request");
+			//03/05/24 - removed:
+            // let gemini_request = client.get(gemini_url)
+            //         .header("Content-Type", gemini_content_type)
+            //         .header("Content-Length", gemini_content_length)
+            //         .header("X-GEMINI-APIKEY", gemini_api_key)
+            //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+            //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+            //         .header("Cache-Control", gemini_cache_control)
+            //         .build()
+            //         .expect("couldn't build gemini request");
+            // let gemini_response = client.execute(gemini_request).await
+            //                         .expect("Failed to execute Gemini request");
+            // let gemini_response_text = gemini_response.text().await
+            //                         .expect("Failed to turn response into text");
+            // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+            //                         .expect("Failed to parse JSON");
+            // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+            // //CAN ONLY BUY. NOT SELL
+            // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+            // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
         
-        
-            let gemini_response = client.execute(gemini_request).await
-                                    .expect("Failed to execute Gemini request");
-            let gemini_response_text = gemini_response.text().await
-                                    .expect("Failed to turn response into text");
-            let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                    .expect("Failed to parse JSON");
-            let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-            //CAN ONLY BUY. NOT SELL
-            let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-            //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
-        
+
+
+
+	//03/05/24 - added:
+		let mut attempts = 0;
+		let gemini_buy_ask: Option<f64>;
+		loop {
+			let gemini_request = client.get(gemini_url)
+				.header("Content-Type", gemini_content_type)
+				.header("Content-Length", gemini_content_length)
+				.header("X-GEMINI-APIKEY", gemini_api_key)
+				.header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+				.header("X-GEMINI-SIGNATURE", &gemini_signature)
+				.header("Cache-Control", gemini_cache_control)
+				.build();
+
+			match gemini_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							let gemini_response_text = response.text().await;
+							match gemini_response_text {
+								Ok(text) => {
+									match serde_json::from_str::<Value>(&text) {
+										Ok(value) => {
+											match value["ask"].as_str() {
+												Some(ask_str) => {
+													match ask_str.parse::<f64>() {
+														Ok(ask) => {
+															gemini_buy_ask = Some(ask);
+															break; // Exit the loop if everything is successful
+														},
+														Err(_) => log::error!("i126: Failed to parse ask as f64"),
+													}
+												},
+												None => log::error!("i126: Failed to get ask as string"),
+											}
+										},
+										Err(_) => log::error!("i126: Failed to parse JSON"),
+									}
+								},
+								Err(_) => log::error!("i126: Failed to turn response into text"),
+							}
+						},
+						Err(_) => log::error!("i126: Failed to execute Gemini request"),
+					}
+				},
+				Err(_) => log::error!("i126: Couldn't build gemini request"),
+			}
+
+			attempts += 1;
+			//03/02/24 - changed from >= to >
+			if attempts > 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+
+
+
+
+
 
 
 
@@ -47113,77 +49443,254 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-            let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-                .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-                .header("X-Auth-Signature", bitstamp_signature)
-                .header("X-Auth-Nonce", bitstamp_nonce)
-                .header("X-Auth-Timestamp", bitstamp_timestamp)
-                .header("X-Auth-Version", "v2")
-                //.header("Content-Type", content_type)
-                //.body(payload_string)
-                .build()
-                .expect("\ncould not build bitstamp_request");
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
 
-            let bitstamp_response = client.execute(bitstamp_request).await
-                .expect("Failed to execute Bitstamp request");
-            let bitstamp_response_text = bitstamp_response.text().await
-                .expect("Failed to turn response into text");
-            //probably dont need "bitstamp" once we transfer this to the actual function
-            let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-            .expect("Failed to parse JSON");
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
 
-            // Extract the bid and ask values
-            let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-            let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-            println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-            println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // println!("Bitstamp:\n{:?}", bitstamp_response_text);
 
 
-                //gemini calculations for buy 
-                    //this should equal 0.4%
-                    let gemini_taker_fee = 0.004;
-                    let fraction_of_wallet_im_using = 0.06;
 
-                    let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                    let fee_for_purchase = total_spent*gemini_taker_fee;
-                    let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                    //new state of gemini wallet below
-                    *gemini_wallet -= total_spent;
-                    let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+
+																let gemini_taker_fee = 0.004;
+																let fraction_of_wallet_im_using = 0.06; // aka 6 percent
+																let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+																let fee_for_purchase = total_spent*gemini_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																//new state of gemini wallet below
+																*gemini_wallet -= total_spent;
+
+
+                                                                let amount_of_xrp = 
+                                                                money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                gemini_buy_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &gemini_buy_ask));
+
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 61, 64
+                                                                let indices = [60, 64, 62];
+                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i126: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i126: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i126: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i126: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i126: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i126: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: gemini_buy_ask = {:?}", attempts, gemini_buy_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //         //gemini calculations for buy 
+        //             //this should equal 0.4%
+        //             let gemini_taker_fee = 0.004;
+        //             let fraction_of_wallet_im_using = 0.03;
+
+        //             let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+        //             let fee_for_purchase = total_spent*gemini_taker_fee;
+        //             let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //             //new state of gemini wallet below
+        //             *gemini_wallet -= total_spent;
+        //             let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
         
 
-                //bitstamp calculations - sell
-                    let bitstamp_taker_fee = 0.004;
-                    let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-                    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                    *bitstamp_wallet += money_from_sell_after_fees;
+        //         //bitstamp calculations - sell
+        //             let bitstamp_taker_fee = 0.004;
+        //             let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //             let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //             let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //             *bitstamp_wallet += money_from_sell_after_fees;
 
-                    //this will count as value after
-                    let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                    //println!("value after:\n\t{}",value_after);
+        //             //this will count as value after
+        //             let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+        //             //println!("value after:\n\t{}",value_after);
         
     
-                    //value_after = 60
-                    //coinbase = 61
-                    //bitstamp = 62
-                    //kraken = 63
-                    //gemini = 64
-                    //since this is bitstamp and gemini being updated, I will update:
-                    //  60, 62, 64
-                    let indices = [60, 62, 64];
-                    let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                    //01/24/24 - removed and added:
-                        //neural_network.update_input(&indices, &new_values);
-                        //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                        //neural_network.update_input(&indices, &transformed_values).await;
-                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                        neural_network.update_input(&indices, &scaled_values).await;
+        //             //value_after = 60
+        //             //coinbase = 61
+        //             //bitstamp = 62
+        //             //kraken = 63
+        //             //gemini = 64
+        //             //since this is bitstamp and gemini being updated, I will update:
+        //             //  60, 62, 64
+        //             let indices = [60, 62, 64];
+        //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+        //             //01/24/24 - removed and added:
+        //                 //neural_network.update_input(&indices, &new_values);
+        //                 //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //                 //neural_network.update_input(&indices, &transformed_values).await;
+        //                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //                 neural_network.update_input(&indices, &scaled_values).await;
     
         
-        return Ok(value_after)
+        // return Ok(value_after)
     }
 
     pub async fn s_i127_xrp_7_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
@@ -47219,28 +49726,90 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let gemini_cache_control = "no-cache";
             let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
             
-            let gemini_request = client.get(gemini_url)
-                    .header("Content-Type", gemini_content_type)
-                    .header("Content-Length", gemini_content_length)
-                    .header("X-GEMINI-APIKEY", gemini_api_key)
-                    .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-                    .header("X-GEMINI-SIGNATURE", &gemini_signature)
-                    .header("Cache-Control", gemini_cache_control)
-                    .build()
-                    .expect("couldn't build gemini request");
+			//03/05/24 - removed:
+            // let gemini_request = client.get(gemini_url)
+            //         .header("Content-Type", gemini_content_type)
+            //         .header("Content-Length", gemini_content_length)
+            //         .header("X-GEMINI-APIKEY", gemini_api_key)
+            //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+            //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+            //         .header("Cache-Control", gemini_cache_control)
+            //         .build()
+            //         .expect("couldn't build gemini request");
+            // let gemini_response = client.execute(gemini_request).await
+            //                         .expect("Failed to execute Gemini request");
+            // let gemini_response_text = gemini_response.text().await
+            //                         .expect("Failed to turn response into text");
+            // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+            //                         .expect("Failed to parse JSON");
+            // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+            // //CAN ONLY BUY. NOT SELL
+            // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+            // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
         
-        
-            let gemini_response = client.execute(gemini_request).await
-                                    .expect("Failed to execute Gemini request");
-            let gemini_response_text = gemini_response.text().await
-                                    .expect("Failed to turn response into text");
-            let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                    .expect("Failed to parse JSON");
-            let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-            //CAN ONLY BUY. NOT SELL
-            let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-            //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
-        
+
+
+
+	//03/05/24 - added:
+		let mut attempts = 0;
+		let gemini_buy_ask: Option<f64>;
+		loop {
+			let gemini_request = client.get(gemini_url)
+				.header("Content-Type", gemini_content_type)
+				.header("Content-Length", gemini_content_length)
+				.header("X-GEMINI-APIKEY", gemini_api_key)
+				.header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+				.header("X-GEMINI-SIGNATURE", &gemini_signature)
+				.header("Cache-Control", gemini_cache_control)
+				.build();
+
+			match gemini_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							let gemini_response_text = response.text().await;
+							match gemini_response_text {
+								Ok(text) => {
+									match serde_json::from_str::<Value>(&text) {
+										Ok(value) => {
+											match value["ask"].as_str() {
+												Some(ask_str) => {
+													match ask_str.parse::<f64>() {
+														Ok(ask) => {
+															gemini_buy_ask = Some(ask);
+															break; // Exit the loop if everything is successful
+														},
+														Err(_) => log::error!("i127: Failed to parse ask as f64"),
+													}
+												},
+												None => log::error!("i127: Failed to get ask as string"),
+											}
+										},
+										Err(_) => log::error!("i127: Failed to parse JSON"),
+									}
+								},
+								Err(_) => log::error!("i127: Failed to turn response into text"),
+							}
+						},
+						Err(_) => log::error!("i127: Failed to execute Gemini request"),
+					}
+				},
+				Err(_) => log::error!("i127: Couldn't build gemini request"),
+			}
+
+			attempts += 1;
+			//03/02/24 - changed from >= to >
+			if attempts > 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+
+
+
+
+
 
 
 
@@ -47294,77 +49863,254 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-            let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-                .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-                .header("X-Auth-Signature", bitstamp_signature)
-                .header("X-Auth-Nonce", bitstamp_nonce)
-                .header("X-Auth-Timestamp", bitstamp_timestamp)
-                .header("X-Auth-Version", "v2")
-                //.header("Content-Type", content_type)
-                //.body(payload_string)
-                .build()
-                .expect("\ncould not build bitstamp_request");
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
 
-            let bitstamp_response = client.execute(bitstamp_request).await
-                .expect("Failed to execute Bitstamp request");
-            let bitstamp_response_text = bitstamp_response.text().await
-                .expect("Failed to turn response into text");
-            //probably dont need "bitstamp" once we transfer this to the actual function
-            let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-            .expect("Failed to parse JSON");
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
 
-            // Extract the bid and ask values
-            let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-            let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-            println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-            println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // println!("Bitstamp:\n{:?}", bitstamp_response_text);
 
 
-                //gemini calculations for buy 
-                    //this should equal 0.4%
-                    let gemini_taker_fee = 0.004;
-                    let fraction_of_wallet_im_using = 0.07;
 
-                    let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                    let fee_for_purchase = total_spent*gemini_taker_fee;
-                    let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                    //new state of gemini wallet below
-                    *gemini_wallet -= total_spent;
-                    let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+
+																let gemini_taker_fee = 0.004;
+																let fraction_of_wallet_im_using = 0.07; // aka 7 percent
+																let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+																let fee_for_purchase = total_spent*gemini_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																//new state of gemini wallet below
+																*gemini_wallet -= total_spent;
+
+
+                                                                let amount_of_xrp = 
+                                                                money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                gemini_buy_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &gemini_buy_ask));
+
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 61, 64
+                                                                let indices = [60, 64, 62];
+                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i127: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i127: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i127: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i127: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i127: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i127: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: gemini_buy_ask = {:?}", attempts, gemini_buy_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //         //gemini calculations for buy 
+        //             //this should equal 0.4%
+        //             let gemini_taker_fee = 0.004;
+        //             let fraction_of_wallet_im_using = 0.03;
+
+        //             let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+        //             let fee_for_purchase = total_spent*gemini_taker_fee;
+        //             let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //             //new state of gemini wallet below
+        //             *gemini_wallet -= total_spent;
+        //             let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
         
 
-                //bitstamp calculations - sell
-                    let bitstamp_taker_fee = 0.004;
-                    let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-                    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                    *bitstamp_wallet += money_from_sell_after_fees;
+        //         //bitstamp calculations - sell
+        //             let bitstamp_taker_fee = 0.004;
+        //             let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //             let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //             let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //             *bitstamp_wallet += money_from_sell_after_fees;
 
-                    //this will count as value after
-                    let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                    //println!("value after:\n\t{}",value_after);
+        //             //this will count as value after
+        //             let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+        //             //println!("value after:\n\t{}",value_after);
         
     
-                    //value_after = 60
-                    //coinbase = 61
-                    //bitstamp = 62
-                    //kraken = 63
-                    //gemini = 64
-                    //since this is bitstamp and gemini being updated, I will update:
-                    //  60, 62, 64
-                    let indices = [60, 62, 64];
-                    let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                    //01/24/24 - removed and added:
-                        //neural_network.update_input(&indices, &new_values);
-                        //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                        //neural_network.update_input(&indices, &transformed_values).await;
-                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                        neural_network.update_input(&indices, &scaled_values).await;
+        //             //value_after = 60
+        //             //coinbase = 61
+        //             //bitstamp = 62
+        //             //kraken = 63
+        //             //gemini = 64
+        //             //since this is bitstamp and gemini being updated, I will update:
+        //             //  60, 62, 64
+        //             let indices = [60, 62, 64];
+        //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+        //             //01/24/24 - removed and added:
+        //                 //neural_network.update_input(&indices, &new_values);
+        //                 //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //                 //neural_network.update_input(&indices, &transformed_values).await;
+        //                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //                 neural_network.update_input(&indices, &scaled_values).await;
     
         
-        return Ok(value_after)
+        // return Ok(value_after)
     }
 
     pub async fn s_i128_xrp_8_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
@@ -47400,28 +50146,89 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let gemini_cache_control = "no-cache";
             let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
             
-            let gemini_request = client.get(gemini_url)
-                    .header("Content-Type", gemini_content_type)
-                    .header("Content-Length", gemini_content_length)
-                    .header("X-GEMINI-APIKEY", gemini_api_key)
-                    .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-                    .header("X-GEMINI-SIGNATURE", &gemini_signature)
-                    .header("Cache-Control", gemini_cache_control)
-                    .build()
-                    .expect("couldn't build gemini request");
+			//03/05/24 - removed:
+            // let gemini_request = client.get(gemini_url)
+            //         .header("Content-Type", gemini_content_type)
+            //         .header("Content-Length", gemini_content_length)
+            //         .header("X-GEMINI-APIKEY", gemini_api_key)
+            //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+            //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+            //         .header("Cache-Control", gemini_cache_control)
+            //         .build()
+            //         .expect("couldn't build gemini request");
+            // let gemini_response = client.execute(gemini_request).await
+            //                         .expect("Failed to execute Gemini request");
+            // let gemini_response_text = gemini_response.text().await
+            //                         .expect("Failed to turn response into text");
+            // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+            //                         .expect("Failed to parse JSON");
+            // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+            // //CAN ONLY BUY. NOT SELL
+            // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+            // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
         
-        
-            let gemini_response = client.execute(gemini_request).await
-                                    .expect("Failed to execute Gemini request");
-            let gemini_response_text = gemini_response.text().await
-                                    .expect("Failed to turn response into text");
-            let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                    .expect("Failed to parse JSON");
-            let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-            //CAN ONLY BUY. NOT SELL
-            let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-            //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
-        
+
+
+
+	//03/05/24 - added:
+		let mut attempts = 0;
+		let gemini_buy_ask: Option<f64>;
+		loop {
+			let gemini_request = client.get(gemini_url)
+				.header("Content-Type", gemini_content_type)
+				.header("Content-Length", gemini_content_length)
+				.header("X-GEMINI-APIKEY", gemini_api_key)
+				.header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+				.header("X-GEMINI-SIGNATURE", &gemini_signature)
+				.header("Cache-Control", gemini_cache_control)
+				.build();
+
+			match gemini_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							let gemini_response_text = response.text().await;
+							match gemini_response_text {
+								Ok(text) => {
+									match serde_json::from_str::<Value>(&text) {
+										Ok(value) => {
+											match value["ask"].as_str() {
+												Some(ask_str) => {
+													match ask_str.parse::<f64>() {
+														Ok(ask) => {
+															gemini_buy_ask = Some(ask);
+															break; // Exit the loop if everything is successful
+														},
+														Err(_) => log::error!("i128: Failed to parse ask as f64"),
+													}
+												},
+												None => log::error!("i128: Failed to get ask as string"),
+											}
+										},
+										Err(_) => log::error!("i128: Failed to parse JSON"),
+									}
+								},
+								Err(_) => log::error!("i128: Failed to turn response into text"),
+							}
+						},
+						Err(_) => log::error!("i128: Failed to execute Gemini request"),
+					}
+				},
+				Err(_) => log::error!("i128: Couldn't build gemini request"),
+			}
+
+			attempts += 1;
+			//03/02/24 - changed from >= to >
+			if attempts > 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+
+
+
+
 
 
 
@@ -47476,77 +50283,254 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-            let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-                .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-                .header("X-Auth-Signature", bitstamp_signature)
-                .header("X-Auth-Nonce", bitstamp_nonce)
-                .header("X-Auth-Timestamp", bitstamp_timestamp)
-                .header("X-Auth-Version", "v2")
-                //.header("Content-Type", content_type)
-                //.body(payload_string)
-                .build()
-                .expect("\ncould not build bitstamp_request");
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
 
-            let bitstamp_response = client.execute(bitstamp_request).await
-                .expect("Failed to execute Bitstamp request");
-            let bitstamp_response_text = bitstamp_response.text().await
-                .expect("Failed to turn response into text");
-            //probably dont need "bitstamp" once we transfer this to the actual function
-            let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-            .expect("Failed to parse JSON");
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
 
-            // Extract the bid and ask values
-            let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-            let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-            println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-            println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // println!("Bitstamp:\n{:?}", bitstamp_response_text);
 
 
-                //gemini calculations for buy 
-                    //this should equal 0.4%
-                    let gemini_taker_fee = 0.004;
-                    let fraction_of_wallet_im_using = 0.08;
 
-                    let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                    let fee_for_purchase = total_spent*gemini_taker_fee;
-                    let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                    //new state of gemini wallet below
-                    *gemini_wallet -= total_spent;
-                    let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+
+																let gemini_taker_fee = 0.004;
+																let fraction_of_wallet_im_using = 0.08; // aka 8 percent
+																let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+																let fee_for_purchase = total_spent*gemini_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																//new state of gemini wallet below
+																*gemini_wallet -= total_spent;
+
+
+                                                                let amount_of_xrp = 
+                                                                money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                gemini_buy_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &gemini_buy_ask));
+
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 61, 64
+                                                                let indices = [60, 64, 62];
+                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i128: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i128: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i128: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i128: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i128: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i128: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: gemini_buy_ask = {:?}", attempts, gemini_buy_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //         //gemini calculations for buy 
+        //             //this should equal 0.4%
+        //             let gemini_taker_fee = 0.004;
+        //             let fraction_of_wallet_im_using = 0.03;
+
+        //             let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+        //             let fee_for_purchase = total_spent*gemini_taker_fee;
+        //             let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //             //new state of gemini wallet below
+        //             *gemini_wallet -= total_spent;
+        //             let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
         
 
-                //bitstamp calculations - sell
-                    let bitstamp_taker_fee = 0.004;
-                    let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-                    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                    *bitstamp_wallet += money_from_sell_after_fees;
+        //         //bitstamp calculations - sell
+        //             let bitstamp_taker_fee = 0.004;
+        //             let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //             let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //             let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //             *bitstamp_wallet += money_from_sell_after_fees;
 
-                    //this will count as value after
-                    let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                    //println!("value after:\n\t{}",value_after);
+        //             //this will count as value after
+        //             let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+        //             //println!("value after:\n\t{}",value_after);
         
     
-                    //value_after = 60
-                    //coinbase = 61
-                    //bitstamp = 62
-                    //kraken = 63
-                    //gemini = 64
-                    //since this is bitstamp and gemini being updated, I will update:
-                    //  60, 62, 64
-                    let indices = [60, 62, 64];
-                    let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                    //01/24/24 - removed and added:
-                        //neural_network.update_input(&indices, &new_values);
-                        //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                        //neural_network.update_input(&indices, &transformed_values).await;
-                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                        neural_network.update_input(&indices, &scaled_values).await;
+        //             //value_after = 60
+        //             //coinbase = 61
+        //             //bitstamp = 62
+        //             //kraken = 63
+        //             //gemini = 64
+        //             //since this is bitstamp and gemini being updated, I will update:
+        //             //  60, 62, 64
+        //             let indices = [60, 62, 64];
+        //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+        //             //01/24/24 - removed and added:
+        //                 //neural_network.update_input(&indices, &new_values);
+        //                 //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //                 //neural_network.update_input(&indices, &transformed_values).await;
+        //                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //                 neural_network.update_input(&indices, &scaled_values).await;
     
         
-        return Ok(value_after)
+        // return Ok(value_after)
     }
 
     pub async fn s_i129_xrp_9_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
@@ -47582,28 +50566,90 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let gemini_cache_control = "no-cache";
             let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
             
-            let gemini_request = client.get(gemini_url)
-                    .header("Content-Type", gemini_content_type)
-                    .header("Content-Length", gemini_content_length)
-                    .header("X-GEMINI-APIKEY", gemini_api_key)
-                    .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-                    .header("X-GEMINI-SIGNATURE", &gemini_signature)
-                    .header("Cache-Control", gemini_cache_control)
-                    .build()
-                    .expect("couldn't build gemini request");
+			//03/05/24 - removed:
+            // let gemini_request = client.get(gemini_url)
+            //         .header("Content-Type", gemini_content_type)
+            //         .header("Content-Length", gemini_content_length)
+            //         .header("X-GEMINI-APIKEY", gemini_api_key)
+            //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+            //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+            //         .header("Cache-Control", gemini_cache_control)
+            //         .build()
+            //         .expect("couldn't build gemini request");
+            // let gemini_response = client.execute(gemini_request).await
+            //                         .expect("Failed to execute Gemini request");
+            // let gemini_response_text = gemini_response.text().await
+            //                         .expect("Failed to turn response into text");
+            // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+            //                         .expect("Failed to parse JSON");
+            // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+            // //CAN ONLY BUY. NOT SELL
+            // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+            // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
         
-        
-            let gemini_response = client.execute(gemini_request).await
-                                    .expect("Failed to execute Gemini request");
-            let gemini_response_text = gemini_response.text().await
-                                    .expect("Failed to turn response into text");
-            let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                    .expect("Failed to parse JSON");
-            let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-            //CAN ONLY BUY. NOT SELL
-            let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-            //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
-        
+
+
+
+	//03/05/24 - added:
+		let mut attempts = 0;
+		let gemini_buy_ask: Option<f64>;
+		loop {
+			let gemini_request = client.get(gemini_url)
+				.header("Content-Type", gemini_content_type)
+				.header("Content-Length", gemini_content_length)
+				.header("X-GEMINI-APIKEY", gemini_api_key)
+				.header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+				.header("X-GEMINI-SIGNATURE", &gemini_signature)
+				.header("Cache-Control", gemini_cache_control)
+				.build();
+
+			match gemini_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							let gemini_response_text = response.text().await;
+							match gemini_response_text {
+								Ok(text) => {
+									match serde_json::from_str::<Value>(&text) {
+										Ok(value) => {
+											match value["ask"].as_str() {
+												Some(ask_str) => {
+													match ask_str.parse::<f64>() {
+														Ok(ask) => {
+															gemini_buy_ask = Some(ask);
+															break; // Exit the loop if everything is successful
+														},
+														Err(_) => log::error!("i129: Failed to parse ask as f64"),
+													}
+												},
+												None => log::error!("i129: Failed to get ask as string"),
+											}
+										},
+										Err(_) => log::error!("i129: Failed to parse JSON"),
+									}
+								},
+								Err(_) => log::error!("i129: Failed to turn response into text"),
+							}
+						},
+						Err(_) => log::error!("i129: Failed to execute Gemini request"),
+					}
+				},
+				Err(_) => log::error!("i129: Couldn't build gemini request"),
+			}
+
+			attempts += 1;
+			//03/02/24 - changed from >= to >
+			if attempts > 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+
+
+
+
+
 
 
 
@@ -47657,77 +50703,254 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-            let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-                .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-                .header("X-Auth-Signature", bitstamp_signature)
-                .header("X-Auth-Nonce", bitstamp_nonce)
-                .header("X-Auth-Timestamp", bitstamp_timestamp)
-                .header("X-Auth-Version", "v2")
-                //.header("Content-Type", content_type)
-                //.body(payload_string)
-                .build()
-                .expect("\ncould not build bitstamp_request");
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
 
-            let bitstamp_response = client.execute(bitstamp_request).await
-                .expect("Failed to execute Bitstamp request");
-            let bitstamp_response_text = bitstamp_response.text().await
-                .expect("Failed to turn response into text");
-            //probably dont need "bitstamp" once we transfer this to the actual function
-            let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-            .expect("Failed to parse JSON");
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
 
-            // Extract the bid and ask values
-            let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-            let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-            println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-            println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // println!("Bitstamp:\n{:?}", bitstamp_response_text);
 
 
-                //gemini calculations for buy 
-                    //this should equal 0.4%
-                    let gemini_taker_fee = 0.004;
-                    let fraction_of_wallet_im_using = 0.09;
 
-                    let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                    let fee_for_purchase = total_spent*gemini_taker_fee;
-                    let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                    //new state of gemini wallet below
-                    *gemini_wallet -= total_spent;
-                    let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+
+																let gemini_taker_fee = 0.004;
+																let fraction_of_wallet_im_using = 0.09; // aka 9 percent
+																let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+																let fee_for_purchase = total_spent*gemini_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																//new state of gemini wallet below
+																*gemini_wallet -= total_spent;
+
+
+                                                                let amount_of_xrp = 
+                                                                money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                gemini_buy_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &gemini_buy_ask));
+
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 61, 64
+                                                                let indices = [60, 64, 62];
+                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i129: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i129: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i129: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i129: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i129: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i129: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: gemini_buy_ask = {:?}", attempts, gemini_buy_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //         //gemini calculations for buy 
+        //             //this should equal 0.4%
+        //             let gemini_taker_fee = 0.004;
+        //             let fraction_of_wallet_im_using = 0.03;
+
+        //             let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+        //             let fee_for_purchase = total_spent*gemini_taker_fee;
+        //             let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //             //new state of gemini wallet below
+        //             *gemini_wallet -= total_spent;
+        //             let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
         
 
-                //bitstamp calculations - sell
-                    let bitstamp_taker_fee = 0.004;
-                    let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-                    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                    *bitstamp_wallet += money_from_sell_after_fees;
+        //         //bitstamp calculations - sell
+        //             let bitstamp_taker_fee = 0.004;
+        //             let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //             let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //             let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //             *bitstamp_wallet += money_from_sell_after_fees;
 
-                    //this will count as value after
-                    let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                    //println!("value after:\n\t{}",value_after);
+        //             //this will count as value after
+        //             let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+        //             //println!("value after:\n\t{}",value_after);
         
     
-                    //value_after = 60
-                    //coinbase = 61
-                    //bitstamp = 62
-                    //kraken = 63
-                    //gemini = 64
-                    //since this is bitstamp and gemini being updated, I will update:
-                    //  60, 62, 64
-                    let indices = [60, 62, 64];
-                    let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                    //01/24/24 - removed and added:
-                        //neural_network.update_input(&indices, &new_values);
-                        //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                        //neural_network.update_input(&indices, &transformed_values).await;
-                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                        neural_network.update_input(&indices, &scaled_values).await;
+        //             //value_after = 60
+        //             //coinbase = 61
+        //             //bitstamp = 62
+        //             //kraken = 63
+        //             //gemini = 64
+        //             //since this is bitstamp and gemini being updated, I will update:
+        //             //  60, 62, 64
+        //             let indices = [60, 62, 64];
+        //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+        //             //01/24/24 - removed and added:
+        //                 //neural_network.update_input(&indices, &new_values);
+        //                 //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //                 //neural_network.update_input(&indices, &transformed_values).await;
+        //                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //                 neural_network.update_input(&indices, &scaled_values).await;
     
         
-        return Ok(value_after)
+        // return Ok(value_after)
     }
 
     pub async fn s_i130_xrp_10_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
@@ -47763,28 +50986,90 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             let gemini_cache_control = "no-cache";
             let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
             
-            let gemini_request = client.get(gemini_url)
-                    .header("Content-Type", gemini_content_type)
-                    .header("Content-Length", gemini_content_length)
-                    .header("X-GEMINI-APIKEY", gemini_api_key)
-                    .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-                    .header("X-GEMINI-SIGNATURE", &gemini_signature)
-                    .header("Cache-Control", gemini_cache_control)
-                    .build()
-                    .expect("couldn't build gemini request");
+			//03/05/24 - removed:
+            // let gemini_request = client.get(gemini_url)
+            //         .header("Content-Type", gemini_content_type)
+            //         .header("Content-Length", gemini_content_length)
+            //         .header("X-GEMINI-APIKEY", gemini_api_key)
+            //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+            //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+            //         .header("Cache-Control", gemini_cache_control)
+            //         .build()
+            //         .expect("couldn't build gemini request");
+            // let gemini_response = client.execute(gemini_request).await
+            //                         .expect("Failed to execute Gemini request");
+            // let gemini_response_text = gemini_response.text().await
+            //                         .expect("Failed to turn response into text");
+            // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+            //                         .expect("Failed to parse JSON");
+            // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+            // //CAN ONLY BUY. NOT SELL
+            // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+            // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
         
-        
-            let gemini_response = client.execute(gemini_request).await
-                                    .expect("Failed to execute Gemini request");
-            let gemini_response_text = gemini_response.text().await
-                                    .expect("Failed to turn response into text");
-            let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-                                    .expect("Failed to parse JSON");
-            let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-            //CAN ONLY BUY. NOT SELL
-            let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-            //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
-        
+
+
+
+	//03/05/24 - added:
+		let mut attempts = 0;
+		let gemini_buy_ask: Option<f64>;
+		loop {
+			let gemini_request = client.get(gemini_url)
+				.header("Content-Type", gemini_content_type)
+				.header("Content-Length", gemini_content_length)
+				.header("X-GEMINI-APIKEY", gemini_api_key)
+				.header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+				.header("X-GEMINI-SIGNATURE", &gemini_signature)
+				.header("Cache-Control", gemini_cache_control)
+				.build();
+
+			match gemini_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							let gemini_response_text = response.text().await;
+							match gemini_response_text {
+								Ok(text) => {
+									match serde_json::from_str::<Value>(&text) {
+										Ok(value) => {
+											match value["ask"].as_str() {
+												Some(ask_str) => {
+													match ask_str.parse::<f64>() {
+														Ok(ask) => {
+															gemini_buy_ask = Some(ask);
+															break; // Exit the loop if everything is successful
+														},
+														Err(_) => log::error!("i130: Failed to parse ask as f64"),
+													}
+												},
+												None => log::error!("i130: Failed to get ask as string"),
+											}
+										},
+										Err(_) => log::error!("i130: Failed to parse JSON"),
+									}
+								},
+								Err(_) => log::error!("i130: Failed to turn response into text"),
+							}
+						},
+						Err(_) => log::error!("i130: Failed to execute Gemini request"),
+					}
+				},
+				Err(_) => log::error!("i130: Couldn't build gemini request"),
+			}
+
+			attempts += 1;
+			//03/02/24 - changed from >= to >
+			if attempts > 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+
+
+
+
+
 
 
 
@@ -47838,77 +51123,254 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-            let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-                .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-                .header("X-Auth-Signature", bitstamp_signature)
-                .header("X-Auth-Nonce", bitstamp_nonce)
-                .header("X-Auth-Timestamp", bitstamp_timestamp)
-                .header("X-Auth-Version", "v2")
-                //.header("Content-Type", content_type)
-                //.body(payload_string)
-                .build()
-                .expect("\ncould not build bitstamp_request");
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
 
-            let bitstamp_response = client.execute(bitstamp_request).await
-                .expect("Failed to execute Bitstamp request");
-            let bitstamp_response_text = bitstamp_response.text().await
-                .expect("Failed to turn response into text");
-            //probably dont need "bitstamp" once we transfer this to the actual function
-            let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-            .expect("Failed to parse JSON");
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
 
-            // Extract the bid and ask values
-            let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-            let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-            println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-            //println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // println!("Bitstamp:\n{:?}", bitstamp_response_text);
 
 
-                //gemini calculations for buy 
-                    //this should equal 0.4%
-                    let gemini_taker_fee = 0.004;
-                    let fraction_of_wallet_im_using = 0.10;
 
-                    let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                    let fee_for_purchase = total_spent*gemini_taker_fee;
-                    let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                    //new state of gemini wallet below
-                    *gemini_wallet -= total_spent;
-                    let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+
+
+																let gemini_taker_fee = 0.004;
+																let fraction_of_wallet_im_using = 0.10; // aka 10 percent
+																let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+																let fee_for_purchase = total_spent*gemini_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																//new state of gemini wallet below
+																*gemini_wallet -= total_spent;
+
+
+                                                                let amount_of_xrp = 
+                                                                money_going_to_xrp_after_fees/gemini_buy_ask
+                                                                                                .expect(&format!("gemini_buy_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                gemini_buy_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &gemini_buy_ask));
+
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 61, 64
+                                                                let indices = [60, 64, 62];
+                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i130: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i130: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i130: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i130: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i130: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i130: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: gemini_buy_ask = {:?}", attempts, gemini_buy_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //         //gemini calculations for buy 
+        //             //this should equal 0.4%
+        //             let gemini_taker_fee = 0.004;
+        //             let fraction_of_wallet_im_using = 0.03;
+
+        //             let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+        //             let fee_for_purchase = total_spent*gemini_taker_fee;
+        //             let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //             //new state of gemini wallet below
+        //             *gemini_wallet -= total_spent;
+        //             let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
         
 
-                //bitstamp calculations - sell
-                    let bitstamp_taker_fee = 0.004;
-                    let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-                    let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-                    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                    *bitstamp_wallet += money_from_sell_after_fees;
+        //         //bitstamp calculations - sell
+        //             let bitstamp_taker_fee = 0.004;
+        //             let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //             let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //             let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //             *bitstamp_wallet += money_from_sell_after_fees;
 
-                    //this will count as value after
-                    let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
-                    //println!("value after:\n\t{}",value_after);
+        //             //this will count as value after
+        //             let value_after = kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet;
+        //             //println!("value after:\n\t{}",value_after);
         
     
-                    //value_after = 60
-                    //coinbase = 61
-                    //bitstamp = 62
-                    //kraken = 63
-                    //gemini = 64
-                    //since this is bitstamp and gemini being updated, I will update:
-                    //  60, 62, 64
-                    let indices = [60, 62, 64];
-                    let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
-                    //01/24/24 - removed and added:
-                        //neural_network.update_input(&indices, &new_values);
-                        //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                        //neural_network.update_input(&indices, &transformed_values).await;
-                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                        neural_network.update_input(&indices, &scaled_values).await;
+        //             //value_after = 60
+        //             //coinbase = 61
+        //             //bitstamp = 62
+        //             //kraken = 63
+        //             //gemini = 64
+        //             //since this is bitstamp and gemini being updated, I will update:
+        //             //  60, 62, 64
+        //             let indices = [60, 62, 64];
+        //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+        //             //01/24/24 - removed and added:
+        //                 //neural_network.update_input(&indices, &new_values);
+        //                 //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //                 //neural_network.update_input(&indices, &transformed_values).await;
+        //                 let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //                 neural_network.update_input(&indices, &scaled_values).await;
     
         
-        return Ok(value_after)
+        // return Ok(value_after)
     }
 //kraken bitstamp   = 4 AND UP for min of 25 XRP withdraw = 15 dollars. 3 and up should work but just in case
     pub async fn s_i134_xrp_4_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
@@ -47980,36 +51442,111 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
             //--data-urlencode "nonce=<YOUR-NONCE>"
             //		this means that nonce is added to the body of the request
-            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
-                    .header("API-Key", kraken_api_key)
-                    .header("API-Sign", &kraken_signature)
-                    .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                    .body(format!("nonce={}", nonce))
-                    .build()
-                    .expect("Failed to build kraken request");
+			//03/05/24 - removed:
+            // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+            //         .header("API-Key", kraken_api_key)
+            //         .header("API-Sign", &kraken_signature)
+            //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+            //         .body(format!("nonce={}", nonce))
+            //         .build()
+            //         .expect("Failed to build kraken request");
+            // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+            // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            // //println!("kraken response:{}", kraken_response_text);
+            // let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
+            // let mut kraken_buy_price_ask = 0.0;
+            // let mut kraken_sell_price_bid = 0.0;
+            // if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
+            //     // Access the ask and bid prices
+            //     kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //     //println!("xrp Bid price: {}", kraken_sell_price_bid );
+            // }
+            // else {
+            //     println!("didnt parse kraken correctly.");
+            // }
     
-    
-            let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
-    
-            let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
-            
-            //println!("kraken response:{}", kraken_response_text);
 
-            let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
-            let mut kraken_buy_price_ask = 0.0;
-            let mut kraken_sell_price_bid = 0.0;
-            if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
-                // Access the ask and bid prices
-                kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-                kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-            
-                //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
-                //println!("xrp Bid price: {}", kraken_sell_price_bid );
-            }
-            else {
-                println!("didnt parse kraken correctly.");
-            }
-    
+
+
+
+
+
+
+
+
+
+		//03/05/24 - added in its place:
+			let mut kraken_buy_price_ask: Option<f64> = None;
+			//let mut kraken_sell_price_bid: Option<f64> = None;
+			let mut attempts = 0;
+			loop {
+				attempts += 1;
+				let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+				.header("API-Key", kraken_api_key)
+				.header("API-Sign", &kraken_signature)
+				.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+				.body(format!("nonce={}", nonce))
+				.build();
+
+				match kraken_basic_request {
+					Ok(request) => {
+						match client.execute(request).await {
+							Ok(response) => {
+								match response.text().await {
+									Ok(kraken_response_text) => {
+										match serde_json::from_str::<Value>(&kraken_response_text) {
+											Ok(value) => {
+												if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
+
+													match (xrpusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+														(Some(ask_str), /*Some(bid_str)*/) => {
+															match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+																(Ok(ask), /*Ok(bid)*/) => {
+																	kraken_buy_price_ask = Some(ask);
+																	//kraken_sell_price_bid = Some(bid);
+
+																	break; // Exit the loop if everything is successful
+																},
+																_ => log::error!("i134: Failed to parse ask or bid as f64"),
+															}
+														},
+														_ => log::error!("i134: Failed to get ask or bid as string"),
+													}										
+												}
+												else {
+													log::error!("i134: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+												}
+											},
+											Err(e) => log::error!("i134: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+										}
+									},
+									Err(e) => log::error!("i134: Failed to read response text. Error was: {}", e),
+								}
+							},
+							Err(e) => log::error!("i134: Failed to execute Kraken request. Error was: {}", e),
+						}
+					},
+					Err(e) => log::error!("i134: Failed to build kraken request. Error was: {}", e),
+				}
+				if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+					break; // Exit the loop if everything is successful
+				}
+
+				attempts += 1;
+				if attempts >= 3 {
+					panic!("Failed after 3 attempts");
+				}
+			}
+
+
+
+
+
+
+
+
 
 
 
@@ -48057,200 +51594,442 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
             let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
 
-            let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-                .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-                .header("X-Auth-Signature", bitstamp_signature)
-                .header("X-Auth-Nonce", bitstamp_nonce)
-                .header("X-Auth-Timestamp", bitstamp_timestamp)
-                .header("X-Auth-Version", "v2")
-                //.header("Content-Type", content_type)
-                //.body(payload_string)
-                .build()
-                .expect("\ncould not build bitstamp_request");
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
 
-            let bitstamp_response = client.execute(bitstamp_request).await
-                .expect("Failed to execute Bitstamp request");
-            let bitstamp_response_text = bitstamp_response.text().await
-                .expect("Failed to turn response into text");
-            //probably dont need "bitstamp" once we transfer this to the actual function
-            let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-            .expect("Failed to parse JSON");
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
 
-            // Extract the bid and ask values
-            let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-            let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-            //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-            //println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
-
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // //println!("Bitstamp:\n{:?}", bitstamp_response_text);
 
 
 
 
 
-//kraken calculations - buy
-            let kraken_taker_fee = 0.0026;
-            let fraction_of_wallet_im_using = 0.04;  //aka 4 percent
-            let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
-            let fee_for_purchase = total_spent*kraken_taker_fee;
-            let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-            *kraken_wallet -= money_going_to_xrp_after_fees;
-            let amount_of_xrp_before_withdraw_fee = 
-                            money_going_to_xrp_after_fees/kraken_buy_price_ask;
-            let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+																let kraken_taker_fee = 0.0026;
+																let fraction_of_wallet_im_using = 0.04;  //aka 4 percent
+																let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+																let fee_for_purchase = total_spent*kraken_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																
+																//new state of gemini wallet below
+																*kraken_wallet -= total_spent;
+
+                                                                let amount_of_xrp_before_withdraw_fee = 
+                                                                money_going_to_xrp_after_fees/kraken_buy_price_ask
+                                                                                                .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                kraken_buy_price_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &kraken_buy_price_ask));
+
+																let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 63, 62
+                                                                let indices = [60, 63, 62];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i134: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i134: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i134: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i134: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i134: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i134: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - removed:
+		// //kraken calculations - buy
+        //     let kraken_taker_fee = 0.0026;
+        //     let fraction_of_wallet_im_using = 0.04;  //aka 4 percent
+        //     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+        //     let fee_for_purchase = total_spent*kraken_taker_fee;
+        //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //     *kraken_wallet -= money_going_to_xrp_after_fees;
+        //     let amount_of_xrp_before_withdraw_fee = 
+        //                     money_going_to_xrp_after_fees/kraken_buy_price_ask;
+        //     let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
 
             
 
 
-        //coinbase calculations for sell
+        // //coinbase calculations for sell
 
-            //let coinbase_taker_fee = 0.008;
-            //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
-            //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-            //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-            //*coinbase_wallet += money_from_sell_after_fees;
+        //     //let coinbase_taker_fee = 0.008;
+        //     //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+        //     //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+        //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     //*coinbase_wallet += money_from_sell_after_fees;
 
-        //bitstamp calculations for sell
-            let bitstamp_taker_fee = 0.004;
-            let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-            let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-            let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-            *bitstamp_wallet += money_from_sell_after_fees;
-
-
-        //this will count as value after
-            let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-            //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+        // //bitstamp calculations for sell
+        //     let bitstamp_taker_fee = 0.004;
+        //     let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     *bitstamp_wallet += money_from_sell_after_fees;
 
 
-
-                //value_after = 60
-                //coinbase = 61
-                //bitstamp = 62
-                //kraken = 63
-                //gemini = 64
-                //since this is bitstamp and kraken being updated, I will update:
-                //  60, 62, 63
-                let indices = [60, 62, 63];
-                let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-            //01/24/24 - removed and added:
-                //neural_network.update_input(&indices, &new_values);
-                //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                //neural_network.update_input(&indices, &transformed_values).await;
-                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-                neural_network.update_input(&indices, &scaled_values).await;
+        // //this will count as value after
+        //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        //     //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
 
 
-            return Ok(value_after)
-}
+
+        //         //value_after = 60
+        //         //coinbase = 61
+        //         //bitstamp = 62
+        //         //kraken = 63
+        //         //gemini = 64
+        //         //since this is bitstamp and kraken being updated, I will update:
+        //         //  60, 62, 63
+        //         let indices = [60, 62, 63];
+        //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        //     //01/24/24 - removed and added:
+        //         //neural_network.update_input(&indices, &new_values);
+        //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //         //neural_network.update_input(&indices, &transformed_values).await;
+        //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //         neural_network.update_input(&indices, &scaled_values).await;
+
+
+        //     return Ok(value_after)
+	}
 
     pub async fn s_i135_xrp_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
 
-        //---KRAKEN--//
-
-        //basically Kraken requires a value that is always increasing to be in each request.
-        //I didnt use now.timestamp().to_string()  because just in case I have 2 
-        //	requests in a second I dont want to be penalized.
-        //if no "now" in scope when moving file, 
-        //	the code is this:
-        ////returns current time. MAY NEED TO USE LOCAL TIME
-        let now = Utc::now();
-        let nonce = now.timestamp_millis().to_string();
-        let data = vec![
-            ("nonce", &nonce),
-            // Add more parameters as needed
-        ];
-        //let post_data: String = form_urlencoded::Serializer::new(String::new())
-        //    .extend_pairs(data)
-        //    .finish();
-        
-        let url_path = "/0/public/Ticker?pair=XRPUSD";
-        //let message = format!("{}{}{}", url_path, nonce, post_data);
-
-        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
-        -> String {
-            // Create the post data
-            let post_data: String = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(data)
-                .finish();
-            //FOR DEBUGGING
-            //println!("Private key:\n{}", secret);
-            //println!("Nonce:\n{}", nonce_str);
-            //println!("Encoded payload:\n{}", post_data);
-            //println!("URI Path:\n{}", url_path);
-        
-            // Create the encoded string (nonce + post data) and hash it
-            let encoded = format!("{}{}", nonce_str, post_data);
-            let mut hasher = sha2::Sha256::new();
-            hasher.update(encoded);
-            let encoded_hash = hasher.finalize();
-        
-            // Create the message (url_path + encoded_hash as bytes)
-            let mut message = url_path.as_bytes().to_vec();
-            message.extend_from_slice(&encoded_hash);
-        
-            // Create a HMAC-SHA512 object with the base64-decoded secret
-            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
-            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
-                .expect("HMAC can take key of any size");
-        
-            // Compute the HMAC of the message
-            mac.update(&message);
-            let result = mac.finalize();
-        
-            // Return the base64-encoded HMAC
-            let signature = base64::encode(result.into_bytes());
-            //println!("Kraken signature:\n{}", signature);
-        
-            signature
-        }
-
-        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
-
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
-
-
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
-
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
-        
-        //println!("kraken response:{}", kraken_response_text);
-
-        let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
-        let mut kraken_buy_price_ask = 0.0;
-        let mut kraken_sell_price_bid = 0.0;
-        if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-            kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-        
-            //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("xrp Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XRPUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+			//03/05/24 - removed:
+            // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+            //         .header("API-Key", kraken_api_key)
+            //         .header("API-Sign", &kraken_signature)
+            //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+            //         .body(format!("nonce={}", nonce))
+            //         .build()
+            //         .expect("Failed to build kraken request");
+            // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+            // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            // //println!("kraken response:{}", kraken_response_text);
+            // let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
+            // let mut kraken_buy_price_ask = 0.0;
+            // let mut kraken_sell_price_bid = 0.0;
+            // if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
+            //     // Access the ask and bid prices
+            //     kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //     //println!("xrp Bid price: {}", kraken_sell_price_bid );
+            // }
+            // else {
+            //     println!("didnt parse kraken correctly.");
+            // }
+    
 
 
 
 
 
 
-        println!("xrp 5 kraken bitstamp  delay: 8 sec...");
-        let when = tokio::time::Instant::now() + Duration::from_secs(8);
+
+
+
+
+		//03/05/24 - added in its place:
+			let mut kraken_buy_price_ask: Option<f64> = None;
+			//let mut kraken_sell_price_bid: Option<f64> = None;
+			let mut attempts = 0;
+			loop {
+				attempts += 1;
+				let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+				.header("API-Key", kraken_api_key)
+				.header("API-Sign", &kraken_signature)
+				.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+				.body(format!("nonce={}", nonce))
+				.build();
+
+				match kraken_basic_request {
+					Ok(request) => {
+						match client.execute(request).await {
+							Ok(response) => {
+								match response.text().await {
+									Ok(kraken_response_text) => {
+										match serde_json::from_str::<Value>(&kraken_response_text) {
+											Ok(value) => {
+												if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
+
+													match (xrpusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+														(Some(ask_str), /*Some(bid_str)*/) => {
+															match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+																(Ok(ask), /*Ok(bid)*/) => {
+																	kraken_buy_price_ask = Some(ask);
+																	//kraken_sell_price_bid = Some(bid);
+
+																	break; // Exit the loop if everything is successful
+																},
+																_ => log::error!("i135: Failed to parse ask or bid as f64"),
+															}
+														},
+														_ => log::error!("i135: Failed to get ask or bid as string"),
+													}										
+												}
+												else {
+													log::error!("i135: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+												}
+											},
+											Err(e) => log::error!("i135: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+										}
+									},
+									Err(e) => log::error!("i135: Failed to read response text. Error was: {}", e),
+								}
+							},
+							Err(e) => log::error!("i135: Failed to execute Kraken request. Error was: {}", e),
+						}
+					},
+					Err(e) => log::error!("i135: Failed to build kraken request. Error was: {}", e),
+				}
+				if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+					break; // Exit the loop if everything is successful
+				}
+
+				attempts += 1;
+				if attempts >= 3 {
+					panic!("Failed after 3 attempts");
+				}
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+            println!("xrp 5 kraken bitstamp  delay: 8 sec...");
+            let when = tokio::time::Instant::now() + Duration::from_secs(8);
             //02/09/21 - tokio update. changed from delay_until to sleep_until
             tokio::time::sleep_until(when).await;
 
@@ -48261,1736 +52040,3119 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //-------bitstamp--------------------//
-        type HmacSha256 = Hmac<Sha256>;
-        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-                .expect("HMAC can take key of any size");
-            mac.update(bitstamp_message.as_bytes());
-            let result = mac.finalize();
-            let code_bytes = result.into_bytes();
-            hex::encode(code_bytes)
-        }
-
-
-        let content_type = "application/x-www-form-urlencoded";
-        let payload_string = "offset=1";
-        //if we needed content_type, it is here
-        //let content_type = "application/json";
-        //this is the bitstamp message IF we needed content_type
-        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-        let the_uuid = Uuid::new_v4();
-        let bitstamp_nonce = the_uuid.to_string();
-        let bitstamp_timestamp = now.timestamp_millis().to_string();
-        //let content_type = "application/x-www-form-urlencoded";
-        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
-                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
-
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
-
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-        //println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
-
-
-
-
-
-
-//kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_im_using = 0.05;  //aka 5 percent
-        let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-        *kraken_wallet -= money_going_to_xrp_after_fees;
-        let amount_of_xrp_before_withdraw_fee = 
-                        money_going_to_xrp_after_fees/kraken_buy_price_ask;
-        let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
-
-        
-
-
-    //coinbase calculations for sell
-
-        //let coinbase_taker_fee = 0.008;
-        //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
-        //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-        //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        //*coinbase_wallet += money_from_sell_after_fees;
-
-    //bitstamp calculations for sell
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
-
-
-    //this will count as value after
-        let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-        //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
-
-
-
-            //value_after = 60
-            //coinbase = 61
-            //bitstamp = 62
-            //kraken = 63
-            //gemini = 64
-            //since this is bitstamp and kraken being updated, I will update:
-            //  60, 62, 63
-            let indices = [60, 62, 63];
-            let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-
-
-        return Ok(value_after)
-    }
-
-    pub async fn s_i136_xrp_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
-
-        //---KRAKEN--//
-
-        //basically Kraken requires a value that is always increasing to be in each request.
-        //I didnt use now.timestamp().to_string()  because just in case I have 2 
-        //	requests in a second I dont want to be penalized.
-        //if no "now" in scope when moving file, 
-        //	the code is this:
-        ////returns current time. MAY NEED TO USE LOCAL TIME
-        let now = Utc::now();
-        let nonce = now.timestamp_millis().to_string();
-        let data = vec![
-            ("nonce", &nonce),
-            // Add more parameters as needed
-        ];
-        //let post_data: String = form_urlencoded::Serializer::new(String::new())
-        //    .extend_pairs(data)
-        //    .finish();
-        
-        let url_path = "/0/public/Ticker?pair=XRPUSD";
-        //let message = format!("{}{}{}", url_path, nonce, post_data);
-
-        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
-        -> String {
-            // Create the post data
-            let post_data: String = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(data)
-                .finish();
-            //FOR DEBUGGING
-            //println!("Private key:\n{}", secret);
-            //println!("Nonce:\n{}", nonce_str);
-            //println!("Encoded payload:\n{}", post_data);
-            //println!("URI Path:\n{}", url_path);
-        
-            // Create the encoded string (nonce + post data) and hash it
-            let encoded = format!("{}{}", nonce_str, post_data);
-            let mut hasher = sha2::Sha256::new();
-            hasher.update(encoded);
-            let encoded_hash = hasher.finalize();
-        
-            // Create the message (url_path + encoded_hash as bytes)
-            let mut message = url_path.as_bytes().to_vec();
-            message.extend_from_slice(&encoded_hash);
-        
-            // Create a HMAC-SHA512 object with the base64-decoded secret
-            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
-            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
-                .expect("HMAC can take key of any size");
-        
-            // Compute the HMAC of the message
-            mac.update(&message);
-            let result = mac.finalize();
-        
-            // Return the base64-encoded HMAC
-            let signature = base64::encode(result.into_bytes());
-            //println!("Kraken signature:\n{}", signature);
-        
-            signature
-        }
-
-        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
-
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
-
-
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
-
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
-        
-        //println!("kraken response:{}", kraken_response_text);
-
-        let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
-        let mut kraken_buy_price_ask = 0.0;
-        let mut kraken_sell_price_bid = 0.0;
-        if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-            kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-        
-            //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("xrp Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
-
-
-
-
-
-
-        println!("xrp 6 kraken bitstamp  delay: 8 sec...");
-        let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        //02/09/21 - tokio update. changed from delay_until to sleep_until
-        tokio::time::sleep_until(when).await;
-
-
-
-
-
-
-
-
-        //-------bitstamp--------------------//
-        type HmacSha256 = Hmac<Sha256>;
-        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-                .expect("HMAC can take key of any size");
-            mac.update(bitstamp_message.as_bytes());
-            let result = mac.finalize();
-            let code_bytes = result.into_bytes();
-            hex::encode(code_bytes)
-        }
-
-
-        let content_type = "application/x-www-form-urlencoded";
-        let payload_string = "offset=1";
-        //if we needed content_type, it is here
-        //let content_type = "application/json";
-        //this is the bitstamp message IF we needed content_type
-        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-        let the_uuid = Uuid::new_v4();
-        let bitstamp_nonce = the_uuid.to_string();
-        let bitstamp_timestamp = now.timestamp_millis().to_string();
-        //let content_type = "application/x-www-form-urlencoded";
-        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
-                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
-
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
-
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-        //println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
-
-
-
-
-
-
-//kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_im_using = 0.06;  //aka 6 percent
-        let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-        *kraken_wallet -= money_going_to_xrp_after_fees;
-        let amount_of_xrp_before_withdraw_fee = 
-                        money_going_to_xrp_after_fees/kraken_buy_price_ask;
-        let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
-
-        
-
-
-    //coinbase calculations for sell
-
-        //let coinbase_taker_fee = 0.008;
-        //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
-        //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-        //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        //*coinbase_wallet += money_from_sell_after_fees;
-
-    //bitstamp calculations for sell
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
-
-
-    //this will count as value after
-        let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-        //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
-
-
-
-            //value_after = 60
-            //coinbase = 61
-            //bitstamp = 62
-            //kraken = 63
-            //gemini = 64
-            //since this is bitstamp and kraken being updated, I will update:
-            //  60, 62, 63
-            let indices = [60, 62, 63];
-            let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-
-
-        return Ok(value_after)
-    }
-
-    pub async fn s_i137_xrp_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
-
-        //---KRAKEN--//
-
-        //basically Kraken requires a value that is always increasing to be in each request.
-        //I didnt use now.timestamp().to_string()  because just in case I have 2 
-        //	requests in a second I dont want to be penalized.
-        //if no "now" in scope when moving file, 
-        //	the code is this:
-        ////returns current time. MAY NEED TO USE LOCAL TIME
-        let now = Utc::now();
-        let nonce = now.timestamp_millis().to_string();
-        let data = vec![
-            ("nonce", &nonce),
-            // Add more parameters as needed
-        ];
-        //let post_data: String = form_urlencoded::Serializer::new(String::new())
-        //    .extend_pairs(data)
-        //    .finish();
-        
-        let url_path = "/0/public/Ticker?pair=XRPUSD";
-        //let message = format!("{}{}{}", url_path, nonce, post_data);
-
-        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
-        -> String {
-            // Create the post data
-            let post_data: String = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(data)
-                .finish();
-            //FOR DEBUGGING
-            //println!("Private key:\n{}", secret);
-            //println!("Nonce:\n{}", nonce_str);
-            //println!("Encoded payload:\n{}", post_data);
-            //println!("URI Path:\n{}", url_path);
-        
-            // Create the encoded string (nonce + post data) and hash it
-            let encoded = format!("{}{}", nonce_str, post_data);
-            let mut hasher = sha2::Sha256::new();
-            hasher.update(encoded);
-            let encoded_hash = hasher.finalize();
-        
-            // Create the message (url_path + encoded_hash as bytes)
-            let mut message = url_path.as_bytes().to_vec();
-            message.extend_from_slice(&encoded_hash);
-        
-            // Create a HMAC-SHA512 object with the base64-decoded secret
-            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
-            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
-                .expect("HMAC can take key of any size");
-        
-            // Compute the HMAC of the message
-            mac.update(&message);
-            let result = mac.finalize();
-        
-            // Return the base64-encoded HMAC
-            let signature = base64::encode(result.into_bytes());
-            //println!("Kraken signature:\n{}", signature);
-        
-            signature
-        }
-
-        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
-
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
-
-
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
-
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
-        
-        //println!("kraken response:{}", kraken_response_text);
-
-        let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
-        let mut kraken_buy_price_ask = 0.0;
-        let mut kraken_sell_price_bid = 0.0;
-        if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-            kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-        
-            //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("xrp Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
-
-
-
-
-
-
-        println!("xrp 7 kraken bitstamp  delay: 8 sec...");
-        let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        //02/09/21 - tokio update. changed from delay_until to sleep_until
-        tokio::time::sleep_until(when).await;
-
-
-
-
-
-
-
-
-        //-------bitstamp--------------------//
-        type HmacSha256 = Hmac<Sha256>;
-        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-                .expect("HMAC can take key of any size");
-            mac.update(bitstamp_message.as_bytes());
-            let result = mac.finalize();
-            let code_bytes = result.into_bytes();
-            hex::encode(code_bytes)
-        }
-
-
-        let content_type = "application/x-www-form-urlencoded";
-        let payload_string = "offset=1";
-        //if we needed content_type, it is here
-        //let content_type = "application/json";
-        //this is the bitstamp message IF we needed content_type
-        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-        let the_uuid = Uuid::new_v4();
-        let bitstamp_nonce = the_uuid.to_string();
-        let bitstamp_timestamp = now.timestamp_millis().to_string();
-        //let content_type = "application/x-www-form-urlencoded";
-        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
-                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
-
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
-
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-        //println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
-
-
-
-
-
-
-//kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_im_using = 0.07;  //aka 7 percent
-        let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-        *kraken_wallet -= money_going_to_xrp_after_fees;
-        let amount_of_xrp_before_withdraw_fee = 
-                        money_going_to_xrp_after_fees/kraken_buy_price_ask;
-        let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
-
-        
-
-
-    //coinbase calculations for sell
-
-        //let coinbase_taker_fee = 0.008;
-        //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
-        //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-        //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        //*coinbase_wallet += money_from_sell_after_fees;
-
-    //bitstamp calculations for sell
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
-
-
-    //this will count as value after
-        let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-        //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
-
-
-
-            //value_after = 60
-            //coinbase = 61
-            //bitstamp = 62
-            //kraken = 63
-            //gemini = 64
-            //since this is bitstamp and kraken being updated, I will update:
-            //  60, 62, 63
-            let indices = [60, 62, 63];
-            let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-
-
-        return Ok(value_after)
-    }
-
-    pub async fn s_i138_xrp_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
-
-        //---KRAKEN--//
-
-        //basically Kraken requires a value that is always increasing to be in each request.
-        //I didnt use now.timestamp().to_string()  because just in case I have 2 
-        //	requests in a second I dont want to be penalized.
-        //if no "now" in scope when moving file, 
-        //	the code is this:
-        ////returns current time. MAY NEED TO USE LOCAL TIME
-        let now = Utc::now();
-        let nonce = now.timestamp_millis().to_string();
-        let data = vec![
-            ("nonce", &nonce),
-            // Add more parameters as needed
-        ];
-        //let post_data: String = form_urlencoded::Serializer::new(String::new())
-        //    .extend_pairs(data)
-        //    .finish();
-        
-        let url_path = "/0/public/Ticker?pair=XRPUSD";
-        //let message = format!("{}{}{}", url_path, nonce, post_data);
-
-        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
-        -> String {
-            // Create the post data
-            let post_data: String = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(data)
-                .finish();
-            //FOR DEBUGGING
-            //println!("Private key:\n{}", secret);
-            //println!("Nonce:\n{}", nonce_str);
-            //println!("Encoded payload:\n{}", post_data);
-            //println!("URI Path:\n{}", url_path);
-        
-            // Create the encoded string (nonce + post data) and hash it
-            let encoded = format!("{}{}", nonce_str, post_data);
-            let mut hasher = sha2::Sha256::new();
-            hasher.update(encoded);
-            let encoded_hash = hasher.finalize();
-        
-            // Create the message (url_path + encoded_hash as bytes)
-            let mut message = url_path.as_bytes().to_vec();
-            message.extend_from_slice(&encoded_hash);
-        
-            // Create a HMAC-SHA512 object with the base64-decoded secret
-            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
-            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
-                .expect("HMAC can take key of any size");
-        
-            // Compute the HMAC of the message
-            mac.update(&message);
-            let result = mac.finalize();
-        
-            // Return the base64-encoded HMAC
-            let signature = base64::encode(result.into_bytes());
-            //println!("Kraken signature:\n{}", signature);
-        
-            signature
-        }
-
-        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
-
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
-
-
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
-
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
-        
-        //println!("kraken response:{}", kraken_response_text);
-
-        let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
-        let mut kraken_buy_price_ask = 0.0;
-        let mut kraken_sell_price_bid = 0.0;
-        if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-            kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-        
-            //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("xrp Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
-
-
-
-
-
-
-        println!("xrp 8 kraken bitstamp  delay: 8 sec...");
-        let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        //02/09/21 - tokio update. changed from delay_until to sleep_until
-        tokio::time::sleep_until(when).await;
-
-
-
-
-
-
-
-
-        //-------bitstamp--------------------//
-        type HmacSha256 = Hmac<Sha256>;
-        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-                .expect("HMAC can take key of any size");
-            mac.update(bitstamp_message.as_bytes());
-            let result = mac.finalize();
-            let code_bytes = result.into_bytes();
-            hex::encode(code_bytes)
-        }
-
-
-        let content_type = "application/x-www-form-urlencoded";
-        let payload_string = "offset=1";
-        //if we needed content_type, it is here
-        //let content_type = "application/json";
-        //this is the bitstamp message IF we needed content_type
-        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-        let the_uuid = Uuid::new_v4();
-        let bitstamp_nonce = the_uuid.to_string();
-        let bitstamp_timestamp = now.timestamp_millis().to_string();
-        //let content_type = "application/x-www-form-urlencoded";
-        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
-                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
-
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
-
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-        //println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
-
-
-
-
-
-
-//kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_im_using = 0.08;  //aka 8 percent
-        let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-        *kraken_wallet -= money_going_to_xrp_after_fees;
-        let amount_of_xrp_before_withdraw_fee = 
-                        money_going_to_xrp_after_fees/kraken_buy_price_ask;
-            let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
-
-        
-
-
-    //coinbase calculations for sell
-
-        //let coinbase_taker_fee = 0.008;
-        //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
-        //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-        //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        //*coinbase_wallet += money_from_sell_after_fees;
-
-    //bitstamp calculations for sell
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
-
-
-    //this will count as value after
-        let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-        //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
-
-
-
-            //value_after = 60
-            //coinbase = 61
-            //bitstamp = 62
-            //kraken = 63
-            //gemini = 64
-            //since this is bitstamp and kraken being updated, I will update:
-            //  60, 62, 63
-            let indices = [60, 62, 63];
-            let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-
-
-        return Ok(value_after)
-    }
-
-    pub async fn s_i139_xrp_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
-
-        //---KRAKEN--//
-
-        //basically Kraken requires a value that is always increasing to be in each request.
-        //I didnt use now.timestamp().to_string()  because just in case I have 2 
-        //	requests in a second I dont want to be penalized.
-        //if no "now" in scope when moving file, 
-        //	the code is this:
-        ////returns current time. MAY NEED TO USE LOCAL TIME
-        let now = Utc::now();
-        let nonce = now.timestamp_millis().to_string();
-        let data = vec![
-            ("nonce", &nonce),
-            // Add more parameters as needed
-        ];
-        //let post_data: String = form_urlencoded::Serializer::new(String::new())
-        //    .extend_pairs(data)
-        //    .finish();
-        
-        let url_path = "/0/public/Ticker?pair=XRPUSD";
-        //let message = format!("{}{}{}", url_path, nonce, post_data);
-
-        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
-        -> String {
-            // Create the post data
-            let post_data: String = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(data)
-                .finish();
-            //FOR DEBUGGING
-            //println!("Private key:\n{}", secret);
-            //println!("Nonce:\n{}", nonce_str);
-            //println!("Encoded payload:\n{}", post_data);
-            //println!("URI Path:\n{}", url_path);
-        
-            // Create the encoded string (nonce + post data) and hash it
-            let encoded = format!("{}{}", nonce_str, post_data);
-            let mut hasher = sha2::Sha256::new();
-            hasher.update(encoded);
-            let encoded_hash = hasher.finalize();
-        
-            // Create the message (url_path + encoded_hash as bytes)
-            let mut message = url_path.as_bytes().to_vec();
-            message.extend_from_slice(&encoded_hash);
-        
-            // Create a HMAC-SHA512 object with the base64-decoded secret
-            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
-            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
-                .expect("HMAC can take key of any size");
-        
-            // Compute the HMAC of the message
-            mac.update(&message);
-            let result = mac.finalize();
-        
-            // Return the base64-encoded HMAC
-            let signature = base64::encode(result.into_bytes());
-            //println!("Kraken signature:\n{}", signature);
-        
-            signature
-        }
-
-        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
-
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
-
-
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
-
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
-        
-        //println!("kraken response:{}", kraken_response_text);
-
-        let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
-        let mut kraken_buy_price_ask = 0.0;
-        let mut kraken_sell_price_bid = 0.0;
-        if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-            kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-        
-            //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("xrp Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
-
-
-
-
-
-
-        println!("xrp 9 kraken bitstamp  delay: 8 sec...");
-        let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        //02/09/21 - tokio update. changed from delay_until to sleep_until
-        tokio::time::sleep_until(when).await;
-
-
-
-
-
-
-
-
-        //-------bitstamp--------------------//
-        type HmacSha256 = Hmac<Sha256>;
-        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-                .expect("HMAC can take key of any size");
-            mac.update(bitstamp_message.as_bytes());
-            let result = mac.finalize();
-            let code_bytes = result.into_bytes();
-            hex::encode(code_bytes)
-        }
-
-
-        let content_type = "application/x-www-form-urlencoded";
-        let payload_string = "offset=1";
-        //if we needed content_type, it is here
-        //let content_type = "application/json";
-        //this is the bitstamp message IF we needed content_type
-        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-        let the_uuid = Uuid::new_v4();
-        let bitstamp_nonce = the_uuid.to_string();
-        let bitstamp_timestamp = now.timestamp_millis().to_string();
-        //let content_type = "application/x-www-form-urlencoded";
-        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
-                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
-
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
-
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-        //println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
-
-
-
-
-
-
-//kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_im_using = 0.09;  //aka 9 percent
-        let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-        *kraken_wallet -= money_going_to_xrp_after_fees;
-        let amount_of_xrp_before_withdraw_fee = 
-                        money_going_to_xrp_after_fees/kraken_buy_price_ask;
-            let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
-
-        
-
-
-    //coinbase calculations for sell
-
-        //let coinbase_taker_fee = 0.008;
-        //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
-        //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-        //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        //*coinbase_wallet += money_from_sell_after_fees;
-
-    //bitstamp calculations for sell
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
-
-
-    //this will count as value after
-        let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-        //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
-
-
-
-            //value_after = 60
-            //coinbase = 61
-            //bitstamp = 62
-            //kraken = 63
-            //gemini = 64
-            //since this is bitstamp and kraken being updated, I will update:
-            //  60, 62, 63
-            let indices = [60, 62, 63];
-            let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-
-
-        return Ok(value_after)
-    }
-    //-----NEED-TO-APPEND-TO-END-----//
-    pub async fn s_i140_xrp_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
-
-        //---KRAKEN--//
-
-        //basically Kraken requires a value that is always increasing to be in each request.
-        //I didnt use now.timestamp().to_string()  because just in case I have 2 
-        //	requests in a second I dont want to be penalized.
-        //if no "now" in scope when moving file, 
-        //	the code is this:
-        ////returns current time. MAY NEED TO USE LOCAL TIME
-        let now = Utc::now();
-        let nonce = now.timestamp_millis().to_string();
-        let data = vec![
-            ("nonce", &nonce),
-            // Add more parameters as needed
-        ];
-        //let post_data: String = form_urlencoded::Serializer::new(String::new())
-        //    .extend_pairs(data)
-        //    .finish();
-        
-        let url_path = "/0/public/Ticker?pair=XRPUSD";
-        //let message = format!("{}{}{}", url_path, nonce, post_data);
-
-        fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
-        -> String {
-            // Create the post data
-            let post_data: String = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(data)
-                .finish();
-            //FOR DEBUGGING
-            //println!("Private key:\n{}", secret);
-            //println!("Nonce:\n{}", nonce_str);
-            //println!("Encoded payload:\n{}", post_data);
-            //println!("URI Path:\n{}", url_path);
-        
-            // Create the encoded string (nonce + post data) and hash it
-            let encoded = format!("{}{}", nonce_str, post_data);
-            let mut hasher = sha2::Sha256::new();
-            hasher.update(encoded);
-            let encoded_hash = hasher.finalize();
-        
-            // Create the message (url_path + encoded_hash as bytes)
-            let mut message = url_path.as_bytes().to_vec();
-            message.extend_from_slice(&encoded_hash);
-        
-            // Create a HMAC-SHA512 object with the base64-decoded secret
-            let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
-            let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
-                .expect("HMAC can take key of any size");
-        
-            // Compute the HMAC of the message
-            mac.update(&message);
-            let result = mac.finalize();
-        
-            // Return the base64-encoded HMAC
-            let signature = base64::encode(result.into_bytes());
-            //println!("Kraken signature:\n{}", signature);
-        
-            signature
-        }
-
-        let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
-
-        //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-        //.body is nonce because in the Kraken code provided in cURL: 
-        //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-        //--data-urlencode "nonce=<YOUR-NONCE>"
-        //		this means that nonce is added to the body of the request
-        let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build()
-                .expect("Failed to build kraken request");
-
-
-        let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
-
-        let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
-        
-        //println!("kraken response:{}", kraken_response_text);
-
-        let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
-        let mut kraken_buy_price_ask = 0.0;
-        let mut kraken_sell_price_bid = 0.0;
-        if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
-            // Access the ask and bid prices
-            kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-            kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-        
-            //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
-            //println!("xrp Bid price: {}", kraken_sell_price_bid );
-        }
-        else {
-            println!("didnt parse kraken correctly.");
-        }
-
-
-
-
-
-
-        println!("xrp 10 kraken bitstamp  delay: 8 sec...");
-        let when = tokio::time::Instant::now() + Duration::from_secs(8);
-        //02/09/21 - tokio update. changed from delay_until to sleep_until
-        tokio::time::sleep_until(when).await;
-
-
-
-
-
-
-
-
-        //-------bitstamp--------------------//
-        type HmacSha256 = Hmac<Sha256>;
-        fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-            let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-                .expect("HMAC can take key of any size");
-            mac.update(bitstamp_message.as_bytes());
-            let result = mac.finalize();
-            let code_bytes = result.into_bytes();
-            hex::encode(code_bytes)
-        }
-
-
-        let content_type = "application/x-www-form-urlencoded";
-        let payload_string = "offset=1";
-        //if we needed content_type, it is here
-        //let content_type = "application/json";
-        //this is the bitstamp message IF we needed content_type
-        //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-        //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-        let the_uuid = Uuid::new_v4();
-        let bitstamp_nonce = the_uuid.to_string();
-        let bitstamp_timestamp = now.timestamp_millis().to_string();
-        //let content_type = "application/x-www-form-urlencoded";
-        let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
-                bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-        let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-        let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
-            .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-            .header("X-Auth-Signature", bitstamp_signature)
-            .header("X-Auth-Nonce", bitstamp_nonce)
-            .header("X-Auth-Timestamp", bitstamp_timestamp)
-            .header("X-Auth-Version", "v2")
-            //.header("Content-Type", content_type)
-            //.body(payload_string)
-            .build()
-            .expect("\ncould not build bitstamp_request");
-
-        let bitstamp_response = client.execute(bitstamp_request).await
-            .expect("Failed to execute Bitstamp request");
-        let bitstamp_response_text = bitstamp_response.text().await
-            .expect("Failed to turn response into text");
-        //probably dont need "bitstamp" once we transfer this to the actual function
-        let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-        .expect("Failed to parse JSON");
-
-        // Extract the bid and ask values
-        let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-        let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-        //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-        //println!("Bitstamp:\n{:?}", bitstamp_response_text);
-
-
-
-
-
-
-
-
-//kraken calculations - buy
-        let kraken_taker_fee = 0.0026;
-        let fraction_of_wallet_im_using = 0.10;  //aka 10 percent
-        let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
-        let fee_for_purchase = total_spent*kraken_taker_fee;
-        let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-        *kraken_wallet -= money_going_to_xrp_after_fees;
-        let amount_of_xrp_before_withdraw_fee = 
-                        money_going_to_xrp_after_fees/kraken_buy_price_ask;
-            let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
-
-        
-
-
-    //coinbase calculations for sell
-
-        //let coinbase_taker_fee = 0.008;
-        //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
-        //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-        //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        //*coinbase_wallet += money_from_sell_after_fees;
-
-    //bitstamp calculations for sell
-        let bitstamp_taker_fee = 0.004;
-        let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
-        let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        *bitstamp_wallet += money_from_sell_after_fees;
-
-
-    //this will count as value after
-        let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-        //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
-
-
-
-            //value_after = 60
-            //coinbase = 61
-            //bitstamp = 62
-            //kraken = 63
-            //gemini = 64
-            //since this is bitstamp and kraken being updated, I will update:
-            //  60, 62, 63
-            let indices = [60, 62, 63];
-            let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
-        //01/24/24 - removed and added:
-            //neural_network.update_input(&indices, &new_values);
-            //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //neural_network.update_input(&indices, &transformed_values).await;
-            let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            neural_network.update_input(&indices, &scaled_values).await;
-
-
-        return Ok(value_after)
-    }
-//gemini coinbase   = 3 AND UP for gemini/coin
-pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-    gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
-
-    fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
-        let encoded_payload = encode(gemini_payload.to_string());
-        let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
-                        .expect("HMAC can take key of any size");
-        mac.update(encoded_payload.as_bytes());
-        let result = mac.finalize();
-        let code_bytes = result.into_bytes();
-        let gemini_signature = hex::encode(code_bytes);
-        println!("Gemini signature:\n{}", &gemini_signature);
-        gemini_signature
-
-    }
-    //if no "now" in scope when moving file, 
-    //	the code is this:
-    ////returns current time.
-    //		let now = Utc::now();
-    let now = Utc::now();
-    let gemini_time_stamp = now.timestamp().to_string();
-    let gemini_nonce = gemini_time_stamp;
-    let gemini_url = "https://api.gemini.com/v1/pubticker/xrpusd";
-    let gemini_payload = json!({
-        "request": "/v1/mytrades",
-        "nonce": &gemini_nonce
-    });
-    let base64_encoded_payload = encode(gemini_payload.to_string());
-    let gemini_content_type = "text/plain";
-    let gemini_content_length = "0";
-    let gemini_cache_control = "no-cache";
-    let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
-    
-    // let gemini_request = client.get(gemini_url)
-    //         .header("Content-Type", gemini_content_type)
-    //         .header("Content-Length", gemini_content_length)
-    //         .header("X-GEMINI-APIKEY", gemini_api_key)
-    //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-    //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
-    //         .header("Cache-Control", gemini_cache_control)
-    //         .build()
-    //         .expect("couldn't build gemini request");
-
-
-    // let gemini_response = client.execute(gemini_request).await
-    //                         .expect("Failed to execute Gemini request");
-    // let gemini_response_text = gemini_response.text().await
-    //                         .expect("Failed to turn response into text");
-    // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-    //                         .expect("Failed to parse JSON");
-    // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-    // //CAN ONLY BUY. NOT SELL
-    // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-    // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
-//02/27/24 - added:
-    let mut attempts = 0;
-    let gemini_buy_ask: Option<f64>;
-    loop {
-        let gemini_request = client.get(gemini_url)
-            .header("Content-Type", gemini_content_type)
-            .header("Content-Length", gemini_content_length)
-            .header("X-GEMINI-APIKEY", gemini_api_key)
-            .header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
-            .header("X-GEMINI-SIGNATURE", &gemini_signature)
-            .header("Cache-Control", gemini_cache_control)
-            .build();
-    
-        match gemini_request {
-            Ok(request) => {
-                match client.execute(request).await {
-                    Ok(response) => {
-                        let gemini_response_text = response.text().await;
-                        match gemini_response_text {
-                            Ok(text) => {
-
-                                match serde_json::from_str::<Value>(&text) {
-                                    //03/02/24 - replaced:
-                                    // Ok(value) => {
-                                    //     let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
-                                    //         .ok_or_else(|| "Failed to get ask as string")
-                                    //         .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
-                            
-                                    //     match gemini_buy_ask_result {
-                                    //         Ok(ask) => {
-                                    //             gemini_buy_ask = Some(ask);
-                                    //             // Continue with your logic here using `ask`
-                                    //             break; // Exit the loop if everything is successful
-                                    //         },
-                                    //         Err(e) => log::error!("{}", e),
-                                    //     }
-                                    // },
-                                    // Err(_) => log::error!("Failed to parse JSON"),
-                                    //03/02/24 - added in its place:
-                                    Ok(value) => {
-                                        match value["ask"].as_str() {
-                                            Some(ask_str) => {
-                                                match ask_str.parse::<f64>() {
-                                                    Ok(ask) => {
-                                                        gemini_buy_ask = Some(ask);
-                                                        // Continue with your logic here using `ask`
-                                                        break; // Exit the loop if everything is successful
-                                                    },
-                                                    Err(_) => log::error!("Failed to parse ask as f64"),
-                                                }
-                                            },
-                                            None => log::error!("Failed to get ask as string"),
-                                        }
-                                    },
-                                    Err(_) => log::error!("Failed to parse JSON"),
-                                }
-                            },
-                            Err(_) => log::error!("Failed to turn response into text"),
-                        }
-                    },
-                    Err(_) => log::error!("Failed to execute Gemini request"),
-                }
-            },
-            Err(_) => log::error!("Couldn't build gemini request"),
-        }
-    
-        attempts += 1;
-        //03/02/24 - changed from >= to >
-        if attempts > 3 {
-            panic!("Failed after 3 attempts");
-        }
-    }
-
-
-
-
-    println!("xrp 3 gemini coinbase simulated 8 sec delay...");
-    let when = tokio::time::Instant::now() + Duration::from_secs(8);
-    //02/09/21 - tokio update. changed from delay_until to sleep_until
-    tokio::time::sleep_until(when).await;
-
-
-
-    //------------COINBASE------------//
-    let now = Utc::now();
-    let time_stamp = now.timestamp().to_string();
-    let method = "GET";
-    let request_path = "/api/v3/brokerage/best_bid_ask";
-    let body = "";
-    let message = format!("{}{}{}{}", &time_stamp, 
-    &method, &request_path, &body);
-    type HmacSha256 = Hmac<Sha256>;
-    fn sign(message: &str, coinbase_secret: &str) -> String {
-    let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-                .expect("HMAC can take key of any size");
-    mac.update(message.as_bytes());
-    let result = mac.finalize();
-    let code_bytes = result.into_bytes();
-    hex::encode(code_bytes)
-    }
-    let coinbase_signature = sign(&message, &coinbase_secret);
-
-//02/27/24 - removed:
-    // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
-    // .header("CB-ACCESS-KEY", coinbase_api_key)
-    // .header("CB-ACCESS-SIGN", &coinbase_signature)
-    // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-    // .build()
-    // .expect("couldn't build Coinbase request");
-    // //manages the error I described above
-    // //let request = match request {
-    // //Ok(req) => req,
-    // //Err(e) => {
-    // //eprintln!("Failed to build request: \n{}", e);
-    // //return Err(e);
-    // //}
-    // //};
-
-    // let response = client.execute(request).await.expect("couldn't build response");
-    // //let response = match response {
-    // //    Ok(resp) => resp,
-    // //    Err(e) => {
-    // //        eprintln!("Failed to execute request: \n{}", e);
-    // //        return Err(e);
-    // //    }
-    // //};
-
-
-    // let response_text = response.text().await.expect("couldn't build response_text");
-
-    // //added 12/29/23
-    // //this is the parsing
-    // let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
-    // let mut coinbase_sell_price_bid = 0.0;
-    // let mut coinbase_buy_price_ask = 0.0;
-
-    // // Access the pricebooks array
-    // if let Some(pricebooks) = v["pricebooks"].as_array() {
-    //     // Iterate over each pricebook
-    //     for pricebook in pricebooks {
-    //         // Access the product_id, bids, and asks
-    //         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
-    //         let bids = &pricebook["bids"][0];
-    //         let asks = &pricebook["asks"][0];
-    
-    //         // Access the price and size of the bids and asks
-    //         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
-    //         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
-    //         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
-    //         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
-    
-    //         //println!("Product ID: {}", product_id);
-    //         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
-    //         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
-    //     }
-    // }
-//02/27/24 - added in its place:
-    let mut attempts = 0;
-    let mut coinbase_sell_price_bid: Option<f64> = None;
-    //let coinbase_buy_price_ask: Option<f64>;
-    let mut value_after: Option<f64> = None;
-    //02/28/24 - changed to false
-    let mut success = false;
-    loop {
-        attempts +=1;
-        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
-        .header("CB-ACCESS-KEY", coinbase_api_key)
-        .header("CB-ACCESS-SIGN", &coinbase_signature)
-        .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build();
-        //.expect("couldn't build request");
-        //manages the error I described above
-        //let request = match request {
-        //Ok(req) => req,
-        //Err(e) => {
-        //eprintln!("Failed to build request: \n{}", e);
-        //return Err(e);
-        //}
-        //};
-        match request {
-            Ok(req) => {
-        //      response_text, v, coinbase_sell_price_bid, coinbase_buy_price_ask, bid/ask size
-                let response = client.execute(req).await;
-                match response {
-                    Ok(resp) => {
-                        let response_text = resp.text().await;
-                        match response_text {
-                            Ok(text) => {
-                                match serde_json::from_str::<Value>(&text) {
-                                    Ok(v) => {
-                                        if let Some(pricebooks) = v["pricebooks"].as_array() {
-                                            for pricebook in pricebooks {
-                                                //let product_id = pricebook["product_id"].as_str();
-                                                let bids = &pricebook["bids"][0];
-                                                //let asks = &pricebook["asks"][0];
-                                                let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-                                                //let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-    
-                                                match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-                                                    (Some(bid_str), /*Some(ask_str)*/) => {
-                                                        match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-                                                            (Ok(bid_str), /*Ok(ask_str)*/) => {
-                                                                coinbase_sell_price_bid = Some(bid_str);
-                                                                //coinbase_buy_price_ask = Some(ask_str);
-
-                                                                // Place your calculations and updates here
-                                                                    let gemini_taker_fee = 0.004;
-                                                                    let fraction_of_wallet_im_using = 0.03; //aka 3 percent
-                                                                    let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                                                                    let fee_for_purchase = total_spent*gemini_taker_fee;
-                                                                    let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                                                                    *gemini_wallet -= total_spent;
-
-                                                                    let amount_of_xrp = 
-                                                                    money_going_to_xrp_after_fees/gemini_buy_ask
-                                                                                                    .expect(&format!("gemini_buy_ask is somehow Not Some. 
-                                                                                                    even though to get to this point it had to be Some. 
-                                                                                                    gemini_buy_ask: {:?}
-                                                                                                    Honestly restart the program from the last saved state. 
-                                                                                                    The most likely error is a bit got flipped after the loop",
-                                                                                                    &gemini_buy_ask));
-
-                                                                    //coinbase calculations for sell
-
-                                                                    let coinbase_taker_fee = 0.008;
-                                                                    let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid.unwrap();
-                                                                    let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-                                                                    let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-                                                                    *coinbase_wallet += money_from_sell_after_fees;
-                                                                    value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-                                                                    println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                    //value_after = 60
-                                                                    //coinbase = 61
-                                                                    //bitstamp = 62
-                                                                    //kraken = 63
-                                                                    //gemini = 64
-                                                                    //since this is coinbase and gemini being updated, I will update:
-                                                                    //  60, 61, 64
-                                                                    let indices = [60, 61, 64];
-                                                                    let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                    neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                    success = true;
-                                                            },
-                                                            _ => {
-                                                                if attempts > 3 {
-                                                                    panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                }
-                                                                continue ;
-                                                            }
-                                                        }
-                                                    },
-                                                    _ => {
-                                                        if attempts > 3 {
-                                                            panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                        }
-                                                        continue ;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    },
-                                    Err(_) => {
-                                        if attempts > 3 {
-                                            panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                        }
-                                        continue ; // Continue to the next iteration if parsing fails
-                                    }
-                                }
-                            },
-                            Err(_) => {
-                                if attempts > 3 {
-                                    panic!("Failed to get response text after 3 attempts");
-                                }
-                                continue ; // Continue to the next iteration if getting response text fails
-                            }
-                        }
-                    },
-                    Err(_) => {
-                        if attempts > 3 {
-                            panic!("Failed to execute request after 3 attempts");
-                        }
-                        continue; // Continue to the next iteration if executing request fails
-                    }
-                }
-            },
-            Err(_) => {
-                if attempts > 3 {
-                    panic!("Failed to build request after 3 attempts");
-                }
-                continue; // Continue to the next iteration if building request fails
+            //-------bitstamp--------------------//
+            type HmacSha256 = Hmac<Sha256>;
+            fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+                let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                    .expect("HMAC can take key of any size");
+                mac.update(bitstamp_message.as_bytes());
+                let result = mac.finalize();
+                let code_bytes = result.into_bytes();
+                hex::encode(code_bytes)
             }
-        }
-        if success == true {
-            break;
-        }
-    }
 
-    match value_after {
-        Some(value) => return Ok(value),
-        None => {
-            //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-            panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-        }
-    }
-    //02/27/24 - removed and placed above^
-        //         //gemini calculations for buy 
-        //     //this should equal 0.4%
-        //     let gemini_taker_fee = 0.004;
-        //     let fraction_of_wallet_im_using = 0.06; //aka 6 percent
 
-        //     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-        //     let fee_for_purchase = total_spent*gemini_taker_fee;
+            let content_type = "application/x-www-form-urlencoded";
+            let payload_string = "offset=1";
+            //if we needed content_type, it is here
+            //let content_type = "application/json";
+            //this is the bitstamp message IF we needed content_type
+            //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+            //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+            let the_uuid = Uuid::new_v4();
+            let bitstamp_nonce = the_uuid.to_string();
+            let bitstamp_timestamp = now.timestamp_millis().to_string();
+            //let content_type = "application/x-www-form-urlencoded";
+            let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
+                    bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+            let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
+
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
+
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // //println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+																let kraken_taker_fee = 0.0026;
+																let fraction_of_wallet_im_using = 0.05;  //aka 5 percent
+																let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+																let fee_for_purchase = total_spent*kraken_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																
+																//new state of gemini wallet below
+																*kraken_wallet -= total_spent;
+
+                                                                let amount_of_xrp_before_withdraw_fee = 
+                                                                money_going_to_xrp_after_fees/kraken_buy_price_ask
+                                                                                                .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                kraken_buy_price_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &kraken_buy_price_ask));
+
+																let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 63, 62
+                                                                let indices = [60, 63, 62];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i135: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i135: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i135: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i135: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i135: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i135: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - removed:
+		// //kraken calculations - buy
+        //     let kraken_taker_fee = 0.0026;
+        //     let fraction_of_wallet_im_using = 0.04;  //aka 4 percent
+        //     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+        //     let fee_for_purchase = total_spent*kraken_taker_fee;
         //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-        //     //new state of gemini wallet below
-        //     *gemini_wallet -= total_spent;
-        //     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+        //     *kraken_wallet -= money_going_to_xrp_after_fees;
+        //     let amount_of_xrp_before_withdraw_fee = 
+        //                     money_going_to_xrp_after_fees/kraken_buy_price_ask;
+        //     let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
 
-
+            
 
 
         // //coinbase calculations for sell
 
-        //     let coinbase_taker_fee = 0.008;
-        //     let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
-        //     let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+        //     //let coinbase_taker_fee = 0.008;
+        //     //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+        //     //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+        //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     //*coinbase_wallet += money_from_sell_after_fees;
+
+        // //bitstamp calculations for sell
+        //     let bitstamp_taker_fee = 0.004;
+        //     let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
         //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        //     *coinbase_wallet += money_from_sell_after_fees;
+        //     *bitstamp_wallet += money_from_sell_after_fees;
+
+
+        // //this will count as value after
+        //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        //     //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
 
 
 
-
-
-
-        //     //coinbase calculations for buy - not needed in this so code commented out
-            
-        //         //let coinbase_taker_fee = 0.008;
-    
-        //         //let total_spent = 0.10*(*coinbase_wallet);
-        //         //let fee_for_purchase = total_spent*coinbase_taker_fee;
-        //         //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-        //         ////new state of coinbase wallet below
-        //         //*coinbase_wallet -= total_spent;
-        //         //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-    
-        //     //kraken calculations - for sell
-        //         //let kraken_taker_fee = 0.0026;
-                
-        //         //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-        //         //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-        //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-        //         //*kraken_wallet += money_from_sell_after_fees;
-    
-        //         //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-        //     //bitstamp calculations - for sell
-        //         //let bitstamp_taker_fee = 0.004;
-        //         //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-        //         //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-        //         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-        //         //*bitstamp_wallet += money_from_sell_after_fees;
-
-
-
-        //     //this will count as value after
-        //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    
         //         //value_after = 60
         //         //coinbase = 61
         //         //bitstamp = 62
         //         //kraken = 63
         //         //gemini = 64
-        //         //since this is coinbase and gemini being updated, I will update:
-        //         //  60, 61, 64
-        //         let indices = [60, 61, 64];
-        //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
-        //         //01/24/24 - removed and added:
-        //             //neural_network.update_input(&indices, &new_values);
-        //             //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-        //             //neural_network.update_input(&indices, &transformed_values).await;
-        //             let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-        //             neural_network.update_input(&indices, &scaled_values).await;
+        //         //since this is bitstamp and kraken being updated, I will update:
+        //         //  60, 62, 63
+        //         let indices = [60, 62, 63];
+        //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        //     //01/24/24 - removed and added:
+        //         //neural_network.update_input(&indices, &new_values);
+        //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //         //neural_network.update_input(&indices, &transformed_values).await;
+        //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //         neural_network.update_input(&indices, &scaled_values).await;
+
+
+        //     return Ok(value_after)
+	}
+
+    pub async fn s_i136_xrp_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+
+            //---KRAKEN--//
     
-        // return Ok(value_after)
-}
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XRPUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+			//03/05/24 - removed:
+            // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+            //         .header("API-Key", kraken_api_key)
+            //         .header("API-Sign", &kraken_signature)
+            //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+            //         .body(format!("nonce={}", nonce))
+            //         .build()
+            //         .expect("Failed to build kraken request");
+            // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+            // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            // //println!("kraken response:{}", kraken_response_text);
+            // let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
+            // let mut kraken_buy_price_ask = 0.0;
+            // let mut kraken_sell_price_bid = 0.0;
+            // if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
+            //     // Access the ask and bid prices
+            //     kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //     //println!("xrp Bid price: {}", kraken_sell_price_bid );
+            // }
+            // else {
+            //     println!("didnt parse kraken correctly.");
+            // }
+    
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - added in its place:
+			let mut kraken_buy_price_ask: Option<f64> = None;
+			//let mut kraken_sell_price_bid: Option<f64> = None;
+			let mut attempts = 0;
+			loop {
+				attempts += 1;
+				let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+				.header("API-Key", kraken_api_key)
+				.header("API-Sign", &kraken_signature)
+				.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+				.body(format!("nonce={}", nonce))
+				.build();
+
+				match kraken_basic_request {
+					Ok(request) => {
+						match client.execute(request).await {
+							Ok(response) => {
+								match response.text().await {
+									Ok(kraken_response_text) => {
+										match serde_json::from_str::<Value>(&kraken_response_text) {
+											Ok(value) => {
+												if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
+
+													match (xrpusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+														(Some(ask_str), /*Some(bid_str)*/) => {
+															match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+																(Ok(ask), /*Ok(bid)*/) => {
+																	kraken_buy_price_ask = Some(ask);
+																	//kraken_sell_price_bid = Some(bid);
+
+																	break; // Exit the loop if everything is successful
+																},
+																_ => log::error!("i136: Failed to parse ask or bid as f64"),
+															}
+														},
+														_ => log::error!("i136: Failed to get ask or bid as string"),
+													}										
+												}
+												else {
+													log::error!("i136: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+												}
+											},
+											Err(e) => log::error!("i136: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+										}
+									},
+									Err(e) => log::error!("i136: Failed to read response text. Error was: {}", e),
+								}
+							},
+							Err(e) => log::error!("i136: Failed to execute Kraken request. Error was: {}", e),
+						}
+					},
+					Err(e) => log::error!("i136: Failed to build kraken request. Error was: {}", e),
+				}
+				if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+					break; // Exit the loop if everything is successful
+				}
+
+				attempts += 1;
+				if attempts >= 3 {
+					panic!("Failed after 3 attempts");
+				}
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+            println!("xrp 6 kraken bitstamp  delay: 8 sec...");
+            let when = tokio::time::Instant::now() + Duration::from_secs(8);
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
+
+
+
+
+
+
+
+
+            //-------bitstamp--------------------//
+            type HmacSha256 = Hmac<Sha256>;
+            fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+                let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                    .expect("HMAC can take key of any size");
+                mac.update(bitstamp_message.as_bytes());
+                let result = mac.finalize();
+                let code_bytes = result.into_bytes();
+                hex::encode(code_bytes)
+            }
+
+
+            let content_type = "application/x-www-form-urlencoded";
+            let payload_string = "offset=1";
+            //if we needed content_type, it is here
+            //let content_type = "application/json";
+            //this is the bitstamp message IF we needed content_type
+            //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+            //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+            let the_uuid = Uuid::new_v4();
+            let bitstamp_nonce = the_uuid.to_string();
+            let bitstamp_timestamp = now.timestamp_millis().to_string();
+            //let content_type = "application/x-www-form-urlencoded";
+            let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
+                    bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+            let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
+
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
+
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // //println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+																let kraken_taker_fee = 0.0026;
+																let fraction_of_wallet_im_using = 0.06;  //aka 6 percent
+																let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+																let fee_for_purchase = total_spent*kraken_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																
+																//new state of gemini wallet below
+																*kraken_wallet -= total_spent;
+
+                                                                let amount_of_xrp_before_withdraw_fee = 
+                                                                money_going_to_xrp_after_fees/kraken_buy_price_ask
+                                                                                                .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                kraken_buy_price_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &kraken_buy_price_ask));
+
+																let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 63, 62
+                                                                let indices = [60, 63, 62];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i136: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i136: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i136: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i136: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i136: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i136: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - removed:
+		// //kraken calculations - buy
+        //     let kraken_taker_fee = 0.0026;
+        //     let fraction_of_wallet_im_using = 0.04;  //aka 4 percent
+        //     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+        //     let fee_for_purchase = total_spent*kraken_taker_fee;
+        //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //     *kraken_wallet -= money_going_to_xrp_after_fees;
+        //     let amount_of_xrp_before_withdraw_fee = 
+        //                     money_going_to_xrp_after_fees/kraken_buy_price_ask;
+        //     let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+
+            
+
+
+        // //coinbase calculations for sell
+
+        //     //let coinbase_taker_fee = 0.008;
+        //     //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+        //     //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+        //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     //*coinbase_wallet += money_from_sell_after_fees;
+
+        // //bitstamp calculations for sell
+        //     let bitstamp_taker_fee = 0.004;
+        //     let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     *bitstamp_wallet += money_from_sell_after_fees;
+
+
+        // //this will count as value after
+        //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        //     //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+
+        //         //value_after = 60
+        //         //coinbase = 61
+        //         //bitstamp = 62
+        //         //kraken = 63
+        //         //gemini = 64
+        //         //since this is bitstamp and kraken being updated, I will update:
+        //         //  60, 62, 63
+        //         let indices = [60, 62, 63];
+        //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        //     //01/24/24 - removed and added:
+        //         //neural_network.update_input(&indices, &new_values);
+        //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //         //neural_network.update_input(&indices, &transformed_values).await;
+        //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //         neural_network.update_input(&indices, &scaled_values).await;
+
+
+        //     return Ok(value_after)
+	}
+
+    pub async fn s_i137_xrp_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XRPUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+			//03/05/24 - removed:
+            // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+            //         .header("API-Key", kraken_api_key)
+            //         .header("API-Sign", &kraken_signature)
+            //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+            //         .body(format!("nonce={}", nonce))
+            //         .build()
+            //         .expect("Failed to build kraken request");
+            // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+            // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            // //println!("kraken response:{}", kraken_response_text);
+            // let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
+            // let mut kraken_buy_price_ask = 0.0;
+            // let mut kraken_sell_price_bid = 0.0;
+            // if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
+            //     // Access the ask and bid prices
+            //     kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //     //println!("xrp Bid price: {}", kraken_sell_price_bid );
+            // }
+            // else {
+            //     println!("didnt parse kraken correctly.");
+            // }
+    
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - added in its place:
+			let mut kraken_buy_price_ask: Option<f64> = None;
+			//let mut kraken_sell_price_bid: Option<f64> = None;
+			let mut attempts = 0;
+			loop {
+				attempts += 1;
+				let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+				.header("API-Key", kraken_api_key)
+				.header("API-Sign", &kraken_signature)
+				.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+				.body(format!("nonce={}", nonce))
+				.build();
+
+				match kraken_basic_request {
+					Ok(request) => {
+						match client.execute(request).await {
+							Ok(response) => {
+								match response.text().await {
+									Ok(kraken_response_text) => {
+										match serde_json::from_str::<Value>(&kraken_response_text) {
+											Ok(value) => {
+												if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
+
+													match (xrpusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+														(Some(ask_str), /*Some(bid_str)*/) => {
+															match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+																(Ok(ask), /*Ok(bid)*/) => {
+																	kraken_buy_price_ask = Some(ask);
+																	//kraken_sell_price_bid = Some(bid);
+
+																	break; // Exit the loop if everything is successful
+																},
+																_ => log::error!("i137: Failed to parse ask or bid as f64"),
+															}
+														},
+														_ => log::error!("i137: Failed to get ask or bid as string"),
+													}										
+												}
+												else {
+													log::error!("i137: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+												}
+											},
+											Err(e) => log::error!("i137: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+										}
+									},
+									Err(e) => log::error!("i137: Failed to read response text. Error was: {}", e),
+								}
+							},
+							Err(e) => log::error!("i137: Failed to execute Kraken request. Error was: {}", e),
+						}
+					},
+					Err(e) => log::error!("i137: Failed to build kraken request. Error was: {}", e),
+				}
+				if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+					break; // Exit the loop if everything is successful
+				}
+
+				attempts += 1;
+				if attempts >= 3 {
+					panic!("Failed after 3 attempts");
+				}
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+            println!("xrp 7 kraken bitstamp  delay: 8 sec...");
+            let when = tokio::time::Instant::now() + Duration::from_secs(8);
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
+
+
+
+
+
+
+
+
+            //-------bitstamp--------------------//
+            type HmacSha256 = Hmac<Sha256>;
+            fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+                let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                    .expect("HMAC can take key of any size");
+                mac.update(bitstamp_message.as_bytes());
+                let result = mac.finalize();
+                let code_bytes = result.into_bytes();
+                hex::encode(code_bytes)
+            }
+
+
+            let content_type = "application/x-www-form-urlencoded";
+            let payload_string = "offset=1";
+            //if we needed content_type, it is here
+            //let content_type = "application/json";
+            //this is the bitstamp message IF we needed content_type
+            //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+            //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+            let the_uuid = Uuid::new_v4();
+            let bitstamp_nonce = the_uuid.to_string();
+            let bitstamp_timestamp = now.timestamp_millis().to_string();
+            //let content_type = "application/x-www-form-urlencoded";
+            let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
+                    bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+            let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
+
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
+
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // //println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+																let kraken_taker_fee = 0.0026;
+																let fraction_of_wallet_im_using = 0.07;  //aka 7 percent
+																let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+																let fee_for_purchase = total_spent*kraken_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																
+																//new state of gemini wallet below
+																*kraken_wallet -= total_spent;
+
+                                                                let amount_of_xrp_before_withdraw_fee = 
+                                                                money_going_to_xrp_after_fees/kraken_buy_price_ask
+                                                                                                .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                kraken_buy_price_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &kraken_buy_price_ask));
+
+																let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 63, 62
+                                                                let indices = [60, 63, 62];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i137: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i137: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i137: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i137: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i137: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i137: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - removed:
+		// //kraken calculations - buy
+        //     let kraken_taker_fee = 0.0026;
+        //     let fraction_of_wallet_im_using = 0.04;  //aka 4 percent
+        //     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+        //     let fee_for_purchase = total_spent*kraken_taker_fee;
+        //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //     *kraken_wallet -= money_going_to_xrp_after_fees;
+        //     let amount_of_xrp_before_withdraw_fee = 
+        //                     money_going_to_xrp_after_fees/kraken_buy_price_ask;
+        //     let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+
+            
+
+
+        // //coinbase calculations for sell
+
+        //     //let coinbase_taker_fee = 0.008;
+        //     //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+        //     //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+        //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     //*coinbase_wallet += money_from_sell_after_fees;
+
+        // //bitstamp calculations for sell
+        //     let bitstamp_taker_fee = 0.004;
+        //     let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     *bitstamp_wallet += money_from_sell_after_fees;
+
+
+        // //this will count as value after
+        //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        //     //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+
+        //         //value_after = 60
+        //         //coinbase = 61
+        //         //bitstamp = 62
+        //         //kraken = 63
+        //         //gemini = 64
+        //         //since this is bitstamp and kraken being updated, I will update:
+        //         //  60, 62, 63
+        //         let indices = [60, 62, 63];
+        //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        //     //01/24/24 - removed and added:
+        //         //neural_network.update_input(&indices, &new_values);
+        //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //         //neural_network.update_input(&indices, &transformed_values).await;
+        //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //         neural_network.update_input(&indices, &scaled_values).await;
+
+
+        //     return Ok(value_after)
+	}
+
+    pub async fn s_i138_xrp_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XRPUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+			//03/05/24 - removed:
+            // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+            //         .header("API-Key", kraken_api_key)
+            //         .header("API-Sign", &kraken_signature)
+            //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+            //         .body(format!("nonce={}", nonce))
+            //         .build()
+            //         .expect("Failed to build kraken request");
+            // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+            // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            // //println!("kraken response:{}", kraken_response_text);
+            // let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
+            // let mut kraken_buy_price_ask = 0.0;
+            // let mut kraken_sell_price_bid = 0.0;
+            // if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
+            //     // Access the ask and bid prices
+            //     kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //     //println!("xrp Bid price: {}", kraken_sell_price_bid );
+            // }
+            // else {
+            //     println!("didnt parse kraken correctly.");
+            // }
+    
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - added in its place:
+			let mut kraken_buy_price_ask: Option<f64> = None;
+			//let mut kraken_sell_price_bid: Option<f64> = None;
+			let mut attempts = 0;
+			loop {
+				attempts += 1;
+				let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+				.header("API-Key", kraken_api_key)
+				.header("API-Sign", &kraken_signature)
+				.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+				.body(format!("nonce={}", nonce))
+				.build();
+
+				match kraken_basic_request {
+					Ok(request) => {
+						match client.execute(request).await {
+							Ok(response) => {
+								match response.text().await {
+									Ok(kraken_response_text) => {
+										match serde_json::from_str::<Value>(&kraken_response_text) {
+											Ok(value) => {
+												if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
+
+													match (xrpusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+														(Some(ask_str), /*Some(bid_str)*/) => {
+															match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+																(Ok(ask), /*Ok(bid)*/) => {
+																	kraken_buy_price_ask = Some(ask);
+																	//kraken_sell_price_bid = Some(bid);
+
+																	break; // Exit the loop if everything is successful
+																},
+																_ => log::error!("i138: Failed to parse ask or bid as f64"),
+															}
+														},
+														_ => log::error!("i138: Failed to get ask or bid as string"),
+													}										
+												}
+												else {
+													log::error!("i138: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+												}
+											},
+											Err(e) => log::error!("i138: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+										}
+									},
+									Err(e) => log::error!("i138: Failed to read response text. Error was: {}", e),
+								}
+							},
+							Err(e) => log::error!("i138: Failed to execute Kraken request. Error was: {}", e),
+						}
+					},
+					Err(e) => log::error!("i138: Failed to build kraken request. Error was: {}", e),
+				}
+				if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+					break; // Exit the loop if everything is successful
+				}
+
+				attempts += 1;
+				if attempts >= 3 {
+					panic!("Failed after 3 attempts");
+				}
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+            println!("xrp 8 kraken bitstamp  delay: 8 sec...");
+            let when = tokio::time::Instant::now() + Duration::from_secs(8);
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
+
+
+
+
+
+
+
+
+            //-------bitstamp--------------------//
+            type HmacSha256 = Hmac<Sha256>;
+            fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+                let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                    .expect("HMAC can take key of any size");
+                mac.update(bitstamp_message.as_bytes());
+                let result = mac.finalize();
+                let code_bytes = result.into_bytes();
+                hex::encode(code_bytes)
+            }
+
+
+            let content_type = "application/x-www-form-urlencoded";
+            let payload_string = "offset=1";
+            //if we needed content_type, it is here
+            //let content_type = "application/json";
+            //this is the bitstamp message IF we needed content_type
+            //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+            //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+            let the_uuid = Uuid::new_v4();
+            let bitstamp_nonce = the_uuid.to_string();
+            let bitstamp_timestamp = now.timestamp_millis().to_string();
+            //let content_type = "application/x-www-form-urlencoded";
+            let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
+                    bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+            let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
+
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
+
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // //println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+																let kraken_taker_fee = 0.0026;
+																let fraction_of_wallet_im_using = 0.08;  //aka 8 percent
+																let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+																let fee_for_purchase = total_spent*kraken_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																
+																//new state of gemini wallet below
+																*kraken_wallet -= total_spent;
+
+                                                                let amount_of_xrp_before_withdraw_fee = 
+                                                                money_going_to_xrp_after_fees/kraken_buy_price_ask
+                                                                                                .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                kraken_buy_price_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &kraken_buy_price_ask));
+
+																let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 63, 62
+                                                                let indices = [60, 63, 62];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i138: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i138: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i138: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i138: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i138: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i138: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - removed:
+		// //kraken calculations - buy
+        //     let kraken_taker_fee = 0.0026;
+        //     let fraction_of_wallet_im_using = 0.04;  //aka 4 percent
+        //     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+        //     let fee_for_purchase = total_spent*kraken_taker_fee;
+        //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //     *kraken_wallet -= money_going_to_xrp_after_fees;
+        //     let amount_of_xrp_before_withdraw_fee = 
+        //                     money_going_to_xrp_after_fees/kraken_buy_price_ask;
+        //     let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+
+            
+
+
+        // //coinbase calculations for sell
+
+        //     //let coinbase_taker_fee = 0.008;
+        //     //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+        //     //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+        //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     //*coinbase_wallet += money_from_sell_after_fees;
+
+        // //bitstamp calculations for sell
+        //     let bitstamp_taker_fee = 0.004;
+        //     let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     *bitstamp_wallet += money_from_sell_after_fees;
+
+
+        // //this will count as value after
+        //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        //     //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+
+        //         //value_after = 60
+        //         //coinbase = 61
+        //         //bitstamp = 62
+        //         //kraken = 63
+        //         //gemini = 64
+        //         //since this is bitstamp and kraken being updated, I will update:
+        //         //  60, 62, 63
+        //         let indices = [60, 62, 63];
+        //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        //     //01/24/24 - removed and added:
+        //         //neural_network.update_input(&indices, &new_values);
+        //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //         //neural_network.update_input(&indices, &transformed_values).await;
+        //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //         neural_network.update_input(&indices, &scaled_values).await;
+
+
+        //     return Ok(value_after)
+	}
+
+    pub async fn s_i139_xrp_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XRPUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+			//03/05/24 - removed:
+            // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+            //         .header("API-Key", kraken_api_key)
+            //         .header("API-Sign", &kraken_signature)
+            //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+            //         .body(format!("nonce={}", nonce))
+            //         .build()
+            //         .expect("Failed to build kraken request");
+            // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+            // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            // //println!("kraken response:{}", kraken_response_text);
+            // let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
+            // let mut kraken_buy_price_ask = 0.0;
+            // let mut kraken_sell_price_bid = 0.0;
+            // if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
+            //     // Access the ask and bid prices
+            //     kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //     //println!("xrp Bid price: {}", kraken_sell_price_bid );
+            // }
+            // else {
+            //     println!("didnt parse kraken correctly.");
+            // }
+    
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - added in its place:
+			let mut kraken_buy_price_ask: Option<f64> = None;
+			//let mut kraken_sell_price_bid: Option<f64> = None;
+			let mut attempts = 0;
+			loop {
+				attempts += 1;
+				let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+				.header("API-Key", kraken_api_key)
+				.header("API-Sign", &kraken_signature)
+				.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+				.body(format!("nonce={}", nonce))
+				.build();
+
+				match kraken_basic_request {
+					Ok(request) => {
+						match client.execute(request).await {
+							Ok(response) => {
+								match response.text().await {
+									Ok(kraken_response_text) => {
+										match serde_json::from_str::<Value>(&kraken_response_text) {
+											Ok(value) => {
+												if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
+
+													match (xrpusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+														(Some(ask_str), /*Some(bid_str)*/) => {
+															match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+																(Ok(ask), /*Ok(bid)*/) => {
+																	kraken_buy_price_ask = Some(ask);
+																	//kraken_sell_price_bid = Some(bid);
+
+																	break; // Exit the loop if everything is successful
+																},
+																_ => log::error!("i139: Failed to parse ask or bid as f64"),
+															}
+														},
+														_ => log::error!("i139: Failed to get ask or bid as string"),
+													}										
+												}
+												else {
+													log::error!("i139: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+												}
+											},
+											Err(e) => log::error!("i139: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+										}
+									},
+									Err(e) => log::error!("i139: Failed to read response text. Error was: {}", e),
+								}
+							},
+							Err(e) => log::error!("i139: Failed to execute Kraken request. Error was: {}", e),
+						}
+					},
+					Err(e) => log::error!("i139: Failed to build kraken request. Error was: {}", e),
+				}
+				if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+					break; // Exit the loop if everything is successful
+				}
+
+				attempts += 1;
+				if attempts >= 3 {
+					panic!("Failed after 3 attempts");
+				}
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+            println!("xrp 9 kraken bitstamp  delay: 8 sec...");
+            let when = tokio::time::Instant::now() + Duration::from_secs(8);
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
+
+
+
+
+
+
+
+
+            //-------bitstamp--------------------//
+            type HmacSha256 = Hmac<Sha256>;
+            fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+                let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                    .expect("HMAC can take key of any size");
+                mac.update(bitstamp_message.as_bytes());
+                let result = mac.finalize();
+                let code_bytes = result.into_bytes();
+                hex::encode(code_bytes)
+            }
+
+
+            let content_type = "application/x-www-form-urlencoded";
+            let payload_string = "offset=1";
+            //if we needed content_type, it is here
+            //let content_type = "application/json";
+            //this is the bitstamp message IF we needed content_type
+            //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+            //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+            let the_uuid = Uuid::new_v4();
+            let bitstamp_nonce = the_uuid.to_string();
+            let bitstamp_timestamp = now.timestamp_millis().to_string();
+            //let content_type = "application/x-www-form-urlencoded";
+            let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
+                    bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+            let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
+
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
+
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // //println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+																let kraken_taker_fee = 0.0026;
+																let fraction_of_wallet_im_using = 0.09;  //aka 9 percent
+																let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+																let fee_for_purchase = total_spent*kraken_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																
+																//new state of gemini wallet below
+																*kraken_wallet -= total_spent;
+
+                                                                let amount_of_xrp_before_withdraw_fee = 
+                                                                money_going_to_xrp_after_fees/kraken_buy_price_ask
+                                                                                                .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                kraken_buy_price_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &kraken_buy_price_ask));
+
+																let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 63, 62
+                                                                let indices = [60, 63, 62];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i139: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i139: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i139: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i139: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i139: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i139: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - removed:
+		// //kraken calculations - buy
+        //     let kraken_taker_fee = 0.0026;
+        //     let fraction_of_wallet_im_using = 0.04;  //aka 4 percent
+        //     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+        //     let fee_for_purchase = total_spent*kraken_taker_fee;
+        //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //     *kraken_wallet -= money_going_to_xrp_after_fees;
+        //     let amount_of_xrp_before_withdraw_fee = 
+        //                     money_going_to_xrp_after_fees/kraken_buy_price_ask;
+        //     let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+
+            
+
+
+        // //coinbase calculations for sell
+
+        //     //let coinbase_taker_fee = 0.008;
+        //     //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+        //     //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+        //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     //*coinbase_wallet += money_from_sell_after_fees;
+
+        // //bitstamp calculations for sell
+        //     let bitstamp_taker_fee = 0.004;
+        //     let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     *bitstamp_wallet += money_from_sell_after_fees;
+
+
+        // //this will count as value after
+        //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        //     //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+
+        //         //value_after = 60
+        //         //coinbase = 61
+        //         //bitstamp = 62
+        //         //kraken = 63
+        //         //gemini = 64
+        //         //since this is bitstamp and kraken being updated, I will update:
+        //         //  60, 62, 63
+        //         let indices = [60, 62, 63];
+        //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        //     //01/24/24 - removed and added:
+        //         //neural_network.update_input(&indices, &new_values);
+        //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //         //neural_network.update_input(&indices, &transformed_values).await;
+        //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //         neural_network.update_input(&indices, &scaled_values).await;
+
+
+        //     return Ok(value_after)
+	}
+    //-----NEED-TO-APPEND-TO-END-----//
+    pub async fn s_i140_xrp_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+
+            //---KRAKEN--//
+    
+            //basically Kraken requires a value that is always increasing to be in each request.
+            //I didnt use now.timestamp().to_string()  because just in case I have 2 
+            //	requests in a second I dont want to be penalized.
+            //if no "now" in scope when moving file, 
+            //	the code is this:
+            ////returns current time. MAY NEED TO USE LOCAL TIME
+            let now = Utc::now();
+            let nonce = now.timestamp_millis().to_string();
+            let data = vec![
+                ("nonce", &nonce),
+                // Add more parameters as needed
+            ];
+            //let post_data: String = form_urlencoded::Serializer::new(String::new())
+            //    .extend_pairs(data)
+            //    .finish();
+            
+            let url_path = "/0/public/Ticker?pair=XRPUSD";
+            //let message = format!("{}{}{}", url_path, nonce, post_data);
+    
+            fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+            -> String {
+                // Create the post data
+                let post_data: String = form_urlencoded::Serializer::new(String::new())
+                    .extend_pairs(data)
+                    .finish();
+                //FOR DEBUGGING
+                //println!("Private key:\n{}", secret);
+                //println!("Nonce:\n{}", nonce_str);
+                //println!("Encoded payload:\n{}", post_data);
+                //println!("URI Path:\n{}", url_path);
+            
+                // Create the encoded string (nonce + post data) and hash it
+                let encoded = format!("{}{}", nonce_str, post_data);
+                let mut hasher = sha2::Sha256::new();
+                hasher.update(encoded);
+                let encoded_hash = hasher.finalize();
+            
+                // Create the message (url_path + encoded_hash as bytes)
+                let mut message = url_path.as_bytes().to_vec();
+                message.extend_from_slice(&encoded_hash);
+            
+                // Create a HMAC-SHA512 object with the base64-decoded secret
+                let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+                let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+                    .expect("HMAC can take key of any size");
+            
+                // Compute the HMAC of the message
+                mac.update(&message);
+                let result = mac.finalize();
+            
+                // Return the base64-encoded HMAC
+                let signature = base64::encode(result.into_bytes());
+                //println!("Kraken signature:\n{}", signature);
+            
+                signature
+            }
+    
+            let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+    
+            //kraken asked for 3 headers: key, sign, and content type with its corresponding info
+            //.body is nonce because in the Kraken code provided in cURL: 
+            //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+            //--data-urlencode "nonce=<YOUR-NONCE>"
+            //		this means that nonce is added to the body of the request
+			//03/05/24 - removed:
+            // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+            //         .header("API-Key", kraken_api_key)
+            //         .header("API-Sign", &kraken_signature)
+            //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+            //         .body(format!("nonce={}", nonce))
+            //         .build()
+            //         .expect("Failed to build kraken request");
+            // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+            // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+            // //println!("kraken response:{}", kraken_response_text);
+            // let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
+            // let mut kraken_buy_price_ask = 0.0;
+            // let mut kraken_sell_price_bid = 0.0;
+            // if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
+            //     // Access the ask and bid prices
+            //     kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+            //     //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
+            //     //println!("xrp Bid price: {}", kraken_sell_price_bid );
+            // }
+            // else {
+            //     println!("didnt parse kraken correctly.");
+            // }
+    
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - added in its place:
+			let mut kraken_buy_price_ask: Option<f64> = None;
+			//let mut kraken_sell_price_bid: Option<f64> = None;
+			let mut attempts = 0;
+			loop {
+				attempts += 1;
+				let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+				.header("API-Key", kraken_api_key)
+				.header("API-Sign", &kraken_signature)
+				.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+				.body(format!("nonce={}", nonce))
+				.build();
+
+				match kraken_basic_request {
+					Ok(request) => {
+						match client.execute(request).await {
+							Ok(response) => {
+								match response.text().await {
+									Ok(kraken_response_text) => {
+										match serde_json::from_str::<Value>(&kraken_response_text) {
+											Ok(value) => {
+												if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
+
+													match (xrpusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
+														(Some(ask_str), /*Some(bid_str)*/) => {
+															match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
+																(Ok(ask), /*Ok(bid)*/) => {
+																	kraken_buy_price_ask = Some(ask);
+																	//kraken_sell_price_bid = Some(bid);
+
+																	break; // Exit the loop if everything is successful
+																},
+																_ => log::error!("i140: Failed to parse ask or bid as f64"),
+															}
+														},
+														_ => log::error!("i140: Failed to get ask or bid as string"),
+													}										
+												}
+												else {
+													log::error!("i140: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+												}
+											},
+											Err(e) => log::error!("i140: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+										}
+									},
+									Err(e) => log::error!("i140: Failed to read response text. Error was: {}", e),
+								}
+							},
+							Err(e) => log::error!("i140: Failed to execute Kraken request. Error was: {}", e),
+						}
+					},
+					Err(e) => log::error!("i140: Failed to build kraken request. Error was: {}", e),
+				}
+				if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+					break; // Exit the loop if everything is successful
+				}
+
+				attempts += 1;
+				if attempts >= 3 {
+					panic!("Failed after 3 attempts");
+				}
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+            println!("xrp 10 kraken bitstamp  delay: 8 sec...");
+            let when = tokio::time::Instant::now() + Duration::from_secs(8);
+            //02/09/21 - tokio update. changed from delay_until to sleep_until
+            tokio::time::sleep_until(when).await;
+
+
+
+
+
+
+
+
+            //-------bitstamp--------------------//
+            type HmacSha256 = Hmac<Sha256>;
+            fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+                let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+                    .expect("HMAC can take key of any size");
+                mac.update(bitstamp_message.as_bytes());
+                let result = mac.finalize();
+                let code_bytes = result.into_bytes();
+                hex::encode(code_bytes)
+            }
+
+
+            let content_type = "application/x-www-form-urlencoded";
+            let payload_string = "offset=1";
+            //if we needed content_type, it is here
+            //let content_type = "application/json";
+            //this is the bitstamp message IF we needed content_type
+            //let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+            //	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+
+            let the_uuid = Uuid::new_v4();
+            let bitstamp_nonce = the_uuid.to_string();
+            let bitstamp_timestamp = now.timestamp_millis().to_string();
+            //let content_type = "application/x-www-form-urlencoded";
+            let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/xrp-usd/{}{}{}{}v2{}", 
+                    bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+
+            let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+
+			//03/05/24 - removed:
+            // let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+            //     .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+            //     .header("X-Auth-Signature", bitstamp_signature)
+            //     .header("X-Auth-Nonce", bitstamp_nonce)
+            //     .header("X-Auth-Timestamp", bitstamp_timestamp)
+            //     .header("X-Auth-Version", "v2")
+            //     //.header("Content-Type", content_type)
+            //     //.body(payload_string)
+            //     .build()
+            //     .expect("\ncould not build bitstamp_request");
+
+            // let bitstamp_response = client.execute(bitstamp_request).await
+            //     .expect("Failed to execute Bitstamp request");
+            // let bitstamp_response_text = bitstamp_response.text().await
+            //     .expect("Failed to turn response into text");
+            // //probably dont need "bitstamp" once we transfer this to the actual function
+            // let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+            // .expect("Failed to parse JSON");
+
+            // // Extract the bid and ask values
+            // let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+            // let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+            // //println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+            // //println!("Bitstamp:\n{:?}", bitstamp_response_text);
+
+
+
+
+
+
+
+
+
+
+
+
+			//03/05/24 - added:
+            let mut success = false;
+            let mut attempts = 0;
+            let mut value_after: Option<f64> = None;
+
+            while !success && attempts <=3 {
+                attempts += 1;
+
+                match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
+                    .header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+                    .header("X-Auth-Signature", &bitstamp_signature)
+                    .header("X-Auth-Nonce", &bitstamp_nonce)
+                    .header("X-Auth-Timestamp", &bitstamp_timestamp)
+                    .header("X-Auth-Version", "v2")
+                    .build() {
+                    Ok(bitstamp_request) => {
+                        match client.execute(bitstamp_request).await {
+                            Ok(bitstamp_response) => {
+                                match bitstamp_response.text().await {
+                                    Ok(bitstamp_response_text) => {
+                                        match serde_json::from_str::<Value>(&bitstamp_response_text) {
+                                            Ok(v) => {
+                                                let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+
+                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+                                                    (Some(bid_str), Some(ask_str)) => {
+                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+																let kraken_taker_fee = 0.0026;
+																let fraction_of_wallet_im_using = 0.10;  //aka 10 percent
+																let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+																let fee_for_purchase = total_spent*kraken_taker_fee;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																
+																//new state of gemini wallet below
+																*kraken_wallet -= total_spent;
+
+                                                                let amount_of_xrp_before_withdraw_fee = 
+                                                                money_going_to_xrp_after_fees/kraken_buy_price_ask
+                                                                                                .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
+                                                                                                even though to get to this point it had to be Some. 
+                                                                                                kraken_buy_price_ask: {:?}
+                                                                                                Honestly restart the program from the last saved state. 
+                                                                                                The most likely error is a bit got flipped after the loop",
+                                                                                                &kraken_buy_price_ask));
+
+																let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+                                                                //bitstamp calculations for sell
+
+                                                                let bitstamp_taker_fee = 0.004;
+                                                                let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+                                                                let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+                                                                let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+                                                                *bitstamp_wallet += money_from_sell_after_fees;
+                                                                value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+                                                                //value_after = 60
+                                                                //coinbase = 61
+                                                                //bitstamp = 62
+                                                                //kraken = 63
+                                                                //gemini = 64
+                                                                //since this is coinbase and gemini being updated, I will update:
+                                                                //  60, 63, 62
+                                                                let indices = [60, 63, 62];
+                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+                                                                // log::info!("state of: coinbase wallet: {}
+                                                                // kraken wallet: {}
+                                                                // gemini wallet: {}
+                                                                // bitstamp wallet: {}
+                                                                // coinbase buy price ask: {:?}
+                                                                // bitstamp sell price bid: {}", 
+                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
+                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+
+
+
+                                                                success = true;
+                                                            },
+															_ => {
+																log::error!("i140: Failed to f64 parse bid or ask price");
+																if attempts > 3 {
+																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+																}
+																continue;
+															}
+														}
+													},
+													_ => {
+														log::error!("i140: Failed to originally parse bid or ask price");
+														if attempts > 3 {
+															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+														}
+														continue;
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i140: Failed to parse JSON");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+												}
+												continue;
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i140: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue;
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i140: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue;
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i140: Failed to build request");
+						if attempts > 3 {
+							panic!("Failed to build request after 3 attempts");
+						}
+						continue;
+					}
+				}
+			}
+
+            match value_after {
+                Some(value) => return Ok(value),
+                None => {
+                    //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+                    panic!("Failed to get a valid value after {} attempts. Final values: kraken_buy_price_ask = {:?}", attempts, kraken_buy_price_ask);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		//03/05/24 - removed:
+		// //kraken calculations - buy
+        //     let kraken_taker_fee = 0.0026;
+        //     let fraction_of_wallet_im_using = 0.04;  //aka 4 percent
+        //     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
+        //     let fee_for_purchase = total_spent*kraken_taker_fee;
+        //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+        //     *kraken_wallet -= money_going_to_xrp_after_fees;
+        //     let amount_of_xrp_before_withdraw_fee = 
+        //                     money_going_to_xrp_after_fees/kraken_buy_price_ask;
+        //     let amount_of_xrp = amount_of_xrp_before_withdraw_fee - 0.2;
+
+            
+
+
+        // //coinbase calculations for sell
+
+        //     //let coinbase_taker_fee = 0.008;
+        //     //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+        //     //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+        //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     //*coinbase_wallet += money_from_sell_after_fees;
+
+        // //bitstamp calculations for sell
+        //     let bitstamp_taker_fee = 0.004;
+        //     let money_from_sell_before_fees = amount_of_xrp * bitstamp_sell_price_bid;
+        //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+        //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+        //     *bitstamp_wallet += money_from_sell_after_fees;
+
+
+        // //this will count as value after
+        //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+        //     //println!("sol1_kraken_bitstamp\tvalue after\n\t{}", value_after);
+
+
+
+        //         //value_after = 60
+        //         //coinbase = 61
+        //         //bitstamp = 62
+        //         //kraken = 63
+        //         //gemini = 64
+        //         //since this is bitstamp and kraken being updated, I will update:
+        //         //  60, 62, 63
+        //         let indices = [60, 62, 63];
+        //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+        //     //01/24/24 - removed and added:
+        //         //neural_network.update_input(&indices, &new_values);
+        //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+        //         //neural_network.update_input(&indices, &transformed_values).await;
+        //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+        //         neural_network.update_input(&indices, &scaled_values).await;
+
+
+        //     return Ok(value_after)
+	}
+//gemini coinbase   = 3 AND UP for gemini/coin
+	pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
+		gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+
+		fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+			let encoded_payload = encode(gemini_payload.to_string());
+			let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+							.expect("HMAC can take key of any size");
+			mac.update(encoded_payload.as_bytes());
+			let result = mac.finalize();
+			let code_bytes = result.into_bytes();
+			let gemini_signature = hex::encode(code_bytes);
+			println!("Gemini signature:\n{}", &gemini_signature);
+			gemini_signature
+
+		}
+		//if no "now" in scope when moving file, 
+		//	the code is this:
+		////returns current time.
+		//		let now = Utc::now();
+		let now = Utc::now();
+		let gemini_time_stamp = now.timestamp().to_string();
+		let gemini_nonce = gemini_time_stamp;
+		let gemini_url = "https://api.gemini.com/v1/pubticker/xrpusd";
+		let gemini_payload = json!({
+			"request": "/v1/mytrades",
+			"nonce": &gemini_nonce
+		});
+		let base64_encoded_payload = encode(gemini_payload.to_string());
+		let gemini_content_type = "text/plain";
+		let gemini_content_length = "0";
+		let gemini_cache_control = "no-cache";
+		let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+		
+		// let gemini_request = client.get(gemini_url)
+		//         .header("Content-Type", gemini_content_type)
+		//         .header("Content-Length", gemini_content_length)
+		//         .header("X-GEMINI-APIKEY", gemini_api_key)
+		//         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+		//         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+		//         .header("Cache-Control", gemini_cache_control)
+		//         .build()
+		//         .expect("couldn't build gemini request");
+
+
+		// let gemini_response = client.execute(gemini_request).await
+		//                         .expect("Failed to execute Gemini request");
+		// let gemini_response_text = gemini_response.text().await
+		//                         .expect("Failed to turn response into text");
+		// let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+		//                         .expect("Failed to parse JSON");
+		// let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+		// //CAN ONLY BUY. NOT SELL
+		// let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+		// //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+	//02/27/24 - added:
+		let mut attempts = 0;
+		let gemini_buy_ask: Option<f64>;
+		loop {
+			let gemini_request = client.get(gemini_url)
+				.header("Content-Type", gemini_content_type)
+				.header("Content-Length", gemini_content_length)
+				.header("X-GEMINI-APIKEY", gemini_api_key)
+				.header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+				.header("X-GEMINI-SIGNATURE", &gemini_signature)
+				.header("Cache-Control", gemini_cache_control)
+				.build();
+		
+			match gemini_request {
+				Ok(request) => {
+					match client.execute(request).await {
+						Ok(response) => {
+							let gemini_response_text = response.text().await;
+							match gemini_response_text {
+								Ok(text) => {
+
+									match serde_json::from_str::<Value>(&text) {
+										//03/02/24 - replaced:
+										// Ok(value) => {
+										//     let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
+										//         .ok_or_else(|| "Failed to get ask as string")
+										//         .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
+								
+										//     match gemini_buy_ask_result {
+										//         Ok(ask) => {
+										//             gemini_buy_ask = Some(ask);
+										//             // Continue with your logic here using `ask`
+										//             break; // Exit the loop if everything is successful
+										//         },
+										//         Err(e) => log::error!("{}", e),
+										//     }
+										// },
+										// Err(_) => log::error!("Failed to parse JSON"),
+										//03/02/24 - added in its place:
+										Ok(value) => {
+											match value["ask"].as_str() {
+												Some(ask_str) => {
+													match ask_str.parse::<f64>() {
+														Ok(ask) => {
+															gemini_buy_ask = Some(ask);
+															// Continue with your logic here using `ask`
+															break; // Exit the loop if everything is successful
+														},
+														Err(_) => log::error!("i143: Failed to parse ask as f64"),
+													}
+												},
+												None => log::error!("i143: Failed to get ask as string"),
+											}
+										},
+										Err(_) => log::error!("i143: Failed to parse JSON"),
+									}
+								},
+								Err(_) => log::error!("i143: Failed to turn response into text"),
+							}
+						},
+						Err(_) => log::error!("i143: Failed to execute Gemini request"),
+					}
+				},
+				Err(_) => log::error!("i143: Couldn't build gemini request"),
+			}
+		
+			attempts += 1;
+			//03/02/24 - changed from >= to >
+			if attempts > 3 {
+				panic!("Failed after 3 attempts");
+			}
+		}
+
+
+
+
+		println!("xrp 3 gemini coinbase simulated 8 sec delay...");
+		let when = tokio::time::Instant::now() + Duration::from_secs(8);
+		//02/09/21 - tokio update. changed from delay_until to sleep_until
+		tokio::time::sleep_until(when).await;
+
+
+
+		//------------COINBASE------------//
+		let now = Utc::now();
+		let time_stamp = now.timestamp().to_string();
+		let method = "GET";
+		let request_path = "/api/v3/brokerage/best_bid_ask";
+		let body = "";
+		let message = format!("{}{}{}{}", &time_stamp, 
+		&method, &request_path, &body);
+		type HmacSha256 = Hmac<Sha256>;
+		fn sign(message: &str, coinbase_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+					.expect("HMAC can take key of any size");
+		mac.update(message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+		}
+		let coinbase_signature = sign(&message, &coinbase_secret);
+
+	//02/27/24 - removed:
+		// let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+		// .header("CB-ACCESS-KEY", coinbase_api_key)
+		// .header("CB-ACCESS-SIGN", &coinbase_signature)
+		// .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+		// .build()
+		// .expect("couldn't build Coinbase request");
+		// //manages the error I described above
+		// //let request = match request {
+		// //Ok(req) => req,
+		// //Err(e) => {
+		// //eprintln!("Failed to build request: \n{}", e);
+		// //return Err(e);
+		// //}
+		// //};
+
+		// let response = client.execute(request).await.expect("couldn't build response");
+		// //let response = match response {
+		// //    Ok(resp) => resp,
+		// //    Err(e) => {
+		// //        eprintln!("Failed to execute request: \n{}", e);
+		// //        return Err(e);
+		// //    }
+		// //};
+
+
+		// let response_text = response.text().await.expect("couldn't build response_text");
+
+		// //added 12/29/23
+		// //this is the parsing
+		// let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
+		// let mut coinbase_sell_price_bid = 0.0;
+		// let mut coinbase_buy_price_ask = 0.0;
+
+		// // Access the pricebooks array
+		// if let Some(pricebooks) = v["pricebooks"].as_array() {
+		//     // Iterate over each pricebook
+		//     for pricebook in pricebooks {
+		//         // Access the product_id, bids, and asks
+		//         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
+		//         let bids = &pricebook["bids"][0];
+		//         let asks = &pricebook["asks"][0];
+		
+		//         // Access the price and size of the bids and asks
+		//         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
+		//         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
+		//         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
+		//         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
+		
+		//         //println!("Product ID: {}", product_id);
+		//         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+		//         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+		//     }
+		// }
+	//02/27/24 - added in its place:
+		let mut attempts = 0;
+		let mut coinbase_sell_price_bid: Option<f64> = None;
+		//let coinbase_buy_price_ask: Option<f64>;
+		let mut value_after: Option<f64> = None;
+		//02/28/24 - changed to false
+		let mut success = false;
+		loop {
+			attempts +=1;
+			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+			.header("CB-ACCESS-KEY", coinbase_api_key)
+			.header("CB-ACCESS-SIGN", &coinbase_signature)
+			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
+			.build();
+			//.expect("couldn't build request");
+			//manages the error I described above
+			//let request = match request {
+			//Ok(req) => req,
+			//Err(e) => {
+			//eprintln!("Failed to build request: \n{}", e);
+			//return Err(e);
+			//}
+			//};
+			match request {
+				Ok(req) => {
+			//      response_text, v, coinbase_sell_price_bid, coinbase_buy_price_ask, bid/ask size
+					let response = client.execute(req).await;
+					match response {
+						Ok(resp) => {
+							let response_text = resp.text().await;
+							match response_text {
+								Ok(text) => {
+									match serde_json::from_str::<Value>(&text) {
+										Ok(v) => {
+											if let Some(pricebooks) = v["pricebooks"].as_array() {
+												for pricebook in pricebooks {
+													//let product_id = pricebook["product_id"].as_str();
+													let bids = &pricebook["bids"][0];
+													//let asks = &pricebook["asks"][0];
+													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+													//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+		
+													match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
+														(Some(bid_str), /*Some(ask_str)*/) => {
+															match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
+																(Ok(bid_str), /*Ok(ask_str)*/) => {
+																	coinbase_sell_price_bid = Some(bid_str);
+																	//coinbase_buy_price_ask = Some(ask_str);
+
+																	// Place your calculations and updates here
+																		let gemini_taker_fee = 0.004;
+																		let fraction_of_wallet_im_using = 0.03; //aka 3 percent
+																		let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+																		let fee_for_purchase = total_spent*gemini_taker_fee;
+																		let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+																		*gemini_wallet -= total_spent;
+
+																		let amount_of_xrp = 
+																		money_going_to_xrp_after_fees/gemini_buy_ask
+																										.expect(&format!("gemini_buy_ask is somehow Not Some. 
+																										even though to get to this point it had to be Some. 
+																										gemini_buy_ask: {:?}
+																										Honestly restart the program from the last saved state. 
+																										The most likely error is a bit got flipped after the loop",
+																										&gemini_buy_ask));
+
+																		//coinbase calculations for sell
+
+																		let coinbase_taker_fee = 0.008;
+																		let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid.unwrap();
+																		let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+																		*coinbase_wallet += money_from_sell_after_fees;
+																		value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+																		println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+
+																		//value_after = 60
+																		//coinbase = 61
+																		//bitstamp = 62
+																		//kraken = 63
+																		//gemini = 64
+																		//since this is coinbase and gemini being updated, I will update:
+																		//  60, 61, 64
+																		let indices = [60, 61, 64];
+																		let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+
+																		success = true;
+																	},
+																	_ => {
+																		log::error!("i143: failed to parse JSON to f64");
+																		if attempts > 3 {
+																			panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																		}
+																		continue ;
+																	}
+																}
+															},
+															_ => {
+																log::error!("i143: Failed to get bid");
+																if attempts > 3 {
+																	panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																}
+																continue ;
+															}
+														}
+													}
+												}
+											},
+											Err(_) => {
+												log::error!("i143: failed to parse JSON as str");
+												if attempts > 3 {
+													panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+												}
+												continue ; // Continue to the next iteration if parsing fails
+											}
+										}
+									},
+									Err(_) => {
+										log::error!("i143: failed to get response text");
+										if attempts > 3 {
+											panic!("Failed to get response text after 3 attempts");
+										}
+										continue ; // Continue to the next iteration if getting response text fails
+									}
+								}
+							},
+							Err(_) => {
+								log::error!("i143: Failed to execute request");
+								if attempts > 3 {
+									panic!("Failed to execute request after 3 attempts");
+								}
+								continue; // Continue to the next iteration if executing request fails
+							}
+						}
+					},
+					Err(_) => {
+						log::error!("i143: Failed to build request");
+						if attempts > 3 {
+							panic!("i143: Failed to build request after 3 attempts");
+						}
+						continue; // Continue to the next iteration if building request fails
+					}
+				}
+				if success == true {
+					break;
+				}
+			}
+
+		match value_after {
+			Some(value) => return Ok(value),
+			None => {
+				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+			}
+		}
+		//02/27/24 - removed and placed above^
+			//         //gemini calculations for buy 
+			//     //this should equal 0.4%
+			//     let gemini_taker_fee = 0.004;
+			//     let fraction_of_wallet_im_using = 0.06; //aka 6 percent
+
+			//     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+			//     let fee_for_purchase = total_spent*gemini_taker_fee;
+			//     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+			//     //new state of gemini wallet below
+			//     *gemini_wallet -= total_spent;
+			//     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+
+
+
+
+			// //coinbase calculations for sell
+
+			//     let coinbase_taker_fee = 0.008;
+			//     let money_from_sell_before_fees = amount_of_xrp * coinbase_sell_price_bid;
+			//     let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+			//     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+			//     *coinbase_wallet += money_from_sell_after_fees;
+
+
+
+
+
+
+			//     //coinbase calculations for buy - not needed in this so code commented out
+				
+			//         //let coinbase_taker_fee = 0.008;
+		
+			//         //let total_spent = 0.10*(*coinbase_wallet);
+			//         //let fee_for_purchase = total_spent*coinbase_taker_fee;
+			//         //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+			//         ////new state of coinbase wallet below
+			//         //*coinbase_wallet -= total_spent;
+			//         //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+		
+			//     //kraken calculations - for sell
+			//         //let kraken_taker_fee = 0.0026;
+					
+			//         //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+			//         //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+			//         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+			//         //*kraken_wallet += money_from_sell_after_fees;
+		
+			//         //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+		
+		
+			//     //bitstamp calculations - for sell
+			//         //let bitstamp_taker_fee = 0.004;
+			//         //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+			//         //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+			//         //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+			//         //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+			//     //this will count as value after
+			//         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+		
+			//         //value_after = 60
+			//         //coinbase = 61
+			//         //bitstamp = 62
+			//         //kraken = 63
+			//         //gemini = 64
+			//         //since this is coinbase and gemini being updated, I will update:
+			//         //  60, 61, 64
+			//         let indices = [60, 61, 64];
+			//         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
+			//         //01/24/24 - removed and added:
+			//             //neural_network.update_input(&indices, &new_values);
+			//             //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+			//             //neural_network.update_input(&indices, &transformed_values).await;
+			//             let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+			//             neural_network.update_input(&indices, &scaled_values).await;
+		
+			// return Ok(value_after)
+	}
 
     pub async fn s_i144_xrp_4_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
@@ -50094,22 +55256,22 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                         // Continue with your logic here using `ask`
                                                         break; // Exit the loop if everything is successful
                                                     },
-                                                    Err(_) => log::error!("Failed to parse ask as f64"),
+                                                    Err(_) => log::error!("i144: Failed to parse ask as f64"),
                                                 }
                                             },
-                                            None => log::error!("Failed to get ask as string"),
+                                            None => log::error!("i144: Failed to get ask as string"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to parse JSON"),
+                                    Err(_) => log::error!("i144: Failed to parse JSON"),
                                     }
                                 },
-                                Err(_) => log::error!("Failed to turn response into text"),
+                                Err(_) => log::error!("i144: Failed to turn response into text"),
                             }
                         },
-                        Err(_) => log::error!("Failed to execute Gemini request"),
+                        Err(_) => log::error!("i144: Failed to execute Gemini request"),
                     }
                 },
-                Err(_) => log::error!("Couldn't build gemini request"),
+                Err(_) => log::error!("i144: Couldn't build gemini request"),
             }
         
             attempts += 1;
@@ -50290,60 +55452,66 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                                         neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        },
-                                                        _ => {
-                                                            if attempts > 3 {
-                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                            }
-                                                            continue ;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                            }
-                                            continue ; // Continue to the next iteration if parsing fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to get response text after 3 attempts");
-                                    }
-                                    continue ; // Continue to the next iteration if getting response text fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to execute request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if executing request fails
-                        }
-                    }
-                },
-                Err(_) => {
-                    if attempts > 3 {
-                        panic!("Failed to build request after 3 attempts");
-                    }
-                    continue; // Continue to the next iteration if building request fails
-                }
-            }
-            if success == true {
-                break;
-            }
-        }
+																},
+																_ => {
+																	log::error!("i144: failed to parse JSON to f64");
+																	if attempts > 3 {
+																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																	}
+																	continue ;
+																}
+															}
+														},
+														_ => {
+															log::error!("i144: Failed to get bid");
+															if attempts > 3 {
+																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+															}
+															continue ;
+														}
+													}
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i144: failed to parse JSON as str");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+											}
+											continue ; // Continue to the next iteration if parsing fails
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i144: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue ; // Continue to the next iteration if getting response text fails
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i144: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue; // Continue to the next iteration if executing request fails
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i144: Failed to build request");
+					if attempts > 3 {
+						panic!("i144: Failed to build request after 3 attempts");
+					}
+					continue; // Continue to the next iteration if building request fails
+				}
+			}
+			if success == true {
+				break;
+			}
+		}
 
         match value_after {
             Some(value) => return Ok(value),
@@ -50536,22 +55704,22 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                         // Continue with your logic here using `ask`
                                                         break; // Exit the loop if everything is successful
                                                     },
-                                                    Err(_) => log::error!("Failed to parse ask as f64"),
+                                                    Err(_) => log::error!("i145: Failed to parse ask as f64"),
                                                 }
                                             },
-                                            None => log::error!("Failed to get ask as string"),
+                                            None => log::error!("i145: Failed to get ask as string"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to parse JSON"),
+                                    Err(_) => log::error!("i145: Failed to parse JSON"),
                                     }
                                 },
-                                Err(_) => log::error!("Failed to turn response into text"),
+                                Err(_) => log::error!("i145: Failed to turn response into text"),
                             }
                         },
-                        Err(_) => log::error!("Failed to execute Gemini request"),
+                        Err(_) => log::error!("i145: Failed to execute Gemini request"),
                     }
                 },
-                Err(_) => log::error!("Couldn't build gemini request"),
+                Err(_) => log::error!("i145: Couldn't build gemini request"),
             }
         
             attempts += 1;
@@ -50732,60 +55900,66 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                                         neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        },
-                                                        _ => {
-                                                            if attempts > 3 {
-                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                            }
-                                                            continue ;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                            }
-                                            continue ; // Continue to the next iteration if parsing fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to get response text after 3 attempts");
-                                    }
-                                    continue ; // Continue to the next iteration if getting response text fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to execute request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if executing request fails
-                        }
-                    }
-                },
-                Err(_) => {
-                    if attempts > 3 {
-                        panic!("Failed to build request after 3 attempts");
-                    }
-                    continue; // Continue to the next iteration if building request fails
-                }
-            }
-            if success == true {
-                break;
-            }
-        }
+																},
+																_ => {
+																	log::error!("i145: failed to parse JSON to f64");
+																	if attempts > 3 {
+																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																	}
+																	continue ;
+																}
+															}
+														},
+														_ => {
+															log::error!("i145: Failed to get bid");
+															if attempts > 3 {
+																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+															}
+															continue ;
+														}
+													}
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i145: failed to parse JSON as str");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+											}
+											continue ; // Continue to the next iteration if parsing fails
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i145: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue ; // Continue to the next iteration if getting response text fails
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i145: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue; // Continue to the next iteration if executing request fails
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i145: Failed to build request");
+					if attempts > 3 {
+						panic!("i145: Failed to build request after 3 attempts");
+					}
+					continue; // Continue to the next iteration if building request fails
+				}
+			}
+			if success == true {
+				break;
+			}
+		}
 
         match value_after {
             Some(value) => return Ok(value),
@@ -50978,22 +56152,22 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                         // Continue with your logic here using `ask`
                                                         break; // Exit the loop if everything is successful
                                                     },
-                                                    Err(_) => log::error!("Failed to parse ask as f64"),
+                                                    Err(_) => log::error!("i146: Failed to parse ask as f64"),
                                                 }
                                             },
-                                            None => log::error!("Failed to get ask as string"),
+                                            None => log::error!("i146: Failed to get ask as string"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to parse JSON"),
+                                    Err(_) => log::error!("i146: Failed to parse JSON"),
                                     }
                                 },
-                                Err(_) => log::error!("Failed to turn response into text"),
+                                Err(_) => log::error!("i146: Failed to turn response into text"),
                             }
                         },
-                        Err(_) => log::error!("Failed to execute Gemini request"),
+                        Err(_) => log::error!("i146: Failed to execute Gemini request"),
                     }
                 },
-                Err(_) => log::error!("Couldn't build gemini request"),
+                Err(_) => log::error!("i146: Couldn't build gemini request"),
             }
         
             attempts += 1;
@@ -51174,60 +56348,66 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                                         neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        },
-                                                        _ => {
-                                                            if attempts > 3 {
-                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                            }
-                                                            continue ;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                            }
-                                            continue ; // Continue to the next iteration if parsing fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to get response text after 3 attempts");
-                                    }
-                                    continue ; // Continue to the next iteration if getting response text fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to execute request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if executing request fails
-                        }
-                    }
-                },
-                Err(_) => {
-                    if attempts > 3 {
-                        panic!("Failed to build request after 3 attempts");
-                    }
-                    continue; // Continue to the next iteration if building request fails
-                }
-            }
-            if success == true {
-                break;
-            }
-        }
+																},
+																_ => {
+																	log::error!("i146: failed to parse JSON to f64");
+																	if attempts > 3 {
+																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																	}
+																	continue ;
+																}
+															}
+														},
+														_ => {
+															log::error!("i146: Failed to get bid");
+															if attempts > 3 {
+																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+															}
+															continue ;
+														}
+													}
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i146: failed to parse JSON as str");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+											}
+											continue ; // Continue to the next iteration if parsing fails
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i146: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue ; // Continue to the next iteration if getting response text fails
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i146: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue; // Continue to the next iteration if executing request fails
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i146: Failed to build request");
+					if attempts > 3 {
+						panic!("i146: Failed to build request after 3 attempts");
+					}
+					continue; // Continue to the next iteration if building request fails
+				}
+			}
+			if success == true {
+				break;
+			}
+		}
 
         match value_after {
             Some(value) => return Ok(value),
@@ -51420,22 +56600,22 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                         // Continue with your logic here using `ask`
                                                         break; // Exit the loop if everything is successful
                                                     },
-                                                    Err(_) => log::error!("Failed to parse ask as f64"),
+                                                    Err(_) => log::error!("i147: Failed to parse ask as f64"),
                                                 }
                                             },
-                                            None => log::error!("Failed to get ask as string"),
+                                            None => log::error!("i147: Failed to get ask as string"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to parse JSON"),
+                                    Err(_) => log::error!("i147: Failed to parse JSON"),
                                     }
                                 },
-                                Err(_) => log::error!("Failed to turn response into text"),
+                                Err(_) => log::error!("i147: Failed to turn response into text"),
                             }
                         },
-                        Err(_) => log::error!("Failed to execute Gemini request"),
+                        Err(_) => log::error!("i147: Failed to execute Gemini request"),
                     }
                 },
-                Err(_) => log::error!("Couldn't build gemini request"),
+                Err(_) => log::error!("i147: Couldn't build gemini request"),
             }
         
             attempts += 1;
@@ -51616,60 +56796,66 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                                         neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        },
-                                                        _ => {
-                                                            if attempts > 3 {
-                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                            }
-                                                            continue ;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                            }
-                                            continue ; // Continue to the next iteration if parsing fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to get response text after 3 attempts");
-                                    }
-                                    continue ; // Continue to the next iteration if getting response text fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to execute request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if executing request fails
-                        }
-                    }
-                },
-                Err(_) => {
-                    if attempts > 3 {
-                        panic!("Failed to build request after 3 attempts");
-                    }
-                    continue; // Continue to the next iteration if building request fails
-                }
-            }
-            if success == true {
-                break;
-            }
-        }
+																},
+																_ => {
+																	log::error!("i147: failed to parse JSON to f64");
+																	if attempts > 3 {
+																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																	}
+																	continue ;
+																}
+															}
+														},
+														_ => {
+															log::error!("i147: Failed to get bid");
+															if attempts > 3 {
+																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+															}
+															continue ;
+														}
+													}
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i147: failed to parse JSON as str");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+											}
+											continue ; // Continue to the next iteration if parsing fails
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i147: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue ; // Continue to the next iteration if getting response text fails
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i147: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue; // Continue to the next iteration if executing request fails
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i147: Failed to build request");
+					if attempts > 3 {
+						panic!("i147: Failed to build request after 3 attempts");
+					}
+					continue; // Continue to the next iteration if building request fails
+				}
+			}
+			if success == true {
+				break;
+			}
+		}
 
         match value_after {
             Some(value) => return Ok(value),
@@ -51862,22 +57048,22 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                         // Continue with your logic here using `ask`
                                                         break; // Exit the loop if everything is successful
                                                     },
-                                                    Err(_) => log::error!("Failed to parse ask as f64"),
+                                                    Err(_) => log::error!("i148: Failed to parse ask as f64"),
                                                 }
                                             },
-                                            None => log::error!("Failed to get ask as string"),
+                                            None => log::error!("i148: Failed to get ask as string"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to parse JSON"),
+                                    Err(_) => log::error!("i148: Failed to parse JSON"),
                                     }
                                 },
-                                Err(_) => log::error!("Failed to turn response into text"),
+                                Err(_) => log::error!("i148: Failed to turn response into text"),
                             }
                         },
-                        Err(_) => log::error!("Failed to execute Gemini request"),
+                        Err(_) => log::error!("i148: Failed to execute Gemini request"),
                     }
                 },
-                Err(_) => log::error!("Couldn't build gemini request"),
+                Err(_) => log::error!("i148: Couldn't build gemini request"),
             }
         
             attempts += 1;
@@ -52058,60 +57244,66 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                                         neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        },
-                                                        _ => {
-                                                            if attempts > 3 {
-                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                            }
-                                                            continue ;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                            }
-                                            continue ; // Continue to the next iteration if parsing fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to get response text after 3 attempts");
-                                    }
-                                    continue ; // Continue to the next iteration if getting response text fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to execute request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if executing request fails
-                        }
-                    }
-                },
-                Err(_) => {
-                    if attempts > 3 {
-                        panic!("Failed to build request after 3 attempts");
-                    }
-                    continue; // Continue to the next iteration if building request fails
-                }
-            }
-            if success == true {
-                break;
-            }
-        }
+																},
+																_ => {
+																	log::error!("i148: failed to parse JSON to f64");
+																	if attempts > 3 {
+																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																	}
+																	continue ;
+																}
+															}
+														},
+														_ => {
+															log::error!("i148: Failed to get bid");
+															if attempts > 3 {
+																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+															}
+															continue ;
+														}
+													}
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i148: failed to parse JSON as str");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+											}
+											continue ; // Continue to the next iteration if parsing fails
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i148: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue ; // Continue to the next iteration if getting response text fails
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i148: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue; // Continue to the next iteration if executing request fails
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i148: Failed to build request");
+					if attempts > 3 {
+						panic!("i148: Failed to build request after 3 attempts");
+					}
+					continue; // Continue to the next iteration if building request fails
+				}
+			}
+			if success == true {
+				break;
+			}
+		}
 
         match value_after {
             Some(value) => return Ok(value),
@@ -52304,22 +57496,22 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                         // Continue with your logic here using `ask`
                                                         break; // Exit the loop if everything is successful
                                                     },
-                                                    Err(_) => log::error!("Failed to parse ask as f64"),
+                                                    Err(_) => log::error!("i149: Failed to parse ask as f64"),
                                                 }
                                             },
-                                            None => log::error!("Failed to get ask as string"),
+                                            None => log::error!("i149: Failed to get ask as string"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to parse JSON"),
+                                    Err(_) => log::error!("i149: Failed to parse JSON"),
                                     }
                                 },
-                                Err(_) => log::error!("Failed to turn response into text"),
+                                Err(_) => log::error!("i149: Failed to turn response into text"),
                             }
                         },
-                        Err(_) => log::error!("Failed to execute Gemini request"),
+                        Err(_) => log::error!("i149: Failed to execute Gemini request"),
                     }
                 },
-                Err(_) => log::error!("Couldn't build gemini request"),
+                Err(_) => log::error!("i149: Couldn't build gemini request"),
             }
         
             attempts += 1;
@@ -52500,60 +57692,66 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                                         neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        },
-                                                        _ => {
-                                                            if attempts > 3 {
-                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                            }
-                                                            continue ;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                            }
-                                            continue ; // Continue to the next iteration if parsing fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to get response text after 3 attempts");
-                                    }
-                                    continue ; // Continue to the next iteration if getting response text fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to execute request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if executing request fails
-                        }
-                    }
-                },
-                Err(_) => {
-                    if attempts > 3 {
-                        panic!("Failed to build request after 3 attempts");
-                    }
-                    continue; // Continue to the next iteration if building request fails
-                }
-            }
-            if success == true {
-                break;
-            }
-        }
+																},
+																_ => {
+																	log::error!("i149: failed to parse JSON to f64");
+																	if attempts > 3 {
+																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																	}
+																	continue ;
+																}
+															}
+														},
+														_ => {
+															log::error!("i149: Failed to get bid");
+															if attempts > 3 {
+																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+															}
+															continue ;
+														}
+													}
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i149: failed to parse JSON as str");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+											}
+											continue ; // Continue to the next iteration if parsing fails
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i149: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue ; // Continue to the next iteration if getting response text fails
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i149: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue; // Continue to the next iteration if executing request fails
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i149: Failed to build request");
+					if attempts > 3 {
+						panic!("i149: Failed to build request after 3 attempts");
+					}
+					continue; // Continue to the next iteration if building request fails
+				}
+			}
+			if success == true {
+				break;
+			}
+		}
 
         match value_after {
             Some(value) => return Ok(value),
@@ -52745,22 +57943,22 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                         gemini_buy_ask = Some(ask);
                                                         break; // Exit the loop if everything is successful
                                                     },
-                                                    Err(_) => log::error!("Failed to parse ask as f64"),
+                                                    Err(_) => log::error!("i150: Failed to parse ask as f64"),
                                                 }
                                             },
-                                            None => log::error!("Failed to get ask as string"),
+                                            None => log::error!("i150: Failed to get ask as string"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to parse JSON"),
+                                    Err(_) => log::error!("i150: Failed to parse JSON"),
                                     }
                                 },
-                                Err(_) => log::error!("Failed to turn response into text"),
+                                Err(_) => log::error!("i150: Failed to turn response into text"),
                             }
                         },
-                        Err(_) => log::error!("Failed to execute Gemini request"),
+                        Err(_) => log::error!("i150: Failed to execute Gemini request"),
                     }
                 },
-                Err(_) => log::error!("Couldn't build gemini request"),
+                Err(_) => log::error!("i150: Couldn't build gemini request"),
             }
         
             attempts += 1;
@@ -52941,60 +58139,66 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
                                                                         neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
-                                                                },
-                                                                _ => {
-                                                                    if attempts > 3 {
-                                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                                                    }
-                                                                    continue ;
-                                                                }
-                                                            }
-                                                        },
-                                                        _ => {
-                                                            if attempts > 3 {
-                                                                panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                            }
-                                                            continue ;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        Err(_) => {
-                                            if attempts > 3 {
-                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-                                            }
-                                            continue ; // Continue to the next iteration if parsing fails
-                                        }
-                                    }
-                                },
-                                Err(_) => {
-                                    if attempts > 3 {
-                                        panic!("Failed to get response text after 3 attempts");
-                                    }
-                                    continue ; // Continue to the next iteration if getting response text fails
-                                }
-                            }
-                        },
-                        Err(_) => {
-                            if attempts > 3 {
-                                panic!("Failed to execute request after 3 attempts");
-                            }
-                            continue; // Continue to the next iteration if executing request fails
-                        }
-                    }
-                },
-                Err(_) => {
-                    if attempts > 3 {
-                        panic!("Failed to build request after 3 attempts");
-                    }
-                    continue; // Continue to the next iteration if building request fails
-                }
-            }
-            if success == true {
-                break;
-            }
-        }
+																},
+																_ => {
+																	log::error!("i150: failed to parse JSON to f64");
+																	if attempts > 3 {
+																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																	}
+																	continue ;
+																}
+															}
+														},
+														_ => {
+															log::error!("i150: Failed to get bid");
+															if attempts > 3 {
+																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+															}
+															continue ;
+														}
+													}
+												}
+											}
+										},
+										Err(_) => {
+											log::error!("i150: failed to parse JSON as str");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+											}
+											continue ; // Continue to the next iteration if parsing fails
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i150: failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue ; // Continue to the next iteration if getting response text fails
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i150: Failed to execute request");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue; // Continue to the next iteration if executing request fails
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i150: Failed to build request");
+					if attempts > 3 {
+						panic!("i150: Failed to build request after 3 attempts");
+					}
+					continue; // Continue to the next iteration if building request fails
+				}
+			}
+			if success == true {
+				break;
+			}
+		}
 
         match value_after {
             Some(value) => return Ok(value),
@@ -53085,447 +58289,447 @@ pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wal
             // return Ok(value_after)
     }
 //gemini kraken     = 3 AND UP for min of 10 USD for gemini. min buy of 10 XRP for kraken so maximal min is 6 dollars.
-pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-    gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+	pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+		gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
-    fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
-        let encoded_payload = encode(gemini_payload.to_string());
-        let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
-                        .expect("HMAC can take key of any size");
-        mac.update(encoded_payload.as_bytes());
-        let result = mac.finalize();
-        let code_bytes = result.into_bytes();
-        let gemini_signature = hex::encode(code_bytes);
-        println!("Gemini signature:\n{}", &gemini_signature);
-        gemini_signature
+		fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
+			let encoded_payload = encode(gemini_payload.to_string());
+			let mut mac = Hmac::<Sha384>::new_from_slice(&gemini_secret.as_bytes())
+							.expect("HMAC can take key of any size");
+			mac.update(encoded_payload.as_bytes());
+			let result = mac.finalize();
+			let code_bytes = result.into_bytes();
+			let gemini_signature = hex::encode(code_bytes);
+			println!("Gemini signature:\n{}", &gemini_signature);
+			gemini_signature
 
-    }
-    //if no "now" in scope when moving file, 
-    //	the code is this:
-    ////returns current time.
-    //		let now = Utc::now();
-    let now = Utc::now();
-    let gemini_time_stamp = now.timestamp().to_string();
-    let gemini_nonce = gemini_time_stamp;
-    let gemini_url = "https://api.gemini.com/v1/pubticker/xrpusd";
-    let gemini_payload = json!({
-        "request": "/v1/mytrades",
-        "nonce": &gemini_nonce
-    });
-    let base64_encoded_payload = encode(gemini_payload.to_string());
-    let gemini_content_type = "text/plain";
-    let gemini_content_length = "0";
-    let gemini_cache_control = "no-cache";
-    let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
+		}
+		//if no "now" in scope when moving file, 
+		//	the code is this:
+		////returns current time.
+		//		let now = Utc::now();
+		let now = Utc::now();
+		let gemini_time_stamp = now.timestamp().to_string();
+		let gemini_nonce = gemini_time_stamp;
+		let gemini_url = "https://api.gemini.com/v1/pubticker/xrpusd";
+		let gemini_payload = json!({
+			"request": "/v1/mytrades",
+			"nonce": &gemini_nonce
+		});
+		let base64_encoded_payload = encode(gemini_payload.to_string());
+		let gemini_content_type = "text/plain";
+		let gemini_content_length = "0";
+		let gemini_cache_control = "no-cache";
+		let gemini_signature = sign_gemini(&gemini_secret, &gemini_payload);
 
-    //02/07/24 - added:
-        let mut attempts = 0;
-        let gemini_buy_ask: Option<f64>;
-        loop {
-            let gemini_request = client.get(gemini_url)
-                .header("Content-Type", gemini_content_type)
-                .header("Content-Length", gemini_content_length)
-                .header("X-GEMINI-APIKEY", gemini_api_key)
-                .header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
-                .header("X-GEMINI-SIGNATURE", &gemini_signature)
-                .header("Cache-Control", gemini_cache_control)
-                .build();
-        
-            match gemini_request {
-                Ok(request) => {
-                    match client.execute(request).await {
-                        Ok(response) => {
-                            let gemini_response_text = response.text().await;
-                            match gemini_response_text {
-                                Ok(text) => {
+		//02/07/24 - added:
+			let mut attempts = 0;
+			let gemini_buy_ask: Option<f64>;
+			loop {
+				let gemini_request = client.get(gemini_url)
+					.header("Content-Type", gemini_content_type)
+					.header("Content-Length", gemini_content_length)
+					.header("X-GEMINI-APIKEY", gemini_api_key)
+					.header("X-GEMINI-PAYLOAD", &base64_encoded_payload)
+					.header("X-GEMINI-SIGNATURE", &gemini_signature)
+					.header("Cache-Control", gemini_cache_control)
+					.build();
+			
+				match gemini_request {
+					Ok(request) => {
+						match client.execute(request).await {
+							Ok(response) => {
+								let gemini_response_text = response.text().await;
+								match gemini_response_text {
+									Ok(text) => {
 
-                                    match serde_json::from_str::<Value>(&text) {
-									//03/02/24 - replaced:
-                                    // Ok(value) => {
-                                    //     let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
-                                    //         .ok_or_else(|| "Failed to get ask as string")
-                                    //         .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
-                            
-                                    //     match gemini_buy_ask_result {
-                                    //         Ok(ask) => {
-                                    //             gemini_buy_ask = Some(ask);
-                                    //             // Continue with your logic here using `ask`
-                                    //             break; // Exit the loop if everything is successful
-                                    //         },
-                                    //         Err(e) => log::error!("{}", e),
-                                    //     }
-                                    // },
-                                    // Err(_) => log::error!("Failed to parse JSON"),
-                                    //03/02/24 - added in its place:
-                                    Ok(value) => {
-                                        match value["ask"].as_str() {
-                                            Some(ask_str) => {
-                                                match ask_str.parse::<f64>() {
-                                                    Ok(ask) => {
-                                                        gemini_buy_ask = Some(ask);
-                                                        // Continue with your logic here using `ask`
-                                                        break; // Exit the loop if everything is successful
-                                                    },
-                                                    Err(_) => log::error!("Failed to parse ask as f64"),
-                                                }
-                                            },
-                                            None => log::error!("Failed to get ask as string"),
-                                        }
-                                    },
-                                    Err(_) => log::error!("Failed to parse JSON"),
-                                    }
-                                },
-                                Err(_) => log::error!("Failed to turn response into text"),
-                            }
-                        },
-                        Err(_) => log::error!("Failed to execute Gemini request"),
-                    }
-                },
-                Err(_) => log::error!("Couldn't build gemini request"),
-            }
-        
-            attempts += 1;
-            if attempts >= 3 {
-                panic!("Failed after 3 attempts");
-            }
-        }
-
-
-
-
-
-//02/07/24 - removed
-    // let gemini_request = client.get(gemini_url)
-    //         .header("Content-Type", gemini_content_type)
-    //         .header("Content-Length", gemini_content_length)
-    //         .header("X-GEMINI-APIKEY", gemini_api_key)
-    //         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
-    //         .header("X-GEMINI-SIGNATURE", &gemini_signature)
-    //         .header("Cache-Control", gemini_cache_control)
-    //         .build()
-    //         .expect("couldn't build gemini request");
-
-
-    // let gemini_response = client.execute(gemini_request).await
-    //                         .expect("Failed to execute Gemini request");
-    // let gemini_response_text = gemini_response.text().await
-    //                         .expect("Failed to turn response into text");
-    // let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
-    //                         .expect("Failed to parse JSON");
-    // let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
-    // //CAN ONLY BUY. NOT SELL
-    // let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
-    // //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
+										match serde_json::from_str::<Value>(&text) {
+										//03/02/24 - replaced:
+										// Ok(value) => {
+										//     let gemini_buy_ask_result: Result<f64, _> = value["ask"].as_str()
+										//         .ok_or_else(|| "Failed to get ask as string")
+										//         .and_then(|ask_str| ask_str.parse().map_err(|_| "Failed to parse ask as f64"));
+								
+										//     match gemini_buy_ask_result {
+										//         Ok(ask) => {
+										//             gemini_buy_ask = Some(ask);
+										//             // Continue with your logic here using `ask`
+										//             break; // Exit the loop if everything is successful
+										//         },
+										//         Err(e) => log::error!("{}", e),
+										//     }
+										// },
+										// Err(_) => log::error!("Failed to parse JSON"),
+										//03/02/24 - added in its place:
+										Ok(value) => {
+											match value["ask"].as_str() {
+												Some(ask_str) => {
+													match ask_str.parse::<f64>() {
+														Ok(ask) => {
+															gemini_buy_ask = Some(ask);
+															// Continue with your logic here using `ask`
+															break; // Exit the loop if everything is successful
+														},
+														Err(_) => log::error!("i153: Failed to parse ask as f64"),
+													}
+												},
+												None => log::error!("i153: Failed to get ask as string"),
+											}
+										},
+										Err(_) => log::error!("i153: Failed to parse JSON"),
+										}
+									},
+									Err(_) => log::error!("i153: Failed to turn response into text"),
+								}
+							},
+							Err(_) => log::error!("i153: Failed to execute Gemini request"),
+						}
+					},
+					Err(_) => log::error!("i153: Couldn't build gemini request"),
+				}
+			
+				attempts += 1;
+				if attempts >= 3 {
+					panic!("Failed after 3 attempts");
+				}
+			}
 
 
 
 
 
-    println!("xrp 3 gemini kraken simulated exchange delay: 8 sec...");
-    let when = tokio::time::Instant::now() + Duration::from_secs(8);
-    //02/09/24 - updated tokio. changed to sleep_until
-    tokio::time::sleep_until(when).await;
+	//02/07/24 - removed
+		// let gemini_request = client.get(gemini_url)
+		//         .header("Content-Type", gemini_content_type)
+		//         .header("Content-Length", gemini_content_length)
+		//         .header("X-GEMINI-APIKEY", gemini_api_key)
+		//         .header("X-GEMINI-PAYLOAD", base64_encoded_payload)
+		//         .header("X-GEMINI-SIGNATURE", &gemini_signature)
+		//         .header("Cache-Control", gemini_cache_control)
+		//         .build()
+		//         .expect("couldn't build gemini request");
 
 
-
-    //---KRAKEN--//
-
-    //basically Kraken requires a value that is always increasing to be in each request.
-    //I didnt use now.timestamp().to_string()  because just in case I have 2 
-    //	requests in a second I dont want to be penalized.
-    //if no "now" in scope when moving file, 
-    //	the code is this:
-    ////returns current time. MAY NEED TO USE LOCAL TIME
-    let now = Utc::now();
-    let nonce = now.timestamp_millis().to_string();
-    let data = vec![
-        ("nonce", &nonce),
-        // Add more parameters as needed
-    ];
-    //let post_data: String = form_urlencoded::Serializer::new(String::new())
-    //    .extend_pairs(data)
-    //    .finish();
-    
-    let url_path = "/0/public/Ticker?pair=XRPUSD";
-    //let message = format!("{}{}{}", url_path, nonce, post_data);
-
-    fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
-    -> String {
-        // Create the post data
-        let post_data: String = form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(data)
-            .finish();
-        //FOR DEBUGGING
-        //println!("Private key:\n{}", secret);
-        //println!("Nonce:\n{}", nonce_str);
-        //println!("Encoded payload:\n{}", post_data);
-        //println!("URI Path:\n{}", url_path);
-    
-        // Create the encoded string (nonce + post data) and hash it
-        let encoded = format!("{}{}", nonce_str, post_data);
-        let mut hasher = sha2::Sha256::new();
-        hasher.update(encoded);
-        let encoded_hash = hasher.finalize();
-    
-        // Create the message (url_path + encoded_hash as bytes)
-        let mut message = url_path.as_bytes().to_vec();
-        message.extend_from_slice(&encoded_hash);
-    
-        // Create a HMAC-SHA512 object with the base64-decoded secret
-        let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
-        let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
-            .expect("HMAC can take key of any size");
-    
-        // Compute the HMAC of the message
-        mac.update(&message);
-        let result = mac.finalize();
-    
-        // Return the base64-encoded HMAC
-        let signature = base64::encode(result.into_bytes());
-        //println!("Kraken signature:\n{}", signature);
-    
-        signature
-    }
-
-    let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
-
-    //kraken asked for 3 headers: key, sign, and content type with its corresponding info
-    //.body is nonce because in the Kraken code provided in cURL: 
-    //https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
-    //--data-urlencode "nonce=<YOUR-NONCE>"
-    //		this means that nonce is added to the body of the request
-
-
-
-    //02/07/24 - removed
-        // let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
-        //         .header("API-Key", kraken_api_key)
-        //         .header("API-Sign", &kraken_signature)
-        //         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-        //         .body(format!("nonce={}", nonce))
-        //         .build()
-        //         .expect("Failed to build kraken request");
-
-
-        // let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
-
-        // let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
-        
-        // //println!("kraken response:{}", kraken_response_text);
-
-        // let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
-        // let mut kraken_buy_price_ask = 0.0;
-        // let mut kraken_sell_price_bid = 0.0;
-        // if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
-        //     // Access the ask and bid prices
-        //     kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
-        //     kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
-        
-        //     //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
-        //     //println!("xrp Bid price: {}", kraken_sell_price_bid );
-        // }
-        // else {
-        //     println!("didnt parse kraken correctly.");
-        // }
-    //02/07/24 - replaced with:
-        let mut kraken_sell_price_bid: Option<f64> = None;
-        let mut kraken_buy_price_ask: Option<f64> = None;
-        let mut value_after: Option<f64> = None;
-        let mut attempts = 0;
-        
-        loop {
-            let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
-                .header("API-Key", kraken_api_key)
-                .header("API-Sign", &kraken_signature)
-                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                .body(format!("nonce={}", nonce))
-                .build();
-        
-            match kraken_basic_request {
-                Ok(request) => {
-                    match client.execute(request).await {
-                        Ok(response) => {
-                            match response.text().await {
-                                Ok(kraken_response_text) => {
-                                    match serde_json::from_str::<Value>(&kraken_response_text) {
-                                        Ok(value) => {
-                                            if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
-                                                kraken_buy_price_ask = xrpusd["a"][0].as_str().and_then(|s| s.parse().ok());
-                                                kraken_sell_price_bid = xrpusd["b"][0].as_str().and_then(|s| s.parse().ok());
-
-
-                                                let gemini_taker_fee = 0.004;
-                                                let fraction_of_wallet_im_using = 0.03; //aka 3 percent
-                                    
-                                                let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-                                                let fee_for_purchase = total_spent*gemini_taker_fee;
-                                                let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                                                //new state of gemini wallet below
-                                                *gemini_wallet -= total_spent;
-                                                //let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
-                                                if let Some(gemini_buy_ask) = gemini_buy_ask {
-                                                    if let Some(kraken_sell_price_bid) = kraken_sell_price_bid {
-                                                        let amount_of_xrp = money_going_to_xrp_after_fees / gemini_buy_ask;
-                                                        // Continue with your logic here...
-                                                        //kraken calculations - for sell
-                                                            let kraken_taker_fee = 0.0026;
-                                                            
-                                                            let money_from_sell_before_fees = amount_of_xrp * kraken_sell_price_bid;
-                                                            let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-                                                            let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-                                                            *kraken_wallet += money_from_sell_after_fees;
-
-                                                
-                                                
-                                                        //this will count as value after
-                                                                value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-                                                    
-                                                    
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is kraken and gemini being updated, I will update:
-                                                                //  60, 63, 64
-                                                                let indices = [60, 63, 64];
-                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-                                                                //01/24/24 - removed and added:
-                                                                    //neural_network.update_input(&indices, &new_values);
-                                                                    //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-                                                                    //neural_network.update_input(&indices, &transformed_values).await;
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                    neural_network.update_input(&indices, &scaled_values).await;
-                                                    }
-                                                    else {
-                                                        log::error!("Kraken sell price is None. Response text was: {}", kraken_response_text);
-                                                    }
-                                                } 
-                                                else {
-                                                    log::error!("Gemini buy ask is None. Response text was: {}", kraken_response_text);
-                                                }
-                                            } 
-                                            else {
-                                                log::error!("Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
-                                            }
-                                        },
-                                        Err(e) => log::error!("Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
-                                    }
-                                },
-                                Err(e) => log::error!("Failed to read response text. Error was: {}", e),
-                            }
-                        },
-                        Err(e) => log::error!("Failed to execute Kraken request. Error was: {}", e),
-                    }
-                },
-                Err(e) => log::error!("Failed to build kraken request. Error was: {}", e),
-            }
-        
-            // Continue with your logic here...
-            // Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
-        
-            if kraken_sell_price_bid.is_some() && kraken_buy_price_ask.is_some() {
-                break; // Exit the loop if everything is successful
-            }
-        
-            attempts += 1;
-            if attempts >= 3 {
-                panic!("Failed after 3 attempts");
-            }
-        }
+		// let gemini_response = client.execute(gemini_request).await
+		//                         .expect("Failed to execute Gemini request");
+		// let gemini_response_text = gemini_response.text().await
+		//                         .expect("Failed to turn response into text");
+		// let v: serde_json::Value = serde_json::from_str(&gemini_response_text)
+		//                         .expect("Failed to parse JSON");
+		// let gemini_sell_pricebid: f64 = v["bid"].as_str().unwrap().parse().unwrap();
+		// //CAN ONLY BUY. NOT SELL
+		// let gemini_buy_ask: f64 = v["ask"].as_str().unwrap().parse().unwrap();
+		// //println!("gemini xrp: Bid: {}, Ask: {}", gemini_sell_pricebid, gemini_buy_ask);
 
 
 
 
-    // //gemini calculations for buy 
-    //     //this should equal 0.4%
-    //     let gemini_taker_fee = 0.004;
-    //     let fraction_of_wallet_im_using = 0.04; //aka 4 percent
 
-    //     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
-    //     let fee_for_purchase = total_spent*gemini_taker_fee;
-    //     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-    //     //new state of gemini wallet below
-    //     *gemini_wallet -= total_spent;
-    //     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+		println!("xrp 3 gemini kraken simulated exchange delay: 8 sec...");
+		let when = tokio::time::Instant::now() + Duration::from_secs(8);
+		//02/09/24 - updated tokio. changed to sleep_until
+		tokio::time::sleep_until(when).await;
 
 
 
+		//---KRAKEN--//
 
-    // //coinbase calculations for sell
+		//basically Kraken requires a value that is always increasing to be in each request.
+		//I didnt use now.timestamp().to_string()  because just in case I have 2 
+		//	requests in a second I dont want to be penalized.
+		//if no "now" in scope when moving file, 
+		//	the code is this:
+		////returns current time. MAY NEED TO USE LOCAL TIME
+		let now = Utc::now();
+		let nonce = now.timestamp_millis().to_string();
+		let data = vec![
+			("nonce", &nonce),
+			// Add more parameters as needed
+		];
+		//let post_data: String = form_urlencoded::Serializer::new(String::new())
+		//    .extend_pairs(data)
+		//    .finish();
+		
+		let url_path = "/0/public/Ticker?pair=XRPUSD";
+		//let message = format!("{}{}{}", url_path, nonce, post_data);
 
-    //     //let coinbase_taker_fee = 0.008;
-    //     //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
-    //     //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
-    //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-    //     //*coinbase_wallet += money_from_sell_after_fees;
+		fn sign_kraken(url_path: &str, nonce_str: &str, data: Vec<(&str, &String)>, secret: &str) 
+		-> String {
+			// Create the post data
+			let post_data: String = form_urlencoded::Serializer::new(String::new())
+				.extend_pairs(data)
+				.finish();
+			//FOR DEBUGGING
+			//println!("Private key:\n{}", secret);
+			//println!("Nonce:\n{}", nonce_str);
+			//println!("Encoded payload:\n{}", post_data);
+			//println!("URI Path:\n{}", url_path);
+		
+			// Create the encoded string (nonce + post data) and hash it
+			let encoded = format!("{}{}", nonce_str, post_data);
+			let mut hasher = sha2::Sha256::new();
+			hasher.update(encoded);
+			let encoded_hash = hasher.finalize();
+		
+			// Create the message (url_path + encoded_hash as bytes)
+			let mut message = url_path.as_bytes().to_vec();
+			message.extend_from_slice(&encoded_hash);
+		
+			// Create a HMAC-SHA512 object with the base64-decoded secret
+			let secret_decoded = base64::decode(secret).expect("Failed to decode secret");
+			let mut mac = Hmac::<Sha512>::new_from_slice(&secret_decoded)
+				.expect("HMAC can take key of any size");
+		
+			// Compute the HMAC of the message
+			mac.update(&message);
+			let result = mac.finalize();
+		
+			// Return the base64-encoded HMAC
+			let signature = base64::encode(result.into_bytes());
+			//println!("Kraken signature:\n{}", signature);
+		
+			signature
+		}
+
+		let kraken_signature = sign_kraken(&url_path, &nonce, data, &kraken_secret);
+
+		//kraken asked for 3 headers: key, sign, and content type with its corresponding info
+		//.body is nonce because in the Kraken code provided in cURL: 
+		//https://docs.kraken.com/rest/#tag/Account-Data/operation/getAccountBalance
+		//--data-urlencode "nonce=<YOUR-NONCE>"
+		//		this means that nonce is added to the body of the request
 
 
 
-    // //coinbase calculations for buy - not needed in this so code commented out
-    
-    //     //let coinbase_taker_fee = 0.008;
-
-    //     //let total_spent = 0.10*(*coinbase_wallet);
-    //     //let fee_for_purchase = total_spent*coinbase_taker_fee;
-    //     //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-    //     ////new state of coinbase wallet below
-    //     //*coinbase_wallet -= total_spent;
-    //     //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-
-    // //kraken calculations - for sell
-    //     let kraken_taker_fee = 0.0026;
-        
-    //     let money_from_sell_before_fees = amount_of_xrp * kraken_sell_price_bid;
-    //     let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-    //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-    //     *kraken_wallet += money_from_sell_after_fees;
-
-    //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+		//02/07/24 - removed
+			// let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+			//         .header("API-Key", kraken_api_key)
+			//         .header("API-Sign", &kraken_signature)
+			//         .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+			//         .body(format!("nonce={}", nonce))
+			//         .build()
+			//         .expect("Failed to build kraken request");
 
 
-    // //bitstamp calculations - for sell
-    //     //let bitstamp_taker_fee = 0.004;
-    //     //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-    //     //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-    //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-    //     //*bitstamp_wallet += money_from_sell_after_fees;
+			// let kraken_response = client.execute(kraken_basic_request).await.expect("Failed to execute Kraken request");
+
+			// let kraken_response_text = kraken_response.text().await.expect("Failed to read response text");
+			
+			// //println!("kraken response:{}", kraken_response_text);
+
+			// let v: Value = serde_json::from_str(&kraken_response_text).expect("getting value didnt work");
+			// let mut kraken_buy_price_ask = 0.0;
+			// let mut kraken_sell_price_bid = 0.0;
+			// if let Some(xrpusd) = v["result"]["XXRPZUSD"].as_object() {
+			//     // Access the ask and bid prices
+			//     kraken_buy_price_ask = xrpusd["a"][0].as_str().unwrap().parse::<f64>().unwrap();
+			//     kraken_sell_price_bid = xrpusd["b"][0].as_str().unwrap().parse::<f64>().unwrap();
+			
+			//     //println!("XRP kraken buy  price Ask price: {}", kraken_buy_price_ask);
+			//     //println!("xrp Bid price: {}", kraken_sell_price_bid );
+			// }
+			// else {
+			//     println!("didnt parse kraken correctly.");
+			// }
+		//02/07/24 - replaced with:
+			let mut kraken_sell_price_bid: Option<f64> = None;
+			let mut kraken_buy_price_ask: Option<f64> = None;
+			let mut value_after: Option<f64> = None;
+			let mut attempts = 0;
+			
+			loop {
+				let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+					.header("API-Key", kraken_api_key)
+					.header("API-Sign", &kraken_signature)
+					.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+					.body(format!("nonce={}", nonce))
+					.build();
+			
+				match kraken_basic_request {
+					Ok(request) => {
+						match client.execute(request).await {
+							Ok(response) => {
+								match response.text().await {
+									Ok(kraken_response_text) => {
+										match serde_json::from_str::<Value>(&kraken_response_text) {
+											Ok(value) => {
+												if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
+													kraken_buy_price_ask = xrpusd["a"][0].as_str().and_then(|s| s.parse().ok());
+													kraken_sell_price_bid = xrpusd["b"][0].as_str().and_then(|s| s.parse().ok());
+
+
+													let gemini_taker_fee = 0.004;
+													let fraction_of_wallet_im_using = 0.03; //aka 3 percent
+										
+													let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+													let fee_for_purchase = total_spent*gemini_taker_fee;
+													let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+													//new state of gemini wallet below
+													*gemini_wallet -= total_spent;
+													//let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+													if let Some(gemini_buy_ask) = gemini_buy_ask {
+														if let Some(kraken_sell_price_bid) = kraken_sell_price_bid {
+															let amount_of_xrp = money_going_to_xrp_after_fees / gemini_buy_ask;
+															// Continue with your logic here...
+															//kraken calculations - for sell
+																let kraken_taker_fee = 0.0026;
+																
+																let money_from_sell_before_fees = amount_of_xrp * kraken_sell_price_bid;
+																let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+																let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+																*kraken_wallet += money_from_sell_after_fees;
+
+													
+													
+															//this will count as value after
+																	value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+
+														
+														
+																	//value_after = 60
+																	//coinbase = 61
+																	//bitstamp = 62
+																	//kraken = 63
+																	//gemini = 64
+																	//since this is kraken and gemini being updated, I will update:
+																	//  60, 63, 64
+																	let indices = [60, 63, 64];
+																	let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																	//01/24/24 - removed and added:
+																		//neural_network.update_input(&indices, &new_values);
+																		//let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+																		//neural_network.update_input(&indices, &transformed_values).await;
+																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+														}
+														else {
+															log::error!("i153: Kraken sell price is None. Response text was: {}", kraken_response_text);
+														}
+													} 
+													else {
+														log::error!("i153: Gemini buy ask is None. Response text was: {}", kraken_response_text);
+													}
+												} 
+												else {
+													log::error!("i153: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+												}
+											},
+											Err(e) => log::error!("i153: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+										}
+									},
+									Err(e) => log::error!("i153: Failed to read response text. Error was: {}", e),
+								}
+							},
+							Err(e) => log::error!("i153: Failed to execute Kraken request. Error was: {}", e),
+						}
+					},
+					Err(e) => log::error!("i153: Failed to build kraken request. Error was: {}", e),
+				}
+			
+				// Continue with your logic here...
+				// Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
+			
+				if kraken_sell_price_bid.is_some() && kraken_buy_price_ask.is_some() {
+					break; // Exit the loop if everything is successful
+				}
+			
+				attempts += 1;
+				if attempts >= 3 {
+					panic!("Failed after 3 attempts");
+				}
+			}
 
 
 
-    // //this will count as value after
-    //     let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
-    //     //println!("value after:\n\t{}",value_after);
+
+		// //gemini calculations for buy 
+		//     //this should equal 0.4%
+		//     let gemini_taker_fee = 0.004;
+		//     let fraction_of_wallet_im_using = 0.04; //aka 4 percent
+
+		//     let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+		//     let fee_for_purchase = total_spent*gemini_taker_fee;
+		//     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+		//     //new state of gemini wallet below
+		//     *gemini_wallet -= total_spent;
+		//     let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
 
 
-    //     //value_after = 60
-    //     //coinbase = 61
-    //     //bitstamp = 62
-    //     //kraken = 63
-    //     //gemini = 64
-    //     //since this is kraken and gemini being updated, I will update:
-    //     //  60, 63, 64
-    //     let indices = [60, 63, 64];
-    //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
-    //     //01/24/24 - removed and added:
-    //         //neural_network.update_input(&indices, &new_values);
-    //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-    //         //neural_network.update_input(&indices, &transformed_values).await;
-    //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-    //         neural_network.update_input(&indices, &scaled_values).await;
 
-    //     return Ok(value_after)
-    match value_after {
-        Some(value) => return Ok(value),
-        None => {
-            
-            panic!("Failed to get a valid value after {} attempts. 
-            Final values: kraken_sell_price_bid = {:?}
-            gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-        }
-    }
-}
+
+		// //coinbase calculations for sell
+
+		//     //let coinbase_taker_fee = 0.008;
+		//     //let money_from_sell_before_fees = amount_of_sol * coinbase_sell_price;
+		//     //let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
+		//     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+		//     //*coinbase_wallet += money_from_sell_after_fees;
+
+
+
+		// //coinbase calculations for buy - not needed in this so code commented out
+		
+		//     //let coinbase_taker_fee = 0.008;
+
+		//     //let total_spent = 0.10*(*coinbase_wallet);
+		//     //let fee_for_purchase = total_spent*coinbase_taker_fee;
+		//     //let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+		//     ////new state of coinbase wallet below
+		//     //*coinbase_wallet -= total_spent;
+		//     //let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+
+		// //kraken calculations - for sell
+		//     let kraken_taker_fee = 0.0026;
+			
+		//     let money_from_sell_before_fees = amount_of_xrp * kraken_sell_price_bid;
+		//     let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+		//     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+		//     *kraken_wallet += money_from_sell_after_fees;
+
+		//     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+
+
+		// //bitstamp calculations - for sell
+		//     //let bitstamp_taker_fee = 0.004;
+		//     //let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+		//     //let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+		//     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+		//     //*bitstamp_wallet += money_from_sell_after_fees;
+
+
+
+		// //this will count as value after
+		//     let value_after = *kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet;
+		//     //println!("value after:\n\t{}",value_after);
+
+
+		//     //value_after = 60
+		//     //coinbase = 61
+		//     //bitstamp = 62
+		//     //kraken = 63
+		//     //gemini = 64
+		//     //since this is kraken and gemini being updated, I will update:
+		//     //  60, 63, 64
+		//     let indices = [60, 63, 64];
+		//     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
+		//     //01/24/24 - removed and added:
+		//         //neural_network.update_input(&indices, &new_values);
+		//         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+		//         //neural_network.update_input(&indices, &transformed_values).await;
+		//         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+		//         neural_network.update_input(&indices, &scaled_values).await;
+
+		//     return Ok(value_after)
+		match value_after {
+			Some(value) => return Ok(value),
+			None => {
+				
+				panic!("Failed to get a valid value after {} attempts. 
+				Final values: kraken_sell_price_bid = {:?}
+				gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+			}
+		}
+	}
 
     pub async fn s_i154_xrp_4_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
@@ -53608,22 +58812,22 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 																// Continue with your logic here using `ask`
 																break; // Exit the loop if everything is successful
 															},
-															Err(_) => log::error!("Failed to parse ask as f64"),
+															Err(_) => log::error!("i154: Failed to parse ask as f64"),
 														}
 													},
-													None => log::error!("Failed to get ask as string"),
+													None => log::error!("i154: Failed to get ask as string"),
 												}
 											},
-											Err(_) => log::error!("Failed to parse JSON"),
+											Err(_) => log::error!("i154: Failed to parse JSON"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to turn response into text"),
+                                    Err(_) => log::error!("i154: Failed to turn response into text"),
                                 }
                             },
-                            Err(_) => log::error!("Failed to execute Gemini request"),
+                            Err(_) => log::error!("i154: Failed to execute Gemini request"),
                         }
                     },
-                    Err(_) => log::error!("Couldn't build gemini request"),
+                    Err(_) => log::error!("i154: Couldn't build gemini request"),
                 }
             
                 attempts += 1;
@@ -53841,27 +59045,27 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
-                                                            log::error!("Kraken sell price is None. Response text was: {}", kraken_response_text);
+                                                            log::error!("i154: Kraken sell price is None. Response text was: {}", kraken_response_text);
                                                         }
                                                     } 
                                                     else {
-                                                        log::error!("Gemini buy ask is None. Response text was: {}", kraken_response_text);
+                                                        log::error!("i154: Gemini buy ask is None. Response text was: {}", kraken_response_text);
                                                     }
                                                 } 
                                                 else {
-                                                    log::error!("Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+                                                    log::error!("i154: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
                                                 }
                                             },
-                                            Err(e) => log::error!("Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+                                            Err(e) => log::error!("i154: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
                                         }
                                     },
-                                    Err(e) => log::error!("Failed to read response text. Error was: {}", e),
+                                    Err(e) => log::error!("i154: Failed to read response text. Error was: {}", e),
                                 }
                             },
-                            Err(e) => log::error!("Failed to execute Kraken request. Error was: {}", e),
+                            Err(e) => log::error!("i154: Failed to execute Kraken request. Error was: {}", e),
                         }
                     },
-                    Err(e) => log::error!("Failed to build kraken request. Error was: {}", e),
+                    Err(e) => log::error!("i154: Failed to build kraken request. Error was: {}", e),
                 }
             
                 // Continue with your logic here...
@@ -53969,8 +59173,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         }
 }
 
-        pub async fn s_i155_xrp_5_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+	pub async fn s_i155_xrp_5_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+		gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -54050,22 +59254,22 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 																// Continue with your logic here using `ask`
 																break; // Exit the loop if everything is successful
 															},
-															Err(_) => log::error!("Failed to parse ask as f64"),
+															Err(_) => log::error!("i155: Failed to parse ask as f64"),
 														}
 													},
-													None => log::error!("Failed to get ask as string"),
+													None => log::error!("i155: Failed to get ask as string"),
 												}
 											},
-											Err(_) => log::error!("Failed to parse JSON"),
+											Err(_) => log::error!("i155: Failed to parse JSON"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to turn response into text"),
+                                    Err(_) => log::error!("i155: Failed to turn response into text"),
                                 }
                             },
-                            Err(_) => log::error!("Failed to execute Gemini request"),
+                            Err(_) => log::error!("i155: Failed to execute Gemini request"),
                         }
                     },
-                    Err(_) => log::error!("Couldn't build gemini request"),
+                    Err(_) => log::error!("i155: Couldn't build gemini request"),
                 }
             
                 attempts += 1;
@@ -54283,27 +59487,27 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
-                                                            log::error!("Kraken sell price is None. Response text was: {}", kraken_response_text);
+                                                            log::error!("i155: Kraken sell price is None. Response text was: {}", kraken_response_text);
                                                         }
                                                     } 
                                                     else {
-                                                        log::error!("Gemini buy ask is None. Response text was: {}", kraken_response_text);
+                                                        log::error!("i155: Gemini buy ask is None. Response text was: {}", kraken_response_text);
                                                     }
                                                 } 
                                                 else {
-                                                    log::error!("Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+                                                    log::error!("i155: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
                                                 }
                                             },
-                                            Err(e) => log::error!("Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+                                            Err(e) => log::error!("i155: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
                                         }
                                     },
-                                    Err(e) => log::error!("Failed to read response text. Error was: {}", e),
+                                    Err(e) => log::error!("i155: Failed to read response text. Error was: {}", e),
                                 }
                             },
-                            Err(e) => log::error!("Failed to execute Kraken request. Error was: {}", e),
+                            Err(e) => log::error!("i155: Failed to execute Kraken request. Error was: {}", e),
                         }
                     },
-                    Err(e) => log::error!("Failed to build kraken request. Error was: {}", e),
+                    Err(e) => log::error!("i155: Failed to build kraken request. Error was: {}", e),
                 }
             
                 // Continue with your logic here...
@@ -54491,22 +59695,22 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 																// Continue with your logic here using `ask`
 																break; // Exit the loop if everything is successful
 															},
-															Err(_) => log::error!("Failed to parse ask as f64"),
+															Err(_) => log::error!("i156: Failed to parse ask as f64"),
 														}
 													},
-													None => log::error!("Failed to get ask as string"),
+													None => log::error!("i156: Failed to get ask as string"),
 												}
 											},
-											Err(_) => log::error!("Failed to parse JSON"),
+											Err(_) => log::error!("i156: Failed to parse JSON"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to turn response into text"),
+                                    Err(_) => log::error!("i156: Failed to turn response into text"),
                                 }
                             },
-                            Err(_) => log::error!("Failed to execute Gemini request"),
+                            Err(_) => log::error!("i156: Failed to execute Gemini request"),
                         }
                     },
-                    Err(_) => log::error!("Couldn't build gemini request"),
+                    Err(_) => log::error!("i156: Couldn't build gemini request"),
                 }
             
                 attempts += 1;
@@ -54724,27 +59928,27 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
-                                                            log::error!("Kraken sell price is None. Response text was: {}", kraken_response_text);
+                                                            log::error!("i156: Kraken sell price is None. Response text was: {}", kraken_response_text);
                                                         }
                                                     } 
                                                     else {
-                                                        log::error!("Gemini buy ask is None. Response text was: {}", kraken_response_text);
+                                                        log::error!("i156: Gemini buy ask is None. Response text was: {}", kraken_response_text);
                                                     }
                                                 } 
                                                 else {
-                                                    log::error!("Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+                                                    log::error!("i156: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
                                                 }
                                             },
-                                            Err(e) => log::error!("Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+                                            Err(e) => log::error!("i156: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
                                         }
                                     },
-                                    Err(e) => log::error!("Failed to read response text. Error was: {}", e),
+                                    Err(e) => log::error!("i156: Failed to read response text. Error was: {}", e),
                                 }
                             },
-                            Err(e) => log::error!("Failed to execute Kraken request. Error was: {}", e),
+                            Err(e) => log::error!("i156: Failed to execute Kraken request. Error was: {}", e),
                         }
                     },
-                    Err(e) => log::error!("Failed to build kraken request. Error was: {}", e),
+                    Err(e) => log::error!("i156: Failed to build kraken request. Error was: {}", e),
                 }
             
                 // Continue with your logic here...
@@ -54933,22 +60137,22 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 																// Continue with your logic here using `ask`
 																break; // Exit the loop if everything is successful
 															},
-															Err(_) => log::error!("Failed to parse ask as f64"),
+															Err(_) => log::error!("i157: Failed to parse ask as f64"),
 														}
 													},
-													None => log::error!("Failed to get ask as string"),
+													None => log::error!("i157: Failed to get ask as string"),
 												}
 											},
-											Err(_) => log::error!("Failed to parse JSON"),
+											Err(_) => log::error!("i157: Failed to parse JSON"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to turn response into text"),
+                                    Err(_) => log::error!("i157: Failed to turn response into text"),
                                 }
                             },
-                            Err(_) => log::error!("Failed to execute Gemini request"),
+                            Err(_) => log::error!("i157: Failed to execute Gemini request"),
                         }
                     },
-                    Err(_) => log::error!("Couldn't build gemini request"),
+                    Err(_) => log::error!("i157: Couldn't build gemini request"),
                 }
             
                 attempts += 1;
@@ -55166,27 +60370,27 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
-                                                            log::error!("Kraken sell price is None. Response text was: {}", kraken_response_text);
+                                                            log::error!("i157: Kraken sell price is None. Response text was: {}", kraken_response_text);
                                                         }
                                                     } 
                                                     else {
-                                                        log::error!("Gemini buy ask is None. Response text was: {}", kraken_response_text);
+                                                        log::error!("i157: Gemini buy ask is None. Response text was: {}", kraken_response_text);
                                                     }
                                                 } 
                                                 else {
-                                                    log::error!("Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+                                                    log::error!("i157: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
                                                 }
                                             },
-                                            Err(e) => log::error!("Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+                                            Err(e) => log::error!("i157: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
                                         }
                                     },
-                                    Err(e) => log::error!("Failed to read response text. Error was: {}", e),
+                                    Err(e) => log::error!("i157: Failed to read response text. Error was: {}", e),
                                 }
                             },
-                            Err(e) => log::error!("Failed to execute Kraken request. Error was: {}", e),
+                            Err(e) => log::error!("i157: Failed to execute Kraken request. Error was: {}", e),
                         }
                     },
-                    Err(e) => log::error!("Failed to build kraken request. Error was: {}", e),
+                    Err(e) => log::error!("i157: Failed to build kraken request. Error was: {}", e),
                 }
             
                 // Continue with your logic here...
@@ -55375,22 +60579,22 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 																// Continue with your logic here using `ask`
 																break; // Exit the loop if everything is successful
 															},
-															Err(_) => log::error!("Failed to parse ask as f64"),
+															Err(_) => log::error!("i158: Failed to parse ask as f64"),
 														}
 													},
-													None => log::error!("Failed to get ask as string"),
+													None => log::error!("i158: Failed to get ask as string"),
 												}
 											},
-											Err(_) => log::error!("Failed to parse JSON"),
+											Err(_) => log::error!("i158: Failed to parse JSON"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to turn response into text"),
+                                    Err(_) => log::error!("i158: Failed to turn response into text"),
                                 }
                             },
-                            Err(_) => log::error!("Failed to execute Gemini request"),
+                            Err(_) => log::error!("i158: Failed to execute Gemini request"),
                         }
                     },
-                    Err(_) => log::error!("Couldn't build gemini request"),
+                    Err(_) => log::error!("i158: Couldn't build gemini request"),
                 }
             
                 attempts += 1;
@@ -55608,27 +60812,27 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
-                                                            log::error!("Kraken sell price is None. Response text was: {}", kraken_response_text);
+                                                            log::error!("i158: Kraken sell price is None. Response text was: {}", kraken_response_text);
                                                         }
                                                     } 
                                                     else {
-                                                        log::error!("Gemini buy ask is None. Response text was: {}", kraken_response_text);
+                                                        log::error!("i158: Gemini buy ask is None. Response text was: {}", kraken_response_text);
                                                     }
                                                 } 
                                                 else {
-                                                    log::error!("Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+                                                    log::error!("i158: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
                                                 }
                                             },
-                                            Err(e) => log::error!("Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+                                            Err(e) => log::error!("i158: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
                                         }
                                     },
-                                    Err(e) => log::error!("Failed to read response text. Error was: {}", e),
+                                    Err(e) => log::error!("i158: Failed to read response text. Error was: {}", e),
                                 }
                             },
-                            Err(e) => log::error!("Failed to execute Kraken request. Error was: {}", e),
+                            Err(e) => log::error!("i158: Failed to execute Kraken request. Error was: {}", e),
                         }
                     },
-                    Err(e) => log::error!("Failed to build kraken request. Error was: {}", e),
+                    Err(e) => log::error!("i158: Failed to build kraken request. Error was: {}", e),
                 }
             
                 // Continue with your logic here...
@@ -55817,22 +61021,22 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 																// Continue with your logic here using `ask`
 																break; // Exit the loop if everything is successful
 															},
-															Err(_) => log::error!("Failed to parse ask as f64"),
+															Err(_) => log::error!("i159: Failed to parse ask as f64"),
 														}
 													},
-													None => log::error!("Failed to get ask as string"),
+													None => log::error!("i159: Failed to get ask as string"),
 												}
 											},
-											Err(_) => log::error!("Failed to parse JSON"),
+											Err(_) => log::error!("i159: Failed to parse JSON"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to turn response into text"),
+                                    Err(_) => log::error!("i159: Failed to turn response into text"),
                                 }
                             },
-                            Err(_) => log::error!("Failed to execute Gemini request"),
+                            Err(_) => log::error!("i159: Failed to execute Gemini request"),
                         }
                     },
-                    Err(_) => log::error!("Couldn't build gemini request"),
+                    Err(_) => log::error!("i159: Couldn't build gemini request"),
                 }
             
                 attempts += 1;
@@ -56025,14 +61229,9 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                 let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
                                                                 *kraken_wallet += money_from_sell_after_fees;
-
-                                                    
-                                                    
                                                             //this will count as value after
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 
-                                                    
-                                                    
                                                                 //value_after = 60
                                                                 //coinbase = 61
                                                                 //bitstamp = 62
@@ -56050,27 +61249,27 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
-                                                            log::error!("Kraken sell price is None. Response text was: {}", kraken_response_text);
+                                                            log::error!("i159: Kraken sell price is None. Response text was: {}", kraken_response_text);
                                                         }
                                                     } 
                                                     else {
-                                                        log::error!("Gemini buy ask is None. Response text was: {}", kraken_response_text);
+                                                        log::error!("i159: Gemini buy ask is None. Response text was: {}", kraken_response_text);
                                                     }
                                                 } 
                                                 else {
-                                                    log::error!("Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+                                                    log::error!("i159: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
                                                 }
                                             },
-                                            Err(e) => log::error!("Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+                                            Err(e) => log::error!("i159: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
                                         }
                                     },
-                                    Err(e) => log::error!("Failed to read response text. Error was: {}", e),
+                                    Err(e) => log::error!("i159: Failed to read response text. Error was: {}", e),
                                 }
                             },
-                            Err(e) => log::error!("Failed to execute Kraken request. Error was: {}", e),
+                            Err(e) => log::error!("i159: Failed to execute Kraken request. Error was: {}", e),
                         }
                     },
-                    Err(e) => log::error!("Failed to build kraken request. Error was: {}", e),
+                    Err(e) => log::error!("i159: Failed to build kraken request. Error was: {}", e),
                 }
             
                 // Continue with your logic here...
@@ -56178,8 +61377,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         }
 }
 
-        pub async fn s_i160_xrp_10_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+	pub async fn s_i160_xrp_10_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+		gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -56259,22 +61458,22 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
 																// Continue with your logic here using `ask`
 																break; // Exit the loop if everything is successful
 															},
-															Err(_) => log::error!("Failed to parse ask as f64"),
+															Err(_) => log::error!("i160: Failed to parse ask as f64"),
 														}
 													},
-													None => log::error!("Failed to get ask as string"),
+													None => log::error!("i160: Failed to get ask as string"),
 												}
 											},
-											Err(_) => log::error!("Failed to parse JSON"),
+											Err(_) => log::error!("i160: Failed to parse JSON"),
                                         }
                                     },
-                                    Err(_) => log::error!("Failed to turn response into text"),
+                                    Err(_) => log::error!("i160: Failed to turn response into text"),
                                 }
                             },
-                            Err(_) => log::error!("Failed to execute Gemini request"),
+                            Err(_) => log::error!("i160: Failed to execute Gemini request"),
                         }
                     },
-                    Err(_) => log::error!("Couldn't build gemini request"),
+                    Err(_) => log::error!("i160: Couldn't build gemini request"),
                 }
             
                 attempts += 1;
@@ -56492,27 +61691,27 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                                                                     neural_network.update_input(&indices, &scaled_values).await;
                                                         }
                                                         else {
-                                                            log::error!("Kraken sell price is None. Response text was: {}", kraken_response_text);
+                                                            log::error!("i160: Kraken sell price is None. Response text was: {}", kraken_response_text);
                                                         }
                                                     } 
                                                     else {
-                                                        log::error!("Gemini buy ask is None. Response text was: {}", kraken_response_text);
+                                                        log::error!("i160: Gemini buy ask is None. Response text was: {}", kraken_response_text);
                                                     }
                                                 } 
                                                 else {
-                                                    log::error!("Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+                                                    log::error!("i160: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
                                                 }
                                             },
-                                            Err(e) => log::error!("Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+                                            Err(e) => log::error!("i160: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
                                         }
                                     },
-                                    Err(e) => log::error!("Failed to read response text. Error was: {}", e),
+                                    Err(e) => log::error!("i160: Failed to read response text. Error was: {}", e),
                                 }
                             },
-                            Err(e) => log::error!("Failed to execute Kraken request. Error was: {}", e),
+                            Err(e) => log::error!("i160: Failed to execute Kraken request. Error was: {}", e),
                         }
                     },
-                    Err(e) => log::error!("Failed to build kraken request. Error was: {}", e),
+                    Err(e) => log::error!("i160: Failed to build kraken request. Error was: {}", e),
                 }
             
                 // Continue with your logic here...
@@ -56528,6 +61727,15 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
                 }
             }
 
+			match value_after {
+				Some(value) => return Ok(value),
+				None => {
+					
+					panic!("Failed to get a valid value after {} attempts. 
+					Final values: kraken_sell_price_bid = {:?}
+					gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+				}
+			}
 
 
 
@@ -56609,91 +61817,84 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         //         neural_network.update_input(&indices, &scaled_values).await;
 
         //     return Ok(value_after)
-        match value_after {
-            Some(value) => return Ok(value),
-            None => {
-                
-                panic!("Failed to get a valid value after {} attempts. 
-                Final values: kraken_sell_price_bid = {:?}
-                gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-            }
-        }
+
     }
 //coinbase kraken   = 3 AND UP FOR min of 10 USD for coinbase. min buy of 10 XRP for kraken so maximal min is 6 dollars.
     pub async fn s_i163_xrp_3_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
-        let now = Utc::now();
-        let time_stamp = now.timestamp().to_string();
-        let method = "GET";
-        let request_path = "/api/v3/brokerage/best_bid_ask";
-        let body = "";
-        let message = format!("{}{}{}{}", &time_stamp, 
-        &method, &request_path, &body);
-        type HmacSha256 = Hmac<Sha256>;
-        fn sign(message: &str, coinbase_secret: &str) -> String {
-        let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-                    .expect("HMAC can take key of any size");
-        mac.update(message.as_bytes());
-        let result = mac.finalize();
-        let code_bytes = result.into_bytes();
-        hex::encode(code_bytes)
-        }
-        let coinbase_signature = sign(&message, &coinbase_secret);
+		//03/05/24 - removed:
+        // let now = Utc::now();
+        // let time_stamp = now.timestamp().to_string();
+        // let method = "GET";
+        // let request_path = "/api/v3/brokerage/best_bid_ask";
+        // let body = "";
+        // let message = format!("{}{}{}{}", &time_stamp, 
+        // &method, &request_path, &body);
+        // type HmacSha256 = Hmac<Sha256>;
+        // fn sign(message: &str, coinbase_secret: &str) -> String {
+        // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+        //             .expect("HMAC can take key of any size");
+        // mac.update(message.as_bytes());
+        // let result = mac.finalize();
+        // let code_bytes = result.into_bytes();
+        // hex::encode(code_bytes)
+        // }
+        // let coinbase_signature = sign(&message, &coinbase_secret);
 
-        let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
-        .header("CB-ACCESS-KEY", coinbase_api_key)
-        .header("CB-ACCESS-SIGN", &coinbase_signature)
-        .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-        .build()
-        .expect("couldn't build request");
-        //manages the error I described above
-        //let request = match request {
-        //Ok(req) => req,
-        //Err(e) => {
-        //eprintln!("Failed to build request: \n{}", e);
-        //return Err(e);
-        //}
-        //};
+        // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+        // .header("CB-ACCESS-KEY", coinbase_api_key)
+        // .header("CB-ACCESS-SIGN", &coinbase_signature)
+        // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+        // .build()
+        // .expect("couldn't build request");
+        // //manages the error I described above
+        // //let request = match request {
+        // //Ok(req) => req,
+        // //Err(e) => {
+        // //eprintln!("Failed to build request: \n{}", e);
+        // //return Err(e);
+        // //}
+        // //};
 
-        let response = client.execute(request).await.expect("couldn't build response");
-        //let response = match response {
-        //    Ok(resp) => resp,
-        //    Err(e) => {
-        //        eprintln!("Failed to execute request: \n{}", e);
-        //        return Err(e);
-        //    }
-        //};
+        // let response = client.execute(request).await.expect("couldn't build response");
+        // //let response = match response {
+        // //    Ok(resp) => resp,
+        // //    Err(e) => {
+        // //        eprintln!("Failed to execute request: \n{}", e);
+        // //        return Err(e);
+        // //    }
+        // //};
 
 
-        let response_text = response.text().await.expect("couldn't build response_text");
+        // let response_text = response.text().await.expect("couldn't build response_text");
 
-        //added 12/29/23
-        //this is the parsing
-        let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
-        let mut coinbase_sell_price_bid = 0.0;
-        let mut coinbase_buy_price_ask = 0.0;
+        // //added 12/29/23
+        // //this is the parsing
+        // let v: Value = serde_json::from_str(&response_text).expect("couldn't turn response_text into serde_json format");
+        // let mut coinbase_sell_price_bid = 0.0;
+        // let mut coinbase_buy_price_ask = 0.0;
 
-        // Access the pricebooks array
-        if let Some(pricebooks) = v["pricebooks"].as_array() {
-            // Iterate over each pricebook
-            for pricebook in pricebooks {
-                // Access the product_id, bids, and asks
-                let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
-                let bids = &pricebook["bids"][0];
-                let asks = &pricebook["asks"][0];
+        // // Access the pricebooks array
+        // if let Some(pricebooks) = v["pricebooks"].as_array() {
+        //     // Iterate over each pricebook
+        //     for pricebook in pricebooks {
+        //         // Access the product_id, bids, and asks
+        //         let product_id = pricebook["product_id"].as_str().expect(&format!("couldn't get product_id. pricebook: {:?}", pricebook));
+        //         let bids = &pricebook["bids"][0];
+        //         let asks = &pricebook["asks"][0];
         
-                // Access the price and size of the bids and asks
-                coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
-                let bid_size = bids["size"].as_str().expect("could not find bids[size]");
-                coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
-                let ask_size = asks["size"].as_str().expect("could not find asks[size]");
+        //         // Access the price and size of the bids and asks
+        //         coinbase_sell_price_bid = bids["price"].as_str().expect("could not find bids[price]").parse::<f64>().expect("could not parse to f64. bids");
+        //         let bid_size = bids["size"].as_str().expect("could not find bids[size]");
+        //         coinbase_buy_price_ask = asks["price"].as_str().expect("could not find asks[price]").parse::<f64>().expect("could not parse to f64");
+        //         let ask_size = asks["size"].as_str().expect("could not find asks[size]");
         
-                //println!("Product ID: {}", product_id);
-                //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
-                //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
-            }
-        }
+        //         //println!("Product ID: {}", product_id);
+        //         //println!("Best bid: {} (size: {})", coinbase_sell_price_bid, bid_size);
+        //         //println!("Best ask: {} (size: {})", coinbase_buy_price_ask, ask_size);
+        //     }
+        // }
 
         //manages any errors from line above
         //let response_text = match response_text {
@@ -56708,7 +61909,131 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         //println!("list accounts response\n{:?}", &response_text);
 
 
+	//03/05/24 added - 
+		let now = Utc::now();
+		let time_stamp = now.timestamp().to_string();
+		let method = "GET";
+		let request_path = "/api/v3/brokerage/best_bid_ask";
+		let body = "";
+		let message = format!("{}{}{}{}", &time_stamp, 
+		&method, &request_path, &body);
+		type HmacSha256 = Hmac<Sha256>;
+		fn sign(message: &str, coinbase_secret: &str) -> String {
+		let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+					.expect("HMAC can take key of any size");
+		mac.update(message.as_bytes());
+		let result = mac.finalize();
+		let code_bytes = result.into_bytes();
+		hex::encode(code_bytes)
+		}
+		let coinbase_signature = sign(&message, &coinbase_secret);
 
+
+		let mut coinbase_buy_price_ask: Option<f64> = None;
+		let mut attempts = 0;
+		let mut success = false;
+		loop {
+			attempts +=1;
+			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
+			.header("CB-ACCESS-KEY", coinbase_api_key)
+			.header("CB-ACCESS-SIGN", &coinbase_signature)
+			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
+			.build();
+
+			match request {
+				Ok(req) => {
+					let response = client.execute(req).await;
+					match response {
+						Ok(resp) => {
+							let response_text = resp.text().await;
+							match response_text {
+								Ok(text) => {
+									match serde_json::from_str::<Value>(&text) {
+										Ok(v) => {
+											if let Some(pricebooks) = v["pricebooks"].as_array() {
+												for pricebook in pricebooks {
+													//let product_id = pricebook["product_id"].as_str();
+													//let bids = &pricebook["bids"][0];
+													let asks = &pricebook["asks"][0];
+													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+
+													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
+														(/*Some(bid_str),*/ Some(ask_str)) => {
+															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
+																(/*Ok(bid_str),*/ Ok(ask_str)) => {
+																	//coinbase_sell_price_bid = Some(bid_str);
+																	coinbase_buy_price_ask = Some(ask_str);
+																	
+																		success = true;
+																},
+																_ => {
+																	log::error!("i113: Failed to parse json into f64");
+																	if attempts > 3 {
+																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																	}
+																	continue ;
+																}
+															}
+														},
+														_ => {
+															log::error!("i113: Failed to get bid price ");
+															if attempts > 3 {
+																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+															}
+															continue ;
+														}
+													}
+												}
+											//03/02/24 - added else condition
+											} else {
+												log::error!("i113: Failed to get pricebooks as array.");
+												if attempts > 3 {
+													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+												}
+												continue;
+											}
+										},
+										Err(_) => {
+											log::error!("i113: Failed to parse JSON to str");
+											if attempts > 3 {
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+											}
+											continue ; // Continue to the next iteration if parsing fails
+										}
+									}
+								},
+								Err(_) => {
+									log::error!("i113: Failed to get response text");
+									if attempts > 3 {
+										panic!("Failed to get response text after 3 attempts");
+									}
+									continue ; // Continue to the next iteration if getting response text fails
+								}
+							}
+						},
+						Err(_) => {
+							log::error!("i113: Failed to execute request.");
+							if attempts > 3 {
+								panic!("Failed to execute request after 3 attempts");
+							}
+							continue; // Continue to the next iteration if executing request fails
+						}
+					}
+				},
+				Err(_) => {
+					log::error!("i113: Failed to build request");
+					if attempts > 3 {
+						panic!("Failed to build request after 3 attempts");
+					}
+					continue; // Continue to the next iteration if building request fails
+				}
+			}
+			if success == true {
+				break;
+			}
+		}
 
 
 
@@ -56819,6 +62144,149 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         else {
             println!("didnt parse kraken correctly.");
         }
+
+
+
+
+
+
+
+
+
+
+
+        //02/07/24 - replaced with:
+			let mut kraken_sell_price_bid: Option<f64> = None;
+			let mut kraken_buy_price_ask: Option<f64> = None;
+			let mut value_after: Option<f64> = None;
+			let mut attempts = 0;
+			
+			loop {
+				let kraken_basic_request = client.get("https://api.kraken.com/0/public/Ticker?pair=XRPUSD")
+					.header("API-Key", kraken_api_key)
+					.header("API-Sign", &kraken_signature)
+					.header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+					.body(format!("nonce={}", nonce))
+					.build();
+			
+				match kraken_basic_request {
+					Ok(request) => {
+						match client.execute(request).await {
+							Ok(response) => {
+								match response.text().await {
+									Ok(kraken_response_text) => {
+										match serde_json::from_str::<Value>(&kraken_response_text) {
+											Ok(value) => {
+												if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
+													kraken_buy_price_ask = xrpusd["a"][0].as_str().and_then(|s| s.parse().ok());
+													kraken_sell_price_bid = xrpusd["b"][0].as_str().and_then(|s| s.parse().ok());
+
+
+													let gemini_taker_fee = 0.004;
+													let fraction_of_wallet_im_using = 0.03; //aka 3 percent
+										
+													let total_spent = fraction_of_wallet_im_using*(*gemini_wallet);
+													let fee_for_purchase = total_spent*gemini_taker_fee;
+													let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
+													//new state of gemini wallet below
+													*gemini_wallet -= total_spent;
+													//let amount_of_xrp = money_going_to_xrp_after_fees/gemini_buy_ask;
+													if let Some(gemini_buy_ask) = gemini_buy_ask {
+														if let Some(kraken_sell_price_bid) = kraken_sell_price_bid {
+															let amount_of_xrp = money_going_to_xrp_after_fees / gemini_buy_ask;
+															// Continue with your logic here...
+															//kraken calculations - for sell
+																let kraken_taker_fee = 0.0026;
+																
+																let money_from_sell_before_fees = amount_of_xrp * kraken_sell_price_bid;
+																let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+																let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+																*kraken_wallet += money_from_sell_after_fees;
+
+													
+													
+															//this will count as value after
+																value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+
+													
+													
+																//value_after = 60
+																//coinbase = 61
+																//bitstamp = 62
+																//kraken = 63
+																//gemini = 64
+																//since this is kraken and gemini being updated, I will update:
+																//  60, 63, 64
+																let indices = [60, 63, 64];
+																let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																//01/24/24 - removed and added:
+																	//neural_network.update_input(&indices, &new_values);
+																	//let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+																	//neural_network.update_input(&indices, &transformed_values).await;
+																	let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+														}
+														else {
+															log::error!("i160: Kraken sell price is None. Response text was: {}", kraken_response_text);
+														}
+													} 
+													else {
+														log::error!("i160: Gemini buy ask is None. Response text was: {}", kraken_response_text);
+													}
+												} 
+												else {
+													log::error!("i160: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+												}
+											},
+											Err(e) => log::error!("i160: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+										}
+									},
+									Err(e) => log::error!("i160: Failed to read response text. Error was: {}", e),
+								}
+							},
+							Err(e) => log::error!("i160: Failed to execute Kraken request. Error was: {}", e),
+						}
+					},
+					Err(e) => log::error!("i160: Failed to build kraken request. Error was: {}", e),
+				}
+			
+				// Continue with your logic here...
+				// Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
+			
+				if kraken_sell_price_bid.is_some() && kraken_buy_price_ask.is_some() {
+					break; // Exit the loop if everything is successful
+				}
+			
+				attempts += 1;
+				if attempts >= 3 {
+					panic!("Failed after 3 attempts");
+				}
+			}
+			match value_after {
+				Some(value) => return Ok(value),
+				None => {
+					
+					panic!("Failed to get a valid value after {} attempts. 
+					Final values: kraken_sell_price_bid = {:?}
+					gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+				}
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         let coinbase_taker_fee = 0.008;
@@ -58559,8 +64027,8 @@ pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &
         return Ok(value_after)
     }
 //kraken coinbase   = 4 AND UP for min of 25 XRP withdraw = 15 dollars. 3 and up should work but just in case
-pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-    gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+	pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
 
     //---KRAKEN--//
 

@@ -1860,7 +1860,8 @@
 			//02/19/24 - changed to 0.4
 			//02/29/24 - changed to 0.3
 			//03/05/24 - changed to 0.4
-			let gamma = 0.4;
+			//03/06/24 - changed to 0.5
+			let gamma = 0.5;
 			//initialize the largest Q-value so far and its index
 			//let mut index_of_largest_qvalue_in_next_state: Option<usize> = None;
 			let mut largest_qvalue_so_far_in_next_state = f64::MIN;
@@ -3098,7 +3099,58 @@
 						Ok(mut file) => {
 							match writeln!(file, "last network layer information:\titeration: {}\tColumns: {}\nData: {:?}"
 								, &i, last_layer.columns, last_layer.data) {
-								Ok(_) => break,
+		//03/06/24 - removed:
+
+		// 						Ok(_) => break,
+		// 						Err(e) => {
+		// 							log::error!("save_last_network_layer: Failed to write to file after {} attempts. Error: {}"
+		// 							, &i, e);
+		// 							if attempts > 3 {
+		// 								panic!("save_last_network_layer: Failed to write to file after 3 attempts. Error: {}", e);
+		// 							}
+		// 							continue;
+		// 						}
+		// 					}
+		// 				},
+		// 				Err(e) => {
+		// 					log::error!("save_last_network_layer: Failed to open file after {} attempts. Error: {}"
+		// 					, &i, e);
+		// 					if attempts > 3 {
+		// 						panic!("save_last_network_layer: Failed to open file after 3 attempts. Error: {}", e);
+		// 					}
+		// 					continue;
+		// 				}
+		// 			}
+		// 		} else {
+		// 			panic!("save_last_network_layer: No layers in the network");
+		// 		}
+		// 	}
+		// }
+		//03/06/24 - added:
+								Ok(_) => {
+									// Calculate the sum and average of the last_layer data by iterating through both dimensions
+									let mut sum = 0.0;
+									let mut count = 0;
+									for sub_vec in &last_layer.data {
+										for &value in sub_vec {
+											sum += value;
+											count += 1;
+										}
+									}
+									let avg = sum / (count as f64);
+									// Print the average to the file
+									match writeln!(file, "Average: {}", avg) {
+										Ok(_) => break,
+										Err(e) => {
+											log::error!("save_last_network_layer: Failed to write average to file after {} attempts. Error: {}"
+											, &i, e);
+											if attempts > 3 {
+												panic!("save_last_network_layer: Failed to write average to file after 3 attempts. Error: {}", e);
+											}
+											continue;
+										}
+									}
+								},
 								Err(e) => {
 									log::error!("save_last_network_layer: Failed to write to file after {} attempts. Error: {}"
 									, &i, e);

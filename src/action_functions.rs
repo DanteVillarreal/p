@@ -59122,7 +59122,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 // Continue with your logic here...
                 // Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
             
-                if kraken_sell_price_bid.is_some() && kraken_buy_price_ask.is_some() {
+				//03/05/24 - removed the && ...
+                if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
                     break; // Exit the loop if everything is successful
                 }
             
@@ -59575,7 +59576,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 // Continue with your logic here...
                 // Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
             
-                if kraken_sell_price_bid.is_some() && kraken_buy_price_ask.is_some() {
+				//03/05/24 - removed the && ...
+                if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
                     break; // Exit the loop if everything is successful
                 }
             
@@ -60027,7 +60029,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 // Continue with your logic here...
                 // Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
             
-                if kraken_sell_price_bid.is_some() && kraken_buy_price_ask.is_some() {
+				//03/05/24 - removed the && ...
+                if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
                     break; // Exit the loop if everything is successful
                 }
             
@@ -60480,7 +60483,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 // Continue with your logic here...
                 // Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
             
-                if kraken_sell_price_bid.is_some() && kraken_buy_price_ask.is_some() {
+				//03/05/24 - removed the && ...
+                if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
                     break; // Exit the loop if everything is successful
                 }
             
@@ -60933,7 +60937,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 // Continue with your logic here...
                 // Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
             
-                if kraken_sell_price_bid.is_some() && kraken_buy_price_ask.is_some() {
+				//03/05/24 - removed the && ...
+                if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
                     break; // Exit the loop if everything is successful
                 }
             
@@ -61386,7 +61391,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                 // Continue with your logic here...
                 // Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
             
-                if kraken_sell_price_bid.is_some() && kraken_buy_price_ask.is_some() {
+				//03/05/24 - removed the && ...
+                if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
                     break; // Exit the loop if everything is successful
                 }
             
@@ -61838,8 +61844,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             
                 // Continue with your logic here...
                 // Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
-            
-                if kraken_sell_price_bid.is_some() && kraken_buy_price_ask.is_some() {
+				//03/05/24 - removed the && ...
+                if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
                     break; // Exit the loop if everything is successful
                 }
             

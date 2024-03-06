@@ -1859,7 +1859,8 @@
 			//02/16/24 - changed to 0.5
 			//02/19/24 - changed to 0.4
 			//02/29/24 - changed to 0.3
-			let gamma = 0.2;
+			//03/05/24 - changed to 0.4
+			let gamma = 0.4;
 			//initialize the largest Q-value so far and its index
 			//let mut index_of_largest_qvalue_in_next_state: Option<usize> = None;
 			let mut largest_qvalue_so_far_in_next_state = f64::MIN;

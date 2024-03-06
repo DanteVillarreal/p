@@ -64979,7 +64979,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 																	//Coinbase calculations
 																	let coinbase_taker_fee = 0.008;
-																	let fraction_of_wallet_im_using = 0.03; //aka 3 percent
+																	let fraction_of_wallet_im_using = 0.08; //aka 8 percent
 																	let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
 																	let fee_for_purchase = total_spent*coinbase_taker_fee;
 																	let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;

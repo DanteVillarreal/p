@@ -22596,7 +22596,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																		*kraken_wallet -= money_going_to_sol_after_fees;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
+																		*kraken_wallet -= total_spent;
 
 																		let amount_of_sol_before_withdraw_fee = 
 																			money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -23187,7 +23189,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																		*kraken_wallet -= money_going_to_sol_after_fees;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
+																		*kraken_wallet -= total_spent;
 
 																		let amount_of_sol_before_withdraw_fee = 
 																			money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -23778,7 +23782,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																		*kraken_wallet -= money_going_to_sol_after_fees;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
+																		*kraken_wallet -= total_spent;
 
 																		let amount_of_sol_before_withdraw_fee = 
 																			money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -24369,7 +24375,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																		*kraken_wallet -= money_going_to_sol_after_fees;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
+																		*kraken_wallet -= total_spent;
 
 																		let amount_of_sol_before_withdraw_fee = 
 																			money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -24960,7 +24968,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																		*kraken_wallet -= money_going_to_sol_after_fees;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
+																		*kraken_wallet -= total_spent;
 
 																		let amount_of_sol_before_withdraw_fee = 
 																			money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -25551,7 +25561,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																		*kraken_wallet -= money_going_to_sol_after_fees;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
+																		*kraken_wallet -= total_spent;
 
 																		let amount_of_sol_before_withdraw_fee = 
 																			money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -27094,7 +27106,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																	let fee_for_purchase = total_spent*kraken_taker_fee;
 																	let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																	*kraken_wallet -= money_going_to_sol_after_fees;
+																	//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
 
 																	let amount_of_sol_before_withdraw_fee = 
 																		money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -27650,7 +27664,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																	let fee_for_purchase = total_spent*kraken_taker_fee;
 																	let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																	*kraken_wallet -= money_going_to_sol_after_fees;
+																	//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
 
 																	let amount_of_sol_before_withdraw_fee = 
 																		money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -28207,7 +28223,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																	let fee_for_purchase = total_spent*kraken_taker_fee;
 																	let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																	*kraken_wallet -= money_going_to_sol_after_fees;
+																	//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
 
 																	let amount_of_sol_before_withdraw_fee = 
 																		money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -28764,7 +28782,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																	let fee_for_purchase = total_spent*kraken_taker_fee;
 																	let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																	*kraken_wallet -= money_going_to_sol_after_fees;
+																	//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
 
 																	let amount_of_sol_before_withdraw_fee = 
 																		money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -29321,7 +29341,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																	let fee_for_purchase = total_spent*kraken_taker_fee;
 																	let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																	*kraken_wallet -= money_going_to_sol_after_fees;
+																	//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
 
 																	let amount_of_sol_before_withdraw_fee = 
 																		money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -29878,7 +29900,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																	let fee_for_purchase = total_spent*kraken_taker_fee;
 																	let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-																	*kraken_wallet -= money_going_to_sol_after_fees;
+																	//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
 
 																	let amount_of_sol_before_withdraw_fee = 
 																		money_going_to_sol_after_fees/kraken_buy_price_ask
@@ -37875,6 +37899,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
 																		*kraken_wallet -= total_spent;
 
 																		let amount_of_xlm_before_withdraw_fee = 
@@ -38420,6 +38446,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
 																		*kraken_wallet -= total_spent;
 
 																		let amount_of_xlm_before_withdraw_fee = 
@@ -38965,6 +38993,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
 																		*kraken_wallet -= total_spent;
 
 																		let amount_of_xlm_before_withdraw_fee = 
@@ -62315,18 +62345,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																(/*Ok(ask),*/ Ok(bid)) => {
 																	//kraken_buy_price_ask = Some(ask);
 																	kraken_sell_price_bid = Some(bid);
-																	// // Continue with your logic here...
-	
-																	// let coinbase_taker_fee = 0.008;
-																	// let fraction_of_wallet_used = 0.03;
-																	// let total_spent = fraction_of_wallet_used*(*coinbase_wallet);
-																	// let fee_for_purchase = total_spent*coinbase_taker_fee;
-																	// let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-																	// //new state of coinbase wallet below
-																	// *coinbase_wallet -= total_spent;
-																	// let amount_of_xrp = money_going_to_xrp_after_fees/coinbase_buy_price_ask;
-
-
+																	// Continue with your logic here...
 
 																	//Coinbase calculations
 																	let coinbase_taker_fee = 0.008;
@@ -66458,7 +66477,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
                                                                     let fee_for_purchase = total_spent*kraken_taker_fee;
                                                                     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                                                                    *kraken_wallet -= money_going_to_xrp_after_fees;
+                                                                    //03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
                                                                     let amount_of_xrp_before_withdraw_fee = 
                                                                                     money_going_to_xrp_after_fees/kraken_buy_price_ask
                                                                                         .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
@@ -66914,7 +66935,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
                                                                     let fee_for_purchase = total_spent*kraken_taker_fee;
                                                                     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                                                                    *kraken_wallet -= money_going_to_xrp_after_fees;
+                                                                    //03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
                                                                     let amount_of_xrp_before_withdraw_fee = 
                                                                                     money_going_to_xrp_after_fees/kraken_buy_price_ask
                                                                                         .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
@@ -67370,7 +67393,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
                                                                     let fee_for_purchase = total_spent*kraken_taker_fee;
                                                                     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                                                                    *kraken_wallet -= money_going_to_xrp_after_fees;
+                                                                    //03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
                                                                     let amount_of_xrp_before_withdraw_fee = 
                                                                                     money_going_to_xrp_after_fees/kraken_buy_price_ask
                                                                                         .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
@@ -67826,7 +67851,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
                                                                     let fee_for_purchase = total_spent*kraken_taker_fee;
                                                                     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                                                                    *kraken_wallet -= money_going_to_xrp_after_fees;
+                                                                    //03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
                                                                     let amount_of_xrp_before_withdraw_fee = 
                                                                                     money_going_to_xrp_after_fees/kraken_buy_price_ask
                                                                                         .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
@@ -68282,7 +68309,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
                                                                     let fee_for_purchase = total_spent*kraken_taker_fee;
                                                                     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                                                                    *kraken_wallet -= money_going_to_xrp_after_fees;
+                                                                    //03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
                                                                     let amount_of_xrp_before_withdraw_fee = 
                                                                                     money_going_to_xrp_after_fees/kraken_buy_price_ask
                                                                                         .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
@@ -68738,7 +68767,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
                                                                     let fee_for_purchase = total_spent*kraken_taker_fee;
                                                                     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                                                                    *kraken_wallet -= money_going_to_xrp_after_fees;
+                                                                    //03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
                                                                     let amount_of_xrp_before_withdraw_fee = 
                                                                                     money_going_to_xrp_after_fees/kraken_buy_price_ask
                                                                                         .expect(&format!("kraken_buy_price_ask is somehow Not Some. 
@@ -69194,7 +69225,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
                                                                     let fee_for_purchase = total_spent*kraken_taker_fee;
                                                                     let money_going_to_xrp_after_fees = total_spent - fee_for_purchase;
-                                                                    *kraken_wallet -= money_going_to_xrp_after_fees;
+                                                                    //03/05/24 - changed from -= money_going_to_sol_after_fees to
+																	//				  total_spent;
+																	*kraken_wallet -= total_spent;
                                                                     let amount_of_xrp_before_withdraw_fee = 
                                                                                     money_going_to_xrp_after_fees/kraken_buy_price_ask
                                                                                         .expect(&format!("kraken_buy_price_ask is somehow Not Some. 

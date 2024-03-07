@@ -456,12 +456,103 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                             .get("events") {
                                 if let Some(Value::Object(event)) =
                                 events.get(0) {
-                                    amount = event.get("amount")
-                                        .and_then(|v| v.as_str())
-                                        .and_then(|s| s.parse::<f64>().ok());
-                                    price = event.get("price")
-                                        .and_then(|v| v.as_str())
-                                        .and_then(|s| s.parse::<f64>().ok());
+                                    //03/06/24 - removed:
+                                        // amount = event.get("amount")
+                                        //     .and_then(|v| v.as_str())
+                                        //     .and_then(|s| s.parse::<f64>().ok());
+                                        // price = event.get("price")
+                                        //     .and_then(|v| v.as_str())
+                                        //     .and_then(|s| s.parse::<f64>().ok());
+                                    //03/06/24 - added in its place:
+                                        match event.get("amount") {
+                                            Some(v) => match v.as_str() {
+                                                Some(s) => match s.parse::<f64>() {
+                                                    Ok(price_val) => amount = Some(price_val),
+                                                    Err(e) => {
+                                                        attempts += 1;
+                                                        log::error!("Gemini amount: Failed to parse
+                                                        string to f64: {}\nprefix: {}\nmessage: {}",
+                                                            e, &prefix, &message);
+                                                        if attempts >= 3 {
+                                                            panic!("Gemini: Failed to parse price
+                                                            after 3 attempts\nGemini message:\n{}", 
+                                                                &message);
+                                                        }
+                                                        continue;
+                                                    }
+                                                },
+                                                None => {
+                                                    attempts += 1;
+                                                    log::error!("Gemini amount: Failed to convert
+                                                    Value to string \nprefix: {}\nmessage: {}",
+                                                        &prefix, &message);
+                                                    if attempts >= 3 {
+                                                        panic!("Failed to convert Value to string.
+                                                        after 3 attempts\nGemini message:\n{}",
+                                                            &message);
+                                                    }
+                                                    continue;
+                                                }
+                                            },
+                                            None => {
+                                                attempts += 1;
+                                                log::error!("Gemini amount:Failed to parse amount:
+                                                prefix: {}
+                                                message: {}", &prefix, &message);
+                                                if attempts >= 3 {
+                                                    panic!("Failed to parse amount
+                                                    after 3 attempts\nGemini message:\n{}",
+                                                        &message);
+                                                }
+                                                continue;
+                                            }
+                                        }
+                                        
+                                        match event.get("price") {
+                                            Some(v) => match v.as_str() {
+                                                Some(s) => match s.parse::<f64>() {
+                                                    Ok(price_val) => price = Some(price_val),
+                                                    Err(e) => {
+                                                        attempts += 1;
+                                                        log::error!("Gemini price: Failed to parse
+                                                        string to f64: {}\nprefix: {}\nmessage: {}",
+                                                        e, &prefix, &message);
+                                                        if attempts >= 3 {
+                                                            panic!("Failed to parse price to f64
+                                                            after 3 attempts\nGemini message:\n{}",
+                                                            &message);
+                                                        }
+                                                        continue;
+                                                    }
+                                                },
+                                                None => {
+                                                    attempts += 1;
+                                                    log::error!("Gemini price: Failed to convert 
+                                                    Value to string:
+                                                    prefix: {}
+                                                    message: {}", 
+                                                        &prefix, &message);
+                                                    if attempts >= 3 {
+                                                        panic!("Failed to convert
+                                                        Value to string after 3 attempts
+                                                        prefix: {}Gemini message:\n{}", 
+                                                            &prefix, &message);
+                                                    }
+                                                    continue;
+                                                }
+                                            },
+                                            None => {
+                                                attempts += 1;
+                                                log::error!("Gemini price: Failed to get price:
+                                                prefix: {}
+                                                message: {}", &prefix, &message);
+                                                if attempts >= 3 {
+                                                    panic!("Failed to parse price after 3 attempts
+                                                    Gemini message:\n{}", &message);
+                                                }
+                                                continue;
+                                            }
+                                        }
                                     //02/07/24 - added if block
                                     if amount.is_none() || price.is_none() {
                                         attempts += 1;

@@ -1132,9 +1132,10 @@ async fn read_lines(reader: BufReader<ChildStdout>,
 						//}
 						match prefix {
 							prefix if prefix.contains("Coinbase") => 
+                            //03/08/24 - removed ,divisor from hande_all_coinbase
                             execute_action_functions::handle_all_coinbase(prefix, 
                                 message, shared_neural_network
-                                    .clone(), divisor).await,
+                                    .clone()).await,
 							prefix if prefix.contains("Kraken") => 
                             //03/08/24 - removed ,divisor from handle_all_kraken
                             execute_action_functions::handle_all_kraken(prefix, 

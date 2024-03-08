@@ -6,125 +6,134 @@ use crate::standardization_functions;
 
 
 //helper function
-pub fn parse_f64(value: Option<&str>, message: &str, prefix: &str) -> Option<f64> {
+//03/08/24 - changed from: -> Option<f64>   to
+//                         -> Result<f64, String>
+pub fn parse_f64(value: Option<&str>, message: &str, prefix: &str) -> Result<f64, String>{
     match value {
         Some(str_value) => {
             match str_value.parse::<f64>() {
-                Ok(parsed_value) => Some(parsed_value),
+                //03/08/24 - changed => Some(parsed_value) to
+                //                   => Ok(parsed_value)
+                Ok(parsed_value) => Ok(parsed_value),
                 Err(e) => {
-                    panic!("Failed to parse as f64: {:?}
-                    message: {}
-                    prefix: {}", e, message, prefix);
+                    //03/08/24 - changed from panic to log::error and added the other stuff
+                        // panic!("Failed to parse as f64: {:?}
+                        // message: {}
+                        // prefix: {}", e, message, prefix);
+                        let error_message = format!("Failed to parse as f64: {:?}\nmessage: {}\nprefix: {}", e, message, prefix);
+                        log::error!("{}", &error_message);
+                        Err(error_message)
                 }
             }
         },
         None => {
-            panic!("Value is not a string. 
-            message: {}
-            prefix: {}", message, prefix);
+            //03/08/24 - removed
+                // panic!("Value is not a string. 
+                // message: {}
+                // prefix: {}", message, prefix);
+            //03/08/24 - replaced with:
+                let error_message = format!("Value is not a string.\nmessage: {}\nprefix: {}", message, prefix);
+                log::error!("{}", &error_message);
+                Err(error_message)
         }
     }
 }
 
-pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, divisor: &f64) {
 
-    if prefix.contains("Coinbase Received") {
-        //do same calculations and then differentiate between coins
-        //   at the end
-        let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
 
-        //variable declaration so I can have a larger scope
-        let coinbase_price: Option<f64>;
-        let coinbase_volume_24h: Option<f64>;
-        let coinbase_low_24h: Option<f64>;
-        let coinbase_high_24h: Option<f64>;
-        let coinbase_low_52w: Option<f64>;
-        let coinbase_high_52w: Option<f64>;
-        let coinbase_price_percent_chg_24h: Option<f64>;
 
-        match data {
-            Ok(value) => {
-                let ticker = &value["events"][0]["tickers"][0];
-                coinbase_price = parse_f64(ticker["price"]
-                    .as_str(), message, prefix);
-                coinbase_volume_24h = parse_f64(ticker["volume_24_h"]
-                    .as_str(), message, prefix);
-                coinbase_low_24h = parse_f64(ticker["low_24_h"]
-                    .as_str(), message, prefix);
-                coinbase_high_24h = parse_f64(ticker["high_24_h"]
-                    .as_str(), message, prefix);
-                coinbase_low_52w = parse_f64(ticker["low_52_w"]
-                    .as_str(), message, prefix);
-                coinbase_high_52w = parse_f64(ticker["high_52_w"]
-                    .as_str(), message, prefix);
-                coinbase_price_percent_chg_24h = parse_f64(ticker["price_percent_chg_24_h"]
-                    .as_str(), message, prefix);
-            },
-            Err(e) => panic!("Failed to get data from COINBASE message.
-                Error {}\n{}", e, message),
-        }
-
-        let new_values = [coinbase_price, coinbase_volume_24h,
-        coinbase_low_24h, coinbase_high_24h, coinbase_low_52w,
-        coinbase_high_52w, coinbase_price_percent_chg_24h,];
-        let mut scaled_values: Vec<f64> = Vec::new();
-        for value in &new_values {
-            if let Some(val) = value {
-                scaled_values.push(val / divisor);
-            } 
-            else {
-                println!("One of the values was None");
-                panic!("coinbase_price: {:?}, coinbase_volume_24_h: {:?},
-                coinbase_low_24h: {:?}, coinbase_high_24h: {:?}, 
-                coinbase_low_52w: {:?}, coinbase_high_52w: {:?}, 
-                coinbase_price_percent_chg_24h: {:?}, message:\n{}", &coinbase_price,
-                &coinbase_volume_24h, &coinbase_low_24h, &coinbase_high_24h,
-                &coinbase_low_52w, &coinbase_high_52w,
-                &coinbase_price_percent_chg_24h, message);
-            }
-        }
-        if prefix.contains("SOL") {
-            //do the indices and update input and lock
-            let indices: [usize; 7] = [0, 1, 2, 3, 4, 5, 6];
-            println!("updating input 0 to 6. price:{:?}", &coinbase_price);
-            let mut neural_network = 
-                shared_neural_network.lock().await;
-            neural_network.update_input(&indices, &scaled_values).await;
-        }
-        else if prefix.contains("XLM") {
-            //do the indices and update input and lock
-            let indices: [usize; 7] = [7, 8, 9, 10, 11, 12, 13];
-            println!("updating input 7 to 13. price:{:?}", &coinbase_price);
-            let mut neural_network = 
-                shared_neural_network.lock().await;
-            neural_network.update_input(&indices, &scaled_values).await;
-
-        }
-        else if prefix.contains("XRP") {
-            //first indices larger than last time
-            println!("updating input 65 to 71. price:{:?}", &coinbase_price);
-            let indices: [usize; 7] = [65, 66, 67, 68, 69, 70, 71];
-            let mut neural_network = 
-                shared_neural_network.lock().await;
-            neural_network.update_input(&indices, &scaled_values).await;
-        }
-        else {
-            panic!("This shouid never occur. Somehow prefix cointained
-            Coinbase Received but didn't contain the phrases SOL, XLM, or XRP.
-            prefix is: {}", prefix);
-        }
-        
-    }
-    else if prefix.contains("Coinbase consolidated heartbeat") || 
-        prefix.contains("Coinbase subscriptions") {
-
-        println!("Coinbase: standard server messages. Ignoring...");
-    }
-    else {
-        println!("Coinbase: got a weird message:{}", message);
-    }
-
-}
+//03/08/24 - removed:
+// pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, divisor: &f64) {
+//     if prefix.contains("Coinbase Received") {
+//         //do same calculations and then differentiate between coins
+//         //   at the end
+//         let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
+//         //variable declaration so I can have a larger scope
+//         let coinbase_price: Option<f64>;
+//         let coinbase_volume_24h: Option<f64>;
+//         let coinbase_low_24h: Option<f64>;
+//         let coinbase_high_24h: Option<f64>;
+//         let coinbase_low_52w: Option<f64>;
+//         let coinbase_high_52w: Option<f64>;
+//         let coinbase_price_percent_chg_24h: Option<f64>;
+//         match data {
+//             Ok(value) => {
+//                 let ticker = &value["events"][0]["tickers"][0];
+//                 coinbase_price = parse_f64(ticker["price"]
+//                     .as_str(), message, prefix);
+//                 coinbase_volume_24h = parse_f64(ticker["volume_24_h"]
+//                     .as_str(), message, prefix);
+//                 coinbase_low_24h = parse_f64(ticker["low_24_h"]
+//                     .as_str(), message, prefix);
+//                 coinbase_high_24h = parse_f64(ticker["high_24_h"]
+//                     .as_str(), message, prefix);
+//                 coinbase_low_52w = parse_f64(ticker["low_52_w"]
+//                     .as_str(), message, prefix);
+//                 coinbase_high_52w = parse_f64(ticker["high_52_w"]
+//                     .as_str(), message, prefix);
+//                 coinbase_price_percent_chg_24h = parse_f64(ticker["price_percent_chg_24_h"]
+//                     .as_str(), message, prefix);
+//             },
+//             Err(e) => panic!("Failed to get data from COINBASE message.
+//                 Error {}\n{}", e, message),
+//         }
+//         let new_values = [coinbase_price, coinbase_volume_24h,
+//         coinbase_low_24h, coinbase_high_24h, coinbase_low_52w,
+//         coinbase_high_52w, coinbase_price_percent_chg_24h,];
+//         let mut scaled_values: Vec<f64> = Vec::new();
+//         for value in &new_values {
+//             if let Some(val) = value {
+//                 scaled_values.push(val / divisor);
+//             } 
+//             else {
+//                 println!("One of the values was None");
+//                 panic!("coinbase_price: {:?}, coinbase_volume_24_h: {:?},
+//                 coinbase_low_24h: {:?}, coinbase_high_24h: {:?}, 
+//                 coinbase_low_52w: {:?}, coinbase_high_52w: {:?}, 
+//                 coinbase_price_percent_chg_24h: {:?}, message:\n{}", &coinbase_price,
+//                 &coinbase_volume_24h, &coinbase_low_24h, &coinbase_high_24h,
+//                 &coinbase_low_52w, &coinbase_high_52w,
+//                 &coinbase_price_percent_chg_24h, message);
+//             }
+//         }
+//         if prefix.contains("SOL") {
+//             //do the indices and update input and lock
+//             let indices: [usize; 7] = [0, 1, 2, 3, 4, 5, 6];
+//             println!("updating input 0 to 6. price:{:?}", &coinbase_price);
+//             let mut neural_network = 
+//                 shared_neural_network.lock().await;
+//             neural_network.update_input(&indices, &scaled_values).await;
+//         }
+//         else if prefix.contains("XLM") {
+//             //do the indices and update input and lock
+//             let indices: [usize; 7] = [7, 8, 9, 10, 11, 12, 13];
+//             println!("updating input 7 to 13. price:{:?}", &coinbase_price);
+//             let mut neural_network = 
+//                 shared_neural_network.lock().await;
+//             neural_network.update_input(&indices, &scaled_values).await;
+//         }
+//         else if prefix.contains("XRP") {
+//             //first indices larger than last time
+//             println!("updating input 65 to 71. price:{:?}", &coinbase_price);
+//             let indices: [usize; 7] = [65, 66, 67, 68, 69, 70, 71];
+//             let mut neural_network = 
+//                 shared_neural_network.lock().await;
+//             neural_network.update_input(&indices, &scaled_values).await;
+//         }
+//         else {
+//             panic!("This shouid never occur. Somehow prefix cointained
+//             Coinbase Received but didn't contain the phrases SOL, XLM, or XRP.
+//             prefix is: {}", prefix);
+//         }
+//     }
+//     else if prefix.contains("Coinbase consolidated heartbeat") || 
+//         prefix.contains("Coinbase subscriptions") {
+//         println!("Coinbase: standard server messages. Ignoring...");
+//     }
+//     else {
+//         println!("Coinbase: got a weird message:{}", message);
+//     }
+// }
 // //03/08/24 - removed entire function and replaced with the one below it:
 //     pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, divisor: &f64) {
 //         if prefix.contains("Kraken Received") {
@@ -340,6 +349,233 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
 //             println!("Kraken: got a weird message: {}\nprefix: {}", message, prefix);
 //         }
 //     }
+
+//03/08/24 - added in its place:
+pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>) {
+    // Add loop and attempts mechanics
+    let mut attempts = 0;
+    loop {
+        if prefix.contains("Coinbase Received") {
+            // Parse the message
+            let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
+
+            // Initialize all variables
+            let coinbase_price: Option<f64>;
+            let coinbase_volume_24h: Option<f64>;
+            let coinbase_low_24h: Option<f64>;
+            let coinbase_high_24h: Option<f64>;
+            let coinbase_low_52w: Option<f64>;
+            let coinbase_high_52w: Option<f64>;
+            let coinbase_price_percent_chg_24h: Option<f64>;
+            match data {
+                Ok(value) => {
+                    let ticker = &value["events"][0]["tickers"][0];
+                    coinbase_price = match parse_f64(ticker["price"].as_str(), message, prefix) {
+                        Ok(val) => Some(val),
+                        Err(e) => {
+                            attempts += 1;
+                            log::error!("{}", e);
+                            if attempts >= 3 {
+                                panic!("{}", e);
+                            }
+                            continue;
+                        }
+                    };
+                    
+                    coinbase_volume_24h = match parse_f64(ticker["volume_24_h"].as_str(), message, prefix) {
+                        Ok(val) => Some(val),
+                        Err(e) => {
+                            attempts += 1;
+                            log::error!("{}", e);
+                            if attempts >= 3 {
+                                panic!("{}", e);
+                            }
+                            continue;
+                        }
+                    };
+                    
+                    coinbase_low_24h = match parse_f64(ticker["low_24_h"].as_str(), message, prefix) {
+                        Ok(val) => Some(val),
+                        Err(e) => {
+                            attempts += 1;
+                            log::error!("{}", e);
+                            if attempts >= 3 {
+                                panic!("{}", e);
+                            }
+                            continue;
+                        }
+                    };
+                    
+                    coinbase_high_24h = match parse_f64(ticker["high_24_h"].as_str(), message, prefix) {
+                        Ok(val) => Some(val),
+                        Err(e) => {
+                            attempts += 1;
+                            log::error!("{}", e);
+                            if attempts >= 3 {
+                                panic!("{}", e);
+                            }
+                            continue;
+                        }
+                    };
+                    
+                    coinbase_low_52w = match parse_f64(ticker["low_52_w"].as_str(), message, prefix) {
+                        Ok(val) => Some(val),
+                        Err(e) => {
+                            attempts += 1;
+                            log::error!("{}", e);
+                            if attempts >= 3 {
+                                panic!("{}", e);
+                            }
+                            continue;
+                        }
+                    };
+                    
+                    coinbase_high_52w = match parse_f64(ticker["high_52_w"].as_str(), message, prefix) {
+                        Ok(val) => Some(val),
+                        Err(e) => {
+                            attempts += 1;
+                            log::error!("{}", e);
+                            if attempts >= 3 {
+                                panic!("{}", e);
+                            }
+                            continue;
+                        }
+                    };
+                    
+                    coinbase_price_percent_chg_24h = match parse_f64(ticker["price_percent_chg_24_h"].as_str(), message, prefix) {
+                        Ok(val) => Some(val),
+                        Err(e) => {
+                            attempts += 1;
+                            log::error!("{}", e);
+                            if attempts >= 3 {
+                                panic!("{}", e);
+                            }
+                            continue;
+                        }
+                    };
+                },
+                Err(e) => {
+                    attempts += 1;
+                    log::error!("Failed to parse message: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                    if attempts >= 3 {
+                        panic!("Failed to parse JSON Coinbase message after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
+                    }
+                    continue;
+                },
+            }
+
+            // DOUBLE REDUNDANCY
+            if coinbase_price.is_none() || coinbase_volume_24h.is_none() || coinbase_low_24h.is_none() || coinbase_high_24h.is_none() || coinbase_low_52w.is_none() || coinbase_high_52w.is_none() || coinbase_price_percent_chg_24h.is_none() {
+                attempts += 1;
+                log::error!("Failed to parse values after {} attempts\nCoinbase message:\n{}", attempts, message);
+                if attempts >= 3 {
+                    panic!("Failed to parse values after 3 attempts\nCoinbase message:\n{}", message);
+                }
+                continue;
+            }
+
+            // TRIPLE REDUNDANCY
+            // if coinbase_price.is_some() && coinbase_volume_24h.is_some() && coinbase_low_24h.is_some() && coinbase_high_24h.is_some() && coinbase_low_52w.is_some() && coinbase_high_52w.is_some() && coinbase_price_percent_chg_24h.is_some() {
+            //     break;
+            // }
+            if let (Some(mut coinbase_price), Some(mut coinbase_volume_24h), Some(mut coinbase_low_24h), 
+            Some(mut coinbase_high_24h), Some(mut coinbase_low_52w), Some(mut coinbase_high_52w), 
+            Some(mut coinbase_price_percent_chg_24h)) = 
+            (coinbase_price, coinbase_volume_24h, coinbase_low_24h, coinbase_high_24h, coinbase_low_52w, coinbase_high_52w, coinbase_price_percent_chg_24h) {
+                if prefix.contains("SOL") {
+                    //do the indices and update input and lock
+                    coinbase_price = standardization_functions::sol_lognorm_standardization_high_price_24h(&coinbase_price);
+                    coinbase_volume_24h = standardization_functions::sol_lognorm_standardization_total_volume_24h(&coinbase_volume_24h);
+                    coinbase_low_24h = standardization_functions::sol_lognorm_standardization_low_price_24h(&coinbase_low_24h);
+                    coinbase_high_24h = standardization_functions::sol_lognorm_standardization_high_price_24h(&coinbase_high_24h);
+                    coinbase_low_52w = standardization_functions::sol_normal_standardization_low_52w(&coinbase_low_52w);
+                    coinbase_high_52w = standardization_functions::sol_normal_standardization_high_52w(&coinbase_high_52w);
+                    coinbase_price_percent_chg_24h = standardization_functions::sol_normal_standardization_price_percent_change_24h(&coinbase_price_percent_chg_24h);
+
+                    let scaled_values = [coinbase_price, coinbase_volume_24h, 
+                    coinbase_low_24h, coinbase_high_24h, coinbase_low_52w, coinbase_high_52w, 
+                    coinbase_price_percent_chg_24h];
+
+
+
+
+                    let indices: [usize; 7] = [0, 1, 2, 3, 4, 5, 6];
+                    println!("updating input 0 to 6. scaled sol price:{:?}", &coinbase_price);
+                    let mut neural_network = 
+                        shared_neural_network.lock().await;
+                    neural_network.update_input(&indices, &scaled_values).await;
+                }
+                else if prefix.contains("XLM") {
+                    //do the indices and update input and lock
+                    coinbase_price = standardization_functions::xlm_lognorm_standardization_high_price_24h(&coinbase_price);
+                    coinbase_volume_24h = standardization_functions::xlm_lognorm_standardization_total_volume_24h(&coinbase_volume_24h);
+                    coinbase_low_24h = standardization_functions::xlm_lognorm_standardization_low_price_24h(&coinbase_low_24h);
+                    coinbase_high_24h = standardization_functions::xlm_lognorm_standardization_high_price_24h(&coinbase_high_24h);
+                    coinbase_low_52w = standardization_functions::xlm_normal_standardization_low_52w(&coinbase_low_52w);
+                    coinbase_high_52w = standardization_functions::xlm_normal_standardization_high_52w(&coinbase_high_52w);
+                    coinbase_price_percent_chg_24h = standardization_functions::xlm_normal_standardization_price_percent_change_24h(&coinbase_price_percent_chg_24h);
+
+                    let scaled_values = [coinbase_price, coinbase_volume_24h, 
+                    coinbase_low_24h, coinbase_high_24h, coinbase_low_52w, coinbase_high_52w, 
+                    coinbase_price_percent_chg_24h];
+
+
+
+
+                    let indices: [usize; 7] = [7, 8, 9, 10, 11, 12, 13];
+                    println!("updating input 7 to 13. scaled xlm price:{:?}", &coinbase_price);
+                    let mut neural_network = 
+                        shared_neural_network.lock().await;
+                    neural_network.update_input(&indices, &scaled_values).await;
+                }
+                else if prefix.contains("XRP") {
+                    //first indices larger than last time
+                    coinbase_price = standardization_functions::xrp_lognorm_standardization_high_price_24h(&coinbase_price);
+                    coinbase_volume_24h = standardization_functions::xrp_lognorm_standardization_total_volume_24h(&coinbase_volume_24h);
+                    coinbase_low_24h = standardization_functions::xrp_lognorm_standardization_low_price_24h(&coinbase_low_24h);
+                    coinbase_high_24h = standardization_functions::xrp_lognorm_standardization_high_price_24h(&coinbase_high_24h);
+                    coinbase_low_52w = standardization_functions::xrp_normal_standardization_low_52w(&coinbase_low_52w);
+                    coinbase_high_52w = standardization_functions::xrp_normal_standardization_high_52w(&coinbase_high_52w);
+                    coinbase_price_percent_chg_24h = standardization_functions::xrp_normal_standardization_price_percent_change_24h(&coinbase_price_percent_chg_24h);
+
+                    let scaled_values = [coinbase_price, coinbase_volume_24h, 
+                    coinbase_low_24h, coinbase_high_24h, coinbase_low_52w, coinbase_high_52w, 
+                    coinbase_price_percent_chg_24h];
+
+
+
+
+
+                    println!("updating input 65 to 71. scaled xrp price:{:?}", &coinbase_price);
+                    let indices: [usize; 7] = [65, 66, 67, 68, 69, 70, 71];
+                    let mut neural_network = 
+                        shared_neural_network.lock().await;
+                    neural_network.update_input(&indices, &scaled_values).await;
+                }
+                else {
+                    panic!("This shouid never occur. Somehow prefix cointained
+                    Coinbase Received but didn't contain the phrases SOL, XLM, or XRP.
+                    prefix is: {}
+                    message is:\n{}", prefix, message);
+                }
+            }
+
+
+
+        } else if prefix.contains("Coinbase consolidated heartbeat") || 
+                  prefix.contains("Coinbase subscriptions") {
+            log::info!("Coinbase: standard server messages. Ignoring...");
+            break;
+        } else {
+            log::error!("Coinbase: got a weird message: {}", message);
+            break;
+        }
+    }
+
+    // The rest of your code goes here...
+        
+}
+
 
     pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>) {
         // Add loop and attempts mechanics

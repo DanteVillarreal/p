@@ -1023,8 +1023,9 @@ use std::sync::atomic::{AtomicBool, Ordering};      //02/14/24 - added. acts as 
 	//async fn read_lines(reader: BufReader<ChildStdout>, 
 	//	shared_neural_network: Arc<Mutex<NeuralNetwork>>, updated: &mut [bool; 60]) {    
 //01/24/24 - changed to:
+//03/08/24 - removed, divisor: &f64
 async fn read_lines(reader: BufReader<ChildStdout>, 
-    shared_neural_network: Arc<Mutex<NeuralNetwork>>, divisor: &f64) {    
+    shared_neural_network: Arc<Mutex<NeuralNetwork>>) {    
 
     for line_being_read in reader.lines() {
         //01/16/24 - added line right below this
@@ -1147,9 +1148,10 @@ async fn read_lines(reader: BufReader<ChildStdout>,
                                 message, shared_neural_network
                                     .clone()).await,
 							prefix if prefix.contains("Gemini") => 
+                            //03/08/24 - removed ,divisor from handle_all_gemini
                             execute_action_functions::handle_all_gemini(prefix, 
                                 message, shared_neural_network
-                                    .clone(), divisor).await,
+                                    .clone()).await,
 							_ => execute_action_functions::handle_all_others(prefix, 
                                 message),
 						}
@@ -2313,7 +2315,8 @@ async fn main()   {
         let read_lines_task = task::spawn({
             let shared_neural_network = shared_neural_network_clone2;
             async move{
-                read_lines(reader, shared_neural_network, &divisor).await;
+                //03/08/24 - removed: , &divisor
+                read_lines(reader, shared_neural_network).await;
             }
         });
     

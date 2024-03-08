@@ -1357,7 +1357,8 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
         }
     }
 }
-pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, divisor: &f64) {
+//03/08/24 - removed: , divisor: &f64
+pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>) {
     //02/07/24 - loop and "attempts" mechanics added
     //      loop is so if there is a random error due to corrupted value, it will be processed again
     let mut attempts = 0;
@@ -1404,8 +1405,10 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                                     Err(e) => {
                                                         attempts += 1;
                                                         log::error!("WSP Gemini amount: Failed to parse
-                                                        string to f64: {}\nprefix: {}\nmessage: {}",
-                                                            e, &prefix, &message);
+                                                        string to f64: 
+                                                        attempts: {}
+                                                        error:{}\nprefix: {}\nmessage: {}",
+                                                            attempts, e, &prefix, &message);
                                                         if attempts >= 3 {
                                                             panic!("Gemini: Failed to parse price
                                                             after 3 attempts\nGemini message:\n{}", 
@@ -1417,8 +1420,9 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                                 None => {
                                                     attempts += 1;
                                                     log::error!("WSP Gemini amount: Failed to convert
-                                                    Value to string \nprefix: {}\nmessage: {}",
-                                                        &prefix, &message);
+                                                    Value to string 
+                                                    attempt#:{}\nprefix: {}\nmessage: {}",
+                                                        attempts, &prefix, &message);
                                                     if attempts >= 3 {
                                                         panic!("Failed to convert Value to string.
                                                         after 3 attempts\nGemini message:\n{}",
@@ -1430,8 +1434,9 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                             None => {
                                                 attempts += 1;
                                                 log::error!("WSP Gemini amount:Failed to parse amount:
+                                                attempt#:{}
                                                 prefix: {}
-                                                message: {}", &prefix, &message);
+                                                message: {}", attempts, &prefix, &message);
                                                 if attempts >= 3 {
                                                     panic!("Failed to parse amount
                                                     after 3 attempts\nGemini message:\n{}",
@@ -1448,7 +1453,9 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                                     Err(e) => {
                                                         attempts += 1;
                                                         log::error!("WSP Gemini price: Failed to parse
-                                                        string to f64: {}\nprefix: {}\nmessage: {}",
+                                                        string to f64: 
+                                                        attempt:{}
+                                                        error:{}\nprefix: {}\nmessage: {}", attempts,
                                                         e, &prefix, &message);
                                                         if attempts >= 3 {
                                                             panic!("Failed to parse price to f64
@@ -1462,9 +1469,10 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                                     attempts += 1;
                                                     log::error!("WSP Gemini price: Failed to convert 
                                                     Value to string:
+                                                    attempt#:{}
                                                     prefix: {}
                                                     message: {}", 
-                                                        &prefix, &message);
+                                                        attempts, &prefix, &message);
                                                     if attempts >= 3 {
                                                         panic!("Failed to convert
                                                         Value to string after 3 attempts
@@ -1477,8 +1485,9 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                             None => {
                                                 attempts += 1;
                                                 log::error!("WSP Gemini price: Failed to get price:
+                                                attempt#: {}
                                                 prefix: {}
-                                                message: {}", &prefix, &message);
+                                                message: {}", attempts, &prefix, &message);
                                                 if attempts >= 3 {
                                                     panic!("Failed to parse price after 3 attempts
                                                     Gemini message:\n{}", &message);
@@ -1489,6 +1498,10 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                     //02/07/24 - added if block. DOUBLE REDUNDANCY
                                     if amount.is_none() || price.is_none() {
                                         attempts += 1;
+                                        log::error!("WSP gemini: amount and or price is none. amount: {:?}. price: {:?}
+                                        attempt#:{}
+                                        prefix:{}
+                                        message:\n{}", amount, price, attempts, prefix, message);
                                         if attempts >= 3 {
                                             panic!("Failed to parse amount: {:?} and/or price: {:?} after 3 attempts\nGemini message:\n{}", amount, price, &message);
                                         }
@@ -1497,7 +1510,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                 } 
                                 else {
                                     attempts += 1;
-                                    log::error!("WSP Gemini: event is not an object after 3 attempts. message: 
+                                    log::error!("WSP Gemini: event is not an object. message: 
                                     {}
                                     , prefix: {}
                                     attempt #:{}", message, prefix, &attempts);
@@ -1509,7 +1522,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                             } 
                             else {
                                 attempts += 1;
-                                log::error!("WSP Gemini: events is not an array after 3 attempts. 
+                                log::error!("WSP Gemini: events is not an array.
                                 message: {}
                                 , prefix: {}
                                 attempt#:{}", message, prefix, &attempts);
@@ -1544,40 +1557,55 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                         continue;
                     },
                 }
+                //03/08/24 - removed:
+                    // let new_values = [amount, price];
+                    // let mut scaled_values: Vec<f64> = Vec::new();
+                    // for value in &new_values {
+                    //     if let Some(val) = value {
+                    //         scaled_values.push(val / divisor);
+                    //     } 
+                    //     else {
+                    //         println!("One of the values was None");
+                    //         panic!("amount: {:?}, price: {:?}", &amount, &price);
+                    //     }
+                    // }
+                //03/08/24 - added:
+                if let (Some(mut amount), Some(mut price)) = (amount, price) {
+                    if prefix.contains("sol") {
 
-                let new_values = [amount, price];
-                let mut scaled_values: Vec<f64> = Vec::new();
-                for value in &new_values {
-                    if let Some(val) = value {
-                        scaled_values.push(val / divisor);
-                    } 
-                    else {
-                        println!("One of the values was None");
-                        panic!("amount: {:?}, price: {:?}", &amount, &price);
+                        amount = standardization_functions::sol_lognorm_standardization_lot_volume_per_trade(&amount);
+                        price = standardization_functions::sol_lognorm_standardization_high_price_24h(&price);
+
+                        let scaled_values = [amount, price];
+
+                        let indices = [58, 59];
+                        println!("updating input 58, 59. price:{:?}", &price);
+                        let mut neural_network = 
+                            shared_neural_network.lock().await;
+                        neural_network.update_input(&indices, &scaled_values)
+                        .await;
+                        break;
                     }
-                }
-                if prefix.contains("sol") {
-                    let indices = [58, 59];
-                    println!("updating input 58, 59. price:{:?}", &price);
-                    let mut neural_network = 
-                        shared_neural_network.lock().await;
-                    neural_network.update_input(&indices, &scaled_values)
-                    .await;
-                    break;
-                }
-                else if prefix.contains("xrp") {
-                    let indices = [92, 93];
-                    println!("updating input 92, 93. price:{:?}", &price);
-                    let mut neural_network = 
-                        shared_neural_network.lock().await;
-                    neural_network.update_input(&indices, &scaled_values)
-                    .await;
-                    break;
-                }
-                else {
-                    panic!("This shouid never occur. Somehow prefix cointained phrase
-                    Gemini received but didn't contain the phrases XLM or XRP.
-                    prefix is: {}\nmessage: {}", prefix, message);
+                    else if prefix.contains("xrp") {
+
+                        amount = standardization_functions::xrp_lognorm_standardization_lot_volume_per_trade(&amount);
+                        price = standardization_functions::xrp_lognorm_standardization_high_price_24h(&price);
+
+                        let scaled_values = [amount, price];
+
+                        let indices = [92, 93];
+                        println!("updating input 92, 93. price:{:?}", &price);
+                        let mut neural_network = 
+                            shared_neural_network.lock().await;
+                        neural_network.update_input(&indices, &scaled_values)
+                        .await;
+                        break;
+                    }
+                    else {
+                        panic!("This shouid never occur. Somehow prefix cointained phrase
+                        Gemini received but didn't contain the phrases XLM or XRP.
+                        prefix is: {}\nmessage: {}", prefix, message);
+                    }
                 }
             }
         }
@@ -1588,7 +1616,8 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
     }
 }
 pub fn handle_all_others(prefix: &str, message: &str) {
-    println!("weird ass message that doesn't contain the words:
+    //03/08/24 - changed from println to log::error
+    log::error!("weird ass message that doesn't contain the words:
     Coinbase, Kraken, Bitstmap, nor Gemini.
     prefix: {}\nmessage: {}", &prefix, &message);
 }

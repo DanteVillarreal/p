@@ -365,4 +365,7 @@ MAY NEED TO STANDARDIZE IT USING STD DEV AND MIN MAX USING HISTORICAL DATA.
 03/08/24 - completely redid handle_all_kraken to 1. have error protection loop. 2. have standardization.                JESUS IS GOOD. We got this!
 03/08/24 - completely redid parse_f64 to better work with error protection loop of handle_all_coinbase. completely redid handle_all_coinbase to 1. have error protection loop. 2. have standardization.                JESUS IS GOOD. We got this!
 03/08/24 - revamped handle_all_bitstamp to 1. have error protection loop. 2. have standardization.                JESUS IS GOOD. We got this!
-03/08/24 - NEED TO REMOVE INPUTS FOR A1 AND B1 FOR KRAKEN. SO IN TOTAL REMOVE 6 INPUTS.
+03/08/24 - modified handle_all_gemini to have standardization.          JESUS IS GOOD. We got this!
+
+
+03/08/24 - NEED TO REMOVE INPUTS FOR A1 AND B1 FOR KRAKEN. SO IN TOTAL REMOVE 6 INPUTS. THEN NEED TO REMOVE DIVISOR and scale it too.

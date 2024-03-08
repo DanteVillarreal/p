@@ -577,207 +577,207 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
 }
 
 
-    pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>) {
-        // Add loop and attempts mechanics
-        let mut attempts = 0;
-        loop {
-            if prefix.contains("Kraken Received") {
-                // Parse the message
-                let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
-    
-                // Initialize all variables
-                let a_0: Option<f64>;
-                let a_1: Option<f64>;
-                let a_2: Option<f64>;
-                let b_0: Option<f64>;
-                let b_1: Option<f64>;
-                let b_2: Option<f64>;
-                let c_0: Option<f64>;
-                let c_1: Option<f64>;
-                let v_0: Option<f64>;
-                let v_1: Option<f64>;
-                let p_0: Option<f64>;
-                let p_1: Option<f64>;
-                let t_0: Option<f64>;
-                let t_1: Option<f64>;
-                let l_0: Option<f64>;
-                let l_1: Option<f64>;
-                let h_0: Option<f64>;
-                let h_1: Option<f64>;
-                let o_0: Option<f64>;
-                let o_1: Option<f64>;
-    
-                match data {
-                    Ok(value) => {
-                        let ticker = &value[1];
-    
-                        // Parsing logic for a_0
-                        match ticker["a"][0].as_str() {
-                            Some(s) => match s.parse::<f64>() {
-                                Ok(val) => a_0 = Some(val),
-                                Err(e) => {
-                                    attempts += 1;
-                                    log::error!("Failed to parse a_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
-                                    if attempts >= 3 {
-                                        panic!("Failed to parse a_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
-                                    }
-                                    continue;
-                                }
-                            },
-                            None => {
+pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>) {
+    // Add loop and attempts mechanics
+    let mut attempts = 0;
+    loop {
+        if prefix.contains("Kraken Received") {
+            // Parse the message
+            let data: Result<Value, serde_json::Error> = serde_json::from_str(message);
+
+            // Initialize all variables
+            let a_0: Option<f64>;
+            let a_1: Option<f64>;
+            let a_2: Option<f64>;
+            let b_0: Option<f64>;
+            let b_1: Option<f64>;
+            let b_2: Option<f64>;
+            let c_0: Option<f64>;
+            let c_1: Option<f64>;
+            let v_0: Option<f64>;
+            let v_1: Option<f64>;
+            let p_0: Option<f64>;
+            let p_1: Option<f64>;
+            let t_0: Option<f64>;
+            let t_1: Option<f64>;
+            let l_0: Option<f64>;
+            let l_1: Option<f64>;
+            let h_0: Option<f64>;
+            let h_1: Option<f64>;
+            let o_0: Option<f64>;
+            let o_1: Option<f64>;
+
+            match data {
+                Ok(value) => {
+                    let ticker = &value[1];
+
+                    // Parsing logic for a_0
+                    match ticker["a"][0].as_str() {
+                        Some(s) => match s.parse::<f64>() {
+                            Ok(val) => a_0 = Some(val),
+                            Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to convert a_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse a_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
-                                    panic!("Failed to convert a_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                    panic!("Failed to parse a_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
                                 continue;
                             }
+                        },
+                        None => {
+                            attempts += 1;
+                            log::error!("WSP kraken: Failed to convert a_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            if attempts >= 3 {
+                                panic!("Failed to convert a_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                            }
+                            continue;
                         }
-    
-                        // Parsing logic for a_1
-                        match ticker["a"][1].as_str() {
-                            Some(s) => match s.parse::<f64>() {
-                                Ok(val) => a_1 = Some(val),
-                                Err(e) => {
-                                    attempts += 1;
-                                    log::error!("Failed to parse a_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
-                                    if attempts >= 3 {
-                                        panic!("Failed to parse a_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
-                                    }
-                                    continue;
-                                }
-                            },
-                            None => {
+                    }
+
+                    // Parsing logic for a_1
+                    match ticker["a"][1].as_str() {
+                        Some(s) => match s.parse::<f64>() {
+                            Ok(val) => a_1 = Some(val),
+                            Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to convert a_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse a_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
-                                    panic!("Failed to convert a_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                    panic!("Failed to parse a_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
                                 continue;
                             }
+                        },
+                        None => {
+                            attempts += 1;
+                            log::error!("WSP kraken: Failed to convert a_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            if attempts >= 3 {
+                                panic!("Failed to convert a_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                            }
+                            continue;
                         }
-    
-                        // Parsing logic for a_2
-                        match ticker["a"][2].as_str() {
-                            Some(s) => match s.parse::<f64>() {
-                                Ok(val) => a_2 = Some(val),
-                                Err(e) => {
-                                    attempts += 1;
-                                    log::error!("Failed to parse a_2 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
-                                    if attempts >= 3 {
-                                        panic!("Failed to parse a_2 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
-                                    }
-                                    continue;
-                                }
-                            },
-                            None => {
+                    }
+
+                    // Parsing logic for a_2
+                    match ticker["a"][2].as_str() {
+                        Some(s) => match s.parse::<f64>() {
+                            Ok(val) => a_2 = Some(val),
+                            Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to convert a_2 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse a_2 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
-                                    panic!("Failed to convert a_2 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                    panic!("Failed to parse a_2 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
                                 continue;
                             }
+                        },
+                        None => {
+                            attempts += 1;
+                            log::error!("WSP kraken: Failed to convert a_2 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            if attempts >= 3 {
+                                panic!("Failed to convert a_2 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                            }
+                            continue;
                         }
-    
-                        // Parsing logic for b_0
-                        match ticker["b"][0].as_str() {
-                            Some(s) => match s.parse::<f64>() {
-                                Ok(val) => b_0 = Some(val),
-                                Err(e) => {
-                                    attempts += 1;
-                                    log::error!("Failed to parse b_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
-                                    if attempts >= 3 {
-                                        panic!("Failed to parse b_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
-                                    }
-                                    continue;
-                                }
-                            },
-                            None => {
+                    }
+
+                    // Parsing logic for b_0
+                    match ticker["b"][0].as_str() {
+                        Some(s) => match s.parse::<f64>() {
+                            Ok(val) => b_0 = Some(val),
+                            Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to convert b_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse b_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
-                                    panic!("Failed to convert b_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                    panic!("Failed to parse b_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
                                 continue;
                             }
+                        },
+                        None => {
+                            attempts += 1;
+                            log::error!("WSP kraken: Failed to convert b_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            if attempts >= 3 {
+                                panic!("Failed to convert b_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                            }
+                            continue;
                         }
-    
-                        // Parsing logic for b_1
-                        match ticker["b"][1].as_str() {
-                            Some(s) => match s.parse::<f64>() {
-                                Ok(val) => b_1 = Some(val),
-                                Err(e) => {
-                                    attempts += 1;
-                                    log::error!("Failed to parse b_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
-                                    if attempts >= 3 {
-                                        panic!("Failed to parse b_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
-                                    }
-                                    continue;
-                                }
-                            },
-                            None => {
+                    }
+
+                    // Parsing logic for b_1
+                    match ticker["b"][1].as_str() {
+                        Some(s) => match s.parse::<f64>() {
+                            Ok(val) => b_1 = Some(val),
+                            Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to convert b_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse b_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
-                                    panic!("Failed to convert b_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                    panic!("Failed to parse b_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
                                 continue;
                             }
+                        },
+                        None => {
+                            attempts += 1;
+                            log::error!("WSP kraken: Failed to convert b_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            if attempts >= 3 {
+                                panic!("Failed to convert b_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                            }
+                            continue;
                         }
-    
-                        // Parsing logic for b_2
-                        match ticker["b"][2].as_str() {
-                            Some(s) => match s.parse::<f64>() {
-                                Ok(val) => b_2 = Some(val),
-                                Err(e) => {
-                                    attempts += 1;
-                                    log::error!("Failed to parse b_2 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
-                                    if attempts >= 3 {
-                                        panic!("Failed to parse b_2 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
-                                    }
-                                    continue;
-                                }
-                            },
-                            None => {
+                    }
+
+                    // Parsing logic for b_2
+                    match ticker["b"][2].as_str() {
+                        Some(s) => match s.parse::<f64>() {
+                            Ok(val) => b_2 = Some(val),
+                            Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to convert b_2 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse b_2 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
-                                    panic!("Failed to convert b_2 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                    panic!("Failed to parse b_2 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
                                 continue;
                             }
+                        },
+                        None => {
+                            attempts += 1;
+                            log::error!("WSP kraken: Failed to convert b_2 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            if attempts >= 3 {
+                                panic!("Failed to convert b_2 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                            }
+                            continue;
                         }
-    
-                        // Parsing logic for c_0
-                        match ticker["c"][0].as_str() {
-                            Some(s) => match s.parse::<f64>() {
-                                Ok(val) => c_0 = Some(val),
-                                Err(e) => {
-                                    attempts += 1;
-                                    log::error!("Failed to parse c_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
-                                    if attempts >= 3 {
-                                        panic!("Failed to parse c_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
-                                    }
-                                    continue;
-                                }
-                            },
-                            None => {
+                    }
+
+                    // Parsing logic for c_0
+                    match ticker["c"][0].as_str() {
+                        Some(s) => match s.parse::<f64>() {
+                            Ok(val) => c_0 = Some(val),
+                            Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to convert c_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse c_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
-                                    panic!("Failed to convert c_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                    panic!("Failed to parse c_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
                                 continue;
                             }
+                        },
+                        None => {
+                            attempts += 1;
+                            log::error!("WSP kraken: Failed to convert c_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            if attempts >= 3 {
+                                panic!("Failed to convert c_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                            }
+                            continue;
                         }
+                    }
                         // Parsing logic for c_1
                     match ticker["c"][1].as_str() {
                         Some(s) => match s.parse::<f64>() {
                             Ok(val) => c_1 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse c_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse c_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse c_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -786,7 +786,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert c_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert c_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert c_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -799,7 +799,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             Ok(val) => v_0 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse v_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse v_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse v_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -808,7 +808,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert v_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert v_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert v_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -822,7 +822,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             Ok(val) => v_1 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse v_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse v_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse v_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -831,7 +831,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert v_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert v_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert v_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -845,7 +845,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             Ok(val) => p_0 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse p_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse p_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse p_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -854,7 +854,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert p_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert p_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert p_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -868,7 +868,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             Ok(val) => p_1 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse p_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse p_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse p_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -877,7 +877,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert p_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert p_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert p_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -890,7 +890,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         Some(val) => t_0 = Some(val as f64),
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert t_0 to i64\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert t_0 to i64\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert t_0 to i64 after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -902,7 +902,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         Some(val) => t_1 = Some(val as f64),
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert t_1 to i64\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert t_1 to i64\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert t_1 to i64 after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -916,7 +916,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             Ok(val) => l_0 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse l_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse l_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse l_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -925,7 +925,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert l_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert l_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert l_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -939,7 +939,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             Ok(val) => l_1 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse l_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse l_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse l_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -948,7 +948,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert l_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert l_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert l_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -962,7 +962,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             Ok(val) => h_0 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse h_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse h_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse h_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -971,7 +971,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert h_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert h_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert h_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -985,7 +985,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             Ok(val) => h_1 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse h_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse h_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse h_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -994,7 +994,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert h_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert h_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert h_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -1008,7 +1008,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             Ok(val) => o_0 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse o_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse o_0 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse o_0 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -1017,7 +1017,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert o_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("WSP kraken: Failed to convert o_0 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert o_0 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -1031,7 +1031,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             Ok(val) => o_1 = Some(val),
                             Err(e) => {
                                 attempts += 1;
-                                log::error!("Failed to parse o_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                                log::error!("WSP kraken: Failed to parse o_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                                 if attempts >= 3 {
                                     panic!("Failed to parse o_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                                 }
@@ -1040,7 +1040,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                         },
                         None => {
                             attempts += 1;
-                            log::error!("Failed to convert o_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            log::error!("wSP Kraken: Failed to convert o_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
                             if attempts >= 3 {
                                 panic!("Failed to convert o_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
                             }
@@ -1052,7 +1052,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                     c_1.is_none() || v_0.is_none() || v_1.is_none() || p_0.is_none() || p_1.is_none() || t_0.is_none() || t_1.is_none() || 
                     l_0.is_none() || l_1.is_none() || h_0.is_none() || h_1.is_none() || o_0.is_none() || o_1.is_none() {
                         attempts += 1;
-                        log::error!("Failed to parse values after {} attempts\nKraken message:\n{}", attempts, message);
+                        log::error!("WSP kraken: Failed to parse values after {} attempts\nKraken message:\n{}", attempts, message);
                         if attempts >= 3 {
                             panic!("Failed to parse values after 3 attempts\nKraken message:\n{}", message);
                         }
@@ -1097,7 +1097,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
 
                             let indices: [usize; 20] = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
                                 25, 26, 27, 28, 29, 30, 31, 32, 33];
-                            println!("updating input 14 to 33. scaled best ask:{:?} best bid: {:?}", &a_0, &b_0);
+                            println!("updating input 14 to 33. scaled kraken xrp best ask:{:?} best bid: {:?}", &a_0, &b_0);
                             let mut neural_network = 
                                 shared_neural_network.lock().await;
                             neural_network.update_input(&indices, &scaled_values).await;
@@ -1130,7 +1130,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
 
                             let indices: [usize; 20] = [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
                                 46, 47, 48, 49, 50, 51, 52, 53];
-                            println!("updating input 34 to 53. scaled best ask:{:?} best bid: {:?}", &a_0, &b_0);
+                            println!("updating input 34 to 53. scaled kraken xrp best ask:{:?} best bid: {:?}", &a_0, &b_0);
                             let mut neural_network = 
                                 shared_neural_network.lock().await;
                             neural_network.update_input(&indices, &scaled_values).await;
@@ -1164,7 +1164,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                             //  65 to 71 is in coinbase
                             let indices: [usize; 20] = [72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83,
                                 84, 85, 86, 87, 88, 89, 90, 91];
-                            println!("updating input 72 to 91. scaled best ask:{:?} best bid: {:?}", &a_0, &b_0);
+                            println!("updating input 72 to 91. scaled kraken xrp best ask:{:?} best bid: {:?}", &a_0, &b_0);
                             let mut neural_network = 
                                 shared_neural_network.lock().await;
                             neural_network.update_input(&indices, &scaled_values).await;
@@ -1179,7 +1179,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                 },
                 Err(e) => {
                     attempts += 1;
-                    log::error!("Failed to parse message: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                    log::error!("WSP KRAKEN: Failed to parse message: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
                     if attempts >= 3 {
                         panic!("Failed to parse JSON Kraken message after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
                     }
@@ -1189,85 +1189,172 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
         } else if prefix.contains("consolidated heartbeat") ||
                   prefix.contains("system status received") || 
                   prefix.contains("subscription status received"){
-            log::info!("Kraken: standard server messages. Ignoring...");
+            log::info!("WSP Kraken: standard server messages. Ignoring...");
             break;
         } else {
-            log::error!("Kraken: got a weird message: {}\nprefix: {}", message, prefix);
+            log::error!("WSP Kraken: got a weird message: {}\nprefix: {}", message, prefix);
             break;
         }
     }
 }
-
-pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, divisor: &f64) {
-
-    if prefix.contains("Bitstamp received") {
-        let v: Result<Value, serde_json::Error> = serde_json::from_str(message);
-        let amount: Option<f64>;
-        let price: Option<f64>;
-        match v {
-            Ok(value) => {
-                if let Value::Object(map) = &value {
-                    // Check if the object has a key "data" whose value is an object
-                    if let Some(Value::Object(data)) = map
-                    .get("data") {
-                        // Extract the values
-                        amount = data.get("amount").and_then(Value::as_f64);
-                        price = data.get("price").and_then(Value::as_f64);
+//03/08/24 - removed: ,divisor: &f64
+pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>) {
+    //03/08/24 - added:
+    let mut attempts = 0;
+    loop {
+        if prefix.contains("Bitstamp received") {
+            let v: Result<Value, serde_json::Error> = serde_json::from_str(message);
+            let amount: Option<f64>;
+            let price: Option<f64>;
+            match v {
+                Ok(value) => {
+                    if let Value::Object(map) = &value {
+                        // Check if the object has a key "data" whose value is an object
+                        if let Some(Value::Object(data)) = map
+                        .get("data") {
+                            // Extract the values
+                            //03/08/24 - changed from:
+                                // amount = data.get("amount").and_then(Value::as_f64);
+                                // price = data.get("price").and_then(Value::as_f64);
+                            //03/08/24 - to:
+                                amount = match data.get("amount") {
+                                    Some(val) => match val.as_f64() {
+                                        Some(f) => Some(f),
+                                        None => {
+                                            attempts += 1;
+                                            log::error!("WSP bitstamp: Failed to parse 'amount' as f64\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                            if attempts >= 3 {
+                                                panic!("Failed to parse 'amount' as f64 after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                            }
+                                            continue;
+                                        }
+                                    },
+                                    None => {
+                                        attempts += 1;
+                                        log::error!("WSP bitstamp: 'amount' is not a string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                        if attempts >= 3 {
+                                            panic!("'amount' is not a string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                        }
+                                        continue;
+                                    }
+                                };
+                                price = match data.get("price") {
+                                    Some(val) => match val.as_f64() {
+                                        Some(f) => Some(f),
+                                        None => {
+                                            attempts += 1;
+                                            log::error!("WSP bitstamp: Failed to parse 'price' as f64\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                            if attempts >= 3 {
+                                                panic!("Failed to parse 'price' as f64 after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                            }
+                                            continue;
+                                        }
+                                    },
+                                    None => {
+                                        attempts += 1;
+                                        log::error!("WSP bitstamp: 'price' is not a string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                                        if attempts >= 3 {
+                                            panic!("'price' is not a string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                                        }
+                                        continue;
+                                    }
+                                };
+                        } 
+                        else {
+                            attempts += 1;
+                            log::error!("WSP bitstamp: map does not contain a 'data' key\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            if attempts >= 3 {
+                                panic!("bitstamp : The map does not contain a 'data' key
+                                message: {}", message);
+                            }
+                            continue;
+                        }
                     } 
                     else {
-                        panic!("The map does not contain a 'data' key
-                        message: {}", message);
+                        //03/08/24 - removed:
+                            //panic!("Value is not an object.\nmessage:{}", message);
+                        //03/08/24 - added:
+                            attempts += 1;
+                            log::error!("WSP bitstamp: map does not contain a 'data' key\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                            if attempts >= 3 {
+                                panic!("WSP bitstamp: The map does not contain a 'data' key
+                                message: {}", message);
+                            }
+                            continue;
                     }
-                } 
-                else {
-                    panic!("Value is not an object.\nmessage:{}", message);
-                }
-            },
-            Err(e) => {
-                panic!("Failed to parse JSON Bitstamp message\nError: {}\nMessage: {}"
-                , e, message);
-            
-            },
-        }
-        let new_values = [amount, price];
-        let mut scaled_values: Vec<f64> = Vec::new();
-        for value in &new_values {
-            if let Some(val) = value {
-                scaled_values.push(val / divisor);
-            } 
-            else {
-                println!("One of the values was None");
-                panic!("amount: {:?}, price: {:?}", &amount, &price);
+                },
+                Err(e) => {
+                    //03/08/24 - removed:
+                        // panic!("WSP bitstamp: Failed to parse JSON Bitstamp message\nError: {}\nMessage: {}"
+                        // , e, message);
+                    //03/08/24 - added in its place:
+                        attempts += 1;
+                        log::error!("WSP bitstamp: Failed to parse JSON Bitstamp message\nMessage: {}\nPrefix: {}\nAttempt: {}
+                        error: {}", message, prefix, attempts, e);
+                        if attempts >= 3 {
+                            panic!("WSP bitstamp: The map does not contain a 'data' key
+                            message: {}", message);
+                        }
+                        continue;
+                
+                },
             }
+            //03/08/24 - removed:
+                // let new_values = [amount, price];
+                // let mut scaled_values: Vec<f64> = Vec::new();
+                // for value in &new_values {
+                //     if let Some(val) = value {
+                //         scaled_values.push(val / divisor);
+                //     } 
+                //     else {
+                //         println!("One of the values was None");
+                //         panic!("amount: {:?}, price: {:?}", &amount, &price);
+                //     }
+                // }
+            if let (Some(mut amount), Some(mut price)) = (amount, price) {
+                if prefix.contains("XRP") {
+                    //going to use previous SOL indices as XRP
+
+                    amount = standardization_functions::xrp_lognorm_standardization_lot_volume_per_trade(&amount);
+                    price = standardization_functions::xrp_lognorm_standardization_high_price_24h(&price);
+
+                    let scaled_values = [amount, price];
+
+
+                    let indices: [usize; 2] = [54, 55];
+                    println!("updating input 54, 55. SCALED bitstamp xlm  price:{:?}", &price);
+                    let mut neural_network = 
+                        shared_neural_network.lock().await;
+                    neural_network.update_input(&indices, &scaled_values).await;
+                }
+                else if prefix.contains("XLM") {
+                    amount = standardization_functions::xlm_lognorm_standardization_lot_volume_per_trade(&amount);
+                    price = standardization_functions::xlm_lognorm_standardization_high_price_24h(&price);
+
+                    let scaled_values = [amount, price];
+                    let indices: [usize; 2] = [56, 57];
+                    println!("updating input 56, 57. SCALED bitstamp xlm price:{:?}", &price);
+                    let mut neural_network = 
+                        shared_neural_network.lock().await;
+                    neural_network.update_input(&indices, &scaled_values).await;
+                }
+                else {
+                    panic!("This shouid never occur. Somehow prefix cointained phrase
+                    Bitstamp received but didn't contain the phrases XLM or XRP.
+                    prefix is: {}\nmessage: {}", prefix, message);
+                }
+            }
+
         }
-        if prefix.contains("XRP") {
-            //going to use SOL indices as XRP
-            let indices: [usize; 2] = [54, 55];
-            println!("updating input 54, 55. price:{:?}", &price);
-            let mut neural_network = 
-                shared_neural_network.lock().await;
-            neural_network.update_input(&indices, &scaled_values).await;
-        }
-        else if prefix.contains("XLM") {
-            let indices: [usize; 2] = [56, 57];
-            println!("updating input 56, 57. price:{:?}", &price);
-            let mut neural_network = 
-                shared_neural_network.lock().await;
-            neural_network.update_input(&indices, &scaled_values).await;
+        else if prefix.contains("consolidated heartbeat") || 
+        prefix.contains("subscription received") {
+            //03/08/24 - changed from println! to log::info!
+            log::info!("WSP Bitstamp: standard server messages. Ignoring...");
         }
         else {
-            panic!("This shouid never occur. Somehow prefix cointained phrase
-            Bitstamp received but didn't contain the phrases XLM or XRP.
-            prefix is: {}\nmessage: {}", prefix, message);
+            //03/08/24 - changed from println! to log::error!
+            log::error!("WSP Bitstamp: got a weird message: {}\nprefix:{}", message, prefix);
         }
-
-    }
-    else if prefix.contains("consolidated heartbeat") || 
-    prefix.contains("subscription received") {
-        println!("Bitstamp: standard server messages. Ignoring...");
-    }
-    else {
-        println!("Bitstamp: got a weird message: {}\nprefix:{}", message, prefix);
     }
 }
 pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_network: Arc<Mutex<NeuralNetwork>>, divisor: &f64) {
@@ -1316,7 +1403,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                                     Ok(price_val) => amount = Some(price_val),
                                                     Err(e) => {
                                                         attempts += 1;
-                                                        log::error!("Gemini amount: Failed to parse
+                                                        log::error!("WSP Gemini amount: Failed to parse
                                                         string to f64: {}\nprefix: {}\nmessage: {}",
                                                             e, &prefix, &message);
                                                         if attempts >= 3 {
@@ -1329,7 +1416,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                                 },
                                                 None => {
                                                     attempts += 1;
-                                                    log::error!("Gemini amount: Failed to convert
+                                                    log::error!("WSP Gemini amount: Failed to convert
                                                     Value to string \nprefix: {}\nmessage: {}",
                                                         &prefix, &message);
                                                     if attempts >= 3 {
@@ -1342,7 +1429,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                             },
                                             None => {
                                                 attempts += 1;
-                                                log::error!("Gemini amount:Failed to parse amount:
+                                                log::error!("WSP Gemini amount:Failed to parse amount:
                                                 prefix: {}
                                                 message: {}", &prefix, &message);
                                                 if attempts >= 3 {
@@ -1360,7 +1447,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                                     Ok(price_val) => price = Some(price_val),
                                                     Err(e) => {
                                                         attempts += 1;
-                                                        log::error!("Gemini price: Failed to parse
+                                                        log::error!("WSP Gemini price: Failed to parse
                                                         string to f64: {}\nprefix: {}\nmessage: {}",
                                                         e, &prefix, &message);
                                                         if attempts >= 3 {
@@ -1373,7 +1460,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                                 },
                                                 None => {
                                                     attempts += 1;
-                                                    log::error!("Gemini price: Failed to convert 
+                                                    log::error!("WSP Gemini price: Failed to convert 
                                                     Value to string:
                                                     prefix: {}
                                                     message: {}", 
@@ -1389,7 +1476,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                             },
                                             None => {
                                                 attempts += 1;
-                                                log::error!("Gemini price: Failed to get price:
+                                                log::error!("WSP Gemini price: Failed to get price:
                                                 prefix: {}
                                                 message: {}", &prefix, &message);
                                                 if attempts >= 3 {
@@ -1399,7 +1486,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                                 continue;
                                             }
                                         }
-                                    //02/07/24 - added if block
+                                    //02/07/24 - added if block. DOUBLE REDUNDANCY
                                     if amount.is_none() || price.is_none() {
                                         attempts += 1;
                                         if attempts >= 3 {
@@ -1410,7 +1497,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                                 } 
                                 else {
                                     attempts += 1;
-                                    log::error!("Gemini: event is not an object after 3 attempts. message: 
+                                    log::error!("WSP Gemini: event is not an object after 3 attempts. message: 
                                     {}
                                     , prefix: {}
                                     attempt #:{}", message, prefix, &attempts);
@@ -1422,7 +1509,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                             } 
                             else {
                                 attempts += 1;
-                                log::error!("Gemini: events is not an array after 3 attempts. 
+                                log::error!("WSP Gemini: events is not an array after 3 attempts. 
                                 message: {}
                                 , prefix: {}
                                 attempt#:{}", message, prefix, &attempts);

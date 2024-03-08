@@ -1142,9 +1142,10 @@ async fn read_lines(reader: BufReader<ChildStdout>,
                                 message, shared_neural_network
                                     .clone()).await,
 							prefix if prefix.contains("Bitstamp") => 
+                            //03/08/24 - removed ,divisor from handle_all_bitstmap
                             execute_action_functions::handle_all_bitstamp(prefix, 
                                 message, shared_neural_network
-                                    .clone(), divisor).await,
+                                    .clone()).await,
 							prefix if prefix.contains("Gemini") => 
                             execute_action_functions::handle_all_gemini(prefix, 
                                 message, shared_neural_network

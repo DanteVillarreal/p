@@ -1356,10 +1356,12 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
         prefix.contains("subscription received") {
             //03/08/24 - changed from println! to log::info!
             log::info!("WSP Bitstamp: standard server messages. Ignoring...");
+            break;
         }
         else {
             //03/08/24 - changed from println! to log::error!
             log::error!("WSP Bitstamp: got a weird message: {}\nprefix:{}", message, prefix);
+            break;
         }
     }
 }
@@ -1616,7 +1618,7 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
             }
         }
         else {
-            println!("Gemini: got a weird message: {}\nprefix:{}", message, prefix);
+            log::error!("Gemini: got a weird message: {}\nprefix:{}", message, prefix);
             break;
         }
     }

@@ -371,3 +371,4 @@ MAY NEED TO STANDARDIZE IT USING STD DEV AND MIN MAX USING HISTORICAL DATA.
 Here is how I will do future iterations: I will keep learning rate the same, and first change gamma. if it doesnt succeed when it gets to 0.2, go back to 0.99 and divide learning rate by 10. then repeat until it works. 1. remove all replay buffers. 2. remove saved states. 3. rename p, websocket_client, and q value logs. 4. add extra space in rewards doc for next run.               JESUS IS GOOD. We got this!
                 DONT FORGET TO CHANGE LEARNING_RATE IN MAIN TOO if you ever change it.
 03/08/24 - already had to fix an error.         JESUS IS GOOD. I got this!
+03/09/24 - fixed another error.                 JESUS IS GOOD. We got this!

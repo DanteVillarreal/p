@@ -20,6 +20,7 @@ use tokio::time::Duration;                            //for "sleep"
 //use tokio::time::delay_for;                       //02/09/24 - tokip updated. not in it
 
 use crate::network::NeuralNetwork;                         //to take in neuralNetwork as parameter
+use crate::standardization_functions;
 
 /*
     pub fn nothing() {
@@ -114,7 +115,8 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     //then [exchange sell]
 
     pub fn s_i0_do_nothing(value_prior: &f64) -> Result<f64, Box<dyn Error + Send>>{
-        Ok(*value_prior)
+		Ok(standardization_functions::normal_value_prior_standardization(&value_prior))
+        //Ok(*value_prior)
     }
     //cant use 1 through 4 because minimum Kraken buy is 0.2 SOL
     /*
@@ -1067,7 +1069,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i5_sol_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64 )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             // let now = Utc::now();
             // let time_stamp = now.timestamp().to_string();
@@ -1455,22 +1457,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		
 																		//this will count as value after
+
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+																				if let Some(mut value_after) = value_after {
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
 
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 61, 63
-																				//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 61
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is kraken and gemini being updated, I will update:
+																					//  56, 57, 59
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 57, 59];
+																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
 																	}
 																	else {
 																		log::error!("i5: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -1553,14 +1560,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -1584,7 +1591,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i6_sol_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64 )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             // let now = Utc::now();
             // let time_stamp = now.timestamp().to_string();
@@ -1973,20 +1980,25 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+																				if let Some(mut value_after) = value_after {
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
 
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is kraken and gemini being updated, I will update:
+																					//  56, 57, 59
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 57, 59];
+																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
 																	}
 																	else {
 																		log::error!("i6: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -2069,14 +2081,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -2100,7 +2112,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i7_sol_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64 )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             // let now = Utc::now();
             // let time_stamp = now.timestamp().to_string();
@@ -2489,20 +2501,25 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+																				if let Some(mut value_after) = value_after {
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
 
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is kraken and gemini being updated, I will update:
+																					//  56, 57, 59
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 57, 59];
+																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
 																	}
 																	else {
 																		log::error!("i7: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -2585,14 +2602,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -2616,7 +2633,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i8_sol_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64 )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             // let now = Utc::now();
             // let time_stamp = now.timestamp().to_string();
@@ -3005,20 +3022,25 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+																				if let Some(mut value_after) = value_after {
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
 
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is kraken and gemini being updated, I will update:
+																					//  56, 57, 59
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 57, 59];
+																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
 																	}
 																	else {
 																		log::error!("i8: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -3101,14 +3123,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -3132,7 +3154,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i9_sol_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64 )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             // let now = Utc::now();
             // let time_stamp = now.timestamp().to_string();
@@ -3519,22 +3541,27 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		
 																		
-																		//this will count as value after
-																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 
+																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+																		if let Some(mut value_after) = value_after {
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
 
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is kraken and gemini being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
 																	}
 																	else {
 																		log::error!("i9: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -3617,14 +3644,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -3648,7 +3675,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i10_sol_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64 )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             // let now = Utc::now();
             // let time_stamp = now.timestamp().to_string();
@@ -4036,21 +4063,26 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		
 																		//this will count as value after
-																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+																		if let Some(mut value_after) = value_after {
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
 
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is kraken and gemini being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
 																	}
 																	else {
 																		log::error!("i10: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -4133,14 +4165,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -4631,7 +4663,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     */
     //begin removal
     pub async fn s_i13_sol_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 			//03/02/24 - added:
             // let now = Utc::now();
@@ -5021,19 +5053,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+															if let Some(mut value_after) = value_after {
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
 
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and bitstamp being updated, I will update:
+															// //  56, 57, 58
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -5149,14 +5199,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -5171,7 +5221,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i14_sol_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 			//03/02/24 - added:
             // let now = Utc::now();
@@ -5561,19 +5611,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+															if let Some(mut value_after) = value_after {
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
 
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and bitstamp being updated, I will update:
+															// //  56, 57, 58
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -5689,14 +5757,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -5711,7 +5779,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i15_sol_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 			//03/02/24 - added:
             // let now = Utc::now();
@@ -6101,19 +6169,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+															if let Some(mut value_after) = value_after {
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
 
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and bitstamp being updated, I will update:
+															// //  56, 57, 58
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -6229,14 +6315,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -6251,7 +6337,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i16_sol_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 			//03/02/24 - added:
             // let now = Utc::now();
@@ -6641,19 +6727,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+															if let Some(mut value_after) = value_after {
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
 
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and bitstamp being updated, I will update:
+															// //  56, 57, 58
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -6769,14 +6873,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -6791,7 +6895,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i17_sol_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 			//03/02/24 - added:
             // let now = Utc::now();
@@ -7181,19 +7285,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+															if let Some(mut value_after) = value_after {
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
 
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and bitstamp being updated, I will update:
+															// //  56, 57, 58
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -7309,14 +7431,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -7331,7 +7453,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i18_sol_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 			//03/02/24 - added:
             // let now = Utc::now();
@@ -7721,19 +7843,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+															if let Some(mut value_after) = value_after {
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
 
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and bitstamp being updated, I will update:
+															// //  56, 57, 58
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -7849,14 +7989,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -7871,7 +8011,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i19_sol_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 			//03/02/24 - added:
             // let now = Utc::now();
@@ -8261,19 +8401,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+															if let Some(mut value_after) = value_after {
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
 
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and bitstamp being updated, I will update:
+															// //  56, 57, 58
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -8389,14 +8547,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -8411,7 +8569,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i20_sol_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 			//03/02/24 - added:
             // let now = Utc::now();
@@ -8801,19 +8959,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+															if let Some(mut value_after) = value_after {
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
 
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and bitstamp being updated, I will update:
+															// //  56, 57, 58
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -8929,14 +9105,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -9414,7 +9590,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i23_sol_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -9714,19 +9890,40 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
 																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*coinbase_wallet += money_from_sell_after_fees;
-																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 
-																			//value_after = 60
-																			//coinbase = 61
-																			//bitstamp = 62
-																			//kraken = 63
-																			//gemini = 64
-																			//since this is coinbase and gemini being updated, I will update:
-																			//  60, 61, 64
-																			let indices = [60, 61, 64];
-																			let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-																			let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
+																			if let Some(mut value_after) = value_after {
+																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																				
+				
+																				//value_after = 56
+																				//coinbase = 57
+																				//bitstamp = 58
+																				//kraken = 59
+																				//gemini = 60
+																				//since this is coinbase and gemini being updated, I will update:
+																				//  56, 57, 60
+																				//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																				let indices = [56, 57, 60];
+																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				neural_network.update_input(&indices, &scaled_values).await;
+																			}
+																			//03/08/24 - removed:
+																			// //value_after = 56
+																			// //coinbase = 57
+																			// //bitstamp = 58
+																			// //kraken = 59
+																			// //gemini = 60
+																			// //since this is coinbase and gemini being updated, I will update:
+																			// //  56, 57, 60
+																			// let indices = [56, 57, 60];
+																			// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			// neural_network.update_input(&indices, &scaled_values).await;
 
 																			success = true;
 																	},
@@ -9884,14 +10081,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and gemini being updated, I will update:
-            //     //  60, 61, 64
-            //     let indices = [60, 61, 64];
+            //     //  56, 57, 60
+            //     let indices = [56, 57, 60];
             //     let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -9906,7 +10103,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i24_sol_4_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10207,18 +10404,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-																			//value_after = 60
-																			//coinbase = 61
-																			//bitstamp = 62
-																			//kraken = 63
-																			//gemini = 64
-																			//since this is coinbase and gemini being updated, I will update:
-																			//  60, 61, 64
-																			let indices = [60, 61, 64];
-																			let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-																			let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																			neural_network.update_input(&indices, &scaled_values).await;
+																			if let Some(mut value_after) = value_after {
+																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																				
+				
+																				//value_after = 56
+																				//coinbase = 57
+																				//bitstamp = 58
+																				//kraken = 59
+																				//gemini = 60
+																				//since this is coinbase and gemini being updated, I will update:
+																				//  56, 57, 60
+																				//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																				let indices = [56, 57, 60];
+																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				neural_network.update_input(&indices, &scaled_values).await;
+																			}
+																			//03/08/24 - removed:
+																			// //value_after = 56
+																			// //coinbase = 57
+																			// //bitstamp = 58
+																			// //kraken = 59
+																			// //gemini = 60
+																			// //since this is coinbase and gemini being updated, I will update:
+																			// //  56, 57, 60
+																			// let indices = [56, 57, 60];
+																			// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			// neural_network.update_input(&indices, &scaled_values).await;
 
 																			success = true;
 																	},
@@ -10376,14 +10592,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and gemini being updated, I will update:
-            //     //  60, 61, 64
-            //     let indices = [60, 61, 64];
+            //     //  56, 57, 60
+            //     let indices = [56, 57, 60];
             //     let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -10398,7 +10614,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i25_sol_5_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -10699,18 +10915,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-																			//value_after = 60
-																			//coinbase = 61
-																			//bitstamp = 62
-																			//kraken = 63
-																			//gemini = 64
-																			//since this is coinbase and gemini being updated, I will update:
-																			//  60, 61, 64
-																			let indices = [60, 61, 64];
-																			let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-																			let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																			neural_network.update_input(&indices, &scaled_values).await;
+																			if let Some(mut value_after) = value_after {
+																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																				
+				
+																				//value_after = 56
+																				//coinbase = 57
+																				//bitstamp = 58
+																				//kraken = 59
+																				//gemini = 60
+																				//since this is coinbase and gemini being updated, I will update:
+																				//  56, 57, 60
+																				//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																				let indices = [56, 57, 60];
+																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				neural_network.update_input(&indices, &scaled_values).await;
+																			}
+																			//03/08/24 - removed:
+																			// //value_after = 56
+																			// //coinbase = 57
+																			// //bitstamp = 58
+																			// //kraken = 59
+																			// //gemini = 60
+																			// //since this is coinbase and gemini being updated, I will update:
+																			// //  56, 57, 60
+																			// let indices = [56, 57, 60];
+																			// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			// neural_network.update_input(&indices, &scaled_values).await;
 
 																			success = true;
 																	},
@@ -10868,14 +11103,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and gemini being updated, I will update:
-            //     //  60, 61, 64
-            //     let indices = [60, 61, 64];
+            //     //  56, 57, 60
+            //     let indices = [56, 57, 60];
             //     let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -10890,7 +11125,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i26_sol_6_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11191,18 +11426,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-																			//value_after = 60
-																			//coinbase = 61
-																			//bitstamp = 62
-																			//kraken = 63
-																			//gemini = 64
-																			//since this is coinbase and gemini being updated, I will update:
-																			//  60, 61, 64
-																			let indices = [60, 61, 64];
-																			let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-																			let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																			neural_network.update_input(&indices, &scaled_values).await;
+																			if let Some(mut value_after) = value_after {
+																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																				
+				
+																				//value_after = 56
+																				//coinbase = 57
+																				//bitstamp = 58
+																				//kraken = 59
+																				//gemini = 60
+																				//since this is coinbase and gemini being updated, I will update:
+																				//  56, 57, 60
+																				//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																				let indices = [56, 57, 60];
+																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				neural_network.update_input(&indices, &scaled_values).await;
+																			}
+																			//03/08/24 - removed:
+																			// //value_after = 56
+																			// //coinbase = 57
+																			// //bitstamp = 58
+																			// //kraken = 59
+																			// //gemini = 60
+																			// //since this is coinbase and gemini being updated, I will update:
+																			// //  56, 57, 60
+																			// let indices = [56, 57, 60];
+																			// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			// neural_network.update_input(&indices, &scaled_values).await;
 
 																			success = true;
 																	},
@@ -11360,14 +11614,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and gemini being updated, I will update:
-            //     //  60, 61, 64
-            //     let indices = [60, 61, 64];
+            //     //  56, 57, 60
+            //     let indices = [56, 57, 60];
             //     let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -11382,7 +11636,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i27_sol_7_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -11683,18 +11937,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-																			//value_after = 60
-																			//coinbase = 61
-																			//bitstamp = 62
-																			//kraken = 63
-																			//gemini = 64
-																			//since this is coinbase and gemini being updated, I will update:
-																			//  60, 61, 64
-																			let indices = [60, 61, 64];
-																			let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-																			let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																			neural_network.update_input(&indices, &scaled_values).await;
+																			if let Some(mut value_after) = value_after {
+																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																				
+				
+																				//value_after = 56
+																				//coinbase = 57
+																				//bitstamp = 58
+																				//kraken = 59
+																				//gemini = 60
+																				//since this is coinbase and gemini being updated, I will update:
+																				//  56, 57, 60
+																				//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																				let indices = [56, 57, 60];
+																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				neural_network.update_input(&indices, &scaled_values).await;
+																			}
+																			//03/08/24 - removed:
+																			// //value_after = 56
+																			// //coinbase = 57
+																			// //bitstamp = 58
+																			// //kraken = 59
+																			// //gemini = 60
+																			// //since this is coinbase and gemini being updated, I will update:
+																			// //  56, 57, 60
+																			// let indices = [56, 57, 60];
+																			// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			// neural_network.update_input(&indices, &scaled_values).await;
 
 																			success = true;
 																	},
@@ -11852,14 +12125,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and gemini being updated, I will update:
-            //     //  60, 61, 64
-            //     let indices = [60, 61, 64];
+            //     //  56, 57, 60
+            //     let indices = [56, 57, 60];
             //     let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -11874,7 +12147,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i28_sol_8_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -12175,19 +12448,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-																			//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-																			//value_after = 60
-																			//coinbase = 61
-																			//bitstamp = 62
-																			//kraken = 63
-																			//gemini = 64
-																			//since this is coinbase and gemini being updated, I will update:
-																			//  60, 61, 64
-																			let indices = [60, 61, 64];
-																			let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-																			let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																			neural_network.update_input(&indices, &scaled_values).await;
+																			if let Some(mut value_after) = value_after {
+																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																				
+				
+																				//value_after = 56
+																				//coinbase = 57
+																				//bitstamp = 58
+																				//kraken = 59
+																				//gemini = 60
+																				//since this is coinbase and gemini being updated, I will update:
+																				//  56, 57, 60
+																				//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																				let indices = [56, 57, 60];
+																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				neural_network.update_input(&indices, &scaled_values).await;
+																			}
+																			//03/08/24 - removed:
+																			// //value_after = 56
+																			// //coinbase = 57
+																			// //bitstamp = 58
+																			// //kraken = 59
+																			// //gemini = 60
+																			// //since this is coinbase and gemini being updated, I will update:
+																			// //  56, 57, 60
+																			// let indices = [56, 57, 60];
+																			// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			// neural_network.update_input(&indices, &scaled_values).await;
 
 																			success = true;
 																	},
@@ -12345,14 +12636,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and gemini being updated, I will update:
-            //     //  60, 61, 64
-            //     let indices = [60, 61, 64];
+            //     //  56, 57, 60
+            //     let indices = [56, 57, 60];
             //     let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -12367,7 +12658,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i29_sol_9_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -12668,18 +12959,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-																			//value_after = 60
-																			//coinbase = 61
-																			//bitstamp = 62
-																			//kraken = 63
-																			//gemini = 64
-																			//since this is coinbase and gemini being updated, I will update:
-																			//  60, 61, 64
-																			let indices = [60, 61, 64];
-																			let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-																			let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																			neural_network.update_input(&indices, &scaled_values).await;
+																			if let Some(mut value_after) = value_after {
+																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																				
+				
+																				//value_after = 56
+																				//coinbase = 57
+																				//bitstamp = 58
+																				//kraken = 59
+																				//gemini = 60
+																				//since this is coinbase and gemini being updated, I will update:
+																				//  56, 57, 60
+																				//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																				let indices = [56, 57, 60];
+																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				neural_network.update_input(&indices, &scaled_values).await;
+																			}
+																			//03/08/24 - removed:
+																			// //value_after = 56
+																			// //coinbase = 57
+																			// //bitstamp = 58
+																			// //kraken = 59
+																			// //gemini = 60
+																			// //since this is coinbase and gemini being updated, I will update:
+																			// //  56, 57, 60
+																			// let indices = [56, 57, 60];
+																			// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			// neural_network.update_input(&indices, &scaled_values).await;
 
 																			success = true;
 																	},
@@ -12837,14 +13147,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and gemini being updated, I will update:
-            //     //  60, 61, 64
-            //     let indices = [60, 61, 64];
+            //     //  56, 57, 60
+            //     let indices = [56, 57, 60];
             //     let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -12859,7 +13169,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i30_sol_10_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -13159,18 +13469,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-																			//value_after = 60
-																			//coinbase = 61
-																			//bitstamp = 62
-																			//kraken = 63
-																			//gemini = 64
-																			//since this is coinbase and gemini being updated, I will update:
-																			//  60, 61, 64
-																			let indices = [60, 61, 64];
-																			let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-																			let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																			neural_network.update_input(&indices, &scaled_values).await;
+																			if let Some(mut value_after) = value_after {
+																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																				
+				
+																				//value_after = 56
+																				//coinbase = 57
+																				//bitstamp = 58
+																				//kraken = 59
+																				//gemini = 60
+																				//since this is coinbase and gemini being updated, I will update:
+																				//  56, 57, 60
+																				//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																				let indices = [56, 57, 60];
+																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				neural_network.update_input(&indices, &scaled_values).await;
+																			}
+																			//03/08/24 - removed:
+																			// //value_after = 56
+																			// //coinbase = 57
+																			// //bitstamp = 58
+																			// //kraken = 59
+																			// //gemini = 60
+																			// //since this is coinbase and gemini being updated, I will update:
+																			// //  56, 57, 60
+																			// let indices = [56, 57, 60];
+																			// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			// neural_network.update_input(&indices, &scaled_values).await;
 
 																			success = true;
 																	},
@@ -13328,14 +13657,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
     
     
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and gemini being updated, I will update:
-            //     //  60, 61, 64
-            //     let indices = [60, 61, 64];
+            //     //  56, 57, 60
+            //     let indices = [56, 57, 60];
             //     let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -14363,7 +14692,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     pub async fn s_i35_sol_5_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -14634,20 +14963,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 63, 64];
-																				let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and gemini being updated, I will update:
+																					//  56, 59, 60
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 59, 60];
+																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 60
+																				// let indices = [56, 59, 60];
+																				// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i35: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -14799,14 +15145,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is kraken and gemini being updated, I will update:
-            //     //  60, 63, 64
-            //     let indices = [60, 63, 64];
+            //     //  56, 59, 64
+            //     let indices = [56, 59, 64];
             //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -14831,7 +15177,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i36_sol_6_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -15102,20 +15448,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 63, 64];
-																				let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and gemini being updated, I will update:
+																					//  56, 59, 60
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 59, 60];
+																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 60
+																				// let indices = [56, 59, 60];
+																				// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i36: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -15267,14 +15630,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is kraken and gemini being updated, I will update:
-            //     //  60, 63, 64
-            //     let indices = [60, 63, 64];
+            //     //  56, 59, 64
+            //     let indices = [56, 59, 64];
             //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -15299,7 +15662,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i37_sol_7_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -15570,20 +15933,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 63, 64];
-																				let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and gemini being updated, I will update:
+																					//  56, 59, 60
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 59, 60];
+																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 60
+																				// let indices = [56, 59, 60];
+																				// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i37: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -15735,14 +16115,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is kraken and gemini being updated, I will update:
-            //     //  60, 63, 64
-            //     let indices = [60, 63, 64];
+            //     //  56, 59, 64
+            //     let indices = [56, 59, 64];
             //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -15767,7 +16147,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     
 	pub async fn s_i38_sol_8_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -16038,20 +16418,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 63, 64];
-																				let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and gemini being updated, I will update:
+																					//  56, 59, 60
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 59, 60];
+																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 60
+																				// let indices = [56, 59, 60];
+																				// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i38: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -16203,14 +16600,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is kraken and gemini being updated, I will update:
-            //     //  60, 63, 64
-            //     let indices = [60, 63, 64];
+            //     //  56, 59, 64
+            //     let indices = [56, 59, 64];
             //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -16235,7 +16632,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i39_sol_9_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -16506,20 +16903,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 63, 64];
-																				let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is kraken and gemini being updated, I will update:
+																					//  56, 59, 60
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 59, 60];
+																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 60
+																				// let indices = [56, 59, 60];
+																				// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i39: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -16671,14 +17085,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is kraken and gemini being updated, I will update:
-            //     //  60, 63, 64
-            //     let indices = [60, 63, 64];
+            //     //  56, 59, 64
+            //     let indices = [56, 59, 64];
             //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -16703,7 +17117,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i40_sol_10_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -16974,20 +17388,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 63, 64];
-																				let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and gemini being updated, I will update:
+																					//  56, 59, 60
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 59, 60];
+																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 60
+																				// let indices = [56, 59, 60];
+																				// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i40: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -17139,14 +17570,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is kraken and gemini being updated, I will update:
-            //     //  60, 63, 64
-            //     let indices = [60, 63, 64];
+            //     //  56, 59, 64
+            //     let indices = [56, 59, 64];
             //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -17628,7 +18059,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     */
     //begin removal
     pub async fn s_i43_sol_3_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -17880,19 +18311,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 														let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 														*bitstamp_wallet += money_from_sell_after_fees;
 														value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-														//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+														if let Some(mut value_after) = value_after {
+															*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+															*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+															value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+															
 
-														//value_after = 60
-														//coinbase = 61
-														//bitstamp = 62
-														//kraken = 63
-														//gemini = 64
-														//since this is coinbase and gemini being updated, I will update:
-														//  60, 61, 64
-														let indices = [60, 62, 64];
-														let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
-														let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-														neural_network.update_input(&indices, &scaled_values).await;
+															//value_after = 56
+															//coinbase = 57
+															//bitstamp = 58
+															//kraken = 59
+															//gemini = 60
+															//since this is bitstamp and gemini being updated, I will update:
+															//  56, 58, 60
+															//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+															let indices = [56, 58, 60];
+															let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+															//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+														}
+														//03/08/24 - removed:
+														// //value_after = 56
+														// //coinbase = 57
+														// //bitstamp = 58
+														// //kraken = 59
+														// //gemini = 60
+														// //since this is bitstamp and gemini being updated, I will update:
+														// //  56, 58, 60
+														// let indices = [56, 58, 60];
+														// let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
+														// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+														// neural_network.update_input(&indices, &scaled_values).await;
 
 
 
@@ -18047,14 +18496,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is bitstamp and gemini being updated, I will update:
-            //     //  60, 62, 64
-            //     let indices = [60, 62, 64];
+            //     //  56, 58, 64
+            //     let indices = [56, 58, 64];
             //     let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -18069,7 +18518,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i44_sol_4_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -18321,19 +18770,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 														let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 														*bitstamp_wallet += money_from_sell_after_fees;
 														value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-														//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+														if let Some(mut value_after) = value_after {
+															*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+															*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+															value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+															
 
-														//value_after = 60
-														//coinbase = 61
-														//bitstamp = 62
-														//kraken = 63
-														//gemini = 64
-														//since this is coinbase and gemini being updated, I will update:
-														//  60, 61, 64
-														let indices = [60, 62, 64];
-														let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
-														let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-														neural_network.update_input(&indices, &scaled_values).await;
+															//value_after = 56
+															//coinbase = 57
+															//bitstamp = 58
+															//kraken = 59
+															//gemini = 60
+															//since this is bitstamp and gemini being updated, I will update:
+															//  56, 58, 60
+															//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+															let indices = [56, 58, 60];
+															let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+															//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+														}
+														//03/08/24 - removed:
+														// //value_after = 56
+														// //coinbase = 57
+														// //bitstamp = 58
+														// //kraken = 59
+														// //gemini = 60
+														// //since this is bitstamp and gemini being updated, I will update:
+														// //  56, 58, 60
+														// let indices = [56, 58, 60];
+														// let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
+														// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+														// neural_network.update_input(&indices, &scaled_values).await;
 
 
 
@@ -18488,14 +18955,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is bitstamp and gemini being updated, I will update:
-            //     //  60, 62, 64
-            //     let indices = [60, 62, 64];
+            //     //  56, 58, 64
+            //     let indices = [56, 58, 64];
             //     let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -18510,7 +18977,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i45_sol_5_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -18762,19 +19229,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 														let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 														*bitstamp_wallet += money_from_sell_after_fees;
 														value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-														//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+														if let Some(mut value_after) = value_after {
+															*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+															*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+															value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+															
 
-														//value_after = 60
-														//coinbase = 61
-														//bitstamp = 62
-														//kraken = 63
-														//gemini = 64
-														//since this is coinbase and gemini being updated, I will update:
-														//  60, 61, 64
-														let indices = [60, 62, 64];
-														let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
-														let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-														neural_network.update_input(&indices, &scaled_values).await;
+															//value_after = 56
+															//coinbase = 57
+															//bitstamp = 58
+															//kraken = 59
+															//gemini = 60
+															//since this is bitstamp and gemini being updated, I will update:
+															//  56, 58, 60
+															//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+															let indices = [56, 58, 60];
+															let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+															//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+														}
+														//03/08/24 - removed:
+														// //value_after = 56
+														// //coinbase = 57
+														// //bitstamp = 58
+														// //kraken = 59
+														// //gemini = 60
+														// //since this is bitstamp and gemini being updated, I will update:
+														// //  56, 58, 60
+														// let indices = [56, 58, 60];
+														// let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
+														// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+														// neural_network.update_input(&indices, &scaled_values).await;
 
 
 
@@ -18929,14 +19414,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is bitstamp and gemini being updated, I will update:
-            //     //  60, 62, 64
-            //     let indices = [60, 62, 64];
+            //     //  56, 58, 64
+            //     let indices = [56, 58, 64];
             //     let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -18951,7 +19436,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i46_sol_6_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -19203,19 +19688,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 														let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 														*bitstamp_wallet += money_from_sell_after_fees;
 														value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-														//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+														if let Some(mut value_after) = value_after {
+															*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+															*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+															value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+															
 
-														//value_after = 60
-														//coinbase = 61
-														//bitstamp = 62
-														//kraken = 63
-														//gemini = 64
-														//since this is coinbase and gemini being updated, I will update:
-														//  60, 61, 64
-														let indices = [60, 62, 64];
-														let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
-														let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-														neural_network.update_input(&indices, &scaled_values).await;
+															//value_after = 56
+															//coinbase = 57
+															//bitstamp = 58
+															//kraken = 59
+															//gemini = 60
+															//since this is bitstamp and gemini being updated, I will update:
+															//  56, 58, 60
+															//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+															let indices = [56, 58, 60];
+															let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+															//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+														}
+														//03/08/24 - removed:
+														// //value_after = 56
+														// //coinbase = 57
+														// //bitstamp = 58
+														// //kraken = 59
+														// //gemini = 60
+														// //since this is bitstamp and gemini being updated, I will update:
+														// //  56, 58, 60
+														// let indices = [56, 58, 60];
+														// let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
+														// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+														// neural_network.update_input(&indices, &scaled_values).await;
 
 
 
@@ -19370,14 +19873,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is bitstamp and gemini being updated, I will update:
-            //     //  60, 62, 64
-            //     let indices = [60, 62, 64];
+            //     //  56, 58, 64
+            //     let indices = [56, 58, 64];
             //     let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -19392,7 +19895,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i47_sol_7_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -19644,19 +20147,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 														let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 														*bitstamp_wallet += money_from_sell_after_fees;
 														value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-														//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+														if let Some(mut value_after) = value_after {
+															*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+															*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+															value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+															
 
-														//value_after = 60
-														//coinbase = 61
-														//bitstamp = 62
-														//kraken = 63
-														//gemini = 64
-														//since this is coinbase and gemini being updated, I will update:
-														//  60, 61, 64
-														let indices = [60, 62, 64];
-														let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
-														let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-														neural_network.update_input(&indices, &scaled_values).await;
+															//value_after = 56
+															//coinbase = 57
+															//bitstamp = 58
+															//kraken = 59
+															//gemini = 60
+															//since this is bitstamp and gemini being updated, I will update:
+															//  56, 58, 60
+															//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+															let indices = [56, 58, 60];
+															let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+															//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+														}
+														//03/08/24 - removed:
+														// //value_after = 56
+														// //coinbase = 57
+														// //bitstamp = 58
+														// //kraken = 59
+														// //gemini = 60
+														// //since this is bitstamp and gemini being updated, I will update:
+														// //  56, 58, 60
+														// let indices = [56, 58, 60];
+														// let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
+														// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+														// neural_network.update_input(&indices, &scaled_values).await;
 
 
 
@@ -19811,14 +20332,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is bitstamp and gemini being updated, I will update:
-            //     //  60, 62, 64
-            //     let indices = [60, 62, 64];
+            //     //  56, 58, 64
+            //     let indices = [56, 58, 64];
             //     let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -19833,7 +20354,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i48_sol_8_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -20085,19 +20606,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 														let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 														*bitstamp_wallet += money_from_sell_after_fees;
 														value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-														//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+														if let Some(mut value_after) = value_after {
+															*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+															*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+															value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+															
 
-														//value_after = 60
-														//coinbase = 61
-														//bitstamp = 62
-														//kraken = 63
-														//gemini = 64
-														//since this is coinbase and gemini being updated, I will update:
-														//  60, 61, 64
-														let indices = [60, 62, 64];
-														let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
-														let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-														neural_network.update_input(&indices, &scaled_values).await;
+															//value_after = 56
+															//coinbase = 57
+															//bitstamp = 58
+															//kraken = 59
+															//gemini = 60
+															//since this is bitstamp and gemini being updated, I will update:
+															//  56, 58, 60
+															//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+															let indices = [56, 58, 60];
+															let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+															//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+														}
+														//03/08/24 - removed:
+														// //value_after = 56
+														// //coinbase = 57
+														// //bitstamp = 58
+														// //kraken = 59
+														// //gemini = 60
+														// //since this is bitstamp and gemini being updated, I will update:
+														// //  56, 58, 60
+														// let indices = [56, 58, 60];
+														// let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
+														// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+														// neural_network.update_input(&indices, &scaled_values).await;
 
 
 
@@ -20252,14 +20791,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is bitstamp and gemini being updated, I will update:
-            //     //  60, 62, 64
-            //     let indices = [60, 62, 64];
+            //     //  56, 58, 64
+            //     let indices = [56, 58, 64];
             //     let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -20274,7 +20813,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i49_sol_9_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -20526,19 +21065,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 														let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 														*bitstamp_wallet += money_from_sell_after_fees;
 														value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-														//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+														if let Some(mut value_after) = value_after {
+															*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+															*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+															value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+															
 
-														//value_after = 60
-														//coinbase = 61
-														//bitstamp = 62
-														//kraken = 63
-														//gemini = 64
-														//since this is coinbase and gemini being updated, I will update:
-														//  60, 61, 64
-														let indices = [60, 62, 64];
-														let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
-														let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-														neural_network.update_input(&indices, &scaled_values).await;
+															//value_after = 56
+															//coinbase = 57
+															//bitstamp = 58
+															//kraken = 59
+															//gemini = 60
+															//since this is bitstamp and gemini being updated, I will update:
+															//  56, 58, 60
+															//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+															let indices = [56, 58, 60];
+															let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+															//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+														}
+														//03/08/24 - removed:
+														// //value_after = 56
+														// //coinbase = 57
+														// //bitstamp = 58
+														// //kraken = 59
+														// //gemini = 60
+														// //since this is bitstamp and gemini being updated, I will update:
+														// //  56, 58, 60
+														// let indices = [56, 58, 60];
+														// let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
+														// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+														// neural_network.update_input(&indices, &scaled_values).await;
 
 
 
@@ -20693,14 +21250,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is bitstamp and gemini being updated, I will update:
-            //     //  60, 62, 64
-            //     let indices = [60, 62, 64];
+            //     //  56, 58, 64
+            //     let indices = [56, 58, 64];
             //     let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -20715,7 +21272,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i50_sol_10_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //------------------------------Gemini-----------------------------------------//
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
@@ -20967,19 +21524,37 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 														let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 														*bitstamp_wallet += money_from_sell_after_fees;
 														value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-														//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
+														if let Some(mut value_after) = value_after {
+															*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+															*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+															value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+															
 
-														//value_after = 60
-														//coinbase = 61
-														//bitstamp = 62
-														//kraken = 63
-														//gemini = 64
-														//since this is coinbase and gemini being updated, I will update:
-														//  60, 61, 64
-														let indices = [60, 62, 64];
-														let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
-														let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-														neural_network.update_input(&indices, &scaled_values).await;
+															//value_after = 56
+															//coinbase = 57
+															//bitstamp = 58
+															//kraken = 59
+															//gemini = 60
+															//since this is bitstamp and gemini being updated, I will update:
+															//  56, 58, 60
+															//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+															let indices = [56, 58, 60];
+															let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+															//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															neural_network.update_input(&indices, &scaled_values).await;
+														}
+														//03/08/24 - removed:
+														// //value_after = 56
+														// //coinbase = 57
+														// //bitstamp = 58
+														// //kraken = 59
+														// //gemini = 60
+														// //since this is bitstamp and gemini being updated, I will update:
+														// //  56, 58, 60
+														// let indices = [56, 58, 60];
+														// let new_values = [value_after, Some(*bitstamp_wallet), Some(*gemini_wallet)];
+														// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+														// neural_network.update_input(&indices, &scaled_values).await;
 
 
 
@@ -21134,14 +21709,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //println!("value after:\n\t{}",value_after);
     
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is bitstamp and gemini being updated, I will update:
-            //     //  60, 62, 64
-            //     let indices = [60, 62, 64];
+            //     //  56, 58, 64
+            //     let indices = [56, 58, 64];
             //     let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -22186,7 +22761,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
      */
     pub async fn s_i55_sol_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -22619,18 +23194,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is kraken and coinbase being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is kraken and coinbase being updated, I will update:
+																		// //  56, 57, 59
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -22757,14 +23350,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is coinbase and kraken being updated, I will update:
-        //         //  60, 61, 63
-        //         let indices = [60, 61, 63];
+        //         //  56, 57, 59
+        //         let indices = [56, 57, 59];
         //         let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -22779,7 +23372,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
 	 pub async fn s_i56_sol_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -23212,18 +23805,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is kraken and coinbase being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is kraken and coinbase being updated, I will update:
+																		// //  56, 57, 59
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -23350,14 +23961,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is coinbase and kraken being updated, I will update:
-        //         //  60, 61, 63
-        //         let indices = [60, 61, 63];
+        //         //  56, 57, 59
+        //         let indices = [56, 57, 59];
         //         let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -23372,7 +23983,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
 	 pub async fn s_i57_sol_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -23805,18 +24416,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is kraken and coinbase being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is kraken and coinbase being updated, I will update:
+																		// //  56, 57, 59
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -23943,14 +24572,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is coinbase and kraken being updated, I will update:
-        //         //  60, 61, 63
-        //         let indices = [60, 61, 63];
+        //         //  56, 57, 59
+        //         let indices = [56, 57, 59];
         //         let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -23965,7 +24594,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
 	 pub async fn s_i58_sol_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -24398,18 +25027,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is kraken and coinbase being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is kraken and coinbase being updated, I will update:
+																		// //  56, 57, 59
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -24536,14 +25183,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is coinbase and kraken being updated, I will update:
-        //         //  60, 61, 63
-        //         let indices = [60, 61, 63];
+        //         //  56, 57, 59
+        //         let indices = [56, 57, 59];
         //         let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -24558,7 +25205,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
 	 pub async fn s_i59_sol_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -24991,18 +25638,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is kraken and coinbase being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is kraken and coinbase being updated, I will update:
+																		// //  56, 57, 59
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -25129,14 +25794,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is coinbase and kraken being updated, I will update:
-        //         //  60, 61, 63
-        //         let indices = [60, 61, 63];
+        //         //  56, 57, 59
+        //         let indices = [56, 57, 59];
         //         let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -25151,7 +25816,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
 
 	 pub async fn s_i60_sol_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -25342,26 +26007,26 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		//03/05/24 - dont think this break is necessary
 																		//break; // Exit the loop if everything is successful
 																	},
-																	_ => log::error!("i60: Kraken: Failed to parse ask or bid as f64"),
+																	_ => log::error!("i56: Kraken: Failed to parse ask or bid as f64"),
 																}
 															},
-															_ => log::error!("i60: Kraken: Failed to get ask or bid as string"),
+															_ => log::error!("i56: Kraken: Failed to get ask or bid as string"),
 														}										
 													}
 													else {
-														log::error!("i60: Kraken: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+														log::error!("i56: Kraken: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
 													}
 												},
-												Err(e) => log::error!("i60: Kraken: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+												Err(e) => log::error!("i56: Kraken: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
 											}
 										},
-										Err(e) => log::error!("i60: Kraken: Failed to read response text. Error was: {}", e),
+										Err(e) => log::error!("i56: Kraken: Failed to read response text. Error was: {}", e),
 									}
 								},
-								Err(e) => log::error!("i60: Kraken: Failed to execute Kraken request. Error was: {}", e),
+								Err(e) => log::error!("i56: Kraken: Failed to execute Kraken request. Error was: {}", e),
 							}
 						},
-						Err(e) => log::error!("i60: Kraken: Failed to build kraken request. Error was: {}", e),
+						Err(e) => log::error!("i56: Kraken: Failed to build kraken request. Error was: {}", e),
 					}
 					if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
 						break; // Exit the loop if everything is successful
@@ -25584,23 +26249,41 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is kraken and coinbase being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is kraken and coinbase being updated, I will update:
+																		// //  56, 57, 59
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
 																_ => {
-																	log::error!("i60: failed to parse JSON to f64");
+																	log::error!("i56: failed to parse JSON to f64");
 																	if attempts > 3 {
 																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
 																	}
@@ -25609,7 +26292,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															}
 														},
 														_ => {
-															log::error!("i60: Failed to get bid");
+															log::error!("i56: Failed to get bid");
 															if attempts > 3 {
 																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 															}
@@ -25620,7 +26303,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 											}
 										},
 										Err(_) => {
-											log::error!("i60: failed to parse JSON as str");
+											log::error!("i56: failed to parse JSON as str");
 											if attempts > 3 {
 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
 											}
@@ -25629,7 +26312,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 									}
 								},
 								Err(_) => {
-									log::error!("i60: failed to get response text");
+									log::error!("i56: failed to get response text");
 									if attempts > 3 {
 										panic!("Failed to get response text after 3 attempts");
 									}
@@ -25638,7 +26321,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 							}
 						},
 						Err(_) => {
-							log::error!("i60: Failed to execute request");
+							log::error!("i56: Failed to execute request");
 							if attempts > 3 {
 								panic!("Failed to execute request after 3 attempts");
 							}
@@ -25647,9 +26330,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 					}
 				},
 				Err(_) => {
-					log::error!("i60: Failed to build request");
+					log::error!("i56: Failed to build request");
 					if attempts > 3 {
-						panic!("i60: Failed to build request after 3 attempts");
+						panic!("i56: Failed to build request after 3 attempts");
 					}
 					continue; // Continue to the next iteration if building request fails
 				}
@@ -25722,14 +26405,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is coinbase and kraken being updated, I will update:
-        //         //  60, 61, 63
-        //         let indices = [60, 61, 63];
+        //         //  56, 57, 59
+        //         let indices = [56, 57, 59];
         //         let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -25744,7 +26427,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
      }
      //cant use 1 through 4 because minimum Kraken buy is 0.2 SOL
      /*
-     pub async fn s_i61_sol_1_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+     pub async fn s_i57_sol_1_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -25990,7 +26673,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
     }
 
-    pub async fn s_i62_sol_2_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i58_sol_2_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -26236,7 +26919,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
     }
 
-    pub async fn s_i63_sol_3_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
+    pub async fn s_i59_sol_3_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str )-> Result<f64, Box<dyn Error>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -26729,8 +27412,9 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     */
     //begin removal
+
     pub async fn s_i65_sol_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -27129,19 +27813,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																	*bitstamp_wallet += money_from_sell_after_fees;
 																	value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-																	println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-																	
-																	//value_after = 60
-																	//coinbase = 61
-																	//bitstamp = 62
-																	//kraken = 63
-																	//gemini = 64
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  60, 62, 63
-																	let indices = [60, 62, 63];
-																	let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-																	let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																	neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is bitstamp and kraken being updated, I will update:
+																		//  56, 58, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 58, 59];
+																		let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:			
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is bitstamp and kraken being updated, I will update:
+																	// //  56, 58, 59
+																	// let indices = [56, 58, 59];
+																	// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 																	
 																	success = true;
 																},
@@ -27266,14 +27967,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-			//         //value_after = 60
-			//         //coinbase = 61
-			//         //bitstamp = 62
-			//         //kraken = 63
-			//         //gemini = 64
+			//         //value_after = 56
+			//         //coinbase = 57
+			//         //bitstamp = 58
+			//         //kraken = 59
+			//         //gemini = 60
 			//         //since this is bitstamp and kraken being updated, I will update:
-			//         //  60, 62, 63
-			//         let indices = [60, 62, 63];
+			//         //  56, 58, 59
+			//         let indices = [56, 58, 59];
 			//         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -27288,7 +27989,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i66_sol_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -27687,19 +28388,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																	*bitstamp_wallet += money_from_sell_after_fees;
 																	value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-																	println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-																	
-																	//value_after = 60
-																	//coinbase = 61
-																	//bitstamp = 62
-																	//kraken = 63
-																	//gemini = 64
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  60, 62, 63
-																	let indices = [60, 62, 63];
-																	let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-																	let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																	neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is bitstamp and kraken being updated, I will update:
+																		//  56, 58, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 58, 59];
+																		let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:			
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is bitstamp and kraken being updated, I will update:
+																	// //  56, 58, 59
+																	// let indices = [56, 58, 59];
+																	// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 																	
 																	success = true;
 																},
@@ -27824,14 +28542,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-			//         //value_after = 60
-			//         //coinbase = 61
-			//         //bitstamp = 62
-			//         //kraken = 63
-			//         //gemini = 64
+			//         //value_after = 56
+			//         //coinbase = 57
+			//         //bitstamp = 58
+			//         //kraken = 59
+			//         //gemini = 60
 			//         //since this is bitstamp and kraken being updated, I will update:
-			//         //  60, 62, 63
-			//         let indices = [60, 62, 63];
+			//         //  56, 58, 59
+			//         let indices = [56, 58, 59];
 			//         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -27846,7 +28564,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i67_sol_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -28246,19 +28964,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																	*bitstamp_wallet += money_from_sell_after_fees;
 																	value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-																	println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-																	
-																	//value_after = 60
-																	//coinbase = 61
-																	//bitstamp = 62
-																	//kraken = 63
-																	//gemini = 64
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  60, 62, 63
-																	let indices = [60, 62, 63];
-																	let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-																	let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																	neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is bitstamp and kraken being updated, I will update:
+																		//  56, 58, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 58, 59];
+																		let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:			
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is bitstamp and kraken being updated, I will update:
+																	// //  56, 58, 59
+																	// let indices = [56, 58, 59];
+																	// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 																	
 																	success = true;
 																},
@@ -28383,14 +29118,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-			//         //value_after = 60
-			//         //coinbase = 61
-			//         //bitstamp = 62
-			//         //kraken = 63
-			//         //gemini = 64
+			//         //value_after = 56
+			//         //coinbase = 57
+			//         //bitstamp = 58
+			//         //kraken = 59
+			//         //gemini = 60
 			//         //since this is bitstamp and kraken being updated, I will update:
-			//         //  60, 62, 63
-			//         let indices = [60, 62, 63];
+			//         //  56, 58, 59
+			//         let indices = [56, 58, 59];
 			//         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -28405,7 +29140,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i68_sol_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -28805,19 +29540,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																	*bitstamp_wallet += money_from_sell_after_fees;
 																	value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-																	//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-																	
-																	//value_after = 60
-																	//coinbase = 61
-																	//bitstamp = 62
-																	//kraken = 63
-																	//gemini = 64
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  60, 62, 63
-																	let indices = [60, 62, 63];
-																	let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-																	let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																	neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is bitstamp and kraken being updated, I will update:
+																		//  56, 58, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 58, 59];
+																		let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:			
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is bitstamp and kraken being updated, I will update:
+																	// //  56, 58, 59
+																	// let indices = [56, 58, 59];
+																	// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 																	
 																	success = true;
 																},
@@ -28942,14 +29694,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-			//         //value_after = 60
-			//         //coinbase = 61
-			//         //bitstamp = 62
-			//         //kraken = 63
-			//         //gemini = 64
+			//         //value_after = 56
+			//         //coinbase = 57
+			//         //bitstamp = 58
+			//         //kraken = 59
+			//         //gemini = 60
 			//         //since this is bitstamp and kraken being updated, I will update:
-			//         //  60, 62, 63
-			//         let indices = [60, 62, 63];
+			//         //  56, 58, 59
+			//         let indices = [56, 58, 59];
 			//         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -28964,7 +29716,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i69_sol_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -29364,19 +30116,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																	*bitstamp_wallet += money_from_sell_after_fees;
 																	value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-																	//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-																	
-																	//value_after = 60
-																	//coinbase = 61
-																	//bitstamp = 62
-																	//kraken = 63
-																	//gemini = 64
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  60, 62, 63
-																	let indices = [60, 62, 63];
-																	let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-																	let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																	neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is bitstamp and kraken being updated, I will update:
+																		//  56, 58, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 58, 59];
+																		let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:			
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is bitstamp and kraken being updated, I will update:
+																	// //  56, 58, 59
+																	// let indices = [56, 58, 59];
+																	// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 																	
 																	success = true;
 																},
@@ -29501,14 +30270,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-			//         //value_after = 60
-			//         //coinbase = 61
-			//         //bitstamp = 62
-			//         //kraken = 63
-			//         //gemini = 64
+			//         //value_after = 56
+			//         //coinbase = 57
+			//         //bitstamp = 58
+			//         //kraken = 59
+			//         //gemini = 60
 			//         //since this is bitstamp and kraken being updated, I will update:
-			//         //  60, 62, 63
-			//         let indices = [60, 62, 63];
+			//         //  56, 58, 59
+			//         let indices = [56, 58, 59];
 			//         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -29523,7 +30292,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i70_sol_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
         //      then do coinbase_wallet = coinbase_wallet - (.01 * coinbase_wallet + trading_fee)
@@ -29923,19 +30692,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																	let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																	*bitstamp_wallet += money_from_sell_after_fees;
 																	value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-																	//println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-																	
-																	//value_after = 60
-																	//coinbase = 61
-																	//bitstamp = 62
-																	//kraken = 63
-																	//gemini = 64
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  60, 62, 63
-																	let indices = [60, 62, 63];
-																	let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-																	let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																	neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is bitstamp and kraken being updated, I will update:
+																		//  56, 58, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 58, 59];
+																		let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:			
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is bitstamp and kraken being updated, I will update:
+																	// //  56, 58, 59
+																	// let indices = [56, 58, 59];
+																	// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 																	
 																	success = true;
 																},
@@ -30060,14 +30846,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-			//         //value_after = 60
-			//         //coinbase = 61
-			//         //bitstamp = 62
-			//         //kraken = 63
-			//         //gemini = 64
+			//         //value_after = 56
+			//         //coinbase = 57
+			//         //bitstamp = 58
+			//         //kraken = 59
+			//         //gemini = 60
 			//         //since this is bitstamp and kraken being updated, I will update:
-			//         //  60, 62, 63
-			//         let indices = [60, 62, 63];
+			//         //  56, 58, 59
+			//         let indices = [56, 58, 59];
 			//         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -30080,9 +30866,10 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 			//     return Ok(value_after)
 
     }
-    //end removal//
+    
+	//end removal//
     pub async fn s_i75_xlm_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 
 
@@ -30498,20 +31285,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and kraken being updated, I will update:
+																					//  56, 57, 59
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 57, 59];
+																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 64
+																				// let indices = [56, 57, 59];
+																				// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i75: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -30597,14 +31400,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
             // //this will count as value after
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -30619,7 +31422,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
 	pub async fn s_i76_xlm_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 
 
@@ -31035,20 +31838,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and kraken being updated, I will update:
+																					//  56, 57, 59
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 57, 59];
+																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 64
+																				// let indices = [56, 57, 59];
+																				// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i76: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -31134,14 +31953,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
             // //this will count as value after
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -31156,7 +31975,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
     
 	pub async fn s_i77_xlm_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 
 
@@ -31572,20 +32391,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and kraken being updated, I will update:
+																					//  56, 57, 59
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 57, 59];
+																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 64
+																				// let indices = [56, 57, 59];
+																				// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i77: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -31671,14 +32506,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
             // //this will count as value after
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -31693,7 +32528,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
 	pub async fn s_i78_xlm_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 
 
@@ -32109,20 +32944,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and kraken being updated, I will update:
+																					//  56, 57, 59
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 57, 59];
+																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 64
+																				// let indices = [56, 57, 59];
+																				// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i78: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -32208,14 +33059,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
             // //this will count as value after
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -32230,7 +33081,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
 	pub async fn s_i79_xlm_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 
 
@@ -32646,20 +33497,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and kraken being updated, I will update:
+																					//  56, 57, 59
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 57, 59];
+																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 64
+																				// let indices = [56, 57, 59];
+																				// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i79: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -32745,14 +33612,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
             // //this will count as value after
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -32767,7 +33634,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
 	pub async fn s_i80_xlm_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 
 
@@ -33183,20 +34050,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-
-
-																				//value_after = 60
-																				//coinbase = 61
-																				//bitstamp = 62
-																				//kraken = 63
-																				//gemini = 64
-																				//since this is kraken and gemini being updated, I will update:
-																				//  60, 63, 64
-																				let indices = [60, 61, 63];
-																				let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																				let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																				neural_network.update_input(&indices, &scaled_values).await;
+																				if let Some(mut value_after) = value_after {
+																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																					
+																					//value_after = 56
+																					//coinbase = 57
+																					//bitstamp = 58
+																					//kraken = 59
+																					//gemini = 60
+																					//since this is coinbase and kraken being updated, I will update:
+																					//  56, 57, 59
+																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																					let indices = [56, 57, 59];
+																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					neural_network.update_input(&indices, &scaled_values).await;
+																				}
+																				//03/08/24 - removed:
+																				// //value_after = 56
+																				// //coinbase = 57
+																				// //bitstamp = 58
+																				// //kraken = 59
+																				// //gemini = 60
+																				// //since this is kraken and gemini being updated, I will update:
+																				// //  56, 59, 64
+																				// let indices = [56, 57, 59];
+																				// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																				// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																				// neural_network.update_input(&indices, &scaled_values).await;
 																	}
 																	else {
 																		log::error!("i80: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -33282,14 +34165,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     
     
             // //this will count as value after
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -33304,7 +34187,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i83_xlm_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
 			//03/02/24 - removed:
             // let now = Utc::now();
@@ -33687,18 +34570,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 57, 60
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -33814,14 +34715,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // //this will count as value after
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 62
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 58
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -33835,7 +34736,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i84_xlm_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
 			//03/02/24 - removed:
             // let now = Utc::now();
@@ -34218,18 +35119,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 57, 60
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -34345,14 +35264,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // //this will count as value after
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 62
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 58
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -34366,7 +35285,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i85_xlm_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
 			//03/02/24 - removed:
             // let now = Utc::now();
@@ -34749,18 +35668,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 57, 60
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -34876,14 +35813,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // //this will count as value after
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 62
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 58
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -34897,7 +35834,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i86_xlm_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
 			//03/02/24 - removed:
             // let now = Utc::now();
@@ -35280,18 +36217,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 57, 60
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -35407,14 +36362,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // //this will count as value after
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 62
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 58
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -35428,7 +36383,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i87_xlm_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
 			//03/02/24 - removed:
             // let now = Utc::now();
@@ -35811,18 +36766,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 57, 60
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -35938,14 +36911,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // //this will count as value after
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 62
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 58
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -35959,7 +36932,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i88_xlm_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
 			//03/02/24 - removed:
             // let now = Utc::now();
@@ -36342,18 +37315,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 57, 60
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -36469,14 +37460,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // //this will count as value after
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 62
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 58
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -36490,7 +37481,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i89_xlm_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
 			//03/02/24 - removed:
             // let now = Utc::now();
@@ -36873,18 +37864,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 57, 60
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -37000,14 +38009,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // //this will count as value after
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 62
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 58
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -37021,7 +38030,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i90_xlm_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
 			//03/02/24 - removed:
             // let now = Utc::now();
@@ -37404,18 +38413,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 61, 64
-															let indices = [60, 61, 62];
-															let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is coinbase and bitstamp being updated, I will update:
+																//  56, 57, 58
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 57, 58];
+																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 57, 60
+															// let indices = [56, 57, 58];
+															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -37531,14 +38558,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             // //this will count as value after
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
     
-            //         //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //         //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 62
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 58
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -37552,7 +38579,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i95_xlm_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -37922,18 +38949,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is coinbase and kraken being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -38077,14 +39122,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
             // //this will count as value after
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -38099,7 +39144,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i96_xlm_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -38469,18 +39514,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is coinbase and kraken being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -38624,14 +39687,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
             // //this will count as value after
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -38646,7 +39709,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i97_xlm_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -39016,18 +40079,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is coinbase and kraken being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -39171,14 +40252,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
             // //this will count as value after
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -39193,7 +40274,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i98_xlm_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -39561,18 +40642,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is coinbase and kraken being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -39716,14 +40815,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
             // //this will count as value after
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -39738,7 +40837,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i99_xlm_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -40106,18 +41205,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is coinbase and kraken being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -40261,14 +41378,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
             // //this will count as value after
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -40283,7 +41400,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i100_xlm_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
     
             //---KRAKEN--//
     
@@ -40651,18 +41768,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 63];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is coinbase and kraken being updated, I will update:
+																			//  56, 57, 59
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 59];
+																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 59];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																},
@@ -40806,14 +41941,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
             // //this will count as value after
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 63];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 59];
             //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
             //     //01/24/24 - removed and added:
             //         //neural_network.update_input(&indices, &new_values);
@@ -40828,7 +41963,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i105_xlm_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -41175,18 +42310,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 62, 63
-															let indices = [60, 62, 63];
-															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is bitstamp and kraken being updated, I will update:
+																//  56, 58, 59
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 58, 59];
+																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 58, 59
+															// let indices = [56, 58, 59];
+															// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -41290,14 +42443,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
         
-        // //value_after = 60
-        // //coinbase = 61
-        // //bitstamp = 62
-        // //kraken = 63
-        // //gemini = 64
+        // //value_after = 56
+        // //coinbase = 57
+        // //bitstamp = 58
+        // //kraken = 59
+        // //gemini = 60
         // //since this is bitstamp and kraken being updated, I will update:
-        // //  60, 62, 63
-        // let indices = [60, 62, 63];
+        // //  56, 58, 59
+        // let indices = [56, 58, 59];
         // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -41312,7 +42465,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i106_xlm_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -41659,18 +42812,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 62, 63
-															let indices = [60, 62, 63];
-															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is bitstamp and kraken being updated, I will update:
+																//  56, 58, 59
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 58, 59];
+																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 58, 59
+															// let indices = [56, 58, 59];
+															// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -41774,14 +42945,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
         
-        // //value_after = 60
-        // //coinbase = 61
-        // //bitstamp = 62
-        // //kraken = 63
-        // //gemini = 64
+        // //value_after = 56
+        // //coinbase = 57
+        // //bitstamp = 58
+        // //kraken = 59
+        // //gemini = 60
         // //since this is bitstamp and kraken being updated, I will update:
-        // //  60, 62, 63
-        // let indices = [60, 62, 63];
+        // //  56, 58, 59
+        // let indices = [56, 58, 59];
         // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -41796,7 +42967,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i107_xlm_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -42143,18 +43314,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 62, 63
-															let indices = [60, 62, 63];
-															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is bitstamp and kraken being updated, I will update:
+																//  56, 58, 59
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 58, 59];
+																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 58, 59
+															// let indices = [56, 58, 59];
+															// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -42258,14 +43447,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
         
-        // //value_after = 60
-        // //coinbase = 61
-        // //bitstamp = 62
-        // //kraken = 63
-        // //gemini = 64
+        // //value_after = 56
+        // //coinbase = 57
+        // //bitstamp = 58
+        // //kraken = 59
+        // //gemini = 60
         // //since this is bitstamp and kraken being updated, I will update:
-        // //  60, 62, 63
-        // let indices = [60, 62, 63];
+        // //  56, 58, 59
+        // let indices = [56, 58, 59];
         // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -42280,7 +43469,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i108_xlm_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -42627,18 +43816,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 62, 63
-															let indices = [60, 62, 63];
-															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is bitstamp and kraken being updated, I will update:
+																//  56, 58, 59
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 58, 59];
+																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 58, 59
+															// let indices = [56, 58, 59];
+															// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -42742,14 +43949,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
         
-        // //value_after = 60
-        // //coinbase = 61
-        // //bitstamp = 62
-        // //kraken = 63
-        // //gemini = 64
+        // //value_after = 56
+        // //coinbase = 57
+        // //bitstamp = 58
+        // //kraken = 59
+        // //gemini = 60
         // //since this is bitstamp and kraken being updated, I will update:
-        // //  60, 62, 63
-        // let indices = [60, 62, 63];
+        // //  56, 58, 59
+        // let indices = [56, 58, 59];
         // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -42764,7 +43971,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i109_xlm_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -43111,18 +44318,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 62, 63
-															let indices = [60, 62, 63];
-															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is bitstamp and kraken being updated, I will update:
+																//  56, 58, 59
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 58, 59];
+																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 58, 59
+															// let indices = [56, 58, 59];
+															// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -43226,14 +44451,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
         
-        // //value_after = 60
-        // //coinbase = 61
-        // //bitstamp = 62
-        // //kraken = 63
-        // //gemini = 64
+        // //value_after = 56
+        // //coinbase = 57
+        // //bitstamp = 58
+        // //kraken = 59
+        // //gemini = 60
         // //since this is bitstamp and kraken being updated, I will update:
-        // //  60, 62, 63
-        // let indices = [60, 62, 63];
+        // //  56, 58, 59
+        // let indices = [56, 58, 59];
         // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -43248,7 +44473,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i110_xlm_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
     
 
@@ -43595,18 +44820,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-
-															//value_after = 60
-															//coinbase = 61
-															//bitstamp = 62
-															//kraken = 63
-															//gemini = 64
-															//since this is coinbase and gemini being updated, I will update:
-															//  60, 62, 63
-															let indices = [60, 62, 63];
-															let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
-															let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															neural_network.update_input(&indices, &scaled_values).await;
+															if let Some(mut value_after) = value_after {
+																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																
+																//value_after = 56
+																//coinbase = 57
+																//bitstamp = 58
+																//kraken = 59
+																//gemini = 60
+																//since this is bitstamp and kraken being updated, I will update:
+																//  56, 58, 59
+																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																let indices = [56, 58, 59];
+																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																neural_network.update_input(&indices, &scaled_values).await;
+															}
+															//03/08/24 - removed:
+															// //value_after = 56
+															// //coinbase = 57
+															// //bitstamp = 58
+															// //kraken = 59
+															// //gemini = 60
+															// //since this is coinbase and gemini being updated, I will update:
+															// //  56, 58, 59
+															// let indices = [56, 58, 59];
+															// let new_values = [value_after, Some(*bitstamp_wallet), Some(*kraken_wallet)];
+															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+															// neural_network.update_input(&indices, &scaled_values).await;
 
 															success = true;
 														},
@@ -43710,14 +44953,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
         // let value_after = *kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet;
         
-        // //value_after = 60
-        // //coinbase = 61
-        // //bitstamp = 62
-        // //kraken = 63
-        // //gemini = 64
+        // //value_after = 56
+        // //coinbase = 57
+        // //bitstamp = 58
+        // //kraken = 59
+        // //gemini = 60
         // //since this is bitstamp and kraken being updated, I will update:
-        // //  60, 62, 63
-        // let indices = [60, 62, 63];
+        // //  56, 58, 59
+        // let indices = [56, 58, 59];
         // let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -43733,7 +44976,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 //xrp
     //coinbase bitstamp = 3 AND UP for min of 10 USD on Bit and Coin
     pub async fn s_i113_xrp_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //02/28/24 - removed:
             // let now = Utc::now();
@@ -44120,30 +45363,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 61, 62];
-                                                                let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 57, 58];
+																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 57, 58];
+                                                                // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -44245,14 +45494,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     log::info!("state of: coinbase wallet: {}
             //         kraken wallet: {}
@@ -44275,7 +45524,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i114_xrp_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //02/28/24 - removed:
             // let now = Utc::now();
@@ -44662,28 +45911,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 61, 62];
-                                                                let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+																if let Some(mut value_after) = value_after {
+																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 57, 58];
+																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 57, 58];
+                                                                // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
 
 
@@ -44787,14 +46044,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     log::info!("state of: coinbase wallet: {}
             //         kraken wallet: {}
@@ -44817,7 +46074,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i115_xrp_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //02/28/24 - removed:
             // let now = Utc::now();
@@ -45204,28 +46461,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 61, 62];
-                                                                let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
+																if let Some(mut value_after) = value_after {
+																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 57, 58];
+																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 57, 58];
+                                                                // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
 
 
@@ -45329,14 +46594,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     log::info!("state of: coinbase wallet: {}
             //         kraken wallet: {}
@@ -45359,7 +46624,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i116_xrp_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //02/28/24 - removed:
             // let now = Utc::now();
@@ -45746,30 +47011,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 61, 62];
-                                                                let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 57, 58];
+																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 57, 58];
+                                                                // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -45871,14 +47142,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     log::info!("state of: coinbase wallet: {}
             //         kraken wallet: {}
@@ -45901,7 +47172,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i117_xrp_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //02/28/24 - removed:
             // let now = Utc::now();
@@ -46288,29 +47559,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 61, 62];
-                                                                let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
+																if let Some(mut value_after) = value_after {
+																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 57, 58];
+																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 57, 58];
+                                                                // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
 
                                                                 success = true;
@@ -46413,14 +47691,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     log::info!("state of: coinbase wallet: {}
             //         kraken wallet: {}
@@ -46443,7 +47721,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i118_xrp_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //02/28/24 - removed:
             // let now = Utc::now();
@@ -46830,30 +48108,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 61, 62];
-                                                                let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 57, 58];
+																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 57, 58];
+                                                                // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -46955,14 +48239,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     log::info!("state of: coinbase wallet: {}
             //         kraken wallet: {}
@@ -46985,7 +48269,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i119_xrp_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //02/28/24 - removed:
             // let now = Utc::now();
@@ -47372,30 +48656,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 61, 62];
-                                                                let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 57, 58];
+																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 57, 58];
+                                                                // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -47497,14 +48787,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     log::info!("state of: coinbase wallet: {}
             //         kraken wallet: {}
@@ -47527,7 +48817,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i120_xrp_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         //02/28/24 - removed:
             // let now = Utc::now();
@@ -47914,30 +49204,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 61, 62];
-                                                                let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 57, 58];
+																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 57, 58];
+                                                                // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -48039,14 +49335,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
 
 
-            //     //value_after = 60
-            //     //coinbase = 61
-            //     //bitstamp = 62
-            //     //kraken = 63
-            //     //gemini = 64
+            //     //value_after = 56
+            //     //coinbase = 57
+            //     //bitstamp = 58
+            //     //kraken = 59
+            //     //gemini = 60
             //     //since this is coinbase and kraken being updated, I will update:
-            //     //  60, 61, 63
-            //     let indices = [60, 61, 62];
+            //     //  56, 57, 59
+            //     let indices = [56, 57, 58];
             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
             //     log::info!("state of: coinbase wallet: {}
             //         kraken wallet: {}
@@ -48069,7 +49365,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 //gemini bitstamp   = 3 AND UP for min of 10 USD on Gemini and Bit
     pub async fn s_i123_xrp_3_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
                 let encoded_payload = encode(gemini_payload.to_string());
@@ -48336,30 +49632,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 64, 62];
-                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 60];
+																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 60, 58];
+                                                                // let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -48468,14 +49770,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //             //println!("value after:\n\t{}",value_after);
         
     
-        //             //value_after = 60
-        //             //coinbase = 61
-        //             //bitstamp = 62
-        //             //kraken = 63
-        //             //gemini = 64
+        //             //value_after = 56
+        //             //coinbase = 57
+        //             //bitstamp = 58
+        //             //kraken = 59
+        //             //gemini = 60
         //             //since this is bitstamp and gemini being updated, I will update:
-        //             //  60, 62, 64
-        //             let indices = [60, 62, 64];
+        //             //  56, 58, 64
+        //             let indices = [56, 58, 64];
         //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
         //             //01/24/24 - removed and added:
         //                 //neural_network.update_input(&indices, &new_values);
@@ -48489,7 +49791,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i124_xrp_4_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
                 let encoded_payload = encode(gemini_payload.to_string());
@@ -48756,30 +50058,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 64, 62
-                                                                let indices = [60, 64, 62];
-                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 60];
+																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 60, 58];
+                                                                // let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -48888,14 +50196,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //             //println!("value after:\n\t{}",value_after);
         
     
-        //             //value_after = 60
-        //             //coinbase = 61
-        //             //bitstamp = 62
-        //             //kraken = 63
-        //             //gemini = 64
+        //             //value_after = 56
+        //             //coinbase = 57
+        //             //bitstamp = 58
+        //             //kraken = 59
+        //             //gemini = 60
         //             //since this is bitstamp and gemini being updated, I will update:
-        //             //  60, 62, 64
-        //             let indices = [60, 62, 64];
+        //             //  56, 58, 64
+        //             let indices = [56, 58, 64];
         //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
         //             //01/24/24 - removed and added:
         //                 //neural_network.update_input(&indices, &new_values);
@@ -48909,7 +50217,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i125_xrp_5_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
                 let encoded_payload = encode(gemini_payload.to_string());
@@ -49174,30 +50482,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 64, 62];
-                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 60];
+																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 60, 58];
+                                                                // let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -49306,14 +50620,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //             //println!("value after:\n\t{}",value_after);
         
     
-        //             //value_after = 60
-        //             //coinbase = 61
-        //             //bitstamp = 62
-        //             //kraken = 63
-        //             //gemini = 64
+        //             //value_after = 56
+        //             //coinbase = 57
+        //             //bitstamp = 58
+        //             //kraken = 59
+        //             //gemini = 60
         //             //since this is bitstamp and gemini being updated, I will update:
-        //             //  60, 62, 64
-        //             let indices = [60, 62, 64];
+        //             //  56, 58, 64
+        //             let indices = [56, 58, 64];
         //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
         //             //01/24/24 - removed and added:
         //                 //neural_network.update_input(&indices, &new_values);
@@ -49327,7 +50641,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i126_xrp_6_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
                 let encoded_payload = encode(gemini_payload.to_string());
@@ -49594,30 +50908,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 64, 62];
-                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 60];
+																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 60, 58];
+                                                                // let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -49726,14 +51046,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //             //println!("value after:\n\t{}",value_after);
         
     
-        //             //value_after = 60
-        //             //coinbase = 61
-        //             //bitstamp = 62
-        //             //kraken = 63
-        //             //gemini = 64
+        //             //value_after = 56
+        //             //coinbase = 57
+        //             //bitstamp = 58
+        //             //kraken = 59
+        //             //gemini = 60
         //             //since this is bitstamp and gemini being updated, I will update:
-        //             //  60, 62, 64
-        //             let indices = [60, 62, 64];
+        //             //  56, 58, 64
+        //             let indices = [56, 58, 64];
         //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
         //             //01/24/24 - removed and added:
         //                 //neural_network.update_input(&indices, &new_values);
@@ -49747,7 +51067,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i127_xrp_7_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
                 let encoded_payload = encode(gemini_payload.to_string());
@@ -50014,30 +51334,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 64, 62];
-                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 60];
+																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 60, 58];
+                                                                // let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -50146,14 +51472,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //             //println!("value after:\n\t{}",value_after);
         
     
-        //             //value_after = 60
-        //             //coinbase = 61
-        //             //bitstamp = 62
-        //             //kraken = 63
-        //             //gemini = 64
+        //             //value_after = 56
+        //             //coinbase = 57
+        //             //bitstamp = 58
+        //             //kraken = 59
+        //             //gemini = 60
         //             //since this is bitstamp and gemini being updated, I will update:
-        //             //  60, 62, 64
-        //             let indices = [60, 62, 64];
+        //             //  56, 58, 64
+        //             let indices = [56, 58, 64];
         //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
         //             //01/24/24 - removed and added:
         //                 //neural_network.update_input(&indices, &new_values);
@@ -50167,7 +51493,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i128_xrp_8_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
                 let encoded_payload = encode(gemini_payload.to_string());
@@ -50434,30 +51760,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 64, 62];
-                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 60];
+																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 60, 58];
+                                                                // let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -50566,14 +51898,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //             //println!("value after:\n\t{}",value_after);
         
     
-        //             //value_after = 60
-        //             //coinbase = 61
-        //             //bitstamp = 62
-        //             //kraken = 63
-        //             //gemini = 64
+        //             //value_after = 56
+        //             //coinbase = 57
+        //             //bitstamp = 58
+        //             //kraken = 59
+        //             //gemini = 60
         //             //since this is bitstamp and gemini being updated, I will update:
-        //             //  60, 62, 64
-        //             let indices = [60, 62, 64];
+        //             //  56, 58, 64
+        //             let indices = [56, 58, 64];
         //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
         //             //01/24/24 - removed and added:
         //                 //neural_network.update_input(&indices, &new_values);
@@ -50587,7 +51919,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i129_xrp_9_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
                 let encoded_payload = encode(gemini_payload.to_string());
@@ -50854,30 +52186,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 64, 62];
-                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 60];
+																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 60, 58];
+                                                                // let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -50986,14 +52324,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //             //println!("value after:\n\t{}",value_after);
         
     
-        //             //value_after = 60
-        //             //coinbase = 61
-        //             //bitstamp = 62
-        //             //kraken = 63
-        //             //gemini = 64
+        //             //value_after = 56
+        //             //coinbase = 57
+        //             //bitstamp = 58
+        //             //kraken = 59
+        //             //gemini = 60
         //             //since this is bitstamp and gemini being updated, I will update:
-        //             //  60, 62, 64
-        //             let indices = [60, 62, 64];
+        //             //  56, 58, 64
+        //             let indices = [56, 58, 64];
         //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
         //             //01/24/24 - removed and added:
         //                 //neural_network.update_input(&indices, &new_values);
@@ -51007,7 +52345,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i130_xrp_10_gemini_bitstamp( coinbase_wallet: &f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, gemini_secret: &str, gemini_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
                 let encoded_payload = encode(gemini_payload.to_string());
@@ -51274,30 +52612,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 61, 64
-                                                                let indices = [60, 64, 62];
-                                                                let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 60];
+																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 60, 58];
+                                                                // let new_values = [value_after, Some(*gemini_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -51406,14 +52750,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //             //println!("value after:\n\t{}",value_after);
         
     
-        //             //value_after = 60
-        //             //coinbase = 61
-        //             //bitstamp = 62
-        //             //kraken = 63
-        //             //gemini = 64
+        //             //value_after = 56
+        //             //coinbase = 57
+        //             //bitstamp = 58
+        //             //kraken = 59
+        //             //gemini = 60
         //             //since this is bitstamp and gemini being updated, I will update:
-        //             //  60, 62, 64
-        //             let indices = [60, 62, 64];
+        //             //  56, 58, 64
+        //             let indices = [56, 58, 64];
         //             let new_values = [value_after, *bitstamp_wallet, *gemini_wallet];
         //             //01/24/24 - removed and added:
         //                 //neural_network.update_input(&indices, &new_values);
@@ -51427,7 +52771,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 //kraken bitstamp   = 4 AND UP for min of 25 XRP withdraw = 15 dollars. 3 and up should work but just in case
     pub async fn s_i134_xrp_4_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             //---KRAKEN--//
     
@@ -51742,30 +53086,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 63, 62
-                                                                let indices = [60, 63, 62];
-                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 59];
+																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is kraken and bitstamp being updated, I will update:
+                                                                // //  56, 59, 58
+                                                                // let indices = [56, 59, 58];
+                                                                // let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -51883,14 +53233,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is bitstamp and kraken being updated, I will update:
-        //         //  60, 62, 63
-        //         let indices = [60, 62, 63];
+        //         //  56, 58, 59
+        //         let indices = [56, 58, 59];
         //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -51904,7 +53254,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i135_xrp_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             //---KRAKEN--//
     
@@ -52218,30 +53568,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 63, 62
-                                                                let indices = [60, 63, 62];
-                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 59];
+																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is kraken and bitstamp being updated, I will update:
+                                                                // //  56, 59, 58
+                                                                // let indices = [56, 59, 58];
+                                                                // let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -52359,14 +53715,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is bitstamp and kraken being updated, I will update:
-        //         //  60, 62, 63
-        //         let indices = [60, 62, 63];
+        //         //  56, 58, 59
+        //         let indices = [56, 58, 59];
         //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -52380,7 +53736,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i136_xrp_6_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             //---KRAKEN--//
     
@@ -52695,30 +54051,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 63, 62
-                                                                let indices = [60, 63, 62];
-                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 59];
+																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is kraken and bitstamp being updated, I will update:
+                                                                // //  56, 59, 58
+                                                                // let indices = [56, 59, 58];
+                                                                // let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -52836,14 +54198,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is bitstamp and kraken being updated, I will update:
-        //         //  60, 62, 63
-        //         let indices = [60, 62, 63];
+        //         //  56, 58, 59
+        //         let indices = [56, 58, 59];
         //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -52857,7 +54219,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i137_xrp_7_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             //---KRAKEN--//
     
@@ -53172,30 +54534,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 63, 62
-                                                                let indices = [60, 63, 62];
-                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 59];
+																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is kraken and bitstamp being updated, I will update:
+                                                                // //  56, 59, 58
+                                                                // let indices = [56, 59, 58];
+                                                                // let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -53313,14 +54681,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is bitstamp and kraken being updated, I will update:
-        //         //  60, 62, 63
-        //         let indices = [60, 62, 63];
+        //         //  56, 58, 59
+        //         let indices = [56, 58, 59];
         //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -53334,7 +54702,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i138_xrp_8_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             //---KRAKEN--//
     
@@ -53649,30 +55017,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 63, 62
-                                                                let indices = [60, 63, 62];
-                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 59];
+																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is kraken and bitstamp being updated, I will update:
+                                                                // //  56, 59, 58
+                                                                // let indices = [56, 59, 58];
+                                                                // let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -53790,14 +55164,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is bitstamp and kraken being updated, I will update:
-        //         //  60, 62, 63
-        //         let indices = [60, 62, 63];
+        //         //  56, 58, 59
+        //         let indices = [56, 58, 59];
         //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -53811,7 +55185,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i139_xrp_9_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             //---KRAKEN--//
     
@@ -54126,30 +55500,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 63, 62
-                                                                let indices = [60, 63, 62];
-                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 59];
+																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is kraken and bitstamp being updated, I will update:
+                                                                // //  56, 59, 58
+                                                                // let indices = [56, 59, 58];
+                                                                // let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -54267,14 +55647,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is bitstamp and kraken being updated, I will update:
-        //         //  60, 62, 63
-        //         let indices = [60, 62, 63];
+        //         //  56, 58, 59
+        //         let indices = [56, 58, 59];
         //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -54288,7 +55668,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
     //-----NEED-TO-APPEND-TO-END-----//
     pub async fn s_i140_xrp_10_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64  )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
             //---KRAKEN--//
     
@@ -54603,30 +55983,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                 let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-                                                                println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                //value_after = 60
-                                                                //coinbase = 61
-                                                                //bitstamp = 62
-                                                                //kraken = 63
-                                                                //gemini = 64
-                                                                //since this is coinbase and gemini being updated, I will update:
-                                                                //  60, 63, 62
-                                                                let indices = [60, 63, 62];
-                                                                let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
-                                                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                neural_network.update_input(&indices, &scaled_values).await;
-
-                                                                // log::info!("state of: coinbase wallet: {}
-                                                                // kraken wallet: {}
-                                                                // gemini wallet: {}
-                                                                // bitstamp wallet: {}
-                                                                // coinbase buy price ask: {:?}
-                                                                // bitstamp sell price bid: {}", 
-                                                                //     &coinbase_wallet, &kraken_wallet, &gemini_wallet, &bitstamp_wallet, 
-                                                                //     &coinbase_buy_price_ask, &bitstamp_sell_price_bid);
-
-
+																if let Some(mut value_after) = value_after {
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																	
+																	//value_after = 56
+																	//coinbase = 57
+																	//bitstamp = 58
+																	//kraken = 59
+																	//gemini = 60
+																	//since this is bitstamp and gemini being updated, I will update:
+																	//  56, 58, 60
+																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																	let indices = [56, 58, 59];
+																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
+																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	neural_network.update_input(&indices, &scaled_values).await;
+																}
+																//03/08/24 - removed:
+                                                                // //value_after = 56
+                                                                // //coinbase = 57
+                                                                // //bitstamp = 58
+                                                                // //kraken = 59
+                                                                // //gemini = 60
+                                                                // //since this is kraken and bitstamp being updated, I will update:
+                                                                // //  56, 59, 58
+                                                                // let indices = [56, 59, 58];
+                                                                // let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 success = true;
                                                             },
@@ -54744,14 +56130,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 
 
-        //         //value_after = 60
-        //         //coinbase = 61
-        //         //bitstamp = 62
-        //         //kraken = 63
-        //         //gemini = 64
+        //         //value_after = 56
+        //         //coinbase = 57
+        //         //bitstamp = 58
+        //         //kraken = 59
+        //         //gemini = 60
         //         //since this is bitstamp and kraken being updated, I will update:
-        //         //  60, 62, 63
-        //         let indices = [60, 62, 63];
+        //         //  56, 58, 59
+        //         let indices = [56, 58, 59];
         //         let new_values = [value_after, *bitstamp_wallet, *kraken_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -54765,7 +56151,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 //gemini coinbase   = 3 AND UP for gemini/coin
 	pub async fn s_i143_xrp_3_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-		gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 		fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
 			let encoded_payload = encode(gemini_payload.to_string());
@@ -55048,19 +56434,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-																		println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-																		//value_after = 60
-																		//coinbase = 61
-																		//bitstamp = 62
-																		//kraken = 63
-																		//gemini = 64
-																		//since this is coinbase and gemini being updated, I will update:
-																		//  60, 61, 64
-																		let indices = [60, 61, 64];
-																		let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-																		let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																		neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is bitstamp and gemini being updated, I will update:
+																			//  56, 57, 60
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 60];
+																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 60];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
 																		success = true;
 																	},
@@ -55194,14 +56597,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 			//     //this will count as value after
 			//         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
 		
-			//         //value_after = 60
-			//         //coinbase = 61
-			//         //bitstamp = 62
-			//         //kraken = 63
-			//         //gemini = 64
+			//         //value_after = 56
+			//         //coinbase = 57
+			//         //bitstamp = 58
+			//         //kraken = 59
+			//         //gemini = 60
 			//         //since this is coinbase and gemini being updated, I will update:
-			//         //  60, 61, 64
-			//         let indices = [60, 61, 64];
+			//         //  56, 57, 60
+			//         let indices = [56, 57, 60];
 			//         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
 			//         //01/24/24 - removed and added:
 			//             //neural_network.update_input(&indices, &new_values);
@@ -55214,7 +56617,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i144_xrp_4_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -55496,19 +56899,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                         let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                        //value_after = 60
-                                                                        //coinbase = 61
-                                                                        //bitstamp = 62
-                                                                        //kraken = 63
-                                                                        //gemini = 64
-                                                                        //since this is coinbase and gemini being updated, I will update:
-                                                                        //  60, 61, 64
-                                                                        let indices = [60, 61, 64];
-                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                        neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is bitstamp and gemini being updated, I will update:
+																			//  56, 57, 60
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 60];
+																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 60];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
 																},
@@ -55642,14 +57062,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //this will count as value after
             //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
         
-            //         //value_after = 60
-            //         //coinbase = 61
-            //         //bitstamp = 62
-            //         //kraken = 63
-            //         //gemini = 64
+            //         //value_after = 56
+            //         //coinbase = 57
+            //         //bitstamp = 58
+            //         //kraken = 59
+            //         //gemini = 60
             //         //since this is coinbase and gemini being updated, I will update:
-            //         //  60, 61, 64
-            //         let indices = [60, 61, 64];
+            //         //  56, 57, 60
+            //         let indices = [56, 57, 60];
             //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //         //01/24/24 - removed and added:
             //             //neural_network.update_input(&indices, &new_values);
@@ -55662,7 +57082,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i145_xrp_5_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -55944,19 +57364,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                         let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                        //value_after = 60
-                                                                        //coinbase = 61
-                                                                        //bitstamp = 62
-                                                                        //kraken = 63
-                                                                        //gemini = 64
-                                                                        //since this is coinbase and gemini being updated, I will update:
-                                                                        //  60, 61, 64
-                                                                        let indices = [60, 61, 64];
-                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                        neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is bitstamp and gemini being updated, I will update:
+																			//  56, 57, 60
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 60];
+																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 60];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
 																},
@@ -56090,14 +57527,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //this will count as value after
             //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
         
-            //         //value_after = 60
-            //         //coinbase = 61
-            //         //bitstamp = 62
-            //         //kraken = 63
-            //         //gemini = 64
+            //         //value_after = 56
+            //         //coinbase = 57
+            //         //bitstamp = 58
+            //         //kraken = 59
+            //         //gemini = 60
             //         //since this is coinbase and gemini being updated, I will update:
-            //         //  60, 61, 64
-            //         let indices = [60, 61, 64];
+            //         //  56, 57, 60
+            //         let indices = [56, 57, 60];
             //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //         //01/24/24 - removed and added:
             //             //neural_network.update_input(&indices, &new_values);
@@ -56110,7 +57547,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i146_xrp_6_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -56392,19 +57829,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                         let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                        //value_after = 60
-                                                                        //coinbase = 61
-                                                                        //bitstamp = 62
-                                                                        //kraken = 63
-                                                                        //gemini = 64
-                                                                        //since this is coinbase and gemini being updated, I will update:
-                                                                        //  60, 61, 64
-                                                                        let indices = [60, 61, 64];
-                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                        neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is bitstamp and gemini being updated, I will update:
+																			//  56, 57, 60
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 60];
+																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 60];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
 																},
@@ -56538,14 +57992,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //this will count as value after
             //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
         
-            //         //value_after = 60
-            //         //coinbase = 61
-            //         //bitstamp = 62
-            //         //kraken = 63
-            //         //gemini = 64
+            //         //value_after = 56
+            //         //coinbase = 57
+            //         //bitstamp = 58
+            //         //kraken = 59
+            //         //gemini = 60
             //         //since this is coinbase and gemini being updated, I will update:
-            //         //  60, 61, 64
-            //         let indices = [60, 61, 64];
+            //         //  56, 57, 60
+            //         let indices = [56, 57, 60];
             //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //         //01/24/24 - removed and added:
             //             //neural_network.update_input(&indices, &new_values);
@@ -56558,7 +58012,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i147_xrp_7_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -56840,19 +58294,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                         let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-                                                                        //println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                        //value_after = 60
-                                                                        //coinbase = 61
-                                                                        //bitstamp = 62
-                                                                        //kraken = 63
-                                                                        //gemini = 64
-                                                                        //since this is coinbase and gemini being updated, I will update:
-                                                                        //  60, 61, 64
-                                                                        let indices = [60, 61, 64];
-                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                        neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is bitstamp and gemini being updated, I will update:
+																			//  56, 57, 60
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 60];
+																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 60];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
 																},
@@ -56986,14 +58457,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //this will count as value after
             //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
         
-            //         //value_after = 60
-            //         //coinbase = 61
-            //         //bitstamp = 62
-            //         //kraken = 63
-            //         //gemini = 64
+            //         //value_after = 56
+            //         //coinbase = 57
+            //         //bitstamp = 58
+            //         //kraken = 59
+            //         //gemini = 60
             //         //since this is coinbase and gemini being updated, I will update:
-            //         //  60, 61, 64
-            //         let indices = [60, 61, 64];
+            //         //  56, 57, 60
+            //         let indices = [56, 57, 60];
             //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //         //01/24/24 - removed and added:
             //             //neural_network.update_input(&indices, &new_values);
@@ -57006,7 +58477,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i148_xrp_8_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -57288,19 +58759,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                         let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                        //value_after = 60
-                                                                        //coinbase = 61
-                                                                        //bitstamp = 62
-                                                                        //kraken = 63
-                                                                        //gemini = 64
-                                                                        //since this is coinbase and gemini being updated, I will update:
-                                                                        //  60, 61, 64
-                                                                        let indices = [60, 61, 64];
-                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                        neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is bitstamp and gemini being updated, I will update:
+																			//  56, 57, 60
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 60];
+																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 60];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
 																},
@@ -57434,14 +58922,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //this will count as value after
             //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
         
-            //         //value_after = 60
-            //         //coinbase = 61
-            //         //bitstamp = 62
-            //         //kraken = 63
-            //         //gemini = 64
+            //         //value_after = 56
+            //         //coinbase = 57
+            //         //bitstamp = 58
+            //         //kraken = 59
+            //         //gemini = 60
             //         //since this is coinbase and gemini being updated, I will update:
-            //         //  60, 61, 64
-            //         let indices = [60, 61, 64];
+            //         //  56, 57, 60
+            //         let indices = [56, 57, 60];
             //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //         //01/24/24 - removed and added:
             //             //neural_network.update_input(&indices, &new_values);
@@ -57454,7 +58942,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i149_xrp_9_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -57736,19 +59224,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                         let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                        //value_after = 60
-                                                                        //coinbase = 61
-                                                                        //bitstamp = 62
-                                                                        //kraken = 63
-                                                                        //gemini = 64
-                                                                        //since this is coinbase and gemini being updated, I will update:
-                                                                        //  60, 61, 64
-                                                                        let indices = [60, 61, 64];
-                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                        neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is bitstamp and gemini being updated, I will update:
+																			//  56, 57, 60
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 60];
+																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 60];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
 																},
@@ -57882,14 +59387,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //this will count as value after
             //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
         
-            //         //value_after = 60
-            //         //coinbase = 61
-            //         //bitstamp = 62
-            //         //kraken = 63
-            //         //gemini = 64
+            //         //value_after = 56
+            //         //coinbase = 57
+            //         //bitstamp = 58
+            //         //kraken = 59
+            //         //gemini = 60
             //         //since this is coinbase and gemini being updated, I will update:
-            //         //  60, 61, 64
-            //         let indices = [60, 61, 64];
+            //         //  56, 57, 60
+            //         let indices = [56, 57, 60];
             //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //         //01/24/24 - removed and added:
             //             //neural_network.update_input(&indices, &new_values);
@@ -57902,7 +59407,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i150_xrp_10_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -58183,19 +59688,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                         let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-                                                                        println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                        //value_after = 60
-                                                                        //coinbase = 61
-                                                                        //bitstamp = 62
-                                                                        //kraken = 63
-                                                                        //gemini = 64
-                                                                        //since this is coinbase and gemini being updated, I will update:
-                                                                        //  60, 61, 64
-                                                                        let indices = [60, 61, 64];
-                                                                        let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
-                                                                        let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                        neural_network.update_input(&indices, &scaled_values).await;
+																		if let Some(mut value_after) = value_after {
+																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																			
+																			//value_after = 56
+																			//coinbase = 57
+																			//bitstamp = 58
+																			//kraken = 59
+																			//gemini = 60
+																			//since this is bitstamp and gemini being updated, I will update:
+																			//  56, 57, 60
+																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																			let indices = [56, 57, 60];
+																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
+																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																			neural_network.update_input(&indices, &scaled_values).await;
+																		}
+																		//03/08/24 - removed:
+																		// //value_after = 56
+																		// //coinbase = 57
+																		// //bitstamp = 58
+																		// //kraken = 59
+																		// //gemini = 60
+																		// //since this is coinbase and gemini being updated, I will update:
+																		// //  56, 57, 60
+																		// let indices = [56, 57, 60];
+																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*gemini_wallet)];
+																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                         success = true;
 																},
@@ -58329,14 +59851,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
             //     //this will count as value after
             //         let value_after = kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet;
         
-            //         //value_after = 60
-            //         //coinbase = 61
-            //         //bitstamp = 62
-            //         //kraken = 63
-            //         //gemini = 64
+            //         //value_after = 56
+            //         //coinbase = 57
+            //         //bitstamp = 58
+            //         //kraken = 59
+            //         //gemini = 60
             //         //since this is coinbase and gemini being updated, I will update:
-            //         //  60, 61, 64
-            //         let indices = [60, 61, 64];
+            //         //  56, 57, 60
+            //         let indices = [56, 57, 60];
             //         let new_values = [value_after, *coinbase_wallet, *gemini_wallet];
             //         //01/24/24 - removed and added:
             //             //neural_network.update_input(&indices, &new_values);
@@ -58349,7 +59871,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 //gemini kraken     = 3 AND UP for min of 10 USD for gemini. min buy of 10 XRP for kraken so maximal min is 6 dollars.
 	pub async fn s_i153_xrp_3_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-		gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 		fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
 			let encoded_payload = encode(gemini_payload.to_string());
@@ -58649,20 +60171,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is kraken and gemini being updated, I will update:
-																					//  60, 63, 64
-																					let indices = [60, 63, 64];
-																					let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is bitstamp and gemini being updated, I will update:
+																						//  56, 57, 60
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 59, 60];
+																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is kraken and gemini being updated, I will update:
+																					// //  56, 59, 60
+																					// let indices = [56, 59, 60];
+																					// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i153: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -58773,14 +60311,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 		//     //println!("value after:\n\t{}",value_after);
 
 
-		//     //value_after = 60
-		//     //coinbase = 61
-		//     //bitstamp = 62
-		//     //kraken = 63
-		//     //gemini = 64
+		//     //value_after = 56
+		//     //coinbase = 57
+		//     //bitstamp = 58
+		//     //kraken = 59
+		//     //gemini = 60
 		//     //since this is kraken and gemini being updated, I will update:
-		//     //  60, 63, 64
-		//     let indices = [60, 63, 64];
+		//     //  56, 59, 64
+		//     let indices = [56, 59, 64];
 		//     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
 		//     //01/24/24 - removed and added:
 		//         //neural_network.update_input(&indices, &new_values);
@@ -58802,7 +60340,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i154_xrp_4_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -59102,20 +60640,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is kraken and gemini being updated, I will update:
-																					//  60, 63, 64
-																					let indices = [60, 63, 64];
-																					let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is bitstamp and gemini being updated, I will update:
+																						//  56, 57, 60
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 59, 60];
+																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is kraken and gemini being updated, I will update:
+																					// //  56, 59, 60
+																					// let indices = [56, 59, 60];
+																					// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i154: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -59227,14 +60781,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //     //println!("value after:\n\t{}",value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is kraken and gemini being updated, I will update:
-        //     //  60, 63, 64
-        //     let indices = [60, 63, 64];
+        //     //  56, 59, 64
+        //     let indices = [56, 59, 64];
         //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -59256,7 +60810,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 }
 
 	pub async fn s_i155_xrp_5_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-		gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -59556,20 +61110,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is kraken and gemini being updated, I will update:
-																					//  60, 63, 64
-																					let indices = [60, 63, 64];
-																					let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is bitstamp and gemini being updated, I will update:
+																						//  56, 57, 60
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 59, 60];
+																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is kraken and gemini being updated, I will update:
+																					// //  56, 59, 60
+																					// let indices = [56, 59, 60];
+																					// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i155: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -59681,14 +61251,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //     //println!("value after:\n\t{}",value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is kraken and gemini being updated, I will update:
-        //     //  60, 63, 64
-        //     let indices = [60, 63, 64];
+        //     //  56, 59, 64
+        //     let indices = [56, 59, 64];
         //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -59710,7 +61280,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i156_xrp_6_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -60009,20 +61579,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is kraken and gemini being updated, I will update:
-																					//  60, 63, 64
-																					let indices = [60, 63, 64];
-																					let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is bitstamp and gemini being updated, I will update:
+																						//  56, 57, 60
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 59, 60];
+																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is kraken and gemini being updated, I will update:
+																					// //  56, 59, 60
+																					// let indices = [56, 59, 60];
+																					// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i156: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -60134,14 +61720,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //     //println!("value after:\n\t{}",value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is kraken and gemini being updated, I will update:
-        //     //  60, 63, 64
-        //     let indices = [60, 63, 64];
+        //     //  56, 59, 64
+        //     let indices = [56, 59, 64];
         //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -60163,7 +61749,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i157_xrp_7_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -60463,20 +62049,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is kraken and gemini being updated, I will update:
-																					//  60, 63, 64
-																					let indices = [60, 63, 64];
-																					let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is bitstamp and gemini being updated, I will update:
+																						//  56, 57, 60
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 59, 60];
+																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is kraken and gemini being updated, I will update:
+																					// //  56, 59, 60
+																					// let indices = [56, 59, 60];
+																					// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i157: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -60588,14 +62190,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //     //println!("value after:\n\t{}",value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is kraken and gemini being updated, I will update:
-        //     //  60, 63, 64
-        //     let indices = [60, 63, 64];
+        //     //  56, 59, 64
+        //     let indices = [56, 59, 64];
         //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -60617,7 +62219,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i158_xrp_8_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -60917,20 +62519,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is kraken and gemini being updated, I will update:
-																					//  60, 63, 64
-																					let indices = [60, 63, 64];
-																					let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is bitstamp and gemini being updated, I will update:
+																						//  56, 57, 60
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 59, 60];
+																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is kraken and gemini being updated, I will update:
+																					// //  56, 59, 60
+																					// let indices = [56, 59, 60];
+																					// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i158: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -61042,14 +62660,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //     //println!("value after:\n\t{}",value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is kraken and gemini being updated, I will update:
-        //     //  60, 63, 64
-        //     let indices = [60, 63, 64];
+        //     //  56, 59, 64
+        //     let indices = [56, 59, 64];
         //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -61071,7 +62689,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 
     pub async fn s_i159_xrp_9_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -61371,20 +62989,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is kraken and gemini being updated, I will update:
-																					//  60, 63, 64
-																					let indices = [60, 63, 64];
-																					let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is bitstamp and gemini being updated, I will update:
+																						//  56, 57, 60
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 59, 60];
+																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is kraken and gemini being updated, I will update:
+																					// //  56, 59, 60
+																					// let indices = [56, 59, 60];
+																					// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i153: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -61496,14 +63130,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //     //println!("value after:\n\t{}",value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is kraken and gemini being updated, I will update:
-        //     //  60, 63, 64
-        //     let indices = [60, 63, 64];
+        //     //  56, 59, 64
+        //     let indices = [56, 59, 64];
         //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -61525,7 +63159,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 }
 
 	pub async fn s_i160_xrp_10_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-		gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &mut f64, kraken_secret: &str, kraken_api_key: &str, client: reqwest::Client, gemini_secret: &str, gemini_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
         fn sign_gemini(gemini_secret: &str, gemini_payload: &serde_json::Value) -> String {
             let encoded_payload = encode(gemini_payload.to_string());
@@ -61605,22 +63239,22 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																// Continue with your logic here using `ask`
 																break; // Exit the loop if everything is successful
 															},
-															Err(_) => log::error!("i160: gemini:  Failed to parse ask as f64"),
+															Err(_) => log::error!("i156: gemini:  Failed to parse ask as f64"),
 														}
 													},
-													None => log::error!("i160: gemini:   Failed to get ask as string"),
+													None => log::error!("i156: gemini:   Failed to get ask as string"),
 												}
 											},
-											Err(_) => log::error!("i160: gemini:   Failed to parse JSON"),
+											Err(_) => log::error!("i156: gemini:   Failed to parse JSON"),
                                         }
                                     },
-                                    Err(_) => log::error!("i160: gemini:   Failed to turn response into text"),
+                                    Err(_) => log::error!("i156: gemini:   Failed to turn response into text"),
                                 }
                             },
-                            Err(_) => log::error!("i160: gemini:  Failed to execute Gemini request"),
+                            Err(_) => log::error!("i156: gemini:  Failed to execute Gemini request"),
                         }
                     },
-                    Err(_) => log::error!("i160: gemini:  Couldn't build gemini request"),
+                    Err(_) => log::error!("i156: gemini:  Couldn't build gemini request"),
                 }
             
                 attempts += 1;
@@ -61825,51 +63459,67 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is kraken and gemini being updated, I will update:
-																					//  60, 63, 64
-																					let indices = [60, 63, 64];
-																					let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is bitstamp and gemini being updated, I will update:
+																						//  56, 57, 60
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 59, 60];
+																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is kraken and gemini being updated, I will update:
+																					// //  56, 59, 60
+																					// let indices = [56, 59, 60];
+																					// let new_values = [value_after, Some(*kraken_wallet), Some(*gemini_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
-																			log::error!("i160: Kraken sell price is None. Response text was: {}", kraken_response_text);
+																			log::error!("i156: Kraken sell price is None. Response text was: {}", kraken_response_text);
 																		}
 																	} 
 																	else {
-																		log::error!("i160: gemini buy ask is None. Response text was: {}", kraken_response_text);
+																		log::error!("i156: gemini buy ask is None. Response text was: {}", kraken_response_text);
 																	}
 																	//03/05/24 - dont think its necessary
 																	//break; // Exit the loop if everything is successful
 																},
-																_ => log::error!("i160: Failed to parse ask or bid as f64"),
+																_ => log::error!("i156: Failed to parse ask or bid as f64"),
 															}
 														},
-														_ => log::error!("i160: Failed to get ask or bid as string"),
+														_ => log::error!("i156: Failed to get ask or bid as string"),
 													}
                                                 } 
                                                 else {
-                                                    log::error!("i160: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+                                                    log::error!("i156: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
                                                 }
                                             },
-                                            Err(e) => log::error!("i160: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+                                            Err(e) => log::error!("i156: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
                                         }
                                     },
-                                    Err(e) => log::error!("i160: Failed to read response text. Error was: {}", e),
+                                    Err(e) => log::error!("i156: Failed to read response text. Error was: {}", e),
                                 }
                             },
-                            Err(e) => log::error!("i160: Failed to execute Kraken request. Error was: {}", e),
+                            Err(e) => log::error!("i156: Failed to execute Kraken request. Error was: {}", e),
                         }
                     },
-                    Err(e) => log::error!("i160: Failed to build kraken request. Error was: {}", e),
+                    Err(e) => log::error!("i156: Failed to build kraken request. Error was: {}", e),
                 }
             
                 // Continue with your logic here...
@@ -61958,14 +63608,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         //     //println!("value after:\n\t{}",value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is kraken and gemini being updated, I will update:
-        //     //  60, 63, 64
-        //     let indices = [60, 63, 64];
+        //     //  56, 59, 64
+        //     let indices = [56, 59, 64];
         //     let new_values = [value_after, *kraken_wallet, *gemini_wallet];
         //     //01/24/24 - removed and added:
         //         //neural_network.update_input(&indices, &new_values);
@@ -61979,7 +63629,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
     }
 //coinbase kraken   = 3 AND UP FOR min of 10 USD for coinbase. min buy of 10 XRP for kraken so maximal min is 6 dollars.
     pub async fn s_i163_xrp_3_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 		//03/05/24 - removed:
         // let now = Utc::now();
@@ -62126,7 +63776,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																		success = true;
 																},
 																_ => {
-																	log::error!("i163: coinbase: Failed to parse json into f64");
+																	log::error!("i159: coinbase: Failed to parse json into f64");
 																	if attempts > 3 {
 																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
 																	}
@@ -62135,7 +63785,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 															}
 														},
 														_ => {
-															log::error!("i163: coinbase: Failed to get bid price ");
+															log::error!("i159: coinbase: Failed to get bid price ");
 															if attempts > 3 {
 																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 																panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
@@ -62146,7 +63796,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 												}
 											//03/02/24 - added else condition
 											} else {
-												log::error!("i163: coinbase: Failed to get pricebooks as array.");
+												log::error!("i159: coinbase: Failed to get pricebooks as array.");
 												if attempts > 3 {
 													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
 												}
@@ -62154,7 +63804,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 											}
 										},
 										Err(_) => {
-											log::error!("i163: coinbase: Failed to parse JSON to str");
+											log::error!("i159: coinbase: Failed to parse JSON to str");
 											if attempts > 3 {
 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
 											}
@@ -62163,7 +63813,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 									}
 								},
 								Err(_) => {
-									log::error!("i163: coinbase: Failed to get response text");
+									log::error!("i159: coinbase: Failed to get response text");
 									if attempts > 3 {
 										panic!("Failed to get response text after 3 attempts");
 									}
@@ -62172,7 +63822,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 							}
 						},
 						Err(_) => {
-							log::error!("i163: coinbase: Failed to execute request.");
+							log::error!("i159: coinbase: Failed to execute request.");
 							if attempts > 3 {
 								panic!("Failed to execute request after 3 attempts");
 							}
@@ -62181,7 +63831,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 					}
 				},
 				Err(_) => {
-					log::error!("i163: coinbase: Failed to build request");
+					log::error!("i159: coinbase: Failed to build request");
 					if attempts > 3 {
 						panic!("Failed to build request after 3 attempts");
 					}
@@ -62373,51 +64023,67 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is coinbase and kraken being updated, I will update:
-																					//  60, 61, 63
-																					let indices = [60, 61, 63];
-																					let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is coinbase and kraken being updated, I will update:
+																						//  56, 57, 59
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 57, 59];
+																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is coinbase and kraken being updated, I will update:
+																					// //  56, 57, 59
+																					// let indices = [56, 57, 59];
+																					// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
-																			log::error!("i163: Kraken sell price is None. Response text was: {}", kraken_response_text);
+																			log::error!("i159: Kraken sell price is None. Response text was: {}", kraken_response_text);
 																		}
 																	} 
 																	else {
-																		log::error!("i163: coinbase buy ask is None. Response text was: {}", kraken_response_text);
+																		log::error!("i159: coinbase buy ask is None. Response text was: {}", kraken_response_text);
 																	}
 																	//03/05/24 - dont think its necessary
 																	//break; // Exit the loop if everything is successful
 																},
-																_ => log::error!("i163: Failed to parse ask or bid as f64"),
+																_ => log::error!("i159: Failed to parse ask or bid as f64"),
 															}
 														},
-														_ => log::error!("i163: Failed to get ask or bid as string"),
+														_ => log::error!("i159: Failed to get ask or bid as string"),
 													}
 												} 
 												else {
-													log::error!("i163: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+													log::error!("i159: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
 												}
 											},
-											Err(e) => log::error!("i163: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+											Err(e) => log::error!("i159: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
 										}
 									},
-									Err(e) => log::error!("i163: Failed to read response text. Error was: {}", e),
+									Err(e) => log::error!("i159: Failed to read response text. Error was: {}", e),
 								}
 							},
-							Err(e) => log::error!("i163: Failed to execute Kraken request. Error was: {}", e),
+							Err(e) => log::error!("i159: Failed to execute Kraken request. Error was: {}", e),
 						}
 					},
-					Err(e) => log::error!("i163: Failed to build kraken request. Error was: {}", e),
+					Err(e) => log::error!("i159: Failed to build kraken request. Error was: {}", e),
 				}
 				//03/05/24 - removed the &&buy_price_ask.is_some()
 				if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
@@ -62478,14 +64144,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 			// //this will count as value after
 
-			//         //value_after = 60
-			//     //coinbase = 61
-			//     //bitstamp = 62
-			//     //kraken = 63
-			//     //gemini = 64
+			//         //value_after = 56
+			//     //coinbase = 57
+			//     //bitstamp = 58
+			//     //kraken = 59
+			//     //gemini = 60
 			//     //since this is coinbase and kraken being updated, I will update:
-			//     //  60, 61, 63
-			//     let indices = [60, 61, 63];
+			//     //  56, 57, 59
+			//     let indices = [56, 57, 59];
 			//     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -62499,7 +64165,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
 	pub async fn s_i164_xrp_4_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 		//03/05/24 - removed:
         // let now = Utc::now();
@@ -62904,20 +64570,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is coinbase and kraken being updated, I will update:
-																					//  60, 61, 63
-																					let indices = [60, 61, 63];
-																					let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is coinbase and kraken being updated, I will update:
+																						//  56, 57, 59
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 57, 59];
+																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is coinbase and kraken being updated, I will update:
+																					// //  56, 57, 59
+																					// let indices = [56, 57, 59];
+																					// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i164: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -63009,14 +64691,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 			// //this will count as value after
 
-			//         //value_after = 60
-			//     //coinbase = 61
-			//     //bitstamp = 62
-			//     //kraken = 63
-			//     //gemini = 64
+			//         //value_after = 56
+			//     //coinbase = 57
+			//     //bitstamp = 58
+			//     //kraken = 59
+			//     //gemini = 60
 			//     //since this is coinbase and kraken being updated, I will update:
-			//     //  60, 61, 63
-			//     let indices = [60, 61, 63];
+			//     //  56, 57, 59
+			//     let indices = [56, 57, 59];
 			//     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -63030,7 +64712,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i165_xrp_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 		//03/05/24 - removed:
         // let now = Utc::now();
@@ -63435,20 +65117,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is coinbase and kraken being updated, I will update:
-																					//  60, 61, 63
-																					let indices = [60, 61, 63];
-																					let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is coinbase and kraken being updated, I will update:
+																						//  56, 57, 59
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 57, 59];
+																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is coinbase and kraken being updated, I will update:
+																					// //  56, 57, 59
+																					// let indices = [56, 57, 59];
+																					// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i165: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -63540,14 +65238,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 			// //this will count as value after
 
-			//         //value_after = 60
-			//     //coinbase = 61
-			//     //bitstamp = 62
-			//     //kraken = 63
-			//     //gemini = 64
+			//         //value_after = 56
+			//     //coinbase = 57
+			//     //bitstamp = 58
+			//     //kraken = 59
+			//     //gemini = 60
 			//     //since this is coinbase and kraken being updated, I will update:
-			//     //  60, 61, 63
-			//     let indices = [60, 61, 63];
+			//     //  56, 57, 59
+			//     let indices = [56, 57, 59];
 			//     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -63561,7 +65259,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i166_xrp_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 		//03/05/24 - removed:
         // let now = Utc::now();
@@ -63966,20 +65664,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is coinbase and kraken being updated, I will update:
-																					//  60, 61, 63
-																					let indices = [60, 61, 63];
-																					let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is coinbase and kraken being updated, I will update:
+																						//  56, 57, 59
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 57, 59];
+																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is coinbase and kraken being updated, I will update:
+																					// //  56, 57, 59
+																					// let indices = [56, 57, 59];
+																					// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i166: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -64071,14 +65785,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 			// //this will count as value after
 
-			//         //value_after = 60
-			//     //coinbase = 61
-			//     //bitstamp = 62
-			//     //kraken = 63
-			//     //gemini = 64
+			//         //value_after = 56
+			//     //coinbase = 57
+			//     //bitstamp = 58
+			//     //kraken = 59
+			//     //gemini = 60
 			//     //since this is coinbase and kraken being updated, I will update:
-			//     //  60, 61, 63
-			//     let indices = [60, 61, 63];
+			//     //  56, 57, 59
+			//     let indices = [56, 57, 59];
 			//     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -64092,7 +65806,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i167_xrp_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 		//03/05/24 - removed:
         // let now = Utc::now();
@@ -64497,20 +66211,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is coinbase and kraken being updated, I will update:
-																					//  60, 61, 63
-																					let indices = [60, 61, 63];
-																					let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is coinbase and kraken being updated, I will update:
+																						//  56, 57, 59
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 57, 59];
+																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is coinbase and kraken being updated, I will update:
+																					// //  56, 57, 59
+																					// let indices = [56, 57, 59];
+																					// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i167: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -64602,14 +66332,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 			// //this will count as value after
 
-			//         //value_after = 60
-			//     //coinbase = 61
-			//     //bitstamp = 62
-			//     //kraken = 63
-			//     //gemini = 64
+			//         //value_after = 56
+			//     //coinbase = 57
+			//     //bitstamp = 58
+			//     //kraken = 59
+			//     //gemini = 60
 			//     //since this is coinbase and kraken being updated, I will update:
-			//     //  60, 61, 63
-			//     let indices = [60, 61, 63];
+			//     //  56, 57, 59
+			//     let indices = [56, 57, 59];
 			//     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -64623,7 +66353,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i168_xrp_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 		//03/05/24 - removed:
         // let now = Utc::now();
@@ -65028,20 +66758,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is coinbase and kraken being updated, I will update:
-																					//  60, 61, 63
-																					let indices = [60, 61, 63];
-																					let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is coinbase and kraken being updated, I will update:
+																						//  56, 57, 59
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 57, 59];
+																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is coinbase and kraken being updated, I will update:
+																					// //  56, 57, 59
+																					// let indices = [56, 57, 59];
+																					// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i168: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -65133,14 +66879,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 			// //this will count as value after
 
-			//         //value_after = 60
-			//     //coinbase = 61
-			//     //bitstamp = 62
-			//     //kraken = 63
-			//     //gemini = 64
+			//         //value_after = 56
+			//     //coinbase = 57
+			//     //bitstamp = 58
+			//     //kraken = 59
+			//     //gemini = 60
 			//     //since this is coinbase and kraken being updated, I will update:
-			//     //  60, 61, 63
-			//     let indices = [60, 61, 63];
+			//     //  56, 57, 59
+			//     let indices = [56, 57, 59];
 			//     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -65154,7 +66900,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i169_xrp_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 		//03/05/24 - removed:
         // let now = Utc::now();
@@ -65559,20 +67305,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is coinbase and kraken being updated, I will update:
-																					//  60, 61, 63
-																					let indices = [60, 61, 63];
-																					let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is coinbase and kraken being updated, I will update:
+																						//  56, 57, 59
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 57, 59];
+																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is coinbase and kraken being updated, I will update:
+																					// //  56, 57, 59
+																					// let indices = [56, 57, 59];
+																					// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i169: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -65664,14 +67426,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 			// //this will count as value after
 
-			//         //value_after = 60
-			//     //coinbase = 61
-			//     //bitstamp = 62
-			//     //kraken = 63
-			//     //gemini = 64
+			//         //value_after = 56
+			//     //coinbase = 57
+			//     //bitstamp = 58
+			//     //kraken = 59
+			//     //gemini = 60
 			//     //since this is coinbase and kraken being updated, I will update:
-			//     //  60, 61, 63
-			//     let indices = [60, 61, 63];
+			//     //  56, 57, 59
+			//     let indices = [56, 57, 59];
 			//     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -65685,7 +67447,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
     pub async fn s_i170_xrp_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
 		//03/05/24 - removed:
         // let now = Utc::now();
@@ -66090,20 +67852,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 																			
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-	
-	
-	
-																					//value_after = 60
-																					//coinbase = 61
-																					//bitstamp = 62
-																					//kraken = 63
-																					//gemini = 64
-																					//since this is coinbase and kraken being updated, I will update:
-																					//  60, 61, 63
-																					let indices = [60, 61, 63];
-																					let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-																					let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
+																					if let Some(mut value_after) = value_after {
+																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																						
+																						//value_after = 56
+																						//coinbase = 57
+																						//bitstamp = 58
+																						//kraken = 59
+																						//gemini = 60
+																						//since this is coinbase and kraken being updated, I will update:
+																						//  56, 57, 59
+																						//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																						let indices = [56, 57, 59];
+																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																						neural_network.update_input(&indices, &scaled_values).await;
+																					}
+																					//03/08/24 - removed:
+																					// //value_after = 56
+																					// //coinbase = 57
+																					// //bitstamp = 58
+																					// //kraken = 59
+																					// //gemini = 60
+																					// //since this is coinbase and kraken being updated, I will update:
+																					// //  56, 57, 59
+																					// let indices = [56, 57, 59];
+																					// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																					// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																					// neural_network.update_input(&indices, &scaled_values).await;
 																		}
 																		else {
 																			log::error!("i170: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -66195,14 +67973,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 
 			// //this will count as value after
 
-			//         //value_after = 60
-			//     //coinbase = 61
-			//     //bitstamp = 62
-			//     //kraken = 63
-			//     //gemini = 64
+			//         //value_after = 56
+			//     //coinbase = 57
+			//     //bitstamp = 58
+			//     //kraken = 59
+			//     //gemini = 60
 			//     //since this is coinbase and kraken being updated, I will update:
-			//     //  60, 61, 63
-			//     let indices = [60, 61, 63];
+			//     //  56, 57, 59
+			//     let indices = [56, 57, 59];
 			//     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
 			//     //01/24/24 - removed and added:
 			//         //neural_network.update_input(&indices, &new_values);
@@ -66216,7 +67994,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 //kraken coinbase   = 4 AND UP for min of 25 XRP withdraw = 15 dollars. 3 and up should work but just in case
 	pub async fn s_i174_xrp_4_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
     //---KRAKEN--//
 
@@ -66498,19 +68276,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-                                                                    println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                    //value_after = 60
-                                                                    //coinbase = 61
-                                                                    //bitstamp = 62
-                                                                    //kraken = 63
-                                                                    //gemini = 64
-                                                                    //since this is coinbase and kraken being updated, I will update:
-                                                                    //  60, 61, 63
-                                                                    let indices = [60, 61, 63];
-                                                                    let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                    neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is coinbase and kraken being updated, I will update:
+																		//  56, 57, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 57, 59];
+																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is coinbase and kraken being updated, I will update:
+																	// //  56, 57, 59
+																	// let indices = [56, 57, 59];
+																	// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                     success = true;
 																},
@@ -66647,14 +68442,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         // //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is coinbase and kraken being updated, I will update:
-        //     //  60, 61, 63
-        //     let indices = [60, 61, 63];
+        //     //  56, 57, 59
+        //     let indices = [56, 57, 59];
         //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -66674,7 +68469,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
 	pub async fn s_i175_xrp_5_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
     //---KRAKEN--//
 
@@ -66956,19 +68751,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-                                                                    println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                    //value_after = 60
-                                                                    //coinbase = 61
-                                                                    //bitstamp = 62
-                                                                    //kraken = 63
-                                                                    //gemini = 64
-                                                                    //since this is coinbase and kraken being updated, I will update:
-                                                                    //  60, 61, 63
-                                                                    let indices = [60, 61, 63];
-                                                                    let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                    neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is coinbase and kraken being updated, I will update:
+																		//  56, 57, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 57, 59];
+																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is coinbase and kraken being updated, I will update:
+																	// //  56, 57, 59
+																	// let indices = [56, 57, 59];
+																	// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                     success = true;
 																},
@@ -67105,14 +68917,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         // //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is coinbase and kraken being updated, I will update:
-        //     //  60, 61, 63
-        //     let indices = [60, 61, 63];
+        //     //  56, 57, 59
+        //     let indices = [56, 57, 59];
         //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -67132,7 +68944,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
 	pub async fn s_i176_xrp_6_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
     //---KRAKEN--//
 
@@ -67414,19 +69226,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-                                                                    println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                    //value_after = 60
-                                                                    //coinbase = 61
-                                                                    //bitstamp = 62
-                                                                    //kraken = 63
-                                                                    //gemini = 64
-                                                                    //since this is coinbase and kraken being updated, I will update:
-                                                                    //  60, 61, 63
-                                                                    let indices = [60, 61, 63];
-                                                                    let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                    neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is coinbase and kraken being updated, I will update:
+																		//  56, 57, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 57, 59];
+																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is coinbase and kraken being updated, I will update:
+																	// //  56, 57, 59
+																	// let indices = [56, 57, 59];
+																	// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                     success = true;
 																},
@@ -67563,14 +69392,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         // //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is coinbase and kraken being updated, I will update:
-        //     //  60, 61, 63
-        //     let indices = [60, 61, 63];
+        //     //  56, 57, 59
+        //     let indices = [56, 57, 59];
         //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -67590,7 +69419,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
 	pub async fn s_i177_xrp_7_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
     //---KRAKEN--//
 
@@ -67872,19 +69701,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-                                                                    println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                    //value_after = 60
-                                                                    //coinbase = 61
-                                                                    //bitstamp = 62
-                                                                    //kraken = 63
-                                                                    //gemini = 64
-                                                                    //since this is coinbase and kraken being updated, I will update:
-                                                                    //  60, 61, 63
-                                                                    let indices = [60, 61, 63];
-                                                                    let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                    neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is coinbase and kraken being updated, I will update:
+																		//  56, 57, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 57, 59];
+																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is coinbase and kraken being updated, I will update:
+																	// //  56, 57, 59
+																	// let indices = [56, 57, 59];
+																	// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                     success = true;
 																},
@@ -68021,14 +69867,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         // //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is coinbase and kraken being updated, I will update:
-        //     //  60, 61, 63
-        //     let indices = [60, 61, 63];
+        //     //  56, 57, 59
+        //     let indices = [56, 57, 59];
         //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -68048,7 +69894,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
 	pub async fn s_i178_xrp_8_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
     //---KRAKEN--//
 
@@ -68330,19 +70176,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-                                                                    println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                    //value_after = 60
-                                                                    //coinbase = 61
-                                                                    //bitstamp = 62
-                                                                    //kraken = 63
-                                                                    //gemini = 64
-                                                                    //since this is coinbase and kraken being updated, I will update:
-                                                                    //  60, 61, 63
-                                                                    let indices = [60, 61, 63];
-                                                                    let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                    neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is coinbase and kraken being updated, I will update:
+																		//  56, 57, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 57, 59];
+																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is coinbase and kraken being updated, I will update:
+																	// //  56, 57, 59
+																	// let indices = [56, 57, 59];
+																	// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                     success = true;
 																},
@@ -68479,14 +70342,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         // //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is coinbase and kraken being updated, I will update:
-        //     //  60, 61, 63
-        //     let indices = [60, 61, 63];
+        //     //  56, 57, 59
+        //     let indices = [56, 57, 59];
         //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -68506,7 +70369,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
 	pub async fn s_i179_xrp_9_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
     //---KRAKEN--//
 
@@ -68788,19 +70651,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-                                                                    println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                    //value_after = 60
-                                                                    //coinbase = 61
-                                                                    //bitstamp = 62
-                                                                    //kraken = 63
-                                                                    //gemini = 64
-                                                                    //since this is coinbase and kraken being updated, I will update:
-                                                                    //  60, 61, 63
-                                                                    let indices = [60, 61, 63];
-                                                                    let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                    neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is coinbase and kraken being updated, I will update:
+																		//  56, 57, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 57, 59];
+																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is coinbase and kraken being updated, I will update:
+																	// //  56, 57, 59
+																	// let indices = [56, 57, 59];
+																	// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                     success = true;
 																},
@@ -68937,14 +70817,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         // //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is coinbase and kraken being updated, I will update:
-        //     //  60, 61, 63
-        //     let indices = [60, 61, 63];
+        //     //  56, 57, 59
+        //     let indices = [56, 57, 59];
         //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);
@@ -68964,7 +70844,7 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
 	}
 
 	pub async fn s_i180_xrp_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
-		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork, divisor: &f64   )-> Result<f64, Box<dyn Error + Send>> {
+		gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
 
     //---KRAKEN--//
 
@@ -69246,19 +71126,36 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
                                                                     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-                                                                    println!("in loop print statement. loop iteration:{} value_after = {:?}", &attempts, &value_after);
-
-                                                                    //value_after = 60
-                                                                    //coinbase = 61
-                                                                    //bitstamp = 62
-                                                                    //kraken = 63
-                                                                    //gemini = 64
-                                                                    //since this is coinbase and kraken being updated, I will update:
-                                                                    //  60, 61, 63
-                                                                    let indices = [60, 61, 63];
-                                                                    let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
-                                                                    let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-                                                                    neural_network.update_input(&indices, &scaled_values).await;
+																	if let Some(mut value_after) = value_after {
+																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+																		
+																		//value_after = 56
+																		//coinbase = 57
+																		//bitstamp = 58
+																		//kraken = 59
+																		//gemini = 60
+																		//since this is coinbase and kraken being updated, I will update:
+																		//  56, 57, 59
+																		//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+																		let indices = [56, 57, 59];
+																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																		neural_network.update_input(&indices, &scaled_values).await;
+																	}
+																	//03/08/24 - removed:
+																	// //value_after = 56
+																	// //coinbase = 57
+																	// //bitstamp = 58
+																	// //kraken = 59
+																	// //gemini = 60
+																	// //since this is coinbase and kraken being updated, I will update:
+																	// //  56, 57, 59
+																	// let indices = [56, 57, 59];
+																	// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
+																	// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+																	// neural_network.update_input(&indices, &scaled_values).await;
 
                                                                     success = true;
 																},
@@ -69395,14 +71292,14 @@ use crate::network::NeuralNetwork;                         //to take in neuralNe
         // //println!("sol1_kraken_coinbase\tvalue after\n\t{}", value_after);
 
 
-        //     //value_after = 60
-        //     //coinbase = 61
-        //     //bitstamp = 62
-        //     //kraken = 63
-        //     //gemini = 64
+        //     //value_after = 56
+        //     //coinbase = 57
+        //     //bitstamp = 58
+        //     //kraken = 59
+        //     //gemini = 60
         //     //since this is coinbase and kraken being updated, I will update:
-        //     //  60, 61, 63
-        //     let indices = [60, 61, 63];
+        //     //  56, 57, 59
+        //     let indices = [56, 57, 59];
         //     let new_values = [value_after, *coinbase_wallet, *kraken_wallet];
         // //01/24/24 - removed and added:
         //     //neural_network.update_input(&indices, &new_values);

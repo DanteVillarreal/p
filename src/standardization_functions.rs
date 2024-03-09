@@ -240,3 +240,17 @@
 		let std_dev = 3.105;
 		(input - mean) / std_dev
 	}
+
+
+//standardize wallets
+	pub fn normal_wallet_standardization(input: &f64) -> f64 {
+		let mean = 500.568712;
+		let std_dev = 500.0;
+		(input - mean) / std_dev
+	}
+
+	pub fn normal_value_prior_standardization(input: &f64) -> f64 {
+		let mean = 2000.568712;
+		let std_dev = 2000.0;
+		(input - mean) / std_dev
+	}

@@ -546,8 +546,8 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
 
 
 
-                    println!("updating input 65 to 71. scaled xrp price:{:?}", &coinbase_price);
-                    let indices: [usize; 7] = [65, 66, 67, 68, 69, 70, 71];
+                    println!("updating input 61 to 67. scaled xrp price:{:?}", &coinbase_price);
+                    let indices: [usize; 7] = [61, 62, 63, 64, 65, 66, 67];
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values).await;
@@ -587,10 +587,10 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
 
             // Initialize all variables
             let a_0: Option<f64>;
-            let a_1: Option<f64>;
+
             let a_2: Option<f64>;
             let b_0: Option<f64>;
-            let b_1: Option<f64>;
+
             let b_2: Option<f64>;
             let c_0: Option<f64>;
             let c_1: Option<f64>;
@@ -634,28 +634,28 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
                         }
                     }
 
-                    // Parsing logic for a_1
-                    match ticker["a"][1].as_str() {
-                        Some(s) => match s.parse::<f64>() {
-                            Ok(val) => a_1 = Some(val),
-                            Err(e) => {
-                                attempts += 1;
-                                log::error!("WSP kraken: Failed to parse a_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
-                                if attempts >= 3 {
-                                    panic!("Failed to parse a_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
-                                }
-                                continue;
-                            }
-                        },
-                        None => {
-                            attempts += 1;
-                            log::error!("WSP kraken: Failed to convert a_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
-                            if attempts >= 3 {
-                                panic!("Failed to convert a_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
-                            }
-                            continue;
-                        }
-                    }
+                    // // Parsing logic for a_1
+                    // match ticker["a"][1].as_str() {
+                    //     Some(s) => match s.parse::<f64>() {
+                    //         Ok(val) => a_1 = Some(val),
+                    //         Err(e) => {
+                    //             attempts += 1;
+                    //             log::error!("WSP kraken: Failed to parse a_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                    //             if attempts >= 3 {
+                    //                 panic!("Failed to parse a_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
+                    //             }
+                    //             continue;
+                    //         }
+                    //     },
+                    //     None => {
+                    //         attempts += 1;
+                    //         log::error!("WSP kraken: Failed to convert a_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                    //         if attempts >= 3 {
+                    //             panic!("Failed to convert a_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                    //         }
+                    //         continue;
+                    //     }
+                    // }
 
                     // Parsing logic for a_2
                     match ticker["a"][2].as_str() {
@@ -703,28 +703,28 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
                         }
                     }
 
-                    // Parsing logic for b_1
-                    match ticker["b"][1].as_str() {
-                        Some(s) => match s.parse::<f64>() {
-                            Ok(val) => b_1 = Some(val),
-                            Err(e) => {
-                                attempts += 1;
-                                log::error!("WSP kraken: Failed to parse b_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
-                                if attempts >= 3 {
-                                    panic!("Failed to parse b_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
-                                }
-                                continue;
-                            }
-                        },
-                        None => {
-                            attempts += 1;
-                            log::error!("WSP kraken: Failed to convert b_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
-                            if attempts >= 3 {
-                                panic!("Failed to convert b_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
-                            }
-                            continue;
-                        }
-                    }
+                    // // Parsing logic for b_1
+                    // match ticker["b"][1].as_str() {
+                    //     Some(s) => match s.parse::<f64>() {
+                    //         Ok(val) => b_1 = Some(val),
+                    //         Err(e) => {
+                    //             attempts += 1;
+                    //             log::error!("WSP kraken: Failed to parse b_1 as f64: {}\nMessage: {}\nPrefix: {}\nAttempt: {}", e, message, prefix, attempts);
+                    //             if attempts >= 3 {
+                    //                 panic!("Failed to parse b_1 as f64 after 3 attempts. Error: {}, Message: {}, Prefix: {}", e, message, prefix);
+                    //             }
+                    //             continue;
+                    //         }
+                    //     },
+                    //     None => {
+                    //         attempts += 1;
+                    //         log::error!("WSP kraken: Failed to convert b_1 to string\nMessage: {}\nPrefix: {}\nAttempt: {}", message, prefix, attempts);
+                    //         if attempts >= 3 {
+                    //             panic!("Failed to convert b_1 to string after 3 attempts. Message: {}, Prefix: {}", message, prefix);
+                    //         }
+                    //         continue;
+                    //     }
+                    // }
 
                     // Parsing logic for b_2
                     match ticker["b"][2].as_str() {
@@ -1048,7 +1048,7 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
                         }
                     }
                     // Check each variable individually AGAIN
-                    if a_0.is_none() || a_1.is_none() || a_2.is_none() || b_0.is_none() || b_1.is_none() || b_2.is_none() || c_0.is_none() ||
+                    if a_0.is_none() || a_2.is_none() || b_0.is_none() || b_2.is_none() || c_0.is_none() ||
                     c_1.is_none() || v_0.is_none() || v_1.is_none() || p_0.is_none() || p_1.is_none() || t_0.is_none() || t_1.is_none() || 
                     l_0.is_none() || l_1.is_none() || h_0.is_none() || h_1.is_none() || o_0.is_none() || o_1.is_none() {
                         attempts += 1;
@@ -1060,11 +1060,12 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
                     }
 
                     // TRIPLE REDUNDANCY!
-                    if let (Some(mut a_0), Some(a_1), Some(mut a_2), Some(mut b_0), Some(b_1), Some(mut b_2),
+                    if let (Some(mut a_0), Some(mut a_2), Some(mut b_0), Some(mut b_2),
                     Some(mut c_0), Some(mut c_1), Some(mut v_0), Some(mut v_1), Some(mut p_0), Some(mut p_1), 
                     Some(mut t_0), Some(mut t_1), Some(mut l_0), Some(mut l_1), Some(mut h_0), Some(mut h_1), 
                     Some(mut o_0), Some(mut o_1)) = 
-                    (a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1, v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1) {
+                    (a_0, a_2, b_0, b_2, c_0, c_1, v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1) {
+                        //println!("before scaling: a_0 = {a_0}, ")
                         if prefix.contains("SOL") {
                             a_0 = standardization_functions::sol_lognorm_standardization_high_price_24h(&a_0);
                             //now that I think about it, a1 and b1 are a waste of inputs. they are just a2 and b2 rounded up to the nearest int.
@@ -1088,16 +1089,16 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
                             o_0 = standardization_functions::sol_lognorm_standardization_open_price_24h(&o_0);
                             o_1 = standardization_functions::sol_lognorm_standardization_open_price_24h(&o_1);
                             //rest of variables
-                            let scaled_values = [a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1, 
+                            let scaled_values = [a_0, a_2, b_0, b_2, c_0, c_1, 
                             v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1];
 
 
 
 
 
-                            let indices: [usize; 20] = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-                                25, 26, 27, 28, 29, 30, 31, 32, 33];
-                            println!("updating input 14 to 33. scaled kraken xrp best ask:{:?} best bid: {:?}", &a_0, &b_0);
+                            let indices: [usize; 18] = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                                25, 26, 27, 28, 29, 30, 31];
+                            println!("updating input 14 to 31. scaled kraken xrp best ask:{:?} best bid: {:?}", &a_0, &b_0);
                             let mut neural_network = 
                                 shared_neural_network.lock().await;
                             neural_network.update_input(&indices, &scaled_values).await;
@@ -1125,11 +1126,11 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
                             h_1 = standardization_functions::xlm_lognorm_standardization_high_price_24h(&h_1);
                             o_0 = standardization_functions::xlm_lognorm_standardization_open_price_24h(&o_0);
                             o_1 = standardization_functions::xlm_lognorm_standardization_open_price_24h(&o_1);
-                            let scaled_values = [a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1, 
+                            let scaled_values = [a_0, a_2, b_0, b_2, c_0, c_1, 
                             v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1];
 
-                            let indices: [usize; 20] = [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
-                                46, 47, 48, 49, 50, 51, 52, 53];
+                            let indices: [usize; 18] = [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
+                                46, 47, 48, 49];
                             println!("updating input 34 to 53. scaled kraken xrp best ask:{:?} best bid: {:?}", &a_0, &b_0);
                             let mut neural_network = 
                                 shared_neural_network.lock().await;
@@ -1158,13 +1159,13 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
                             h_1 = standardization_functions::xrp_lognorm_standardization_high_price_24h(&h_1);
                             o_0 = standardization_functions::xrp_lognorm_standardization_open_price_24h(&o_0);
                             o_1 = standardization_functions::xrp_lognorm_standardization_open_price_24h(&o_1);
-                            let scaled_values = [a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1, 
+                            let scaled_values = [a_0, a_2, b_0, b_2, c_0, c_1, 
                             v_0, v_1, p_0, p_1, t_0, t_1, l_0, l_1, h_0, h_1, o_0, o_1];
                             //second set of indices larger than last time.
-                            //  65 to 71 is in coinbase
-                            let indices: [usize; 20] = [72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83,
-                                84, 85, 86, 87, 88, 89, 90, 91];
-                            println!("updating input 72 to 91. scaled kraken xrp best ask:{:?} best bid: {:?}", &a_0, &b_0);
+
+                            let indices: [usize; 18] = [68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83,
+                                84, 85];
+                            println!("updating input 68 to 85. scaled kraken xrp best ask:{:?} best bid: {:?}", &a_0, &b_0);
                             let mut neural_network = 
                                 shared_neural_network.lock().await;
                             neural_network.update_input(&indices, &scaled_values).await;
@@ -1321,8 +1322,8 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
                     let scaled_values = [amount, price];
 
 
-                    let indices: [usize; 2] = [54, 55];
-                    println!("updating input 54, 55. SCALED bitstamp xlm  price:{:?}", &price);
+                    let indices: [usize; 2] = [50, 51];
+                    println!("updating input 50, 51. SCALED bitstamp xlm  price:{:?}", &price);
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values).await;
@@ -1332,8 +1333,8 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
                     price = standardization_functions::xlm_lognorm_standardization_high_price_24h(&price);
 
                     let scaled_values = [amount, price];
-                    let indices: [usize; 2] = [56, 57];
-                    println!("updating input 56, 57. SCALED bitstamp xlm price:{:?}", &price);
+                    let indices: [usize; 2] = [52, 53];
+                    println!("updating input 52, 53. SCALED bitstamp xlm price:{:?}", &price);
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values).await;
@@ -1578,8 +1579,8 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
 
                         let scaled_values = [amount, price];
 
-                        let indices = [58, 59];
-                        println!("updating input 58, 59. price:{:?}", &price);
+                        let indices = [54, 55];
+                        println!("updating input 54, 55. price:{:?}", &price);
                         let mut neural_network = 
                             shared_neural_network.lock().await;
                         neural_network.update_input(&indices, &scaled_values)
@@ -1593,8 +1594,8 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
 
                         let scaled_values = [amount, price];
 
-                        let indices = [92, 93];
-                        println!("updating input 92, 93. price:{:?}", &price);
+                        let indices = [86, 87];
+                        println!("updating input 86, 87. price:{:?}", &price);
                         let mut neural_network = 
                             shared_neural_network.lock().await;
                         neural_network.update_input(&indices, &scaled_values)

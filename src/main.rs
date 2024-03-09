@@ -16,7 +16,7 @@ use p::network::{NeuralNetwork, NetworkLayer, ReplayBuffer, GradientNetwork, Tra
 //use p::network::ReplayBuffer;
 //use p::network::GradientNetwork;                    //to use gradients
 // use p::action_functions;
-use p::execute_action_functions;
+use p::{execute_action_functions, standardization_functions};
 use p::network;
 use tokio;                                          //so I can do async
 use dotenv::dotenv;
@@ -1263,7 +1263,7 @@ async fn main()   {
 	//---------------VERY IMPORTANT-------------//
 	//IF YOU EVER CHANGE THIS NUMBER, MAKE SURE TO PUT ALL REPLAY BUFFERS IN NEW
 	//	 FOLDER WITH ORIGINAL DIVISOR VALUE or else neural network will get wrong inputs
-		let divisor = 1_000_000.0;
+		//let divisor = 1_000_000.0;
 
     //this will allow me to do async mutex
     let shared_neural_network = Arc::new(Mutex::new(neural_network));
@@ -2091,7 +2091,8 @@ async fn main()   {
                                             &q_value_for_current_state, &target_q_value);
                                     //make our neural network learn from replay buffer
                                     //02/02/24 - changed from 0.0001 to 0.00001
-                                    let learning_rate = 0.0001;
+                                    //03/09/24 - changed to 0.1
+                                    let learning_rate = 0.1;
                                     neural_network.el_update_weights(&learning_rate);
 
 
@@ -2174,12 +2175,18 @@ async fn main()   {
             
                                 
                                 //this value of the wallets for the inputs
-                                let indices = [60, 61, 62, 63, 64];
-                                let new_values = [value_prior, coinbase_wallet, 
+                                //03/08/24 - updated indices
+                                let indices = [56, 57, 58, 59, 60];
+                                value_prior = standardization_functions::normal_value_prior_standardization(&value_prior);
+                                coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+                                bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet); 
+                                kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+                                gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+                                let scaled_values = [value_prior, coinbase_wallet, 
                                     bitstamp_wallet, kraken_wallet, gemini_wallet];
 
                                 //updates input
-                                let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+                                //let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
                                 neural_network.update_input(&indices, &scaled_values).await;
                                 neural_network.print_input_layer();
 
@@ -2191,7 +2198,7 @@ async fn main()   {
                                     &mut value_prior, &mut coinbase_wallet, &mut kraken_wallet,
                                     &mut bitstamp_wallet, &mut gemini_wallet, &coinbase_secret,
                                     &coinbase_api_key, &kraken_secret, &kraken_api_key, &gemini_secret,
-                                    &gemini_api_key, &bitstamp_secret, &bitstamp_api_key, &divisor).await;
+                                    &gemini_api_key, &bitstamp_secret, &bitstamp_api_key).await;
             
                                 index_chosen_for_current_state = result.0;
                                 q_value_for_current_state = result.1;

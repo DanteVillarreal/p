@@ -369,3 +369,7 @@ MAY NEED TO STANDARDIZE IT USING STD DEV AND MIN MAX USING HISTORICAL DATA.
 
 
 03/08/24 - NEED TO REMOVE INPUTS FOR A1 AND B1 FOR KRAKEN. SO IN TOTAL REMOVE 6 INPUTS. THEN NEED TO REMOVE DIVISOR and scale it too.
+
+03/09/24 - fixed ALL of the indices. including value prior, coinbase, bitstamp, kraken, and gemini wallet. had to thus delete divisor and change all the functions in action_functions.rs. I am restarting from 0. gamma = 0.99. gradient cap +-0.1. learning_rate = 0.1.              JESUS IS GOOD. We got this
+Here is how I will do future iterations: I will keep learning rate the same, and first change gamma. if it doesnt succeed when it gets to 0.2, go back to 0.99 and divide learning rate by 10. then repeat until it works. 1. remove all replay buffers. 2. remove saved states. 3. rename p, websocket_client, and q value logs. 4. add extra space in rewards doc for next run.               JESUS IS GOOD. We got this!
+DONT FORGET TO CHANGE LEARNING_RATE IN MAIN TOO if you ever change it.

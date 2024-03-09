@@ -374,3 +374,4 @@ Here is how I will do future iterations: I will keep learning rate the same, and
 03/09/24 - fixed another error.                 JESUS IS GOOD. We got this!
 03/09/24 - changed number of inputs in initialization. code commented out some functions that were not being used in action_functions.rs.               JESUS IS GOOD. We got this!
 03/09/24 - added print statements that include time for gemini xrp and solana because in 15 minutes somehow it didnt update xrp a single time. sus.     JESUS IS GOOD. We got this!
+03/09/24 - changed some heartbeat log::info! in kraken and coinbase to println!.                JESUS IS GOOD. We got this!

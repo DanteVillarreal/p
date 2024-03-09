@@ -567,7 +567,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
 
         } else if prefix.contains("Coinbase consolidated heartbeat") || 
                   prefix.contains("Coinbase subscriptions") {
-            log::info!("Coinbase: standard server messages. Ignoring...");
+            println!("Coinbase: standard server messages. Ignoring...");
             break;
         } else {
             log::error!("Coinbase: got a weird message: {}", message);
@@ -1193,7 +1193,7 @@ pub async fn handle_all_kraken(prefix: &str, message: &str, shared_neural_networ
         } else if prefix.contains("consolidated heartbeat") ||
                   prefix.contains("system status received") || 
                   prefix.contains("subscription status received"){
-            log::info!("WSP Kraken: standard server messages. Ignoring...");
+            println!("WSP Kraken: standard server messages. Ignoring...");
             break;
         } else {
             log::error!("WSP Kraken: got a weird message: {}\nprefix: {}", message, prefix);

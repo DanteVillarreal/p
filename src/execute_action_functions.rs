@@ -504,6 +504,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values).await;
+                    break;
                 }
                 else if prefix.contains("XLM") {
                     //do the indices and update input and lock
@@ -527,6 +528,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values).await;
+                    break;
                 }
                 else if prefix.contains("XRP") {
                     //first indices larger than last time
@@ -551,6 +553,7 @@ pub async fn handle_all_coinbase(prefix: &str, message: &str, shared_neural_netw
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values).await;
+                    break;
                 }
                 else {
                     panic!("This shouid never occur. Somehow prefix cointained
@@ -1327,6 +1330,7 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values).await;
+                    break;
                 }
                 else if prefix.contains("XLM") {
                     amount = standardization_functions::xlm_lognorm_standardization_lot_volume_per_trade(&amount);
@@ -1338,6 +1342,7 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
                     let mut neural_network = 
                         shared_neural_network.lock().await;
                     neural_network.update_input(&indices, &scaled_values).await;
+                    break;
                 }
                 else {
                     panic!("This shouid never occur. Somehow prefix cointained phrase

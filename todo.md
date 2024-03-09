@@ -372,3 +372,5 @@ Here is how I will do future iterations: I will keep learning rate the same, and
                 DONT FORGET TO CHANGE LEARNING_RATE IN MAIN TOO if you ever change it.
 03/08/24 - already had to fix an error.         JESUS IS GOOD. I got this!
 03/09/24 - fixed another error.                 JESUS IS GOOD. We got this!
+03/09/24 - changed number of inputs in initialization. code commented out some functions that were not being used in action_functions.rs.               JESUS IS GOOD. We got this!
+03/09/24 - added print statements that include time for gemini xrp and solana because in 15 minutes somehow it didnt update xrp a single time. sus.     JESUS IS GOOD. We got this!

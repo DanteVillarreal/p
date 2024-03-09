@@ -3,7 +3,7 @@ use tokio::sync::Mutex;                             // Use async Mutex from Toki
 use std::sync::Arc;  								// Use Arc to share Mutex among multiple tasks
 use serde_json::Value;                              // for parsing input form websocket client
 use crate::standardization_functions;
-
+use chrono::Utc;
 
 //helper function
 //03/08/24 - changed from: -> Option<f64>   to
@@ -1587,11 +1587,15 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                         let scaled_values = [amount, price];
 
                         let indices = [54, 55];
-                        println!("updating input 54, 55. price:{:?}", &price);
-                        let mut neural_network = 
-                            shared_neural_network.lock().await;
-                        neural_network.update_input(&indices, &scaled_values)
-                        .await;
+                        {
+                            let mut neural_network = 
+                                shared_neural_network.lock().await;
+                            neural_network.update_input(&indices, &scaled_values)
+                            .await;
+                        }
+                        let now = Utc::now();
+                        let time_stamp = now.timestamp().to_string();
+                        log::info!("gemini sol:updating input 54, 55. price:{:?}\ntimestamp:{}", &price, &time_stamp);
                         break;
                     }
                     else if prefix.contains("xrp") {
@@ -1602,11 +1606,15 @@ pub async fn handle_all_gemini(prefix: &str, message: &str, shared_neural_networ
                         let scaled_values = [amount, price];
 
                         let indices = [86, 87];
-                        println!("updating input 86, 87. price:{:?}", &price);
-                        let mut neural_network = 
-                            shared_neural_network.lock().await;
-                        neural_network.update_input(&indices, &scaled_values)
-                        .await;
+                        {
+                            let mut neural_network = 
+                                shared_neural_network.lock().await;
+                            neural_network.update_input(&indices, &scaled_values)
+                            .await;
+                        }
+                        let now = Utc::now();
+                        let time_stamp = now.timestamp().to_string();
+                        log::info!("gemini xrp:  updating input 86, 87. price:{:?}\ntimestamp: {}", &price, &time_stamp);
                         break;
                     }
                     else {

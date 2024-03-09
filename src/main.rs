@@ -1237,7 +1237,7 @@ async fn main()   {
     //01/24/24 - was: (65, 75, 2) now it's below. input size from execute_action_functions.
 
     //uncomment this if you want to initialize the network from new
-        neural_network.initialization(94, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
+        neural_network.initialization(88, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
 
     //uncomment this if you want to load from a saved state
         //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1708845504745"; // Replace with your file path

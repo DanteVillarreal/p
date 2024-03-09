@@ -4662,4470 +4662,3575 @@ use crate::standardization_functions;
     }
     */
     //begin removal
-    pub async fn s_i13_sol_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
-
-			//03/02/24 - added:
-            // let now = Utc::now();
-            // let time_stamp = now.timestamp().to_string();
-            // let method = "GET";
-            // let request_path = "/api/v3/brokerage/best_bid_ask";
-            // let body = "";
-            // let message = format!("{}{}{}{}", &time_stamp, 
-            // &method, &request_path, &body);
-            // type HmacSha256 = Hmac<Sha256>;
-            // fn sign(message: &str, coinbase_secret: &str) -> String {
-            // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-            //             .expect("HMAC can take key of any size");
-            // mac.update(message.as_bytes());
-            // let result = mac.finalize();
-            // let code_bytes = result.into_bytes();
-            // hex::encode(code_bytes)
-            // }
-            // let coinbase_signature = sign(&message, &coinbase_secret);
-    
-            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-            // .header("CB-ACCESS-KEY", coinbase_api_key)
-            // .header("CB-ACCESS-SIGN", &coinbase_signature)
-            // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            // .build()
-            // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //manages the error I described above
-            // //let request = match request {
-            // //Ok(req) => req,
-            // //Err(e) => {
-            // //eprintln!("Failed to build request: \n{}", e);
-            // //return Err(e);
-            // //}
-            // //};
-    
-            // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //let response = match response {
-            // //    Ok(resp) => resp,
-            // //    Err(e) => {
-            // //        eprintln!("Failed to execute request: \n{}", e);
-            // //        return Err(e);
-            // //    }
-            // //};
-    
-    
-            // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-    
-            // //added 12/29/23
-            // //this is the parsing
-            // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // let mut coinbase_sell_price = 0.0;
-            // let mut coinbase_buy_price = 0.0;
-    
-            // // Access the pricebooks array
-            // if let Some(pricebooks) = v["pricebooks"].as_array() {
-            //     // Iterate over each pricebook
-            //     for pricebook in pricebooks {
-            //         // Access the product_id, bids, and asks
-            //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
-            //         let bids = &pricebook["bids"][0];
-            //         let asks = &pricebook["asks"][0];
-            
-            //         // Access the price and size of the bids and asks
-            //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
-            //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
-            
-            //         println!("Product ID: {}", product_id);
-            //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
-            //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
-            //     }
-            // }
-    
-            //manages any errors from line above
-            //let response_text = match response_text {
-            //    Ok(t) => t,
-            //    Err(e) => {
-            //        eprintln!("Failed to read response text: \n{}", e);
-            //        return;
-            //    }
-            //};
-    
-            //prints the actual response
-            //println!("list accounts response\n{:?}", &response_text);
-    
-    
-    
-
-
-	//03/02/24 - added:
-		let now = Utc::now();
-		let time_stamp = now.timestamp().to_string();
-		let method = "GET";
-		let request_path = "/api/v3/brokerage/best_bid_ask";
-		let body = "";
-		let message = format!("{}{}{}{}", &time_stamp, 
-			&method, &request_path, &body);
-		type HmacSha256 = Hmac<Sha256>;
-		fn sign(message: &str, coinbase_secret: &str) -> String {
-			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-					.expect("HMAC can take key of any size");
-			mac.update(message.as_bytes());
-			let result = mac.finalize();
-			let code_bytes = result.into_bytes();
-			hex::encode(code_bytes)
-		}
-		let coinbase_signature = sign(&message, &coinbase_secret);
-
-		
-		let mut coinbase_buy_price_ask: Option<f64> = None;
-		let mut attempts = 0;
-		let mut success = false;
-		loop {
-			attempts +=1;
-			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-			.header("CB-ACCESS-KEY", coinbase_api_key)
-			.header("CB-ACCESS-SIGN", &coinbase_signature)
-			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
-			.build();
-
-			match request {
-				Ok(req) => {
-					let response = client.execute(req).await;
-					match response {
-						Ok(resp) => {
-							let response_text = resp.text().await;
-							match response_text {
-								Ok(text) => {
-									match serde_json::from_str::<Value>(&text) {
-										Ok(v) => {
-											if let Some(pricebooks) = v["pricebooks"].as_array() {
-												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													//let bids = &pricebook["bids"][0];
-													let asks = &pricebook["asks"][0];
-													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-		
-													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-														(/*Some(bid_str),*/ Some(ask_str)) => {
-															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-																(/*Ok(bid_str),*/ Ok(ask_str)) => {
-																	//coinbase_sell_price_bid = Some(bid_str);
-																	coinbase_buy_price_ask = Some(ask_str);
-	
-																		success = true;
-																},
-																_ => {
-																	log::error!("i13:  coinbase:  Failed to f64 parse JSON");
-																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																	}
-																	continue ;
-																}
-															}
-														},
-														_ => {
-															log::error!("i13:  coinbase:  Failed to get ask price");
-															if attempts > 3 {
-																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-															}
-															continue ;
-														}
-													}
-												}
-											//03/02/24 - added else condition
-											} else {
-												log::error!("i13:  coinbase:  Failed to get pricebooks as array.");
-												if attempts > 3 {
-													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-												}
-												continue;
-											}
-										},
-										Err(_) => {
-											log::error!("i13:  coinbase:  Failed to parse outer JSON as str.");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-											}
-											continue ; // Continue to the next iteration if parsing fails
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i13:  coinbase:  Failed to get response text.");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue ; // Continue to the next iteration if getting response text fails
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i13:  coinbase:  Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue; // Continue to the next iteration if executing request fails
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i13:  coinbase:  Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue; // Continue to the next iteration if building request fails
-				}
-			}
-			if success == true {
-				break;
-			}
-		}
-			
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
-            //02/09/24 - updated tokio. removed:  
-                //delay_for(Duration::from_secs(3)).await;
-            //02/09/24 - updated tokio. added in its place:
-            println!("sol 3 coinbase bitstamp: 3 sec delay");
-            let when = tokio::time::Instant::now() + Duration::from_secs(3);
-            tokio::time::sleep_until(when).await;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //-------------------------Bitstamp---------------------------//
-                //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
-
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
-
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-
-
-
-
-
-
-//--------------------Account-balances------------------------------------------//
-
-
-
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-	//03/02/24 - removed:
-	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-	// 		.header("X-Auth-Signature", bitstamp_signature)
-	// 		.header("X-Auth-Nonce", bitstamp_nonce)
-	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
-	// 		.header("X-Auth-Version", "v2")
-	// 		//.header("Content-Type", content_type)
-	// 		//.body(payload_string)
-	// 		.build()
-	// 		.expect("\ncould not build bitstamp_request");
-
-	// 	let bitstamp_response = client.execute(bitstamp_request).await
-	// 		.expect("Failed to execute Bitstamp request");
-	// 	let bitstamp_response_text = bitstamp_response.text().await
-	// 		.expect("Failed to turn response into text");
-	// 	//probably dont need "bitstamp" once we transfer this to the actual function
-	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-	//     .expect("Failed to parse JSON");
-
-	// // Extract the bid and ask values
-	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
-            
-    
-
-
-	//03/02/24 - added:
-		let mut success = false;
-		let mut attempts = 0;
-		let mut value_after: Option<f64> = None;
-
-		while !success && attempts <=3 {
-			attempts += 1;
-
-			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-				.header("X-Auth-Signature", &bitstamp_signature)
-				.header("X-Auth-Nonce", &bitstamp_nonce)
-				.header("X-Auth-Timestamp", &bitstamp_timestamp)
-				.header("X-Auth-Version", "v2")
-				.build() {
-				Ok(bitstamp_request) => {
-					match client.execute(bitstamp_request).await {
-						Ok(bitstamp_response) => {
-							match bitstamp_response.text().await {
-								Ok(bitstamp_response_text) => {
-									match serde_json::from_str::<Value>(&bitstamp_response_text) {
-										Ok(v) => {
-											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-												(Some(bid_str), Some(ask_str)) => {
-													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
-															// Place your calculations and updates here
-															//coinbase calculations to buy
-															let coinbase_taker_fee = 0.008;
-															let fraction_of_wallet_im_using = 0.03; //aka 3 percent
-															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
-															let fee_for_purchase = total_spent*coinbase_taker_fee;
-															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-															*coinbase_wallet -= total_spent;
-
-															let amount_of_sol = 
-															money_going_to_sol_after_fees/coinbase_buy_price_ask
-																							.expect(&format!("i13: coinbase_buy_price_ask is somehow Not Some. 
-																							even though to get to this point it had to be Some. 
-																							coinbase_buy_price_ask: {:?}
-																							Honestly restart the program from the last saved state. 
-																							The most likely error is a bit got flipped after the loop",
-																							&coinbase_buy_price_ask));
-
-															//bitstamp calculations for sell
-
-															let bitstamp_taker_fee = 0.004;
-															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-															*bitstamp_wallet += money_from_sell_after_fees;
-															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															if let Some(mut value_after) = value_after {
-																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
-																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																
-
-																//value_after = 56
-																//coinbase = 57
-																//bitstamp = 58
-																//kraken = 59
-																//gemini = 60
-																//since this is coinbase and bitstamp being updated, I will update:
-																//  56, 57, 58
-																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																let indices = [56, 57, 58];
-																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																neural_network.update_input(&indices, &scaled_values).await;
-															}
-															//03/08/24 - removed:
-															// //value_after = 56
-															// //coinbase = 57
-															// //bitstamp = 58
-															// //kraken = 59
-															// //gemini = 60
-															// //since this is coinbase and bitstamp being updated, I will update:
-															// //  56, 57, 58
-															// let indices = [56, 57, 58];
-															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															// neural_network.update_input(&indices, &scaled_values).await;
-
-															success = true;
-														},
-														_ => {
-															log::error!("i13: Failed to f64 parse bid or ask price");
-															if attempts > 3 {
-																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-															}
-															continue;
-														}
-													}
-												},
-												_ => {
-													log::error!("i13: Failed to originally parse bid or ask price");
-													if attempts > 3 {
-														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-													}
-													continue;
-												}
-											}
-										},
-										Err(_) => {
-											log::error!("i13: Failed to parse JSON");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-											}
-											continue;
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i13: failed to get response text");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue;
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i13: Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue;
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i13: Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue;
-				}
-			}
-		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			//03/02/24 - removed:
-            // //coinbase calculations
-            //     let coinbase_taker_fee = 0.008;
-    
-            //     let total_spent = 0.03*(*coinbase_wallet);
-            //     let fee_for_purchase = total_spent*coinbase_taker_fee;
-            //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-            //     //new state of coinbase wallet below
-            //     *coinbase_wallet -= total_spent;
-            //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-    
-            // //kraken calculations
-            //     //let kraken_taker_fee = 0.0026;
-                
-            //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-            //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-            //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-            //     //*kraken_wallet += money_from_sell_after_fees;
-    
-            //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            // //bitstamp calculations
-            //     let bitstamp_taker_fee = 0.004;
-            //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-            //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-            //     *bitstamp_wallet += money_from_sell_after_fees;
-
-
-
-            // //this will count as value after
-            //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-
-            //     //value_after = 56
-            //     //coinbase = 57
-            //     //bitstamp = 58
-            //     //kraken = 59
-            //     //gemini = 60
-            //     //since this is coinbase and kraken being updated, I will update:
-            //     //  56, 57, 59
-            //     let indices = [56, 57, 58];
-            //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-            //     //01/24/24 - removed and added:
-            //         //neural_network.update_input(&indices, &new_values);
-            //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //         //neural_network.update_input(&indices, &transformed_values).await;
-            //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            //         neural_network.update_input(&indices, &scaled_values).await;
-    
-    
-            //     return Ok(value_after)
-
-    }
-
-    pub async fn s_i14_sol_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
-
-			//03/02/24 - added:
-            // let now = Utc::now();
-            // let time_stamp = now.timestamp().to_string();
-            // let method = "GET";
-            // let request_path = "/api/v3/brokerage/best_bid_ask";
-            // let body = "";
-            // let message = format!("{}{}{}{}", &time_stamp, 
-            // &method, &request_path, &body);
-            // type HmacSha256 = Hmac<Sha256>;
-            // fn sign(message: &str, coinbase_secret: &str) -> String {
-            // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-            //             .expect("HMAC can take key of any size");
-            // mac.update(message.as_bytes());
-            // let result = mac.finalize();
-            // let code_bytes = result.into_bytes();
-            // hex::encode(code_bytes)
-            // }
-            // let coinbase_signature = sign(&message, &coinbase_secret);
-    
-            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-            // .header("CB-ACCESS-KEY", coinbase_api_key)
-            // .header("CB-ACCESS-SIGN", &coinbase_signature)
-            // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            // .build()
-            // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //manages the error I described above
-            // //let request = match request {
-            // //Ok(req) => req,
-            // //Err(e) => {
-            // //eprintln!("Failed to build request: \n{}", e);
-            // //return Err(e);
-            // //}
-            // //};
-    
-            // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //let response = match response {
-            // //    Ok(resp) => resp,
-            // //    Err(e) => {
-            // //        eprintln!("Failed to execute request: \n{}", e);
-            // //        return Err(e);
-            // //    }
-            // //};
-    
-    
-            // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-    
-            // //added 12/29/23
-            // //this is the parsing
-            // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // let mut coinbase_sell_price = 0.0;
-            // let mut coinbase_buy_price = 0.0;
-    
-            // // Access the pricebooks array
-            // if let Some(pricebooks) = v["pricebooks"].as_array() {
-            //     // Iterate over each pricebook
-            //     for pricebook in pricebooks {
-            //         // Access the product_id, bids, and asks
-            //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
-            //         let bids = &pricebook["bids"][0];
-            //         let asks = &pricebook["asks"][0];
-            
-            //         // Access the price and size of the bids and asks
-            //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
-            //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
-            
-            //         println!("Product ID: {}", product_id);
-            //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
-            //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
-            //     }
-            // }
-    
-            //manages any errors from line above
-            //let response_text = match response_text {
-            //    Ok(t) => t,
-            //    Err(e) => {
-            //        eprintln!("Failed to read response text: \n{}", e);
-            //        return;
-            //    }
-            //};
-    
-            //prints the actual response
-            //println!("list accounts response\n{:?}", &response_text);
-    
-    
-    
-
-
-	//03/02/24 - added:
-		let now = Utc::now();
-		let time_stamp = now.timestamp().to_string();
-		let method = "GET";
-		let request_path = "/api/v3/brokerage/best_bid_ask";
-		let body = "";
-		let message = format!("{}{}{}{}", &time_stamp, 
-			&method, &request_path, &body);
-		type HmacSha256 = Hmac<Sha256>;
-		fn sign(message: &str, coinbase_secret: &str) -> String {
-			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-					.expect("HMAC can take key of any size");
-			mac.update(message.as_bytes());
-			let result = mac.finalize();
-			let code_bytes = result.into_bytes();
-			hex::encode(code_bytes)
-		}
-		let coinbase_signature = sign(&message, &coinbase_secret);
-
-		
-		let mut coinbase_buy_price_ask: Option<f64> = None;
-		let mut attempts = 0;
-		let mut success = false;
-		loop {
-			attempts +=1;
-			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-			.header("CB-ACCESS-KEY", coinbase_api_key)
-			.header("CB-ACCESS-SIGN", &coinbase_signature)
-			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
-			.build();
-
-			match request {
-				Ok(req) => {
-					let response = client.execute(req).await;
-					match response {
-						Ok(resp) => {
-							let response_text = resp.text().await;
-							match response_text {
-								Ok(text) => {
-									match serde_json::from_str::<Value>(&text) {
-										Ok(v) => {
-											if let Some(pricebooks) = v["pricebooks"].as_array() {
-												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													//let bids = &pricebook["bids"][0];
-													let asks = &pricebook["asks"][0];
-													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-		
-													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-														(/*Some(bid_str),*/ Some(ask_str)) => {
-															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-																(/*Ok(bid_str),*/ Ok(ask_str)) => {
-																	//coinbase_sell_price_bid = Some(bid_str);
-																	coinbase_buy_price_ask = Some(ask_str);
-	
-																		success = true;
-																},
-																_ => {
-																	log::error!("i14:  coinbase:  Failed to f64 parse JSON");
-																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																	}
-																	continue ;
-																}
-															}
-														},
-														_ => {
-															log::error!("i14:  coinbase:  Failed to get ask price");
-															if attempts > 3 {
-																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-															}
-															continue ;
-														}
-													}
-												}
-											//03/02/24 - added else condition
-											} else {
-												log::error!("i14:  coinbase:  Failed to get pricebooks as array.");
-												if attempts > 3 {
-													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-												}
-												continue;
-											}
-										},
-										Err(_) => {
-											log::error!("i14:  coinbase:  Failed to parse outer JSON as str.");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-											}
-											continue ; // Continue to the next iteration if parsing fails
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i14:  coinbase:  Failed to get response text.");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue ; // Continue to the next iteration if getting response text fails
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i14:  coinbase:  Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue; // Continue to the next iteration if executing request fails
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i14:  coinbase:  Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue; // Continue to the next iteration if building request fails
-				}
-			}
-			if success == true {
-				break;
-			}
-		}
-			
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
-            //02/09/24 - updated tokio. removed:  
-                //delay_for(Duration::from_secs(3)).await;
-            //02/09/24 - updated tokio. added in its place:
-            println!("sol 4 coinbase bitstamp: 3 sec delay");
-            let when = tokio::time::Instant::now() + Duration::from_secs(3);
-            tokio::time::sleep_until(when).await;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //-------------------------Bitstamp---------------------------//
-                //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
-
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
-
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-
-
-
-
-
-
-//--------------------Account-balances------------------------------------------//
-
-
-
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-	//03/02/24 - removed:
-	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-	// 		.header("X-Auth-Signature", bitstamp_signature)
-	// 		.header("X-Auth-Nonce", bitstamp_nonce)
-	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
-	// 		.header("X-Auth-Version", "v2")
-	// 		//.header("Content-Type", content_type)
-	// 		//.body(payload_string)
-	// 		.build()
-	// 		.expect("\ncould not build bitstamp_request");
-
-	// 	let bitstamp_response = client.execute(bitstamp_request).await
-	// 		.expect("Failed to execute Bitstamp request");
-	// 	let bitstamp_response_text = bitstamp_response.text().await
-	// 		.expect("Failed to turn response into text");
-	// 	//probably dont need "bitstamp" once we transfer this to the actual function
-	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-	//     .expect("Failed to parse JSON");
-
-	// // Extract the bid and ask values
-	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
-            
-    
-
-
-	//03/02/24 - added:
-		let mut success = false;
-		let mut attempts = 0;
-		let mut value_after: Option<f64> = None;
-
-		while !success && attempts <=3 {
-			attempts += 1;
-
-			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-				.header("X-Auth-Signature", &bitstamp_signature)
-				.header("X-Auth-Nonce", &bitstamp_nonce)
-				.header("X-Auth-Timestamp", &bitstamp_timestamp)
-				.header("X-Auth-Version", "v2")
-				.build() {
-				Ok(bitstamp_request) => {
-					match client.execute(bitstamp_request).await {
-						Ok(bitstamp_response) => {
-							match bitstamp_response.text().await {
-								Ok(bitstamp_response_text) => {
-									match serde_json::from_str::<Value>(&bitstamp_response_text) {
-										Ok(v) => {
-											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-												(Some(bid_str), Some(ask_str)) => {
-													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
-															// Place your calculations and updates here
-															//coinbase calculations to buy
-															let coinbase_taker_fee = 0.008;
-															let fraction_of_wallet_im_using = 0.04; //aka 4 percent
-															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
-															let fee_for_purchase = total_spent*coinbase_taker_fee;
-															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-															*coinbase_wallet -= total_spent;
-
-															let amount_of_sol = 
-															money_going_to_sol_after_fees/coinbase_buy_price_ask
-																							.expect(&format!("i14: coinbase_buy_price_ask is somehow Not Some. 
-																							even though to get to this point it had to be Some. 
-																							coinbase_buy_price_ask: {:?}
-																							Honestly restart the program from the last saved state. 
-																							The most likely error is a bit got flipped after the loop",
-																							&coinbase_buy_price_ask));
-
-															//bitstamp calculations for sell
-
-															let bitstamp_taker_fee = 0.004;
-															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-															*bitstamp_wallet += money_from_sell_after_fees;
-															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															if let Some(mut value_after) = value_after {
-																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
-																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																
-
-																//value_after = 56
-																//coinbase = 57
-																//bitstamp = 58
-																//kraken = 59
-																//gemini = 60
-																//since this is coinbase and bitstamp being updated, I will update:
-																//  56, 57, 58
-																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																let indices = [56, 57, 58];
-																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																neural_network.update_input(&indices, &scaled_values).await;
-															}
-															//03/08/24 - removed:
-															// //value_after = 56
-															// //coinbase = 57
-															// //bitstamp = 58
-															// //kraken = 59
-															// //gemini = 60
-															// //since this is coinbase and bitstamp being updated, I will update:
-															// //  56, 57, 58
-															// let indices = [56, 57, 58];
-															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															// neural_network.update_input(&indices, &scaled_values).await;
-
-															success = true;
-														},
-														_ => {
-															log::error!("i14: Failed to f64 parse bid or ask price");
-															if attempts > 3 {
-																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-															}
-															continue;
-														}
-													}
-												},
-												_ => {
-													log::error!("i14: Failed to originally parse bid or ask price");
-													if attempts > 3 {
-														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-													}
-													continue;
-												}
-											}
-										},
-										Err(_) => {
-											log::error!("i14: Failed to parse JSON");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-											}
-											continue;
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i14: failed to get response text");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue;
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i14: Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue;
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i14: Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue;
-				}
-			}
-		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			//03/02/24 - removed:
-            // //coinbase calculations
-            //     let coinbase_taker_fee = 0.008;
-    
-            //     let total_spent = 0.03*(*coinbase_wallet);
-            //     let fee_for_purchase = total_spent*coinbase_taker_fee;
-            //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-            //     //new state of coinbase wallet below
-            //     *coinbase_wallet -= total_spent;
-            //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-    
-            // //kraken calculations
-            //     //let kraken_taker_fee = 0.0026;
-                
-            //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-            //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-            //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-            //     //*kraken_wallet += money_from_sell_after_fees;
-    
-            //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            // //bitstamp calculations
-            //     let bitstamp_taker_fee = 0.004;
-            //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-            //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-            //     *bitstamp_wallet += money_from_sell_after_fees;
-
-
-
-            // //this will count as value after
-            //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-
-            //     //value_after = 56
-            //     //coinbase = 57
-            //     //bitstamp = 58
-            //     //kraken = 59
-            //     //gemini = 60
-            //     //since this is coinbase and kraken being updated, I will update:
-            //     //  56, 57, 59
-            //     let indices = [56, 57, 58];
-            //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-            //     //01/24/24 - removed and added:
-            //         //neural_network.update_input(&indices, &new_values);
-            //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //         //neural_network.update_input(&indices, &transformed_values).await;
-            //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            //         neural_network.update_input(&indices, &scaled_values).await;
-    
-    
-            //     return Ok(value_after)
-
-    }
-
-    pub async fn s_i15_sol_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
-
-			//03/02/24 - added:
-            // let now = Utc::now();
-            // let time_stamp = now.timestamp().to_string();
-            // let method = "GET";
-            // let request_path = "/api/v3/brokerage/best_bid_ask";
-            // let body = "";
-            // let message = format!("{}{}{}{}", &time_stamp, 
-            // &method, &request_path, &body);
-            // type HmacSha256 = Hmac<Sha256>;
-            // fn sign(message: &str, coinbase_secret: &str) -> String {
-            // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-            //             .expect("HMAC can take key of any size");
-            // mac.update(message.as_bytes());
-            // let result = mac.finalize();
-            // let code_bytes = result.into_bytes();
-            // hex::encode(code_bytes)
-            // }
-            // let coinbase_signature = sign(&message, &coinbase_secret);
-    
-            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-            // .header("CB-ACCESS-KEY", coinbase_api_key)
-            // .header("CB-ACCESS-SIGN", &coinbase_signature)
-            // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            // .build()
-            // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //manages the error I described above
-            // //let request = match request {
-            // //Ok(req) => req,
-            // //Err(e) => {
-            // //eprintln!("Failed to build request: \n{}", e);
-            // //return Err(e);
-            // //}
-            // //};
-    
-            // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //let response = match response {
-            // //    Ok(resp) => resp,
-            // //    Err(e) => {
-            // //        eprintln!("Failed to execute request: \n{}", e);
-            // //        return Err(e);
-            // //    }
-            // //};
-    
-    
-            // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-    
-            // //added 12/29/23
-            // //this is the parsing
-            // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // let mut coinbase_sell_price = 0.0;
-            // let mut coinbase_buy_price = 0.0;
-    
-            // // Access the pricebooks array
-            // if let Some(pricebooks) = v["pricebooks"].as_array() {
-            //     // Iterate over each pricebook
-            //     for pricebook in pricebooks {
-            //         // Access the product_id, bids, and asks
-            //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
-            //         let bids = &pricebook["bids"][0];
-            //         let asks = &pricebook["asks"][0];
-            
-            //         // Access the price and size of the bids and asks
-            //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
-            //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
-            
-            //         println!("Product ID: {}", product_id);
-            //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
-            //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
-            //     }
-            // }
-    
-            //manages any errors from line above
-            //let response_text = match response_text {
-            //    Ok(t) => t,
-            //    Err(e) => {
-            //        eprintln!("Failed to read response text: \n{}", e);
-            //        return;
-            //    }
-            //};
-    
-            //prints the actual response
-            //println!("list accounts response\n{:?}", &response_text);
-    
-    
-    
-
-
-	//03/02/24 - added:
-		let now = Utc::now();
-		let time_stamp = now.timestamp().to_string();
-		let method = "GET";
-		let request_path = "/api/v3/brokerage/best_bid_ask";
-		let body = "";
-		let message = format!("{}{}{}{}", &time_stamp, 
-			&method, &request_path, &body);
-		type HmacSha256 = Hmac<Sha256>;
-		fn sign(message: &str, coinbase_secret: &str) -> String {
-			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-					.expect("HMAC can take key of any size");
-			mac.update(message.as_bytes());
-			let result = mac.finalize();
-			let code_bytes = result.into_bytes();
-			hex::encode(code_bytes)
-		}
-		let coinbase_signature = sign(&message, &coinbase_secret);
-
-		
-		let mut coinbase_buy_price_ask: Option<f64> = None;
-		let mut attempts = 0;
-		let mut success = false;
-		loop {
-			attempts +=1;
-			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-			.header("CB-ACCESS-KEY", coinbase_api_key)
-			.header("CB-ACCESS-SIGN", &coinbase_signature)
-			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
-			.build();
-
-			match request {
-				Ok(req) => {
-					let response = client.execute(req).await;
-					match response {
-						Ok(resp) => {
-							let response_text = resp.text().await;
-							match response_text {
-								Ok(text) => {
-									match serde_json::from_str::<Value>(&text) {
-										Ok(v) => {
-											if let Some(pricebooks) = v["pricebooks"].as_array() {
-												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													//let bids = &pricebook["bids"][0];
-													let asks = &pricebook["asks"][0];
-													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-		
-													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-														(/*Some(bid_str),*/ Some(ask_str)) => {
-															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-																(/*Ok(bid_str),*/ Ok(ask_str)) => {
-																	//coinbase_sell_price_bid = Some(bid_str);
-																	coinbase_buy_price_ask = Some(ask_str);
-	
-																		success = true;
-																},
-																_ => {
-																	log::error!("i15:  coinbase:  Failed to f64 parse JSON");
-																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																	}
-																	continue ;
-																}
-															}
-														},
-														_ => {
-															log::error!("i15:  coinbase:  Failed to get ask price");
-															if attempts > 3 {
-																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-															}
-															continue ;
-														}
-													}
-												}
-											//03/02/24 - added else condition
-											} else {
-												log::error!("i15:  coinbase:  Failed to get pricebooks as array.");
-												if attempts > 3 {
-													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-												}
-												continue;
-											}
-										},
-										Err(_) => {
-											log::error!("i15:  coinbase:  Failed to parse outer JSON as str.");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-											}
-											continue ; // Continue to the next iteration if parsing fails
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i15:  coinbase:  Failed to get response text.");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue ; // Continue to the next iteration if getting response text fails
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i15:  coinbase:  Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue; // Continue to the next iteration if executing request fails
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i15:  coinbase:  Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue; // Continue to the next iteration if building request fails
-				}
-			}
-			if success == true {
-				break;
-			}
-		}
-			
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
-            //02/09/24 - updated tokio. removed:  
-                //delay_for(Duration::from_secs(3)).await;
-            //02/09/24 - updated tokio. added in its place:
-            println!("sol 5 coinbase bitstamp: 3 sec delay");
-            let when = tokio::time::Instant::now() + Duration::from_secs(3);
-            tokio::time::sleep_until(when).await;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //-------------------------Bitstamp---------------------------//
-                //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
-
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
-
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-
-
-
-
-
-
-//--------------------Account-balances------------------------------------------//
-
-
-
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-	//03/02/24 - removed:
-	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-	// 		.header("X-Auth-Signature", bitstamp_signature)
-	// 		.header("X-Auth-Nonce", bitstamp_nonce)
-	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
-	// 		.header("X-Auth-Version", "v2")
-	// 		//.header("Content-Type", content_type)
-	// 		//.body(payload_string)
-	// 		.build()
-	// 		.expect("\ncould not build bitstamp_request");
-
-	// 	let bitstamp_response = client.execute(bitstamp_request).await
-	// 		.expect("Failed to execute Bitstamp request");
-	// 	let bitstamp_response_text = bitstamp_response.text().await
-	// 		.expect("Failed to turn response into text");
-	// 	//probably dont need "bitstamp" once we transfer this to the actual function
-	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-	//     .expect("Failed to parse JSON");
-
-	// // Extract the bid and ask values
-	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
-            
-    
-
-
-	//03/02/24 - added:
-		let mut success = false;
-		let mut attempts = 0;
-		let mut value_after: Option<f64> = None;
-
-		while !success && attempts <=3 {
-			attempts += 1;
-
-			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-				.header("X-Auth-Signature", &bitstamp_signature)
-				.header("X-Auth-Nonce", &bitstamp_nonce)
-				.header("X-Auth-Timestamp", &bitstamp_timestamp)
-				.header("X-Auth-Version", "v2")
-				.build() {
-				Ok(bitstamp_request) => {
-					match client.execute(bitstamp_request).await {
-						Ok(bitstamp_response) => {
-							match bitstamp_response.text().await {
-								Ok(bitstamp_response_text) => {
-									match serde_json::from_str::<Value>(&bitstamp_response_text) {
-										Ok(v) => {
-											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-												(Some(bid_str), Some(ask_str)) => {
-													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
-															// Place your calculations and updates here
-															//coinbase calculations to buy
-															let coinbase_taker_fee = 0.008;
-															let fraction_of_wallet_im_using = 0.05; //aka 5 percent
-															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
-															let fee_for_purchase = total_spent*coinbase_taker_fee;
-															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-															*coinbase_wallet -= total_spent;
-
-															let amount_of_sol = 
-															money_going_to_sol_after_fees/coinbase_buy_price_ask
-																							.expect(&format!("i15: coinbase_buy_price_ask is somehow Not Some. 
-																							even though to get to this point it had to be Some. 
-																							coinbase_buy_price_ask: {:?}
-																							Honestly restart the program from the last saved state. 
-																							The most likely error is a bit got flipped after the loop",
-																							&coinbase_buy_price_ask));
-
-															//bitstamp calculations for sell
-
-															let bitstamp_taker_fee = 0.004;
-															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-															*bitstamp_wallet += money_from_sell_after_fees;
-															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															if let Some(mut value_after) = value_after {
-																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
-																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																
-
-																//value_after = 56
-																//coinbase = 57
-																//bitstamp = 58
-																//kraken = 59
-																//gemini = 60
-																//since this is coinbase and bitstamp being updated, I will update:
-																//  56, 57, 58
-																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																let indices = [56, 57, 58];
-																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																neural_network.update_input(&indices, &scaled_values).await;
-															}
-															//03/08/24 - removed:
-															// //value_after = 56
-															// //coinbase = 57
-															// //bitstamp = 58
-															// //kraken = 59
-															// //gemini = 60
-															// //since this is coinbase and bitstamp being updated, I will update:
-															// //  56, 57, 58
-															// let indices = [56, 57, 58];
-															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															// neural_network.update_input(&indices, &scaled_values).await;
-
-															success = true;
-														},
-														_ => {
-															log::error!("i15: Failed to f64 parse bid or ask price");
-															if attempts > 3 {
-																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-															}
-															continue;
-														}
-													}
-												},
-												_ => {
-													log::error!("i15: Failed to originally parse bid or ask price");
-													if attempts > 3 {
-														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-													}
-													continue;
-												}
-											}
-										},
-										Err(_) => {
-											log::error!("i15: Failed to parse JSON");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-											}
-											continue;
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i15: failed to get response text");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue;
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i15: Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue;
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i15: Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue;
-				}
-			}
-		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			//03/02/24 - removed:
-            // //coinbase calculations
-            //     let coinbase_taker_fee = 0.008;
-    
-            //     let total_spent = 0.03*(*coinbase_wallet);
-            //     let fee_for_purchase = total_spent*coinbase_taker_fee;
-            //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-            //     //new state of coinbase wallet below
-            //     *coinbase_wallet -= total_spent;
-            //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-    
-            // //kraken calculations
-            //     //let kraken_taker_fee = 0.0026;
-                
-            //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-            //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-            //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-            //     //*kraken_wallet += money_from_sell_after_fees;
-    
-            //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            // //bitstamp calculations
-            //     let bitstamp_taker_fee = 0.004;
-            //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-            //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-            //     *bitstamp_wallet += money_from_sell_after_fees;
-
-
-
-            // //this will count as value after
-            //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-
-            //     //value_after = 56
-            //     //coinbase = 57
-            //     //bitstamp = 58
-            //     //kraken = 59
-            //     //gemini = 60
-            //     //since this is coinbase and kraken being updated, I will update:
-            //     //  56, 57, 59
-            //     let indices = [56, 57, 58];
-            //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-            //     //01/24/24 - removed and added:
-            //         //neural_network.update_input(&indices, &new_values);
-            //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //         //neural_network.update_input(&indices, &transformed_values).await;
-            //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            //         neural_network.update_input(&indices, &scaled_values).await;
-    
-    
-            //     return Ok(value_after)
-
-    }
-
-    pub async fn s_i16_sol_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
-
-			//03/02/24 - added:
-            // let now = Utc::now();
-            // let time_stamp = now.timestamp().to_string();
-            // let method = "GET";
-            // let request_path = "/api/v3/brokerage/best_bid_ask";
-            // let body = "";
-            // let message = format!("{}{}{}{}", &time_stamp, 
-            // &method, &request_path, &body);
-            // type HmacSha256 = Hmac<Sha256>;
-            // fn sign(message: &str, coinbase_secret: &str) -> String {
-            // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-            //             .expect("HMAC can take key of any size");
-            // mac.update(message.as_bytes());
-            // let result = mac.finalize();
-            // let code_bytes = result.into_bytes();
-            // hex::encode(code_bytes)
-            // }
-            // let coinbase_signature = sign(&message, &coinbase_secret);
-    
-            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-            // .header("CB-ACCESS-KEY", coinbase_api_key)
-            // .header("CB-ACCESS-SIGN", &coinbase_signature)
-            // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            // .build()
-            // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //manages the error I described above
-            // //let request = match request {
-            // //Ok(req) => req,
-            // //Err(e) => {
-            // //eprintln!("Failed to build request: \n{}", e);
-            // //return Err(e);
-            // //}
-            // //};
-    
-            // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //let response = match response {
-            // //    Ok(resp) => resp,
-            // //    Err(e) => {
-            // //        eprintln!("Failed to execute request: \n{}", e);
-            // //        return Err(e);
-            // //    }
-            // //};
-    
-    
-            // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-    
-            // //added 12/29/23
-            // //this is the parsing
-            // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // let mut coinbase_sell_price = 0.0;
-            // let mut coinbase_buy_price = 0.0;
-    
-            // // Access the pricebooks array
-            // if let Some(pricebooks) = v["pricebooks"].as_array() {
-            //     // Iterate over each pricebook
-            //     for pricebook in pricebooks {
-            //         // Access the product_id, bids, and asks
-            //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
-            //         let bids = &pricebook["bids"][0];
-            //         let asks = &pricebook["asks"][0];
-            
-            //         // Access the price and size of the bids and asks
-            //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
-            //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
-            
-            //         println!("Product ID: {}", product_id);
-            //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
-            //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
-            //     }
-            // }
-    
-            //manages any errors from line above
-            //let response_text = match response_text {
-            //    Ok(t) => t,
-            //    Err(e) => {
-            //        eprintln!("Failed to read response text: \n{}", e);
-            //        return;
-            //    }
-            //};
-    
-            //prints the actual response
-            //println!("list accounts response\n{:?}", &response_text);
-    
-    
-    
-
-
-	//03/02/24 - added:
-		let now = Utc::now();
-		let time_stamp = now.timestamp().to_string();
-		let method = "GET";
-		let request_path = "/api/v3/brokerage/best_bid_ask";
-		let body = "";
-		let message = format!("{}{}{}{}", &time_stamp, 
-			&method, &request_path, &body);
-		type HmacSha256 = Hmac<Sha256>;
-		fn sign(message: &str, coinbase_secret: &str) -> String {
-			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-					.expect("HMAC can take key of any size");
-			mac.update(message.as_bytes());
-			let result = mac.finalize();
-			let code_bytes = result.into_bytes();
-			hex::encode(code_bytes)
-		}
-		let coinbase_signature = sign(&message, &coinbase_secret);
-
-		
-		let mut coinbase_buy_price_ask: Option<f64> = None;
-		let mut attempts = 0;
-		let mut success = false;
-		loop {
-			attempts +=1;
-			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-			.header("CB-ACCESS-KEY", coinbase_api_key)
-			.header("CB-ACCESS-SIGN", &coinbase_signature)
-			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
-			.build();
-
-			match request {
-				Ok(req) => {
-					let response = client.execute(req).await;
-					match response {
-						Ok(resp) => {
-							let response_text = resp.text().await;
-							match response_text {
-								Ok(text) => {
-									match serde_json::from_str::<Value>(&text) {
-										Ok(v) => {
-											if let Some(pricebooks) = v["pricebooks"].as_array() {
-												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													//let bids = &pricebook["bids"][0];
-													let asks = &pricebook["asks"][0];
-													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-		
-													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-														(/*Some(bid_str),*/ Some(ask_str)) => {
-															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-																(/*Ok(bid_str),*/ Ok(ask_str)) => {
-																	//coinbase_sell_price_bid = Some(bid_str);
-																	coinbase_buy_price_ask = Some(ask_str);
-	
-																		success = true;
-																},
-																_ => {
-																	log::error!("i16:  coinbase:  Failed to f64 parse JSON");
-																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																	}
-																	continue ;
-																}
-															}
-														},
-														_ => {
-															log::error!("i16:  coinbase:  Failed to get ask price");
-															if attempts > 3 {
-																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-															}
-															continue ;
-														}
-													}
-												}
-											//03/02/24 - added else condition
-											} else {
-												log::error!("i16:  coinbase:  Failed to get pricebooks as array.");
-												if attempts > 3 {
-													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-												}
-												continue;
-											}
-										},
-										Err(_) => {
-											log::error!("i16:  coinbase:  Failed to parse outer JSON as str.");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-											}
-											continue ; // Continue to the next iteration if parsing fails
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i16:  coinbase:  Failed to get response text.");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue ; // Continue to the next iteration if getting response text fails
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i16:  coinbase:  Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue; // Continue to the next iteration if executing request fails
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i16:  coinbase:  Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue; // Continue to the next iteration if building request fails
-				}
-			}
-			if success == true {
-				break;
-			}
-		}
-			
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
-            //02/09/24 - updated tokio. removed:  
-                //delay_for(Duration::from_secs(3)).await;
-            //02/09/24 - updated tokio. added in its place:
-            println!("sol 6 coinbase bitstamp: 3 sec delay");
-            let when = tokio::time::Instant::now() + Duration::from_secs(3);
-            tokio::time::sleep_until(when).await;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //-------------------------Bitstamp---------------------------//
-                //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
-
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
-
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-
-
-
-
-
-
-//--------------------Account-balances------------------------------------------//
-
-
-
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-	//03/02/24 - removed:
-	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-	// 		.header("X-Auth-Signature", bitstamp_signature)
-	// 		.header("X-Auth-Nonce", bitstamp_nonce)
-	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
-	// 		.header("X-Auth-Version", "v2")
-	// 		//.header("Content-Type", content_type)
-	// 		//.body(payload_string)
-	// 		.build()
-	// 		.expect("\ncould not build bitstamp_request");
-
-	// 	let bitstamp_response = client.execute(bitstamp_request).await
-	// 		.expect("Failed to execute Bitstamp request");
-	// 	let bitstamp_response_text = bitstamp_response.text().await
-	// 		.expect("Failed to turn response into text");
-	// 	//probably dont need "bitstamp" once we transfer this to the actual function
-	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-	//     .expect("Failed to parse JSON");
-
-	// // Extract the bid and ask values
-	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
-            
-    
-
-
-	//03/02/24 - added:
-		let mut success = false;
-		let mut attempts = 0;
-		let mut value_after: Option<f64> = None;
-
-		while !success && attempts <=3 {
-			attempts += 1;
-
-			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-				.header("X-Auth-Signature", &bitstamp_signature)
-				.header("X-Auth-Nonce", &bitstamp_nonce)
-				.header("X-Auth-Timestamp", &bitstamp_timestamp)
-				.header("X-Auth-Version", "v2")
-				.build() {
-				Ok(bitstamp_request) => {
-					match client.execute(bitstamp_request).await {
-						Ok(bitstamp_response) => {
-							match bitstamp_response.text().await {
-								Ok(bitstamp_response_text) => {
-									match serde_json::from_str::<Value>(&bitstamp_response_text) {
-										Ok(v) => {
-											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-												(Some(bid_str), Some(ask_str)) => {
-													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
-															// Place your calculations and updates here
-															//coinbase calculations to buy
-															let coinbase_taker_fee = 0.008;
-															let fraction_of_wallet_im_using = 0.06; //aka 6 percent
-															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
-															let fee_for_purchase = total_spent*coinbase_taker_fee;
-															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-															*coinbase_wallet -= total_spent;
-
-															let amount_of_sol = 
-															money_going_to_sol_after_fees/coinbase_buy_price_ask
-																							.expect(&format!("i14: coinbase_buy_price_ask is somehow Not Some. 
-																							even though to get to this point it had to be Some. 
-																							coinbase_buy_price_ask: {:?}
-																							Honestly restart the program from the last saved state. 
-																							The most likely error is a bit got flipped after the loop",
-																							&coinbase_buy_price_ask));
-
-															//bitstamp calculations for sell
-
-															let bitstamp_taker_fee = 0.004;
-															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-															*bitstamp_wallet += money_from_sell_after_fees;
-															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															if let Some(mut value_after) = value_after {
-																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
-																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																
-
-																//value_after = 56
-																//coinbase = 57
-																//bitstamp = 58
-																//kraken = 59
-																//gemini = 60
-																//since this is coinbase and bitstamp being updated, I will update:
-																//  56, 57, 58
-																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																let indices = [56, 57, 58];
-																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																neural_network.update_input(&indices, &scaled_values).await;
-															}
-															//03/08/24 - removed:
-															// //value_after = 56
-															// //coinbase = 57
-															// //bitstamp = 58
-															// //kraken = 59
-															// //gemini = 60
-															// //since this is coinbase and bitstamp being updated, I will update:
-															// //  56, 57, 58
-															// let indices = [56, 57, 58];
-															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															// neural_network.update_input(&indices, &scaled_values).await;
-
-															success = true;
-														},
-														_ => {
-															log::error!("i16: Failed to f64 parse bid or ask price");
-															if attempts > 3 {
-																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-															}
-															continue;
-														}
-													}
-												},
-												_ => {
-													log::error!("i16: Failed to originally parse bid or ask price");
-													if attempts > 3 {
-														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-													}
-													continue;
-												}
-											}
-										},
-										Err(_) => {
-											log::error!("i16: Failed to parse JSON");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-											}
-											continue;
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i16: failed to get response text");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue;
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i16: Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue;
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i16: Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue;
-				}
-			}
-		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			//03/02/24 - removed:
-            // //coinbase calculations
-            //     let coinbase_taker_fee = 0.008;
-    
-            //     let total_spent = 0.03*(*coinbase_wallet);
-            //     let fee_for_purchase = total_spent*coinbase_taker_fee;
-            //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-            //     //new state of coinbase wallet below
-            //     *coinbase_wallet -= total_spent;
-            //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-    
-            // //kraken calculations
-            //     //let kraken_taker_fee = 0.0026;
-                
-            //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-            //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-            //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-            //     //*kraken_wallet += money_from_sell_after_fees;
-    
-            //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            // //bitstamp calculations
-            //     let bitstamp_taker_fee = 0.004;
-            //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-            //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-            //     *bitstamp_wallet += money_from_sell_after_fees;
-
-
-
-            // //this will count as value after
-            //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-
-            //     //value_after = 56
-            //     //coinbase = 57
-            //     //bitstamp = 58
-            //     //kraken = 59
-            //     //gemini = 60
-            //     //since this is coinbase and kraken being updated, I will update:
-            //     //  56, 57, 59
-            //     let indices = [56, 57, 58];
-            //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-            //     //01/24/24 - removed and added:
-            //         //neural_network.update_input(&indices, &new_values);
-            //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //         //neural_network.update_input(&indices, &transformed_values).await;
-            //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            //         neural_network.update_input(&indices, &scaled_values).await;
-    
-    
-            //     return Ok(value_after)
-
-    }
-
-    pub async fn s_i17_sol_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
-
-			//03/02/24 - added:
-            // let now = Utc::now();
-            // let time_stamp = now.timestamp().to_string();
-            // let method = "GET";
-            // let request_path = "/api/v3/brokerage/best_bid_ask";
-            // let body = "";
-            // let message = format!("{}{}{}{}", &time_stamp, 
-            // &method, &request_path, &body);
-            // type HmacSha256 = Hmac<Sha256>;
-            // fn sign(message: &str, coinbase_secret: &str) -> String {
-            // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-            //             .expect("HMAC can take key of any size");
-            // mac.update(message.as_bytes());
-            // let result = mac.finalize();
-            // let code_bytes = result.into_bytes();
-            // hex::encode(code_bytes)
-            // }
-            // let coinbase_signature = sign(&message, &coinbase_secret);
-    
-            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-            // .header("CB-ACCESS-KEY", coinbase_api_key)
-            // .header("CB-ACCESS-SIGN", &coinbase_signature)
-            // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            // .build()
-            // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //manages the error I described above
-            // //let request = match request {
-            // //Ok(req) => req,
-            // //Err(e) => {
-            // //eprintln!("Failed to build request: \n{}", e);
-            // //return Err(e);
-            // //}
-            // //};
-    
-            // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //let response = match response {
-            // //    Ok(resp) => resp,
-            // //    Err(e) => {
-            // //        eprintln!("Failed to execute request: \n{}", e);
-            // //        return Err(e);
-            // //    }
-            // //};
-    
-    
-            // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-    
-            // //added 12/29/23
-            // //this is the parsing
-            // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // let mut coinbase_sell_price = 0.0;
-            // let mut coinbase_buy_price = 0.0;
-    
-            // // Access the pricebooks array
-            // if let Some(pricebooks) = v["pricebooks"].as_array() {
-            //     // Iterate over each pricebook
-            //     for pricebook in pricebooks {
-            //         // Access the product_id, bids, and asks
-            //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
-            //         let bids = &pricebook["bids"][0];
-            //         let asks = &pricebook["asks"][0];
-            
-            //         // Access the price and size of the bids and asks
-            //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
-            //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
-            
-            //         println!("Product ID: {}", product_id);
-            //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
-            //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
-            //     }
-            // }
-    
-            //manages any errors from line above
-            //let response_text = match response_text {
-            //    Ok(t) => t,
-            //    Err(e) => {
-            //        eprintln!("Failed to read response text: \n{}", e);
-            //        return;
-            //    }
-            //};
-    
-            //prints the actual response
-            //println!("list accounts response\n{:?}", &response_text);
-    
-    
-    
-
-
-	//03/02/24 - added:
-		let now = Utc::now();
-		let time_stamp = now.timestamp().to_string();
-		let method = "GET";
-		let request_path = "/api/v3/brokerage/best_bid_ask";
-		let body = "";
-		let message = format!("{}{}{}{}", &time_stamp, 
-			&method, &request_path, &body);
-		type HmacSha256 = Hmac<Sha256>;
-		fn sign(message: &str, coinbase_secret: &str) -> String {
-			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-					.expect("HMAC can take key of any size");
-			mac.update(message.as_bytes());
-			let result = mac.finalize();
-			let code_bytes = result.into_bytes();
-			hex::encode(code_bytes)
-		}
-		let coinbase_signature = sign(&message, &coinbase_secret);
-
-		
-		let mut coinbase_buy_price_ask: Option<f64> = None;
-		let mut attempts = 0;
-		let mut success = false;
-		loop {
-			attempts +=1;
-			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-			.header("CB-ACCESS-KEY", coinbase_api_key)
-			.header("CB-ACCESS-SIGN", &coinbase_signature)
-			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
-			.build();
-
-			match request {
-				Ok(req) => {
-					let response = client.execute(req).await;
-					match response {
-						Ok(resp) => {
-							let response_text = resp.text().await;
-							match response_text {
-								Ok(text) => {
-									match serde_json::from_str::<Value>(&text) {
-										Ok(v) => {
-											if let Some(pricebooks) = v["pricebooks"].as_array() {
-												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													//let bids = &pricebook["bids"][0];
-													let asks = &pricebook["asks"][0];
-													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-		
-													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-														(/*Some(bid_str),*/ Some(ask_str)) => {
-															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-																(/*Ok(bid_str),*/ Ok(ask_str)) => {
-																	//coinbase_sell_price_bid = Some(bid_str);
-																	coinbase_buy_price_ask = Some(ask_str);
-	
-																		success = true;
-																},
-																_ => {
-																	log::error!("i17:  coinbase:  Failed to f64 parse JSON");
-																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																	}
-																	continue ;
-																}
-															}
-														},
-														_ => {
-															log::error!("i17:  coinbase:  Failed to get ask price");
-															if attempts > 3 {
-																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-															}
-															continue ;
-														}
-													}
-												}
-											//03/02/24 - added else condition
-											} else {
-												log::error!("i17:  coinbase:  Failed to get pricebooks as array.");
-												if attempts > 3 {
-													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-												}
-												continue;
-											}
-										},
-										Err(_) => {
-											log::error!("i17:  coinbase:  Failed to parse outer JSON as str.");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-											}
-											continue ; // Continue to the next iteration if parsing fails
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i17:  coinbase:  Failed to get response text.");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue ; // Continue to the next iteration if getting response text fails
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i17:  coinbase:  Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue; // Continue to the next iteration if executing request fails
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i17:  coinbase:  Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue; // Continue to the next iteration if building request fails
-				}
-			}
-			if success == true {
-				break;
-			}
-		}
-			
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
-            //02/09/24 - updated tokio. removed:  
-                //delay_for(Duration::from_secs(3)).await;
-            //02/09/24 - updated tokio. added in its place:
-            println!("sol 7 coinbase bitstamp: 3 sec delay");
-            let when = tokio::time::Instant::now() + Duration::from_secs(3);
-            tokio::time::sleep_until(when).await;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //-------------------------Bitstamp---------------------------//
-                //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
-
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
-
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-
-
-
-
-
-
-//--------------------Account-balances------------------------------------------//
-
-
-
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-	//03/02/24 - removed:
-	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-	// 		.header("X-Auth-Signature", bitstamp_signature)
-	// 		.header("X-Auth-Nonce", bitstamp_nonce)
-	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
-	// 		.header("X-Auth-Version", "v2")
-	// 		//.header("Content-Type", content_type)
-	// 		//.body(payload_string)
-	// 		.build()
-	// 		.expect("\ncould not build bitstamp_request");
-
-	// 	let bitstamp_response = client.execute(bitstamp_request).await
-	// 		.expect("Failed to execute Bitstamp request");
-	// 	let bitstamp_response_text = bitstamp_response.text().await
-	// 		.expect("Failed to turn response into text");
-	// 	//probably dont need "bitstamp" once we transfer this to the actual function
-	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-	//     .expect("Failed to parse JSON");
-
-	// // Extract the bid and ask values
-	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
-            
-    
-
-
-	//03/02/24 - added:
-		let mut success = false;
-		let mut attempts = 0;
-		let mut value_after: Option<f64> = None;
-
-		while !success && attempts <=3 {
-			attempts += 1;
-
-			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-				.header("X-Auth-Signature", &bitstamp_signature)
-				.header("X-Auth-Nonce", &bitstamp_nonce)
-				.header("X-Auth-Timestamp", &bitstamp_timestamp)
-				.header("X-Auth-Version", "v2")
-				.build() {
-				Ok(bitstamp_request) => {
-					match client.execute(bitstamp_request).await {
-						Ok(bitstamp_response) => {
-							match bitstamp_response.text().await {
-								Ok(bitstamp_response_text) => {
-									match serde_json::from_str::<Value>(&bitstamp_response_text) {
-										Ok(v) => {
-											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-												(Some(bid_str), Some(ask_str)) => {
-													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
-															// Place your calculations and updates here
-															//coinbase calculations to buy
-															let coinbase_taker_fee = 0.008;
-															let fraction_of_wallet_im_using = 0.07; //aka 7 percent
-															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
-															let fee_for_purchase = total_spent*coinbase_taker_fee;
-															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-															*coinbase_wallet -= total_spent;
-
-															let amount_of_sol = 
-															money_going_to_sol_after_fees/coinbase_buy_price_ask
-																							.expect(&format!("i17: coinbase_buy_price_ask is somehow Not Some. 
-																							even though to get to this point it had to be Some. 
-																							coinbase_buy_price_ask: {:?}
-																							Honestly restart the program from the last saved state. 
-																							The most likely error is a bit got flipped after the loop",
-																							&coinbase_buy_price_ask));
-
-															//bitstamp calculations for sell
-
-															let bitstamp_taker_fee = 0.004;
-															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-															*bitstamp_wallet += money_from_sell_after_fees;
-															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															if let Some(mut value_after) = value_after {
-																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
-																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																
-
-																//value_after = 56
-																//coinbase = 57
-																//bitstamp = 58
-																//kraken = 59
-																//gemini = 60
-																//since this is coinbase and bitstamp being updated, I will update:
-																//  56, 57, 58
-																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																let indices = [56, 57, 58];
-																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																neural_network.update_input(&indices, &scaled_values).await;
-															}
-															//03/08/24 - removed:
-															// //value_after = 56
-															// //coinbase = 57
-															// //bitstamp = 58
-															// //kraken = 59
-															// //gemini = 60
-															// //since this is coinbase and bitstamp being updated, I will update:
-															// //  56, 57, 58
-															// let indices = [56, 57, 58];
-															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															// neural_network.update_input(&indices, &scaled_values).await;
-
-															success = true;
-														},
-														_ => {
-															log::error!("i17: Failed to f64 parse bid or ask price");
-															if attempts > 3 {
-																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-															}
-															continue;
-														}
-													}
-												},
-												_ => {
-													log::error!("i17: Failed to originally parse bid or ask price");
-													if attempts > 3 {
-														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-													}
-													continue;
-												}
-											}
-										},
-										Err(_) => {
-											log::error!("i17: Failed to parse JSON");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-											}
-											continue;
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i17: failed to get response text");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue;
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i17: Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue;
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i17: Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue;
-				}
-			}
-		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			//03/02/24 - removed:
-            // //coinbase calculations
-            //     let coinbase_taker_fee = 0.008;
-    
-            //     let total_spent = 0.03*(*coinbase_wallet);
-            //     let fee_for_purchase = total_spent*coinbase_taker_fee;
-            //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-            //     //new state of coinbase wallet below
-            //     *coinbase_wallet -= total_spent;
-            //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-    
-            // //kraken calculations
-            //     //let kraken_taker_fee = 0.0026;
-                
-            //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-            //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-            //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-            //     //*kraken_wallet += money_from_sell_after_fees;
-    
-            //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            // //bitstamp calculations
-            //     let bitstamp_taker_fee = 0.004;
-            //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-            //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-            //     *bitstamp_wallet += money_from_sell_after_fees;
-
-
-
-            // //this will count as value after
-            //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-
-            //     //value_after = 56
-            //     //coinbase = 57
-            //     //bitstamp = 58
-            //     //kraken = 59
-            //     //gemini = 60
-            //     //since this is coinbase and kraken being updated, I will update:
-            //     //  56, 57, 59
-            //     let indices = [56, 57, 58];
-            //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-            //     //01/24/24 - removed and added:
-            //         //neural_network.update_input(&indices, &new_values);
-            //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //         //neural_network.update_input(&indices, &transformed_values).await;
-            //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            //         neural_network.update_input(&indices, &scaled_values).await;
-    
-    
-            //     return Ok(value_after)
-
-    }
-
-    pub async fn s_i18_sol_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
-
-			//03/02/24 - added:
-            // let now = Utc::now();
-            // let time_stamp = now.timestamp().to_string();
-            // let method = "GET";
-            // let request_path = "/api/v3/brokerage/best_bid_ask";
-            // let body = "";
-            // let message = format!("{}{}{}{}", &time_stamp, 
-            // &method, &request_path, &body);
-            // type HmacSha256 = Hmac<Sha256>;
-            // fn sign(message: &str, coinbase_secret: &str) -> String {
-            // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-            //             .expect("HMAC can take key of any size");
-            // mac.update(message.as_bytes());
-            // let result = mac.finalize();
-            // let code_bytes = result.into_bytes();
-            // hex::encode(code_bytes)
-            // }
-            // let coinbase_signature = sign(&message, &coinbase_secret);
-    
-            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-            // .header("CB-ACCESS-KEY", coinbase_api_key)
-            // .header("CB-ACCESS-SIGN", &coinbase_signature)
-            // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            // .build()
-            // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //manages the error I described above
-            // //let request = match request {
-            // //Ok(req) => req,
-            // //Err(e) => {
-            // //eprintln!("Failed to build request: \n{}", e);
-            // //return Err(e);
-            // //}
-            // //};
-    
-            // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //let response = match response {
-            // //    Ok(resp) => resp,
-            // //    Err(e) => {
-            // //        eprintln!("Failed to execute request: \n{}", e);
-            // //        return Err(e);
-            // //    }
-            // //};
-    
-    
-            // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-    
-            // //added 12/29/23
-            // //this is the parsing
-            // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // let mut coinbase_sell_price = 0.0;
-            // let mut coinbase_buy_price = 0.0;
-    
-            // // Access the pricebooks array
-            // if let Some(pricebooks) = v["pricebooks"].as_array() {
-            //     // Iterate over each pricebook
-            //     for pricebook in pricebooks {
-            //         // Access the product_id, bids, and asks
-            //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
-            //         let bids = &pricebook["bids"][0];
-            //         let asks = &pricebook["asks"][0];
-            
-            //         // Access the price and size of the bids and asks
-            //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
-            //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
-            
-            //         println!("Product ID: {}", product_id);
-            //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
-            //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
-            //     }
-            // }
-    
-            //manages any errors from line above
-            //let response_text = match response_text {
-            //    Ok(t) => t,
-            //    Err(e) => {
-            //        eprintln!("Failed to read response text: \n{}", e);
-            //        return;
-            //    }
-            //};
-    
-            //prints the actual response
-            //println!("list accounts response\n{:?}", &response_text);
-    
-    
-    
-
-
-	//03/02/24 - added:
-		let now = Utc::now();
-		let time_stamp = now.timestamp().to_string();
-		let method = "GET";
-		let request_path = "/api/v3/brokerage/best_bid_ask";
-		let body = "";
-		let message = format!("{}{}{}{}", &time_stamp, 
-			&method, &request_path, &body);
-		type HmacSha256 = Hmac<Sha256>;
-		fn sign(message: &str, coinbase_secret: &str) -> String {
-			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-					.expect("HMAC can take key of any size");
-			mac.update(message.as_bytes());
-			let result = mac.finalize();
-			let code_bytes = result.into_bytes();
-			hex::encode(code_bytes)
-		}
-		let coinbase_signature = sign(&message, &coinbase_secret);
-
-		
-		let mut coinbase_buy_price_ask: Option<f64> = None;
-		let mut attempts = 0;
-		let mut success = false;
-		loop {
-			attempts +=1;
-			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-			.header("CB-ACCESS-KEY", coinbase_api_key)
-			.header("CB-ACCESS-SIGN", &coinbase_signature)
-			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
-			.build();
-
-			match request {
-				Ok(req) => {
-					let response = client.execute(req).await;
-					match response {
-						Ok(resp) => {
-							let response_text = resp.text().await;
-							match response_text {
-								Ok(text) => {
-									match serde_json::from_str::<Value>(&text) {
-										Ok(v) => {
-											if let Some(pricebooks) = v["pricebooks"].as_array() {
-												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													//let bids = &pricebook["bids"][0];
-													let asks = &pricebook["asks"][0];
-													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-		
-													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-														(/*Some(bid_str),*/ Some(ask_str)) => {
-															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-																(/*Ok(bid_str),*/ Ok(ask_str)) => {
-																	//coinbase_sell_price_bid = Some(bid_str);
-																	coinbase_buy_price_ask = Some(ask_str);
-	
-																		success = true;
-																},
-																_ => {
-																	log::error!("i18:  coinbase:  Failed to f64 parse JSON");
-																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																	}
-																	continue ;
-																}
-															}
-														},
-														_ => {
-															log::error!("i18:  coinbase:  Failed to get ask price");
-															if attempts > 3 {
-																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-															}
-															continue ;
-														}
-													}
-												}
-											//03/02/24 - added else condition
-											} else {
-												log::error!("i18:  coinbase:  Failed to get pricebooks as array.");
-												if attempts > 3 {
-													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-												}
-												continue;
-											}
-										},
-										Err(_) => {
-											log::error!("i18:  coinbase:  Failed to parse outer JSON as str.");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-											}
-											continue ; // Continue to the next iteration if parsing fails
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i18:  coinbase:  Failed to get response text.");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue ; // Continue to the next iteration if getting response text fails
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i18:  coinbase:  Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue; // Continue to the next iteration if executing request fails
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i18:  coinbase:  Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue; // Continue to the next iteration if building request fails
-				}
-			}
-			if success == true {
-				break;
-			}
-		}
-			
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
-            //02/09/24 - updated tokio. removed:  
-                //delay_for(Duration::from_secs(3)).await;
-            //02/09/24 - updated tokio. added in its place:
-            println!("sol 8 coinbase bitstamp: 3 sec delay");
-            let when = tokio::time::Instant::now() + Duration::from_secs(3);
-            tokio::time::sleep_until(when).await;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //-------------------------Bitstamp---------------------------//
-                //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
-
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
-
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-
-
-
-
-
-
-//--------------------Account-balances------------------------------------------//
-
-
-
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-	//03/02/24 - removed:
-	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-	// 		.header("X-Auth-Signature", bitstamp_signature)
-	// 		.header("X-Auth-Nonce", bitstamp_nonce)
-	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
-	// 		.header("X-Auth-Version", "v2")
-	// 		//.header("Content-Type", content_type)
-	// 		//.body(payload_string)
-	// 		.build()
-	// 		.expect("\ncould not build bitstamp_request");
-
-	// 	let bitstamp_response = client.execute(bitstamp_request).await
-	// 		.expect("Failed to execute Bitstamp request");
-	// 	let bitstamp_response_text = bitstamp_response.text().await
-	// 		.expect("Failed to turn response into text");
-	// 	//probably dont need "bitstamp" once we transfer this to the actual function
-	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-	//     .expect("Failed to parse JSON");
-
-	// // Extract the bid and ask values
-	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
-            
-    
-
-
-	//03/02/24 - added:
-		let mut success = false;
-		let mut attempts = 0;
-		let mut value_after: Option<f64> = None;
-
-		while !success && attempts <=3 {
-			attempts += 1;
-
-			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-				.header("X-Auth-Signature", &bitstamp_signature)
-				.header("X-Auth-Nonce", &bitstamp_nonce)
-				.header("X-Auth-Timestamp", &bitstamp_timestamp)
-				.header("X-Auth-Version", "v2")
-				.build() {
-				Ok(bitstamp_request) => {
-					match client.execute(bitstamp_request).await {
-						Ok(bitstamp_response) => {
-							match bitstamp_response.text().await {
-								Ok(bitstamp_response_text) => {
-									match serde_json::from_str::<Value>(&bitstamp_response_text) {
-										Ok(v) => {
-											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-												(Some(bid_str), Some(ask_str)) => {
-													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
-															// Place your calculations and updates here
-															//coinbase calculations to buy
-															let coinbase_taker_fee = 0.008;
-															let fraction_of_wallet_im_using = 0.08; //aka 8 percent
-															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
-															let fee_for_purchase = total_spent*coinbase_taker_fee;
-															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-															*coinbase_wallet -= total_spent;
-
-															let amount_of_sol = 
-															money_going_to_sol_after_fees/coinbase_buy_price_ask
-																							.expect(&format!("i18: coinbase_buy_price_ask is somehow Not Some. 
-																							even though to get to this point it had to be Some. 
-																							coinbase_buy_price_ask: {:?}
-																							Honestly restart the program from the last saved state. 
-																							The most likely error is a bit got flipped after the loop",
-																							&coinbase_buy_price_ask));
-
-															//bitstamp calculations for sell
-
-															let bitstamp_taker_fee = 0.004;
-															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-															*bitstamp_wallet += money_from_sell_after_fees;
-															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															if let Some(mut value_after) = value_after {
-																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
-																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																
-
-																//value_after = 56
-																//coinbase = 57
-																//bitstamp = 58
-																//kraken = 59
-																//gemini = 60
-																//since this is coinbase and bitstamp being updated, I will update:
-																//  56, 57, 58
-																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																let indices = [56, 57, 58];
-																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																neural_network.update_input(&indices, &scaled_values).await;
-															}
-															//03/08/24 - removed:
-															// //value_after = 56
-															// //coinbase = 57
-															// //bitstamp = 58
-															// //kraken = 59
-															// //gemini = 60
-															// //since this is coinbase and bitstamp being updated, I will update:
-															// //  56, 57, 58
-															// let indices = [56, 57, 58];
-															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															// neural_network.update_input(&indices, &scaled_values).await;
-
-															success = true;
-														},
-														_ => {
-															log::error!("i18: Failed to f64 parse bid or ask price");
-															if attempts > 3 {
-																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-															}
-															continue;
-														}
-													}
-												},
-												_ => {
-													log::error!("i18: Failed to originally parse bid or ask price");
-													if attempts > 3 {
-														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-													}
-													continue;
-												}
-											}
-										},
-										Err(_) => {
-											log::error!("i18: Failed to parse JSON");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-											}
-											continue;
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i18: failed to get response text");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue;
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i18: Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue;
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i18: Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue;
-				}
-			}
-		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			//03/02/24 - removed:
-            // //coinbase calculations
-            //     let coinbase_taker_fee = 0.008;
-    
-            //     let total_spent = 0.03*(*coinbase_wallet);
-            //     let fee_for_purchase = total_spent*coinbase_taker_fee;
-            //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-            //     //new state of coinbase wallet below
-            //     *coinbase_wallet -= total_spent;
-            //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-    
-            // //kraken calculations
-            //     //let kraken_taker_fee = 0.0026;
-                
-            //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-            //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-            //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-            //     //*kraken_wallet += money_from_sell_after_fees;
-    
-            //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            // //bitstamp calculations
-            //     let bitstamp_taker_fee = 0.004;
-            //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-            //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-            //     *bitstamp_wallet += money_from_sell_after_fees;
-
-
-
-            // //this will count as value after
-            //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-
-            //     //value_after = 56
-            //     //coinbase = 57
-            //     //bitstamp = 58
-            //     //kraken = 59
-            //     //gemini = 60
-            //     //since this is coinbase and kraken being updated, I will update:
-            //     //  56, 57, 59
-            //     let indices = [56, 57, 58];
-            //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-            //     //01/24/24 - removed and added:
-            //         //neural_network.update_input(&indices, &new_values);
-            //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //         //neural_network.update_input(&indices, &transformed_values).await;
-            //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            //         neural_network.update_input(&indices, &scaled_values).await;
-    
-    
-            //     return Ok(value_after)
-
-    }
-
-    pub async fn s_i19_sol_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
-
-			//03/02/24 - added:
-            // let now = Utc::now();
-            // let time_stamp = now.timestamp().to_string();
-            // let method = "GET";
-            // let request_path = "/api/v3/brokerage/best_bid_ask";
-            // let body = "";
-            // let message = format!("{}{}{}{}", &time_stamp, 
-            // &method, &request_path, &body);
-            // type HmacSha256 = Hmac<Sha256>;
-            // fn sign(message: &str, coinbase_secret: &str) -> String {
-            // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-            //             .expect("HMAC can take key of any size");
-            // mac.update(message.as_bytes());
-            // let result = mac.finalize();
-            // let code_bytes = result.into_bytes();
-            // hex::encode(code_bytes)
-            // }
-            // let coinbase_signature = sign(&message, &coinbase_secret);
-    
-            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-            // .header("CB-ACCESS-KEY", coinbase_api_key)
-            // .header("CB-ACCESS-SIGN", &coinbase_signature)
-            // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            // .build()
-            // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //manages the error I described above
-            // //let request = match request {
-            // //Ok(req) => req,
-            // //Err(e) => {
-            // //eprintln!("Failed to build request: \n{}", e);
-            // //return Err(e);
-            // //}
-            // //};
-    
-            // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //let response = match response {
-            // //    Ok(resp) => resp,
-            // //    Err(e) => {
-            // //        eprintln!("Failed to execute request: \n{}", e);
-            // //        return Err(e);
-            // //    }
-            // //};
-    
-    
-            // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-    
-            // //added 12/29/23
-            // //this is the parsing
-            // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // let mut coinbase_sell_price = 0.0;
-            // let mut coinbase_buy_price = 0.0;
-    
-            // // Access the pricebooks array
-            // if let Some(pricebooks) = v["pricebooks"].as_array() {
-            //     // Iterate over each pricebook
-            //     for pricebook in pricebooks {
-            //         // Access the product_id, bids, and asks
-            //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
-            //         let bids = &pricebook["bids"][0];
-            //         let asks = &pricebook["asks"][0];
-            
-            //         // Access the price and size of the bids and asks
-            //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
-            //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
-            
-            //         println!("Product ID: {}", product_id);
-            //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
-            //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
-            //     }
-            // }
-    
-            //manages any errors from line above
-            //let response_text = match response_text {
-            //    Ok(t) => t,
-            //    Err(e) => {
-            //        eprintln!("Failed to read response text: \n{}", e);
-            //        return;
-            //    }
-            //};
-    
-            //prints the actual response
-            //println!("list accounts response\n{:?}", &response_text);
-    
-    
-    
-
-
-	//03/02/24 - added:
-		let now = Utc::now();
-		let time_stamp = now.timestamp().to_string();
-		let method = "GET";
-		let request_path = "/api/v3/brokerage/best_bid_ask";
-		let body = "";
-		let message = format!("{}{}{}{}", &time_stamp, 
-			&method, &request_path, &body);
-		type HmacSha256 = Hmac<Sha256>;
-		fn sign(message: &str, coinbase_secret: &str) -> String {
-			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-					.expect("HMAC can take key of any size");
-			mac.update(message.as_bytes());
-			let result = mac.finalize();
-			let code_bytes = result.into_bytes();
-			hex::encode(code_bytes)
-		}
-		let coinbase_signature = sign(&message, &coinbase_secret);
-
-		
-		let mut coinbase_buy_price_ask: Option<f64> = None;
-		let mut attempts = 0;
-		let mut success = false;
-		loop {
-			attempts +=1;
-			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-			.header("CB-ACCESS-KEY", coinbase_api_key)
-			.header("CB-ACCESS-SIGN", &coinbase_signature)
-			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
-			.build();
-
-			match request {
-				Ok(req) => {
-					let response = client.execute(req).await;
-					match response {
-						Ok(resp) => {
-							let response_text = resp.text().await;
-							match response_text {
-								Ok(text) => {
-									match serde_json::from_str::<Value>(&text) {
-										Ok(v) => {
-											if let Some(pricebooks) = v["pricebooks"].as_array() {
-												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													//let bids = &pricebook["bids"][0];
-													let asks = &pricebook["asks"][0];
-													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-		
-													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-														(/*Some(bid_str),*/ Some(ask_str)) => {
-															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-																(/*Ok(bid_str),*/ Ok(ask_str)) => {
-																	//coinbase_sell_price_bid = Some(bid_str);
-																	coinbase_buy_price_ask = Some(ask_str);
-	
-																		success = true;
-																},
-																_ => {
-																	log::error!("i19:  coinbase:  Failed to f64 parse JSON");
-																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																	}
-																	continue ;
-																}
-															}
-														},
-														_ => {
-															log::error!("i19:  coinbase:  Failed to get ask price");
-															if attempts > 3 {
-																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-															}
-															continue ;
-														}
-													}
-												}
-											//03/02/24 - added else condition
-											} else {
-												log::error!("i19:  coinbase:  Failed to get pricebooks as array.");
-												if attempts > 3 {
-													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-												}
-												continue;
-											}
-										},
-										Err(_) => {
-											log::error!("i19:  coinbase:  Failed to parse outer JSON as str.");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-											}
-											continue ; // Continue to the next iteration if parsing fails
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i19:  coinbase:  Failed to get response text.");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue ; // Continue to the next iteration if getting response text fails
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i19:  coinbase:  Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue; // Continue to the next iteration if executing request fails
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i19:  coinbase:  Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue; // Continue to the next iteration if building request fails
-				}
-			}
-			if success == true {
-				break;
-			}
-		}
-			
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
-            //02/09/24 - updated tokio. removed:  
-                //delay_for(Duration::from_secs(3)).await;
-            //02/09/24 - updated tokio. added in its place:
-            println!("sol 9 coinbase bitstamp: 3 sec delay");
-            let when = tokio::time::Instant::now() + Duration::from_secs(3);
-            tokio::time::sleep_until(when).await;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //-------------------------Bitstamp---------------------------//
-                //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
-
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
-
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-
-
-
-
-
-
-//--------------------Account-balances------------------------------------------//
-
-
-
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-	//03/02/24 - removed:
-	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-	// 		.header("X-Auth-Signature", bitstamp_signature)
-	// 		.header("X-Auth-Nonce", bitstamp_nonce)
-	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
-	// 		.header("X-Auth-Version", "v2")
-	// 		//.header("Content-Type", content_type)
-	// 		//.body(payload_string)
-	// 		.build()
-	// 		.expect("\ncould not build bitstamp_request");
-
-	// 	let bitstamp_response = client.execute(bitstamp_request).await
-	// 		.expect("Failed to execute Bitstamp request");
-	// 	let bitstamp_response_text = bitstamp_response.text().await
-	// 		.expect("Failed to turn response into text");
-	// 	//probably dont need "bitstamp" once we transfer this to the actual function
-	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-	//     .expect("Failed to parse JSON");
-
-	// // Extract the bid and ask values
-	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
-            
-    
-
-
-	//03/02/24 - added:
-		let mut success = false;
-		let mut attempts = 0;
-		let mut value_after: Option<f64> = None;
-
-		while !success && attempts <=3 {
-			attempts += 1;
-
-			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-				.header("X-Auth-Signature", &bitstamp_signature)
-				.header("X-Auth-Nonce", &bitstamp_nonce)
-				.header("X-Auth-Timestamp", &bitstamp_timestamp)
-				.header("X-Auth-Version", "v2")
-				.build() {
-				Ok(bitstamp_request) => {
-					match client.execute(bitstamp_request).await {
-						Ok(bitstamp_response) => {
-							match bitstamp_response.text().await {
-								Ok(bitstamp_response_text) => {
-									match serde_json::from_str::<Value>(&bitstamp_response_text) {
-										Ok(v) => {
-											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-												(Some(bid_str), Some(ask_str)) => {
-													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
-															// Place your calculations and updates here
-															//coinbase calculations to buy
-															let coinbase_taker_fee = 0.008;
-															let fraction_of_wallet_im_using = 0.09; //aka 9 percent
-															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
-															let fee_for_purchase = total_spent*coinbase_taker_fee;
-															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-															*coinbase_wallet -= total_spent;
-
-															let amount_of_sol = 
-															money_going_to_sol_after_fees/coinbase_buy_price_ask
-																							.expect(&format!("i19: coinbase_buy_price_ask is somehow Not Some. 
-																							even though to get to this point it had to be Some. 
-																							coinbase_buy_price_ask: {:?}
-																							Honestly restart the program from the last saved state. 
-																							The most likely error is a bit got flipped after the loop",
-																							&coinbase_buy_price_ask));
-
-															//bitstamp calculations for sell
-
-															let bitstamp_taker_fee = 0.004;
-															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-															*bitstamp_wallet += money_from_sell_after_fees;
-															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															if let Some(mut value_after) = value_after {
-																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
-																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																
-
-																//value_after = 56
-																//coinbase = 57
-																//bitstamp = 58
-																//kraken = 59
-																//gemini = 60
-																//since this is coinbase and bitstamp being updated, I will update:
-																//  56, 57, 58
-																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																let indices = [56, 57, 58];
-																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																neural_network.update_input(&indices, &scaled_values).await;
-															}
-															//03/08/24 - removed:
-															// //value_after = 56
-															// //coinbase = 57
-															// //bitstamp = 58
-															// //kraken = 59
-															// //gemini = 60
-															// //since this is coinbase and bitstamp being updated, I will update:
-															// //  56, 57, 58
-															// let indices = [56, 57, 58];
-															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															// neural_network.update_input(&indices, &scaled_values).await;
-
-															success = true;
-														},
-														_ => {
-															log::error!("i19: Failed to f64 parse bid or ask price");
-															if attempts > 3 {
-																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-															}
-															continue;
-														}
-													}
-												},
-												_ => {
-													log::error!("i19: Failed to originally parse bid or ask price");
-													if attempts > 3 {
-														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-													}
-													continue;
-												}
-											}
-										},
-										Err(_) => {
-											log::error!("i19: Failed to parse JSON");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-											}
-											continue;
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i19: failed to get response text");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue;
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i19: Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue;
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i19: Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue;
-				}
-			}
-		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			//03/02/24 - removed:
-            // //coinbase calculations
-            //     let coinbase_taker_fee = 0.008;
-    
-            //     let total_spent = 0.03*(*coinbase_wallet);
-            //     let fee_for_purchase = total_spent*coinbase_taker_fee;
-            //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-            //     //new state of coinbase wallet below
-            //     *coinbase_wallet -= total_spent;
-            //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-    
-            // //kraken calculations
-            //     //let kraken_taker_fee = 0.0026;
-                
-            //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-            //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-            //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-            //     //*kraken_wallet += money_from_sell_after_fees;
-    
-            //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            // //bitstamp calculations
-            //     let bitstamp_taker_fee = 0.004;
-            //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-            //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-            //     *bitstamp_wallet += money_from_sell_after_fees;
-
-
-
-            // //this will count as value after
-            //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-
-            //     //value_after = 56
-            //     //coinbase = 57
-            //     //bitstamp = 58
-            //     //kraken = 59
-            //     //gemini = 60
-            //     //since this is coinbase and kraken being updated, I will update:
-            //     //  56, 57, 59
-            //     let indices = [56, 57, 58];
-            //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-            //     //01/24/24 - removed and added:
-            //         //neural_network.update_input(&indices, &new_values);
-            //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //         //neural_network.update_input(&indices, &transformed_values).await;
-            //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            //         neural_network.update_input(&indices, &scaled_values).await;
-    
-    
-            //     return Ok(value_after)
-
-    }
-
-    pub async fn s_i20_sol_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
-        gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
-
-			//03/02/24 - added:
-            // let now = Utc::now();
-            // let time_stamp = now.timestamp().to_string();
-            // let method = "GET";
-            // let request_path = "/api/v3/brokerage/best_bid_ask";
-            // let body = "";
-            // let message = format!("{}{}{}{}", &time_stamp, 
-            // &method, &request_path, &body);
-            // type HmacSha256 = Hmac<Sha256>;
-            // fn sign(message: &str, coinbase_secret: &str) -> String {
-            // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-            //             .expect("HMAC can take key of any size");
-            // mac.update(message.as_bytes());
-            // let result = mac.finalize();
-            // let code_bytes = result.into_bytes();
-            // hex::encode(code_bytes)
-            // }
-            // let coinbase_signature = sign(&message, &coinbase_secret);
-    
-            // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-            // .header("CB-ACCESS-KEY", coinbase_api_key)
-            // .header("CB-ACCESS-SIGN", &coinbase_signature)
-            // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
-            // .build()
-            // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //manages the error I described above
-            // //let request = match request {
-            // //Ok(req) => req,
-            // //Err(e) => {
-            // //eprintln!("Failed to build request: \n{}", e);
-            // //return Err(e);
-            // //}
-            // //};
-    
-            // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // //let response = match response {
-            // //    Ok(resp) => resp,
-            // //    Err(e) => {
-            // //        eprintln!("Failed to execute request: \n{}", e);
-            // //        return Err(e);
-            // //    }
-            // //};
-    
-    
-            // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-    
-            // //added 12/29/23
-            // //this is the parsing
-            // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
-            // let mut coinbase_sell_price = 0.0;
-            // let mut coinbase_buy_price = 0.0;
-    
-            // // Access the pricebooks array
-            // if let Some(pricebooks) = v["pricebooks"].as_array() {
-            //     // Iterate over each pricebook
-            //     for pricebook in pricebooks {
-            //         // Access the product_id, bids, and asks
-            //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
-            //         let bids = &pricebook["bids"][0];
-            //         let asks = &pricebook["asks"][0];
-            
-            //         // Access the price and size of the bids and asks
-            //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
-            //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
-            //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
-            
-            //         println!("Product ID: {}", product_id);
-            //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
-            //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
-            //     }
-            // }
-    
-            //manages any errors from line above
-            //let response_text = match response_text {
-            //    Ok(t) => t,
-            //    Err(e) => {
-            //        eprintln!("Failed to read response text: \n{}", e);
-            //        return;
-            //    }
-            //};
-    
-            //prints the actual response
-            //println!("list accounts response\n{:?}", &response_text);
-    
-    
-    
-
-
-	//03/02/24 - added:
-		let now = Utc::now();
-		let time_stamp = now.timestamp().to_string();
-		let method = "GET";
-		let request_path = "/api/v3/brokerage/best_bid_ask";
-		let body = "";
-		let message = format!("{}{}{}{}", &time_stamp, 
-			&method, &request_path, &body);
-		type HmacSha256 = Hmac<Sha256>;
-		fn sign(message: &str, coinbase_secret: &str) -> String {
-			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
-					.expect("HMAC can take key of any size");
-			mac.update(message.as_bytes());
-			let result = mac.finalize();
-			let code_bytes = result.into_bytes();
-			hex::encode(code_bytes)
-		}
-		let coinbase_signature = sign(&message, &coinbase_secret);
-
-		
-		let mut coinbase_buy_price_ask: Option<f64> = None;
-		let mut attempts = 0;
-		let mut success = false;
-		loop {
-			attempts +=1;
-			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
-			.header("CB-ACCESS-KEY", coinbase_api_key)
-			.header("CB-ACCESS-SIGN", &coinbase_signature)
-			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
-			.build();
-
-			match request {
-				Ok(req) => {
-					let response = client.execute(req).await;
-					match response {
-						Ok(resp) => {
-							let response_text = resp.text().await;
-							match response_text {
-								Ok(text) => {
-									match serde_json::from_str::<Value>(&text) {
-										Ok(v) => {
-											if let Some(pricebooks) = v["pricebooks"].as_array() {
-												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													//let bids = &pricebook["bids"][0];
-													let asks = &pricebook["asks"][0];
-													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-		
-													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-														(/*Some(bid_str),*/ Some(ask_str)) => {
-															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-																(/*Ok(bid_str),*/ Ok(ask_str)) => {
-																	//coinbase_sell_price_bid = Some(bid_str);
-																	coinbase_buy_price_ask = Some(ask_str);
-	
-																		success = true;
-																},
-																_ => {
-																	log::error!("i20:  coinbase:  Failed to f64 parse JSON");
-																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																	}
-																	continue ;
-																}
-															}
-														},
-														_ => {
-															log::error!("i20:  coinbase:  Failed to get ask price");
-															if attempts > 3 {
-																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-															}
-															continue ;
-														}
-													}
-												}
-											//03/02/24 - added else condition
-											} else {
-												log::error!("i20:  coinbase:  Failed to get pricebooks as array.");
-												if attempts > 3 {
-													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-												}
-												continue;
-											}
-										},
-										Err(_) => {
-											log::error!("i20:  coinbase:  Failed to parse outer JSON as str.");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-											}
-											continue ; // Continue to the next iteration if parsing fails
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i20:  coinbase:  Failed to get response text.");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue ; // Continue to the next iteration if getting response text fails
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i20:  coinbase:  Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue; // Continue to the next iteration if executing request fails
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i20:  coinbase:  Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue; // Continue to the next iteration if building request fails
-				}
-			}
-			if success == true {
-				break;
-			}
-		}
-			
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
-            //02/09/24 - updated tokio. removed:  
-                //delay_for(Duration::from_secs(3)).await;
-            //02/09/24 - updated tokio. added in its place:
-            println!("sol 10 coinbase bitstamp: 3 sec delay");
-            let when = tokio::time::Instant::now() + Duration::from_secs(3);
-            tokio::time::sleep_until(when).await;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //-------------------------Bitstamp---------------------------//
-                //Bitstamp for some reason needs nonce to be 36 characters long. 
-	//	nonce is basically a unique id that needs to be different every time you make a request. 
-	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
-	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
-	//	and just make it a random 36 char string from it.
-
-	
-	//the exact same as the Coinbase signature. we'll see if it works
-	//apparently it doesnt so I will code comment it out for now
-	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-	//											.expect("HMAC can take key of any size");
-	//	mac.update(bitstamp_message.as_bytes());
-	//	let result = mac.finalize();
-	//	let code_bytes = result.into_bytes();
-	//	hex::encode(code_bytes)
-	//}
-
-	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
-		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
-			.expect("HMAC can take key of any size");
-		mac.update(bitstamp_message.as_bytes());
-		let result = mac.finalize();
-		let code_bytes = result.into_bytes();
-		hex::encode(code_bytes)
-	}
-	
-
-	let content_type = "application/x-www-form-urlencoded";
-	let payload_string = "offset=1";
-	//if we needed content_type, it is here
-	//let content_type = "application/json";
-	//this is the bitstamp message IF we needed content_type
-	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
-	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-
-
-
-
-
-
-
-//--------------------Account-balances------------------------------------------//
-
-
-
-	let the_uuid = Uuid::new_v4();
-	let bitstamp_nonce = the_uuid.to_string();
-	let bitstamp_timestamp = now.timestamp_millis().to_string();
-	//let content_type = "application/x-www-form-urlencoded";
-	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
-			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
-
-	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
-
-	//03/02/24 - removed:
-	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-	// 		.header("X-Auth-Signature", bitstamp_signature)
-	// 		.header("X-Auth-Nonce", bitstamp_nonce)
-	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
-	// 		.header("X-Auth-Version", "v2")
-	// 		//.header("Content-Type", content_type)
-	// 		//.body(payload_string)
-	// 		.build()
-	// 		.expect("\ncould not build bitstamp_request");
-
-	// 	let bitstamp_response = client.execute(bitstamp_request).await
-	// 		.expect("Failed to execute Bitstamp request");
-	// 	let bitstamp_response_text = bitstamp_response.text().await
-	// 		.expect("Failed to turn response into text");
-	// 	//probably dont need "bitstamp" once we transfer this to the actual function
-	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
-	//     .expect("Failed to parse JSON");
-
-	// // Extract the bid and ask values
-	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
-	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
-	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
-	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
-            
-    
-
-
-	//03/02/24 - added:
-		let mut success = false;
-		let mut attempts = 0;
-		let mut value_after: Option<f64> = None;
-
-		while !success && attempts <=3 {
-			attempts += 1;
-
-			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
-				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
-				.header("X-Auth-Signature", &bitstamp_signature)
-				.header("X-Auth-Nonce", &bitstamp_nonce)
-				.header("X-Auth-Timestamp", &bitstamp_timestamp)
-				.header("X-Auth-Version", "v2")
-				.build() {
-				Ok(bitstamp_request) => {
-					match client.execute(bitstamp_request).await {
-						Ok(bitstamp_response) => {
-							match bitstamp_response.text().await {
-								Ok(bitstamp_response_text) => {
-									match serde_json::from_str::<Value>(&bitstamp_response_text) {
-										Ok(v) => {
-											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-												(Some(bid_str), Some(ask_str)) => {
-													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
-															// Place your calculations and updates here
-															//coinbase calculations to buy
-															let coinbase_taker_fee = 0.008;
-															let fraction_of_wallet_im_using = 0.10; //aka 10 percent
-															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
-															let fee_for_purchase = total_spent*coinbase_taker_fee;
-															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-															*coinbase_wallet -= total_spent;
-
-															let amount_of_sol = 
-															money_going_to_sol_after_fees/coinbase_buy_price_ask
-																							.expect(&format!("i20: coinbase_buy_price_ask is somehow Not Some. 
-																							even though to get to this point it had to be Some. 
-																							coinbase_buy_price_ask: {:?}
-																							Honestly restart the program from the last saved state. 
-																							The most likely error is a bit got flipped after the loop",
-																							&coinbase_buy_price_ask));
-
-															//bitstamp calculations for sell
-
-															let bitstamp_taker_fee = 0.004;
-															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-															*bitstamp_wallet += money_from_sell_after_fees;
-															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
-															if let Some(mut value_after) = value_after {
-																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
-																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																
-
-																//value_after = 56
-																//coinbase = 57
-																//bitstamp = 58
-																//kraken = 59
-																//gemini = 60
-																//since this is coinbase and bitstamp being updated, I will update:
-																//  56, 57, 58
-																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																let indices = [56, 57, 58];
-																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																neural_network.update_input(&indices, &scaled_values).await;
-															}
-															//03/08/24 - removed:
-															// //value_after = 56
-															// //coinbase = 57
-															// //bitstamp = 58
-															// //kraken = 59
-															// //gemini = 60
-															// //since this is coinbase and bitstamp being updated, I will update:
-															// //  56, 57, 58
-															// let indices = [56, 57, 58];
-															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
-															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-															// neural_network.update_input(&indices, &scaled_values).await;
-
-															success = true;
-														},
-														_ => {
-															log::error!("i20: Failed to f64 parse bid or ask price");
-															if attempts > 3 {
-																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-															}
-															continue;
-														}
-													}
-												},
-												_ => {
-													log::error!("i20: Failed to originally parse bid or ask price");
-													if attempts > 3 {
-														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-													}
-													continue;
-												}
-											}
-										},
-										Err(_) => {
-											log::error!("i20: Failed to parse JSON");
-											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-											}
-											continue;
-										}
-									}
-								},
-								Err(_) => {
-									log::error!("i20: failed to get response text");
-									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
-									}
-									continue;
-								}
-							}
-						},
-						Err(_) => {
-							log::error!("i20: Failed to execute request");
-							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
-							}
-							continue;
-						}
-					}
-				},
-				Err(_) => {
-					log::error!("i20: Failed to build request");
-					if attempts > 3 {
-						panic!("Failed to build request after 3 attempts");
-					}
-					continue;
-				}
-			}
-		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			//03/02/24 - removed:
-            // //coinbase calculations
-            //     let coinbase_taker_fee = 0.008;
-    
-            //     let total_spent = 0.03*(*coinbase_wallet);
-            //     let fee_for_purchase = total_spent*coinbase_taker_fee;
-            //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
-            //     //new state of coinbase wallet below
-            //     *coinbase_wallet -= total_spent;
-            //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
-    
-            // //kraken calculations
-            //     //let kraken_taker_fee = 0.0026;
-                
-            //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
-            //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-            //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
-            //     //*kraken_wallet += money_from_sell_after_fees;
-    
-            //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-    
-            // //bitstamp calculations
-            //     let bitstamp_taker_fee = 0.004;
-            //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
-            //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
-            //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
-            //     *bitstamp_wallet += money_from_sell_after_fees;
-
-
-
-            // //this will count as value after
-            //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
-    
-
-            //     //value_after = 56
-            //     //coinbase = 57
-            //     //bitstamp = 58
-            //     //kraken = 59
-            //     //gemini = 60
-            //     //since this is coinbase and kraken being updated, I will update:
-            //     //  56, 57, 59
-            //     let indices = [56, 57, 58];
-            //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
-            //     //01/24/24 - removed and added:
-            //         //neural_network.update_input(&indices, &new_values);
-            //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
-            //         //neural_network.update_input(&indices, &transformed_values).await;
-            //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
-            //         neural_network.update_input(&indices, &scaled_values).await;
-    
-    
-            //     return Ok(value_after)
-
-    }
-    //end removal
+//     pub async fn s_i13_sol_3_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+//         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
+// 			//03/02/24 - added:
+//             // let now = Utc::now();
+//             // let time_stamp = now.timestamp().to_string();
+//             // let method = "GET";
+//             // let request_path = "/api/v3/brokerage/best_bid_ask";
+//             // let body = "";
+//             // let message = format!("{}{}{}{}", &time_stamp, 
+//             // &method, &request_path, &body);
+//             // type HmacSha256 = Hmac<Sha256>;
+//             // fn sign(message: &str, coinbase_secret: &str) -> String {
+//             // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+//             //             .expect("HMAC can take key of any size");
+//             // mac.update(message.as_bytes());
+//             // let result = mac.finalize();
+//             // let code_bytes = result.into_bytes();
+//             // hex::encode(code_bytes)
+//             // }
+//             // let coinbase_signature = sign(&message, &coinbase_secret);    
+//             // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+//             // .header("CB-ACCESS-KEY", coinbase_api_key)
+//             // .header("CB-ACCESS-SIGN", &coinbase_signature)
+//             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+//             // .build()
+//             // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //manages the error I described above
+//             // //let request = match request {
+//             // //Ok(req) => req,
+//             // //Err(e) => {
+//             // //eprintln!("Failed to build request: \n{}", e);
+//             // //return Err(e);
+//             // //}
+//             // //};    
+//             // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //let response = match response {
+//             // //    Ok(resp) => resp,
+//             // //    Err(e) => {
+//             // //        eprintln!("Failed to execute request: \n{}", e);
+//             // //        return Err(e);
+//             // //    }
+//             // //};   
+//             // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;    
+//             // //added 12/29/23
+//             // //this is the parsing
+//             // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // let mut coinbase_sell_price = 0.0;
+//             // let mut coinbase_buy_price = 0.0;    
+//             // // Access the pricebooks array
+//             // if let Some(pricebooks) = v["pricebooks"].as_array() {
+//             //     // Iterate over each pricebook
+//             //     for pricebook in pricebooks {
+//             //         // Access the product_id, bids, and asks
+//             //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
+//             //         let bids = &pricebook["bids"][0];
+//             //         let asks = &pricebook["asks"][0];            
+//             //         // Access the price and size of the bids and asks
+//             //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
+//             //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");            
+//             //         println!("Product ID: {}", product_id);
+//             //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
+//             //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
+//             //     }
+//             // }    
+//             //manages any errors from line above
+//             //let response_text = match response_text {
+//             //    Ok(t) => t,
+//             //    Err(e) => {
+//             //        eprintln!("Failed to read response text: \n{}", e);
+//             //        return;
+//             //    }
+//             //};    
+//             //prints the actual response
+//             //println!("list accounts response\n{:?}", &response_text);
+// 	//03/02/24 - added:
+// 		let now = Utc::now();
+// 		let time_stamp = now.timestamp().to_string();
+// 		let method = "GET";
+// 		let request_path = "/api/v3/brokerage/best_bid_ask";
+// 		let body = "";
+// 		let message = format!("{}{}{}{}", &time_stamp, 
+// 			&method, &request_path, &body);
+// 		type HmacSha256 = Hmac<Sha256>;
+// 		fn sign(message: &str, coinbase_secret: &str) -> String {
+// 			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+// 					.expect("HMAC can take key of any size");
+// 			mac.update(message.as_bytes());
+// 			let result = mac.finalize();
+// 			let code_bytes = result.into_bytes();
+// 			hex::encode(code_bytes)
+// 		}
+// 		let coinbase_signature = sign(&message, &coinbase_secret);		
+// 		let mut coinbase_buy_price_ask: Option<f64> = None;
+// 		let mut attempts = 0;
+// 		let mut success = false;
+// 		loop {
+// 			attempts +=1;
+// 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+// 			.header("CB-ACCESS-KEY", coinbase_api_key)
+// 			.header("CB-ACCESS-SIGN", &coinbase_signature)
+// 			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
+// 			.build();
+// 			match request {
+// 				Ok(req) => {
+// 					let response = client.execute(req).await;
+// 					match response {
+// 						Ok(resp) => {
+// 							let response_text = resp.text().await;
+// 							match response_text {
+// 								Ok(text) => {
+// 									match serde_json::from_str::<Value>(&text) {
+// 										Ok(v) => {
+// 											if let Some(pricebooks) = v["pricebooks"].as_array() {
+// 												for pricebook in pricebooks {
+// 													//let product_id = pricebook["product_id"].as_str();
+// 													//let bids = &pricebook["bids"][0];
+// 													let asks = &pricebook["asks"][0];
+// 													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+// 													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();		
+// 													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
+// 														(/*Some(bid_str),*/ Some(ask_str)) => {
+// 															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
+// 																(/*Ok(bid_str),*/ Ok(ask_str)) => {
+// 																	//coinbase_sell_price_bid = Some(bid_str);
+// 																	coinbase_buy_price_ask = Some(ask_str);	
+// 																		success = true;
+// 																},
+// 																_ => {
+// 																	log::error!("i13:  coinbase:  Failed to f64 parse JSON");
+// 																	if attempts > 3 {
+// 																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 																	}
+// 																	continue ;
+// 																}
+// 															}
+// 														},
+// 														_ => {
+// 															log::error!("i13:  coinbase:  Failed to get ask price");
+// 															if attempts > 3 {
+// 																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+// 																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+// 															}
+// 															continue ;
+// 														}
+// 													}
+// 												}
+// 											//03/02/24 - added else condition
+// 											} else {
+// 												log::error!("i13:  coinbase:  Failed to get pricebooks as array.");
+// 												if attempts > 3 {
+// 													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+// 												}
+// 												continue;
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i13:  coinbase:  Failed to parse outer JSON as str.");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 											}
+// 											continue ; // Continue to the next iteration if parsing fails
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i13:  coinbase:  Failed to get response text.");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue ; // Continue to the next iteration if getting response text fails
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i13:  coinbase:  Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue; // Continue to the next iteration if executing request fails
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i13:  coinbase:  Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue; // Continue to the next iteration if building request fails
+// 				}
+// 			}
+// 			if success == true {
+// 				break;
+// 			}
+// 		}
+//             //02/09/24 - updated tokio. removed:  
+//                 //delay_for(Duration::from_secs(3)).await;
+//             //02/09/24 - updated tokio. added in its place:
+//             println!("sol 3 coinbase bitstamp: 3 sec delay");
+//             let when = tokio::time::Instant::now() + Duration::from_secs(3);
+//             tokio::time::sleep_until(when).await;   
+//     //-------------------------Bitstamp---------------------------//
+//                 //Bitstamp for some reason needs nonce to be 36 characters long. 
+// 	//	nonce is basically a unique id that needs to be different every time you make a request. 
+// 	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+// 	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+// 	//	and just make it a random 36 char string from it.
+// 	//the exact same as the Coinbase signature. we'll see if it works
+// 	//apparently it doesnt so I will code comment it out for now
+// 	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 	//											.expect("HMAC can take key of any size");
+// 	//	mac.update(bitstamp_message.as_bytes());
+// 	//	let result = mac.finalize();
+// 	//	let code_bytes = result.into_bytes();
+// 	//	hex::encode(code_bytes)
+// 	//}
+// 	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 			.expect("HMAC can take key of any size");
+// 		mac.update(bitstamp_message.as_bytes());
+// 		let result = mac.finalize();
+// 		let code_bytes = result.into_bytes();
+// 		hex::encode(code_bytes)
+// 	}
+// 	let content_type = "application/x-www-form-urlencoded";
+// 	let payload_string = "offset=1";
+// 	//if we needed content_type, it is here
+// 	//let content_type = "application/json";
+// 	//this is the bitstamp message IF we needed content_type
+// 	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+// 	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// //--------------------Account-balances------------------------------------------//
+// 	let the_uuid = Uuid::new_v4();
+// 	let bitstamp_nonce = the_uuid.to_string();
+// 	let bitstamp_timestamp = now.timestamp_millis().to_string();
+// 	//let content_type = "application/x-www-form-urlencoded";
+// 	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+// 			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// 	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+// 	//03/02/24 - removed:
+// 	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 	// 		.header("X-Auth-Signature", bitstamp_signature)
+// 	// 		.header("X-Auth-Nonce", bitstamp_nonce)
+// 	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
+// 	// 		.header("X-Auth-Version", "v2")
+// 	// 		//.header("Content-Type", content_type)
+// 	// 		//.body(payload_string)
+// 	// 		.build()
+// 	// 		.expect("\ncould not build bitstamp_request");
+// 	// 	let bitstamp_response = client.execute(bitstamp_request).await
+// 	// 		.expect("Failed to execute Bitstamp request");
+// 	// 	let bitstamp_response_text = bitstamp_response.text().await
+// 	// 		.expect("Failed to turn response into text");
+// 	// 	//probably dont need "bitstamp" once we transfer this to the actual function
+// 	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+// 	//     .expect("Failed to parse JSON");
+// 	// // Extract the bid and ask values
+// 	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+// 	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
+// 	//03/02/24 - added:
+// 		let mut success = false;
+// 		let mut attempts = 0;
+// 		let mut value_after: Option<f64> = None;
+// 		while !success && attempts <=3 {
+// 			attempts += 1;
+// 			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 				.header("X-Auth-Signature", &bitstamp_signature)
+// 				.header("X-Auth-Nonce", &bitstamp_nonce)
+// 				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+// 				.header("X-Auth-Version", "v2")
+// 				.build() {
+// 				Ok(bitstamp_request) => {
+// 					match client.execute(bitstamp_request).await {
+// 						Ok(bitstamp_response) => {
+// 							match bitstamp_response.text().await {
+// 								Ok(bitstamp_response_text) => {
+// 									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+// 										Ok(v) => {
+// 											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+// 											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+// 											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+// 												(Some(bid_str), Some(ask_str)) => {
+// 													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+// 														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+// 															// Place your calculations and updates here
+// 															//coinbase calculations to buy
+// 															let coinbase_taker_fee = 0.008;
+// 															let fraction_of_wallet_im_using = 0.03; //aka 3 percent
+// 															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
+// 															let fee_for_purchase = total_spent*coinbase_taker_fee;
+// 															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+// 															*coinbase_wallet -= total_spent;
+// 															let amount_of_sol = 
+// 															money_going_to_sol_after_fees/coinbase_buy_price_ask
+// 																							.expect(&format!("i13: coinbase_buy_price_ask is somehow Not Some. 
+// 																							even though to get to this point it had to be Some. 
+// 																							coinbase_buy_price_ask: {:?}
+// 																							Honestly restart the program from the last saved state. 
+// 																							The most likely error is a bit got flipped after the loop",
+// 																							&coinbase_buy_price_ask));
+// 															//bitstamp calculations for sell
+// 															let bitstamp_taker_fee = 0.004;
+// 															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+// 															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+// 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+// 															*bitstamp_wallet += money_from_sell_after_fees;
+// 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+// 															if let Some(mut value_after) = value_after {
+// 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+// 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+// 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);																
+// 																//value_after = 56
+// 																//coinbase = 57
+// 																//bitstamp = 58
+// 																//kraken = 59
+// 																//gemini = 60
+// 																//since this is coinbase and bitstamp being updated, I will update:
+// 																//  56, 57, 58
+// 																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+// 																let indices = [56, 57, 58];
+// 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+// 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 																neural_network.update_input(&indices, &scaled_values).await;
+// 															}
+// 															//03/08/24 - removed:
+// 															// //value_after = 56
+// 															// //coinbase = 57
+// 															// //bitstamp = 58
+// 															// //kraken = 59
+// 															// //gemini = 60
+// 															// //since this is coinbase and bitstamp being updated, I will update:
+// 															// //  56, 57, 58
+// 															// let indices = [56, 57, 58];
+// 															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+// 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 															// neural_network.update_input(&indices, &scaled_values).await;
+// 															success = true;
+// 														},
+// 														_ => {
+// 															log::error!("i13: Failed to f64 parse bid or ask price");
+// 															if attempts > 3 {
+// 																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 															}
+// 															continue;
+// 														}
+// 													}
+// 												},
+// 												_ => {
+// 													log::error!("i13: Failed to originally parse bid or ask price");
+// 													if attempts > 3 {
+// 														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 													}
+// 													continue;
+// 												}
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i13: Failed to parse JSON");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+// 											}
+// 											continue;
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i13: failed to get response text");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue;
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i13: Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue;
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i13: Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue;
+// 				}
+// 			}
+// 		}
+// 		match value_after {
+// 			Some(value) => return Ok(value),
+// 			None => {
+// 				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+// 				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+// 			}
+// 		}
+// 			//03/02/24 - removed:
+//             // //coinbase calculations
+//             //     let coinbase_taker_fee = 0.008;
+//             //     let total_spent = 0.03*(*coinbase_wallet);
+//             //     let fee_for_purchase = total_spent*coinbase_taker_fee;
+//             //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+//             //     //new state of coinbase wallet below
+//             //     *coinbase_wallet -= total_spent;
+//             //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+//             // //kraken calculations
+//             //     //let kraken_taker_fee = 0.0026;        
+//             //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+//             //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+//             //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+//             //     //*kraken_wallet += money_from_sell_after_fees;
+//             //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             // //bitstamp calculations
+//             //     let bitstamp_taker_fee = 0.004;
+//             //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+//             //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+//             //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+//             //     *bitstamp_wallet += money_from_sell_after_fees;
+//             // //this will count as value after
+//             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             //     //value_after = 56
+//             //     //coinbase = 57
+//             //     //bitstamp = 58
+//             //     //kraken = 59
+//             //     //gemini = 60
+//             //     //since this is coinbase and kraken being updated, I will update:
+//             //     //  56, 57, 59
+//             //     let indices = [56, 57, 58];
+//             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+//             //     //01/24/24 - removed and added:
+//             //         //neural_network.update_input(&indices, &new_values);
+//             //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+//             //         //neural_network.update_input(&indices, &transformed_values).await;
+//             //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+//             //         neural_network.update_input(&indices, &scaled_values).await;
+//             //     return Ok(value_after)
+//     }
+//     pub async fn s_i14_sol_4_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+//         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
+// 			//03/02/24 - added:
+//             // let now = Utc::now();
+//             // let time_stamp = now.timestamp().to_string();
+//             // let method = "GET";
+//             // let request_path = "/api/v3/brokerage/best_bid_ask";
+//             // let body = "";
+//             // let message = format!("{}{}{}{}", &time_stamp, 
+//             // &method, &request_path, &body);
+//             // type HmacSha256 = Hmac<Sha256>;
+//             // fn sign(message: &str, coinbase_secret: &str) -> String {
+//             // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+//             //             .expect("HMAC can take key of any size");
+//             // mac.update(message.as_bytes());
+//             // let result = mac.finalize();
+//             // let code_bytes = result.into_bytes();
+//             // hex::encode(code_bytes)
+//             // }
+//             // let coinbase_signature = sign(&message, &coinbase_secret); 
+//             // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+//             // .header("CB-ACCESS-KEY", coinbase_api_key)
+//             // .header("CB-ACCESS-SIGN", &coinbase_signature)
+//             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+//             // .build()
+//             // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //manages the error I described above
+//             // //let request = match request {
+//             // //Ok(req) => req,
+//             // //Err(e) => {
+//             // //eprintln!("Failed to build request: \n{}", e);
+//             // //return Err(e);
+//             // //}
+//             // //};
+//             // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //let response = match response {
+//             // //    Ok(resp) => resp,
+//             // //    Err(e) => {
+//             // //        eprintln!("Failed to execute request: \n{}", e);
+//             // //        return Err(e);
+//             // //    }
+//             // //};
+//             // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //added 12/29/23
+//             // //this is the parsing
+//             // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // let mut coinbase_sell_price = 0.0;
+//             // let mut coinbase_buy_price = 0.0;
+//             // // Access the pricebooks array
+//             // if let Some(pricebooks) = v["pricebooks"].as_array() {
+//             //     // Iterate over each pricebook
+//             //     for pricebook in pricebooks {
+//             //         // Access the product_id, bids, and asks
+//             //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
+//             //         let bids = &pricebook["bids"][0];
+//             //         let asks = &pricebook["asks"][0];      
+//             //         // Access the price and size of the bids and asks
+//             //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
+//             //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");       
+//             //         println!("Product ID: {}", product_id);
+//             //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
+//             //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
+//             //     }
+//             // }
+//             //manages any errors from line above
+//             //let response_text = match response_text {
+//             //    Ok(t) => t,
+//             //    Err(e) => {
+//             //        eprintln!("Failed to read response text: \n{}", e);
+//             //        return;
+//             //    }
+//             //};
+//             //prints the actual response
+//             //println!("list accounts response\n{:?}", &response_text);
+// 	//03/02/24 - added:
+// 		let now = Utc::now();
+// 		let time_stamp = now.timestamp().to_string();
+// 		let method = "GET";
+// 		let request_path = "/api/v3/brokerage/best_bid_ask";
+// 		let body = "";
+// 		let message = format!("{}{}{}{}", &time_stamp, 
+// 			&method, &request_path, &body);
+// 		type HmacSha256 = Hmac<Sha256>;
+// 		fn sign(message: &str, coinbase_secret: &str) -> String {
+// 			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+// 					.expect("HMAC can take key of any size");
+// 			mac.update(message.as_bytes());
+// 			let result = mac.finalize();
+// 			let code_bytes = result.into_bytes();
+// 			hex::encode(code_bytes)
+// 		}
+// 		let coinbase_signature = sign(&message, &coinbase_secret);
+// 		let mut coinbase_buy_price_ask: Option<f64> = None;
+// 		let mut attempts = 0;
+// 		let mut success = false;
+// 		loop {
+// 			attempts +=1;
+// 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+// 			.header("CB-ACCESS-KEY", coinbase_api_key)
+// 			.header("CB-ACCESS-SIGN", &coinbase_signature)
+// 			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
+// 			.build();
+// 			match request {
+// 				Ok(req) => {
+// 					let response = client.execute(req).await;
+// 					match response {
+// 						Ok(resp) => {
+// 							let response_text = resp.text().await;
+// 							match response_text {
+// 								Ok(text) => {
+// 									match serde_json::from_str::<Value>(&text) {
+// 										Ok(v) => {
+// 											if let Some(pricebooks) = v["pricebooks"].as_array() {
+// 												for pricebook in pricebooks {
+// 													//let product_id = pricebook["product_id"].as_str();
+// 													//let bids = &pricebook["bids"][0];
+// 													let asks = &pricebook["asks"][0];
+// 													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+// 													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();	
+// 													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
+// 														(/*Some(bid_str),*/ Some(ask_str)) => {
+// 															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
+// 																(/*Ok(bid_str),*/ Ok(ask_str)) => {
+// 																	//coinbase_sell_price_bid = Some(bid_str);
+// 																	coinbase_buy_price_ask = Some(ask_str);
+// 																		success = true;
+// 																},
+// 																_ => {
+// 																	log::error!("i14:  coinbase:  Failed to f64 parse JSON");
+// 																	if attempts > 3 {
+// 																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 																	}
+// 																	continue ;
+// 																}
+// 															}
+// 														},
+// 														_ => {
+// 															log::error!("i14:  coinbase:  Failed to get ask price");
+// 															if attempts > 3 {
+// 																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+// 																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+// 															}
+// 															continue ;
+// 														}
+// 													}
+// 												}
+// 											//03/02/24 - added else condition
+// 											} else {
+// 												log::error!("i14:  coinbase:  Failed to get pricebooks as array.");
+// 												if attempts > 3 {
+// 													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+// 												}
+// 												continue;
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i14:  coinbase:  Failed to parse outer JSON as str.");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 											}
+// 											continue ; // Continue to the next iteration if parsing fails
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i14:  coinbase:  Failed to get response text.");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue ; // Continue to the next iteration if getting response text fails
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i14:  coinbase:  Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue; // Continue to the next iteration if executing request fails
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i14:  coinbase:  Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue; // Continue to the next iteration if building request fails
+// 				}
+// 			}
+// 			if success == true {
+// 				break;
+// 			}
+// 		}
+//             //02/09/24 - updated tokio. removed:  
+//                 //delay_for(Duration::from_secs(3)).await;
+//             //02/09/24 - updated tokio. added in its place:
+//             println!("sol 4 coinbase bitstamp: 3 sec delay");
+//             let when = tokio::time::Instant::now() + Duration::from_secs(3);
+//             tokio::time::sleep_until(when).await;
+//     //-------------------------Bitstamp---------------------------//
+//                 //Bitstamp for some reason needs nonce to be 36 characters long. 
+// 	//	nonce is basically a unique id that needs to be different every time you make a request. 
+// 	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+// 	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+// 	//	and just make it a random 36 char string from it.
+// 	//the exact same as the Coinbase signature. we'll see if it works
+// 	//apparently it doesnt so I will code comment it out for now
+// 	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 	//											.expect("HMAC can take key of any size");
+// 	//	mac.update(bitstamp_message.as_bytes());
+// 	//	let result = mac.finalize();
+// 	//	let code_bytes = result.into_bytes();
+// 	//	hex::encode(code_bytes)
+// 	//}
+// 	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 			.expect("HMAC can take key of any size");
+// 		mac.update(bitstamp_message.as_bytes());
+// 		let result = mac.finalize();
+// 		let code_bytes = result.into_bytes();
+// 		hex::encode(code_bytes)
+// 	}
+// 	let content_type = "application/x-www-form-urlencoded";
+// 	let payload_string = "offset=1";
+// 	//if we needed content_type, it is here
+// 	//let content_type = "application/json";
+// 	//this is the bitstamp message IF we needed content_type
+// 	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+// 	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// //--------------------Account-balances------------------------------------------//
+// 	let the_uuid = Uuid::new_v4();
+// 	let bitstamp_nonce = the_uuid.to_string();
+// 	let bitstamp_timestamp = now.timestamp_millis().to_string();
+// 	//let content_type = "application/x-www-form-urlencoded";
+// 	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+// 			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// 	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+// 	//03/02/24 - removed:
+// 	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 	// 		.header("X-Auth-Signature", bitstamp_signature)
+// 	// 		.header("X-Auth-Nonce", bitstamp_nonce)
+// 	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
+// 	// 		.header("X-Auth-Version", "v2")
+// 	// 		//.header("Content-Type", content_type)
+// 	// 		//.body(payload_string)
+// 	// 		.build()
+// 	// 		.expect("\ncould not build bitstamp_request");
+// 	// 	let bitstamp_response = client.execute(bitstamp_request).await
+// 	// 		.expect("Failed to execute Bitstamp request");
+// 	// 	let bitstamp_response_text = bitstamp_response.text().await
+// 	// 		.expect("Failed to turn response into text");
+// 	// 	//probably dont need "bitstamp" once we transfer this to the actual function
+// 	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+// 	//     .expect("Failed to parse JSON");
+// 	// // Extract the bid and ask values
+// 	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+// 	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
+// 	//03/02/24 - added:
+// 		let mut success = false;
+// 		let mut attempts = 0;
+// 		let mut value_after: Option<f64> = None;
+// 		while !success && attempts <=3 {
+// 			attempts += 1;
+// 			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 				.header("X-Auth-Signature", &bitstamp_signature)
+// 				.header("X-Auth-Nonce", &bitstamp_nonce)
+// 				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+// 				.header("X-Auth-Version", "v2")
+// 				.build() {
+// 				Ok(bitstamp_request) => {
+// 					match client.execute(bitstamp_request).await {
+// 						Ok(bitstamp_response) => {
+// 							match bitstamp_response.text().await {
+// 								Ok(bitstamp_response_text) => {
+// 									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+// 										Ok(v) => {
+// 											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+// 											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+// 											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+// 												(Some(bid_str), Some(ask_str)) => {
+// 													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+// 														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+// 															// Place your calculations and updates here
+// 															//coinbase calculations to buy
+// 															let coinbase_taker_fee = 0.008;
+// 															let fraction_of_wallet_im_using = 0.04; //aka 4 percent
+// 															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
+// 															let fee_for_purchase = total_spent*coinbase_taker_fee;
+// 															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+// 															*coinbase_wallet -= total_spent;
+// 															let amount_of_sol = 
+// 															money_going_to_sol_after_fees/coinbase_buy_price_ask
+// 																							.expect(&format!("i14: coinbase_buy_price_ask is somehow Not Some. 
+// 																							even though to get to this point it had to be Some. 
+// 																							coinbase_buy_price_ask: {:?}
+// 																							Honestly restart the program from the last saved state. 
+// 																							The most likely error is a bit got flipped after the loop",
+// 																							&coinbase_buy_price_ask));
+// 															//bitstamp calculations for sell
+// 															let bitstamp_taker_fee = 0.004;
+// 															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+// 															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+// 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+// 															*bitstamp_wallet += money_from_sell_after_fees;
+// 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+// 															if let Some(mut value_after) = value_after {
+// 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+// 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+// 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+// 																//value_after = 56
+// 																//coinbase = 57
+// 																//bitstamp = 58
+// 																//kraken = 59
+// 																//gemini = 60
+// 																//since this is coinbase and bitstamp being updated, I will update:
+// 																//  56, 57, 58
+// 																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+// 																let indices = [56, 57, 58];
+// 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+// 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 																neural_network.update_input(&indices, &scaled_values).await;
+// 															}
+// 															//03/08/24 - removed:
+// 															// //value_after = 56
+// 															// //coinbase = 57
+// 															// //bitstamp = 58
+// 															// //kraken = 59
+// 															// //gemini = 60
+// 															// //since this is coinbase and bitstamp being updated, I will update:
+// 															// //  56, 57, 58
+// 															// let indices = [56, 57, 58];
+// 															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+// 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 															// neural_network.update_input(&indices, &scaled_values).await;
+// 															success = true;
+// 														},
+// 														_ => {
+// 															log::error!("i14: Failed to f64 parse bid or ask price");
+// 															if attempts > 3 {
+// 																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 															}
+// 															continue;
+// 														}
+// 													}
+// 												},
+// 												_ => {
+// 													log::error!("i14: Failed to originally parse bid or ask price");
+// 													if attempts > 3 {
+// 														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 													}
+// 													continue;
+// 												}
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i14: Failed to parse JSON");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+// 											}
+// 											continue;
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i14: failed to get response text");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue;
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i14: Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue;
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i14: Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue;
+// 				}
+// 			}
+// 		}
+// 		match value_after {
+// 			Some(value) => return Ok(value),
+// 			None => {
+// 				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+// 				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+// 			}
+// 		}
+// 			//03/02/24 - removed:
+//             // //coinbase calculations
+//             //     let coinbase_taker_fee = 0.008;
+//             //     let total_spent = 0.03*(*coinbase_wallet);
+//             //     let fee_for_purchase = total_spent*coinbase_taker_fee;
+//             //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+//             //     //new state of coinbase wallet below
+//             //     *coinbase_wallet -= total_spent;
+//             //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+//             // //kraken calculations
+//             //     //let kraken_taker_fee = 0.0026;         
+//             //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+//             //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+//             //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+//             //     //*kraken_wallet += money_from_sell_after_fees;
+//             //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             // //bitstamp calculations
+//             //     let bitstamp_taker_fee = 0.004;
+//             //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+//             //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+//             //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+//             //     *bitstamp_wallet += money_from_sell_after_fees;
+//             // //this will count as value after
+//             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             //     //value_after = 56
+//             //     //coinbase = 57
+//             //     //bitstamp = 58
+//             //     //kraken = 59
+//             //     //gemini = 60
+//             //     //since this is coinbase and kraken being updated, I will update:
+//             //     //  56, 57, 59
+//             //     let indices = [56, 57, 58];
+//             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+//             //     //01/24/24 - removed and added:
+//             //         //neural_network.update_input(&indices, &new_values);
+//             //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+//             //         //neural_network.update_input(&indices, &transformed_values).await;
+//             //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+//             //         neural_network.update_input(&indices, &scaled_values).await;
+//             //     return Ok(value_after)
+//     }
+//     pub async fn s_i15_sol_5_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+//         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
+// 			//03/02/24 - added:
+//             // let now = Utc::now();
+//             // let time_stamp = now.timestamp().to_string();
+//             // let method = "GET";
+//             // let request_path = "/api/v3/brokerage/best_bid_ask";
+//             // let body = "";
+//             // let message = format!("{}{}{}{}", &time_stamp, 
+//             // &method, &request_path, &body);
+//             // type HmacSha256 = Hmac<Sha256>;
+//             // fn sign(message: &str, coinbase_secret: &str) -> String {
+//             // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+//             //             .expect("HMAC can take key of any size");
+//             // mac.update(message.as_bytes());
+//             // let result = mac.finalize();
+//             // let code_bytes = result.into_bytes();
+//             // hex::encode(code_bytes)
+//             // }
+//             // let coinbase_signature = sign(&message, &coinbase_secret);
+//             // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+//             // .header("CB-ACCESS-KEY", coinbase_api_key)
+//             // .header("CB-ACCESS-SIGN", &coinbase_signature)
+//             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+//             // .build()
+//             // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //manages the error I described above
+//             // //let request = match request {
+//             // //Ok(req) => req,
+//             // //Err(e) => {
+//             // //eprintln!("Failed to build request: \n{}", e);
+//             // //return Err(e);
+//             // //}
+//             // //};
+//             // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //let response = match response {
+//             // //    Ok(resp) => resp,
+//             // //    Err(e) => {
+//             // //        eprintln!("Failed to execute request: \n{}", e);
+//             // //        return Err(e);
+//             // //    }
+//             // //};
+//             // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //added 12/29/23
+//             // //this is the parsing
+//             // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // let mut coinbase_sell_price = 0.0;
+//             // let mut coinbase_buy_price = 0.0;
+//             // // Access the pricebooks array
+//             // if let Some(pricebooks) = v["pricebooks"].as_array() {
+//             //     // Iterate over each pricebook
+//             //     for pricebook in pricebooks {
+//             //         // Access the product_id, bids, and asks
+//             //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
+//             //         let bids = &pricebook["bids"][0];
+//             //         let asks = &pricebook["asks"][0];    
+//             //         // Access the price and size of the bids and asks
+//             //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
+//             //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");    
+//             //         println!("Product ID: {}", product_id);
+//             //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
+//             //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
+//             //     }
+//             // }
+//             //manages any errors from line above
+//             //let response_text = match response_text {
+//             //    Ok(t) => t,
+//             //    Err(e) => {
+//             //        eprintln!("Failed to read response text: \n{}", e);
+//             //        return;
+//             //    }
+//             //};
+//             //prints the actual response
+//             //println!("list accounts response\n{:?}", &response_text);
+// 	//03/02/24 - added:
+// 		let now = Utc::now();
+// 		let time_stamp = now.timestamp().to_string();
+// 		let method = "GET";
+// 		let request_path = "/api/v3/brokerage/best_bid_ask";
+// 		let body = "";
+// 		let message = format!("{}{}{}{}", &time_stamp, 
+// 			&method, &request_path, &body);
+// 		type HmacSha256 = Hmac<Sha256>;
+// 		fn sign(message: &str, coinbase_secret: &str) -> String {
+// 			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+// 					.expect("HMAC can take key of any size");
+// 			mac.update(message.as_bytes());
+// 			let result = mac.finalize();
+// 			let code_bytes = result.into_bytes();
+// 			hex::encode(code_bytes)
+// 		}
+// 		let coinbase_signature = sign(&message, &coinbase_secret);
+// 		let mut coinbase_buy_price_ask: Option<f64> = None;
+// 		let mut attempts = 0;
+// 		let mut success = false;
+// 		loop {
+// 			attempts +=1;
+// 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+// 			.header("CB-ACCESS-KEY", coinbase_api_key)
+// 			.header("CB-ACCESS-SIGN", &coinbase_signature)
+// 			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
+// 			.build();
+// 			match request {
+// 				Ok(req) => {
+// 					let response = client.execute(req).await;
+// 					match response {
+// 						Ok(resp) => {
+// 							let response_text = resp.text().await;
+// 							match response_text {
+// 								Ok(text) => {
+// 									match serde_json::from_str::<Value>(&text) {
+// 										Ok(v) => {
+// 											if let Some(pricebooks) = v["pricebooks"].as_array() {
+// 												for pricebook in pricebooks {
+// 													//let product_id = pricebook["product_id"].as_str();
+// 													//let bids = &pricebook["bids"][0];
+// 													let asks = &pricebook["asks"][0];
+// 													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+// 													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+// 													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
+// 														(/*Some(bid_str),*/ Some(ask_str)) => {
+// 															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
+// 																(/*Ok(bid_str),*/ Ok(ask_str)) => {
+// 																	//coinbase_sell_price_bid = Some(bid_str);
+// 																	coinbase_buy_price_ask = Some(ask_str);
+// 																		success = true;
+// 																},
+// 																_ => {
+// 																	log::error!("i15:  coinbase:  Failed to f64 parse JSON");
+// 																	if attempts > 3 {
+// 																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 																	}
+// 																	continue ;
+// 																}
+// 															}
+// 														},
+// 														_ => {
+// 															log::error!("i15:  coinbase:  Failed to get ask price");
+// 															if attempts > 3 {
+// 																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+// 																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+// 															}
+// 															continue ;
+// 														}
+// 													}
+// 												}
+// 											//03/02/24 - added else condition
+// 											} else {
+// 												log::error!("i15:  coinbase:  Failed to get pricebooks as array.");
+// 												if attempts > 3 {
+// 													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+// 												}
+// 												continue;
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i15:  coinbase:  Failed to parse outer JSON as str.");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 											}
+// 											continue ; // Continue to the next iteration if parsing fails
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i15:  coinbase:  Failed to get response text.");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue ; // Continue to the next iteration if getting response text fails
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i15:  coinbase:  Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue; // Continue to the next iteration if executing request fails
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i15:  coinbase:  Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue; // Continue to the next iteration if building request fails
+// 				}
+// 			}
+// 			if success == true {
+// 				break;
+// 			}
+// 		}
+//             //02/09/24 - updated tokio. removed:  
+//                 //delay_for(Duration::from_secs(3)).await;
+//             //02/09/24 - updated tokio. added in its place:
+//             println!("sol 5 coinbase bitstamp: 3 sec delay");
+//             let when = tokio::time::Instant::now() + Duration::from_secs(3);
+//             tokio::time::sleep_until(when).await;
+//     //-------------------------Bitstamp---------------------------//
+//                 //Bitstamp for some reason needs nonce to be 36 characters long. 
+// 	//	nonce is basically a unique id that needs to be different every time you make a request. 
+// 	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+// 	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+// 	//	and just make it a random 36 char string from it.
+// 	//the exact same as the Coinbase signature. we'll see if it works
+// 	//apparently it doesnt so I will code comment it out for now
+// 	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 	//											.expect("HMAC can take key of any size");
+// 	//	mac.update(bitstamp_message.as_bytes());
+// 	//	let result = mac.finalize();
+// 	//	let code_bytes = result.into_bytes();
+// 	//	hex::encode(code_bytes)
+// 	//}
+// 	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 			.expect("HMAC can take key of any size");
+// 		mac.update(bitstamp_message.as_bytes());
+// 		let result = mac.finalize();
+// 		let code_bytes = result.into_bytes();
+// 		hex::encode(code_bytes)
+// 	}
+// 	let content_type = "application/x-www-form-urlencoded";
+// 	let payload_string = "offset=1";
+// 	//if we needed content_type, it is here
+// 	//let content_type = "application/json";
+// 	//this is the bitstamp message IF we needed content_type
+// 	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+// 	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// //--------------------Account-balances------------------------------------------//
+// 	let the_uuid = Uuid::new_v4();
+// 	let bitstamp_nonce = the_uuid.to_string();
+// 	let bitstamp_timestamp = now.timestamp_millis().to_string();
+// 	//let content_type = "application/x-www-form-urlencoded";
+// 	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+// 			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// 	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+// 	//03/02/24 - removed:
+// 	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 	// 		.header("X-Auth-Signature", bitstamp_signature)
+// 	// 		.header("X-Auth-Nonce", bitstamp_nonce)
+// 	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
+// 	// 		.header("X-Auth-Version", "v2")
+// 	// 		//.header("Content-Type", content_type)
+// 	// 		//.body(payload_string)
+// 	// 		.build()
+// 	// 		.expect("\ncould not build bitstamp_request");
+// 	// 	let bitstamp_response = client.execute(bitstamp_request).await
+// 	// 		.expect("Failed to execute Bitstamp request");
+// 	// 	let bitstamp_response_text = bitstamp_response.text().await
+// 	// 		.expect("Failed to turn response into text");
+// 	// 	//probably dont need "bitstamp" once we transfer this to the actual function
+// 	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+// 	//     .expect("Failed to parse JSON");
+// 	// // Extract the bid and ask values
+// 	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+// 	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
+// 	//03/02/24 - added:
+// 		let mut success = false;
+// 		let mut attempts = 0;
+// 		let mut value_after: Option<f64> = None;
+// 		while !success && attempts <=3 {
+// 			attempts += 1;
+// 			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 				.header("X-Auth-Signature", &bitstamp_signature)
+// 				.header("X-Auth-Nonce", &bitstamp_nonce)
+// 				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+// 				.header("X-Auth-Version", "v2")
+// 				.build() {
+// 				Ok(bitstamp_request) => {
+// 					match client.execute(bitstamp_request).await {
+// 						Ok(bitstamp_response) => {
+// 							match bitstamp_response.text().await {
+// 								Ok(bitstamp_response_text) => {
+// 									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+// 										Ok(v) => {
+// 											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+// 											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+// 											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+// 												(Some(bid_str), Some(ask_str)) => {
+// 													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+// 														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+// 															// Place your calculations and updates here
+// 															//coinbase calculations to buy
+// 															let coinbase_taker_fee = 0.008;
+// 															let fraction_of_wallet_im_using = 0.05; //aka 5 percent
+// 															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
+// 															let fee_for_purchase = total_spent*coinbase_taker_fee;
+// 															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+// 															*coinbase_wallet -= total_spent;
+// 															let amount_of_sol = 
+// 															money_going_to_sol_after_fees/coinbase_buy_price_ask
+// 																							.expect(&format!("i15: coinbase_buy_price_ask is somehow Not Some. 
+// 																							even though to get to this point it had to be Some. 
+// 																							coinbase_buy_price_ask: {:?}
+// 																							Honestly restart the program from the last saved state. 
+// 																							The most likely error is a bit got flipped after the loop",
+// 																							&coinbase_buy_price_ask));
+// 															//bitstamp calculations for sell
+// 															let bitstamp_taker_fee = 0.004;
+// 															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+// 															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+// 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+// 															*bitstamp_wallet += money_from_sell_after_fees;
+// 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+// 															if let Some(mut value_after) = value_after {
+// 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+// 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+// 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+// 																//value_after = 56
+// 																//coinbase = 57
+// 																//bitstamp = 58
+// 																//kraken = 59
+// 																//gemini = 60
+// 																//since this is coinbase and bitstamp being updated, I will update:
+// 																//  56, 57, 58
+// 																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+// 																let indices = [56, 57, 58];
+// 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+// 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 																neural_network.update_input(&indices, &scaled_values).await;
+// 															}
+// 															//03/08/24 - removed:
+// 															// //value_after = 56
+// 															// //coinbase = 57
+// 															// //bitstamp = 58
+// 															// //kraken = 59
+// 															// //gemini = 60
+// 															// //since this is coinbase and bitstamp being updated, I will update:
+// 															// //  56, 57, 58
+// 															// let indices = [56, 57, 58];
+// 															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+// 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 															// neural_network.update_input(&indices, &scaled_values).await;
+// 															success = true;
+// 														},
+// 														_ => {
+// 															log::error!("i15: Failed to f64 parse bid or ask price");
+// 															if attempts > 3 {
+// 																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 															}
+// 															continue;
+// 														}
+// 													}
+// 												},
+// 												_ => {
+// 													log::error!("i15: Failed to originally parse bid or ask price");
+// 													if attempts > 3 {
+// 														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 													}
+// 													continue;
+// 												}
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i15: Failed to parse JSON");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+// 											}
+// 											continue;
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i15: failed to get response text");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue;
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i15: Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue;
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i15: Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue;
+// 				}
+// 			}
+// 		}
+// 		match value_after {
+// 			Some(value) => return Ok(value),
+// 			None => {
+// 				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+// 				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+// 			}
+// 		}
+// 			//03/02/24 - removed:
+//             // //coinbase calculations
+//             //     let coinbase_taker_fee = 0.008;
+//             //     let total_spent = 0.03*(*coinbase_wallet);
+//             //     let fee_for_purchase = total_spent*coinbase_taker_fee;
+//             //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+//             //     //new state of coinbase wallet below
+//             //     *coinbase_wallet -= total_spent;
+//             //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+//             // //kraken calculations
+//             //     //let kraken_taker_fee = 0.0026;
+//             //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+//             //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+//             //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+//             //     //*kraken_wallet += money_from_sell_after_fees;
+//             //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             // //bitstamp calculations
+//             //     let bitstamp_taker_fee = 0.004;
+//             //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+//             //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+//             //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+//             //     *bitstamp_wallet += money_from_sell_after_fees;
+//             // //this will count as value after
+//             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             //     //value_after = 56
+//             //     //coinbase = 57
+//             //     //bitstamp = 58
+//             //     //kraken = 59
+//             //     //gemini = 60
+//             //     //since this is coinbase and kraken being updated, I will update:
+//             //     //  56, 57, 59
+//             //     let indices = [56, 57, 58];
+//             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+//             //     //01/24/24 - removed and added:
+//             //         //neural_network.update_input(&indices, &new_values);
+//             //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+//             //         //neural_network.update_input(&indices, &transformed_values).await;
+//             //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+//             //         neural_network.update_input(&indices, &scaled_values).await;
+//             //     return Ok(value_after)
+//     }
+//     pub async fn s_i16_sol_6_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+//         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
+// 			//03/02/24 - added:
+//             // let now = Utc::now();
+//             // let time_stamp = now.timestamp().to_string();
+//             // let method = "GET";
+//             // let request_path = "/api/v3/brokerage/best_bid_ask";
+//             // let body = "";
+//             // let message = format!("{}{}{}{}", &time_stamp, 
+//             // &method, &request_path, &body);
+//             // type HmacSha256 = Hmac<Sha256>;
+//             // fn sign(message: &str, coinbase_secret: &str) -> String {
+//             // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+//             //             .expect("HMAC can take key of any size");
+//             // mac.update(message.as_bytes());
+//             // let result = mac.finalize();
+//             // let code_bytes = result.into_bytes();
+//             // hex::encode(code_bytes)
+//             // }
+//             // let coinbase_signature = sign(&message, &coinbase_secret);
+//             // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+//             // .header("CB-ACCESS-KEY", coinbase_api_key)
+//             // .header("CB-ACCESS-SIGN", &coinbase_signature)
+//             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+//             // .build()
+//             // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //manages the error I described above
+//             // //let request = match request {
+//             // //Ok(req) => req,
+//             // //Err(e) => {
+//             // //eprintln!("Failed to build request: \n{}", e);
+//             // //return Err(e);
+//             // //}
+//             // //};
+//             // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //let response = match response {
+//             // //    Ok(resp) => resp,
+//             // //    Err(e) => {
+//             // //        eprintln!("Failed to execute request: \n{}", e);
+//             // //        return Err(e);
+//             // //    }
+//             // //};
+//             // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //added 12/29/23
+//             // //this is the parsing
+//             // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // let mut coinbase_sell_price = 0.0;
+//             // let mut coinbase_buy_price = 0.0;
+//             // // Access the pricebooks array
+//             // if let Some(pricebooks) = v["pricebooks"].as_array() {
+//             //     // Iterate over each pricebook
+//             //     for pricebook in pricebooks {
+//             //         // Access the product_id, bids, and asks
+//             //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
+//             //         let bids = &pricebook["bids"][0];
+//             //         let asks = &pricebook["asks"][0];
+//             //         // Access the price and size of the bids and asks
+//             //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
+//             //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");
+//             //         println!("Product ID: {}", product_id);
+//             //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
+//             //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
+//             //     }
+//             // }
+//             //manages any errors from line above
+//             //let response_text = match response_text {
+//             //    Ok(t) => t,
+//             //    Err(e) => {
+//             //        eprintln!("Failed to read response text: \n{}", e);
+//             //        return;
+//             //    }
+//             //};
+//             //prints the actual response
+//             //println!("list accounts response\n{:?}", &response_text);
+// 	//03/02/24 - added:
+// 		let now = Utc::now();
+// 		let time_stamp = now.timestamp().to_string();
+// 		let method = "GET";
+// 		let request_path = "/api/v3/brokerage/best_bid_ask";
+// 		let body = "";
+// 		let message = format!("{}{}{}{}", &time_stamp, 
+// 			&method, &request_path, &body);
+// 		type HmacSha256 = Hmac<Sha256>;
+// 		fn sign(message: &str, coinbase_secret: &str) -> String {
+// 			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+// 					.expect("HMAC can take key of any size");
+// 			mac.update(message.as_bytes());
+// 			let result = mac.finalize();
+// 			let code_bytes = result.into_bytes();
+// 			hex::encode(code_bytes)
+// 		}
+// 		let coinbase_signature = sign(&message, &coinbase_secret);
+// 		let mut coinbase_buy_price_ask: Option<f64> = None;
+// 		let mut attempts = 0;
+// 		let mut success = false;
+// 		loop {
+// 			attempts +=1;
+// 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+// 			.header("CB-ACCESS-KEY", coinbase_api_key)
+// 			.header("CB-ACCESS-SIGN", &coinbase_signature)
+// 			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
+// 			.build();
+// 			match request {
+// 				Ok(req) => {
+// 					let response = client.execute(req).await;
+// 					match response {
+// 						Ok(resp) => {
+// 							let response_text = resp.text().await;
+// 							match response_text {
+// 								Ok(text) => {
+// 									match serde_json::from_str::<Value>(&text) {
+// 										Ok(v) => {
+// 											if let Some(pricebooks) = v["pricebooks"].as_array() {
+// 												for pricebook in pricebooks {
+// 													//let product_id = pricebook["product_id"].as_str();
+// 													//let bids = &pricebook["bids"][0];
+// 													let asks = &pricebook["asks"][0];
+// 													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+// 													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+// 													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
+// 														(/*Some(bid_str),*/ Some(ask_str)) => {
+// 															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
+// 																(/*Ok(bid_str),*/ Ok(ask_str)) => {
+// 																	//coinbase_sell_price_bid = Some(bid_str);
+// 																	coinbase_buy_price_ask = Some(ask_str);
+// 																		success = true;
+// 																},
+// 																_ => {
+// 																	log::error!("i16:  coinbase:  Failed to f64 parse JSON");
+// 																	if attempts > 3 {
+// 																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 																	}
+// 																	continue ;
+// 																}
+// 															}
+// 														},
+// 														_ => {
+// 															log::error!("i16:  coinbase:  Failed to get ask price");
+// 															if attempts > 3 {
+// 																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+// 																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+// 															}
+// 															continue ;
+// 														}
+// 													}
+// 												}
+// 											//03/02/24 - added else condition
+// 											} else {
+// 												log::error!("i16:  coinbase:  Failed to get pricebooks as array.");
+// 												if attempts > 3 {
+// 													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+// 												}
+// 												continue;
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i16:  coinbase:  Failed to parse outer JSON as str.");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 											}
+// 											continue ; // Continue to the next iteration if parsing fails
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i16:  coinbase:  Failed to get response text.");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue ; // Continue to the next iteration if getting response text fails
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i16:  coinbase:  Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue; // Continue to the next iteration if executing request fails
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i16:  coinbase:  Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue; // Continue to the next iteration if building request fails
+// 				}
+// 			}
+// 			if success == true {
+// 				break;
+// 			}
+// 		}
+//             //02/09/24 - updated tokio. removed:  
+//                 //delay_for(Duration::from_secs(3)).await;
+//             //02/09/24 - updated tokio. added in its place:
+//             println!("sol 6 coinbase bitstamp: 3 sec delay");
+//             let when = tokio::time::Instant::now() + Duration::from_secs(3);
+//             tokio::time::sleep_until(when).await;
+//     //-------------------------Bitstamp---------------------------//
+//                 //Bitstamp for some reason needs nonce to be 36 characters long. 
+// 	//	nonce is basically a unique id that needs to be different every time you make a request. 
+// 	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+// 	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+// 	//	and just make it a random 36 char string from it.
+// 	//the exact same as the Coinbase signature. we'll see if it works
+// 	//apparently it doesnt so I will code comment it out for now
+// 	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 	//											.expect("HMAC can take key of any size");
+// 	//	mac.update(bitstamp_message.as_bytes());
+// 	//	let result = mac.finalize();
+// 	//	let code_bytes = result.into_bytes();
+// 	//	hex::encode(code_bytes)
+// 	//}
+// 	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 			.expect("HMAC can take key of any size");
+// 		mac.update(bitstamp_message.as_bytes());
+// 		let result = mac.finalize();
+// 		let code_bytes = result.into_bytes();
+// 		hex::encode(code_bytes)
+// 	}
+// 	let content_type = "application/x-www-form-urlencoded";
+// 	let payload_string = "offset=1";
+// 	//if we needed content_type, it is here
+// 	//let content_type = "application/json";
+// 	//this is the bitstamp message IF we needed content_type
+// 	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+// 	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// //--------------------Account-balances------------------------------------------//
+// 	let the_uuid = Uuid::new_v4();
+// 	let bitstamp_nonce = the_uuid.to_string();
+// 	let bitstamp_timestamp = now.timestamp_millis().to_string();
+// 	//let content_type = "application/x-www-form-urlencoded";
+// 	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+// 			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// 	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+// 	//03/02/24 - removed:
+// 	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 	// 		.header("X-Auth-Signature", bitstamp_signature)
+// 	// 		.header("X-Auth-Nonce", bitstamp_nonce)
+// 	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
+// 	// 		.header("X-Auth-Version", "v2")
+// 	// 		//.header("Content-Type", content_type)
+// 	// 		//.body(payload_string)
+// 	// 		.build()
+// 	// 		.expect("\ncould not build bitstamp_request");
+// 	// 	let bitstamp_response = client.execute(bitstamp_request).await
+// 	// 		.expect("Failed to execute Bitstamp request");
+// 	// 	let bitstamp_response_text = bitstamp_response.text().await
+// 	// 		.expect("Failed to turn response into text");
+// 	// 	//probably dont need "bitstamp" once we transfer this to the actual function
+// 	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+// 	//     .expect("Failed to parse JSON");
+// 	// // Extract the bid and ask values
+// 	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+// 	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
+// 	//03/02/24 - added:
+// 		let mut success = false;
+// 		let mut attempts = 0;
+// 		let mut value_after: Option<f64> = None;
+// 		while !success && attempts <=3 {
+// 			attempts += 1;
+// 			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 				.header("X-Auth-Signature", &bitstamp_signature)
+// 				.header("X-Auth-Nonce", &bitstamp_nonce)
+// 				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+// 				.header("X-Auth-Version", "v2")
+// 				.build() {
+// 				Ok(bitstamp_request) => {
+// 					match client.execute(bitstamp_request).await {
+// 						Ok(bitstamp_response) => {
+// 							match bitstamp_response.text().await {
+// 								Ok(bitstamp_response_text) => {
+// 									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+// 										Ok(v) => {
+// 											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+// 											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+// 											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+// 												(Some(bid_str), Some(ask_str)) => {
+// 													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+// 														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+// 															// Place your calculations and updates here
+// 															//coinbase calculations to buy
+// 															let coinbase_taker_fee = 0.008;
+// 															let fraction_of_wallet_im_using = 0.06; //aka 6 percent
+// 															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
+// 															let fee_for_purchase = total_spent*coinbase_taker_fee;
+// 															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+// 															*coinbase_wallet -= total_spent;
+// 															let amount_of_sol = 
+// 															money_going_to_sol_after_fees/coinbase_buy_price_ask
+// 																							.expect(&format!("i14: coinbase_buy_price_ask is somehow Not Some. 
+// 																							even though to get to this point it had to be Some. 
+// 																							coinbase_buy_price_ask: {:?}
+// 																							Honestly restart the program from the last saved state. 
+// 																							The most likely error is a bit got flipped after the loop",
+// 																							&coinbase_buy_price_ask));
+// 															//bitstamp calculations for sell
+// 															let bitstamp_taker_fee = 0.004;
+// 															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+// 															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+// 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+// 															*bitstamp_wallet += money_from_sell_after_fees;
+// 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+// 															if let Some(mut value_after) = value_after {
+// 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+// 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+// 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);																
+// 																//value_after = 56
+// 																//coinbase = 57
+// 																//bitstamp = 58
+// 																//kraken = 59
+// 																//gemini = 60
+// 																//since this is coinbase and bitstamp being updated, I will update:
+// 																//  56, 57, 58
+// 																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+// 																let indices = [56, 57, 58];
+// 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+// 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 																neural_network.update_input(&indices, &scaled_values).await;
+// 															}
+// 															//03/08/24 - removed:
+// 															// //value_after = 56
+// 															// //coinbase = 57
+// 															// //bitstamp = 58
+// 															// //kraken = 59
+// 															// //gemini = 60
+// 															// //since this is coinbase and bitstamp being updated, I will update:
+// 															// //  56, 57, 58
+// 															// let indices = [56, 57, 58];
+// 															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+// 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 															// neural_network.update_input(&indices, &scaled_values).await;
+// 															success = true;
+// 														},
+// 														_ => {
+// 															log::error!("i16: Failed to f64 parse bid or ask price");
+// 															if attempts > 3 {
+// 																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 															}
+// 															continue;
+// 														}
+// 													}
+// 												},
+// 												_ => {
+// 													log::error!("i16: Failed to originally parse bid or ask price");
+// 													if attempts > 3 {
+// 														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 													}
+// 													continue;
+// 												}
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i16: Failed to parse JSON");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+// 											}
+// 											continue;
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i16: failed to get response text");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue;
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i16: Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue;
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i16: Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue;
+// 				}
+// 			}
+// 		}
+// 		match value_after {
+// 			Some(value) => return Ok(value),
+// 			None => {
+// 				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+// 				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+// 			}
+// 		}
+// 			//03/02/24 - removed:
+//             // //coinbase calculations
+//             //     let coinbase_taker_fee = 0.008;
+//             //     let total_spent = 0.03*(*coinbase_wallet);
+//             //     let fee_for_purchase = total_spent*coinbase_taker_fee;
+//             //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+//             //     //new state of coinbase wallet below
+//             //     *coinbase_wallet -= total_spent;
+//             //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+//             // //kraken calculations
+//             //     //let kraken_taker_fee = 0.0026;
+//             //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+//             //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+//             //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+//             //     //*kraken_wallet += money_from_sell_after_fees;   
+//             //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;   
+//             // //bitstamp calculations
+//             //     let bitstamp_taker_fee = 0.004;
+//             //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+//             //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+//             //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+//             //     *bitstamp_wallet += money_from_sell_after_fees;
+//             // //this will count as value after
+//             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             //     //value_after = 56
+//             //     //coinbase = 57
+//             //     //bitstamp = 58
+//             //     //kraken = 59
+//             //     //gemini = 60
+//             //     //since this is coinbase and kraken being updated, I will update:
+//             //     //  56, 57, 59
+//             //     let indices = [56, 57, 58];
+//             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+//             //     //01/24/24 - removed and added:
+//             //         //neural_network.update_input(&indices, &new_values);
+//             //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+//             //         //neural_network.update_input(&indices, &transformed_values).await;
+//             //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+//             //         neural_network.update_input(&indices, &scaled_values).await;
+//             //     return Ok(value_after)
+//     }
+//     pub async fn s_i17_sol_7_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+//         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
+// 			//03/02/24 - added:
+//             // let now = Utc::now();
+//             // let time_stamp = now.timestamp().to_string();
+//             // let method = "GET";
+//             // let request_path = "/api/v3/brokerage/best_bid_ask";
+//             // let body = "";
+//             // let message = format!("{}{}{}{}", &time_stamp, 
+//             // &method, &request_path, &body);
+//             // type HmacSha256 = Hmac<Sha256>;
+//             // fn sign(message: &str, coinbase_secret: &str) -> String {
+//             // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+//             //             .expect("HMAC can take key of any size");
+//             // mac.update(message.as_bytes());
+//             // let result = mac.finalize();
+//             // let code_bytes = result.into_bytes();
+//             // hex::encode(code_bytes)
+//             // }
+//             // let coinbase_signature = sign(&message, &coinbase_secret);
+//             // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+//             // .header("CB-ACCESS-KEY", coinbase_api_key)
+//             // .header("CB-ACCESS-SIGN", &coinbase_signature)
+//             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+//             // .build()
+//             // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //manages the error I described above
+//             // //let request = match request {
+//             // //Ok(req) => req,
+//             // //Err(e) => {
+//             // //eprintln!("Failed to build request: \n{}", e);
+//             // //return Err(e);
+//             // //}
+//             // //};
+//             // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //let response = match response {
+//             // //    Ok(resp) => resp,
+//             // //    Err(e) => {
+//             // //        eprintln!("Failed to execute request: \n{}", e);
+//             // //        return Err(e);
+//             // //    }
+//             // //};
+//             // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //added 12/29/23
+//             // //this is the parsing
+//             // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // let mut coinbase_sell_price = 0.0;
+//             // let mut coinbase_buy_price = 0.0;
+//             // // Access the pricebooks array
+//             // if let Some(pricebooks) = v["pricebooks"].as_array() {
+//             //     // Iterate over each pricebook
+//             //     for pricebook in pricebooks {
+//             //         // Access the product_id, bids, and asks
+//             //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
+//             //         let bids = &pricebook["bids"][0];
+//             //         let asks = &pricebook["asks"][0];     
+//             //         // Access the price and size of the bids and asks
+//             //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
+//             //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");     
+//             //         println!("Product ID: {}", product_id);
+//             //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
+//             //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
+//             //     }
+//             // }
+//             //manages any errors from line above
+//             //let response_text = match response_text {
+//             //    Ok(t) => t,
+//             //    Err(e) => {
+//             //        eprintln!("Failed to read response text: \n{}", e);
+//             //        return;
+//             //    }
+//             //};
+//             //prints the actual response
+//             //println!("list accounts response\n{:?}", &response_text);
+// 	//03/02/24 - added:
+// 		let now = Utc::now();
+// 		let time_stamp = now.timestamp().to_string();
+// 		let method = "GET";
+// 		let request_path = "/api/v3/brokerage/best_bid_ask";
+// 		let body = "";
+// 		let message = format!("{}{}{}{}", &time_stamp, 
+// 			&method, &request_path, &body);
+// 		type HmacSha256 = Hmac<Sha256>;
+// 		fn sign(message: &str, coinbase_secret: &str) -> String {
+// 			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+// 					.expect("HMAC can take key of any size");
+// 			mac.update(message.as_bytes());
+// 			let result = mac.finalize();
+// 			let code_bytes = result.into_bytes();
+// 			hex::encode(code_bytes)
+// 		}
+// 		let coinbase_signature = sign(&message, &coinbase_secret);	
+// 		let mut coinbase_buy_price_ask: Option<f64> = None;
+// 		let mut attempts = 0;
+// 		let mut success = false;
+// 		loop {
+// 			attempts +=1;
+// 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+// 			.header("CB-ACCESS-KEY", coinbase_api_key)
+// 			.header("CB-ACCESS-SIGN", &coinbase_signature)
+// 			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
+// 			.build();
+// 			match request {
+// 				Ok(req) => {
+// 					let response = client.execute(req).await;
+// 					match response {
+// 						Ok(resp) => {
+// 							let response_text = resp.text().await;
+// 							match response_text {
+// 								Ok(text) => {
+// 									match serde_json::from_str::<Value>(&text) {
+// 										Ok(v) => {
+// 											if let Some(pricebooks) = v["pricebooks"].as_array() {
+// 												for pricebook in pricebooks {
+// 													//let product_id = pricebook["product_id"].as_str();
+// 													//let bids = &pricebook["bids"][0];
+// 													let asks = &pricebook["asks"][0];
+// 													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+// 													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+// 													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
+// 														(/*Some(bid_str),*/ Some(ask_str)) => {
+// 															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
+// 																(/*Ok(bid_str),*/ Ok(ask_str)) => {
+// 																	//coinbase_sell_price_bid = Some(bid_str);
+// 																	coinbase_buy_price_ask = Some(ask_str);
+// 																		success = true;
+// 																},
+// 																_ => {
+// 																	log::error!("i17:  coinbase:  Failed to f64 parse JSON");
+// 																	if attempts > 3 {
+// 																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 																	}
+// 																	continue ;
+// 																}
+// 															}
+// 														},
+// 														_ => {
+// 															log::error!("i17:  coinbase:  Failed to get ask price");
+// 															if attempts > 3 {
+// 																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+// 																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+// 															}
+// 															continue ;
+// 														}
+// 													}
+// 												}
+// 											//03/02/24 - added else condition
+// 											} else {
+// 												log::error!("i17:  coinbase:  Failed to get pricebooks as array.");
+// 												if attempts > 3 {
+// 													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+// 												}
+// 												continue;
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i17:  coinbase:  Failed to parse outer JSON as str.");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 											}
+// 											continue ; // Continue to the next iteration if parsing fails
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i17:  coinbase:  Failed to get response text.");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue ; // Continue to the next iteration if getting response text fails
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i17:  coinbase:  Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue; // Continue to the next iteration if executing request fails
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i17:  coinbase:  Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue; // Continue to the next iteration if building request fails
+// 				}
+// 			}
+// 			if success == true {
+// 				break;
+// 			}
+// 		}
+//             //02/09/24 - updated tokio. removed:  
+//                 //delay_for(Duration::from_secs(3)).await;
+//             //02/09/24 - updated tokio. added in its place:
+//             println!("sol 7 coinbase bitstamp: 3 sec delay");
+//             let when = tokio::time::Instant::now() + Duration::from_secs(3);
+//             tokio::time::sleep_until(when).await;
+//     //-------------------------Bitstamp---------------------------//
+//                 //Bitstamp for some reason needs nonce to be 36 characters long. 
+// 	//	nonce is basically a unique id that needs to be different every time you make a request. 
+// 	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+// 	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+// 	//	and just make it a random 36 char string from it.
+// 	//the exact same as the Coinbase signature. we'll see if it works
+// 	//apparently it doesnt so I will code comment it out for now
+// 	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 	//											.expect("HMAC can take key of any size");
+// 	//	mac.update(bitstamp_message.as_bytes());
+// 	//	let result = mac.finalize();
+// 	//	let code_bytes = result.into_bytes();
+// 	//	hex::encode(code_bytes)
+// 	//}
+// 	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 			.expect("HMAC can take key of any size");
+// 		mac.update(bitstamp_message.as_bytes());
+// 		let result = mac.finalize();
+// 		let code_bytes = result.into_bytes();
+// 		hex::encode(code_bytes)
+// 	}
+// 	let content_type = "application/x-www-form-urlencoded";
+// 	let payload_string = "offset=1";
+// 	//if we needed content_type, it is here
+// 	//let content_type = "application/json";
+// 	//this is the bitstamp message IF we needed content_type
+// 	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+// 	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// //--------------------Account-balances------------------------------------------//
+// 	let the_uuid = Uuid::new_v4();
+// 	let bitstamp_nonce = the_uuid.to_string();
+// 	let bitstamp_timestamp = now.timestamp_millis().to_string();
+// 	//let content_type = "application/x-www-form-urlencoded";
+// 	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+// 			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// 	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+// 	//03/02/24 - removed:
+// 	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 	// 		.header("X-Auth-Signature", bitstamp_signature)
+// 	// 		.header("X-Auth-Nonce", bitstamp_nonce)
+// 	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
+// 	// 		.header("X-Auth-Version", "v2")
+// 	// 		//.header("Content-Type", content_type)
+// 	// 		//.body(payload_string)
+// 	// 		.build()
+// 	// 		.expect("\ncould not build bitstamp_request");
+// 	// 	let bitstamp_response = client.execute(bitstamp_request).await
+// 	// 		.expect("Failed to execute Bitstamp request");
+// 	// 	let bitstamp_response_text = bitstamp_response.text().await
+// 	// 		.expect("Failed to turn response into text");
+// 	// 	//probably dont need "bitstamp" once we transfer this to the actual function
+// 	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+// 	//     .expect("Failed to parse JSON");
+// 	// // Extract the bid and ask values
+// 	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+// 	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
+// 	//03/02/24 - added:
+// 		let mut success = false;
+// 		let mut attempts = 0;
+// 		let mut value_after: Option<f64> = None;
+// 		while !success && attempts <=3 {
+// 			attempts += 1;
+// 			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 				.header("X-Auth-Signature", &bitstamp_signature)
+// 				.header("X-Auth-Nonce", &bitstamp_nonce)
+// 				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+// 				.header("X-Auth-Version", "v2")
+// 				.build() {
+// 				Ok(bitstamp_request) => {
+// 					match client.execute(bitstamp_request).await {
+// 						Ok(bitstamp_response) => {
+// 							match bitstamp_response.text().await {
+// 								Ok(bitstamp_response_text) => {
+// 									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+// 										Ok(v) => {
+// 											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+// 											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+// 											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+// 												(Some(bid_str), Some(ask_str)) => {
+// 													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+// 														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+// 															// Place your calculations and updates here
+// 															//coinbase calculations to buy
+// 															let coinbase_taker_fee = 0.008;
+// 															let fraction_of_wallet_im_using = 0.07; //aka 7 percent
+// 															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
+// 															let fee_for_purchase = total_spent*coinbase_taker_fee;
+// 															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+// 															*coinbase_wallet -= total_spent;
+// 															let amount_of_sol = 
+// 															money_going_to_sol_after_fees/coinbase_buy_price_ask
+// 																							.expect(&format!("i17: coinbase_buy_price_ask is somehow Not Some. 
+// 																							even though to get to this point it had to be Some. 
+// 																							coinbase_buy_price_ask: {:?}
+// 																							Honestly restart the program from the last saved state. 
+// 																							The most likely error is a bit got flipped after the loop",
+// 																							&coinbase_buy_price_ask));
+// 															//bitstamp calculations for sell
+// 															let bitstamp_taker_fee = 0.004;
+// 															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+// 															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+// 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+// 															*bitstamp_wallet += money_from_sell_after_fees;
+// 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+// 															if let Some(mut value_after) = value_after {
+// 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+// 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+// 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+// 																//value_after = 56
+// 																//coinbase = 57
+// 																//bitstamp = 58
+// 																//kraken = 59
+// 																//gemini = 60
+// 																//since this is coinbase and bitstamp being updated, I will update:
+// 																//  56, 57, 58
+// 																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+// 																let indices = [56, 57, 58];
+// 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+// 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 																neural_network.update_input(&indices, &scaled_values).await;
+// 															}
+// 															//03/08/24 - removed:
+// 															// //value_after = 56
+// 															// //coinbase = 57
+// 															// //bitstamp = 58
+// 															// //kraken = 59
+// 															// //gemini = 60
+// 															// //since this is coinbase and bitstamp being updated, I will update:
+// 															// //  56, 57, 58
+// 															// let indices = [56, 57, 58];
+// 															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+// 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 															// neural_network.update_input(&indices, &scaled_values).await;
+// 															success = true;
+// 														},
+// 														_ => {
+// 															log::error!("i17: Failed to f64 parse bid or ask price");
+// 															if attempts > 3 {
+// 																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 															}
+// 															continue;
+// 														}
+// 													}
+// 												},
+// 												_ => {
+// 													log::error!("i17: Failed to originally parse bid or ask price");
+// 													if attempts > 3 {
+// 														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 													}
+// 													continue;
+// 												}
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i17: Failed to parse JSON");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+// 											}
+// 											continue;
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i17: failed to get response text");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue;
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i17: Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue;
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i17: Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue;
+// 				}
+// 			}
+// 		}
+// 		match value_after {
+// 			Some(value) => return Ok(value),
+// 			None => {
+// 				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+// 				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+// 			}
+// 		}
+// 			//03/02/24 - removed:
+//             // //coinbase calculations
+//             //     let coinbase_taker_fee = 0.008;
+//             //     let total_spent = 0.03*(*coinbase_wallet);
+//             //     let fee_for_purchase = total_spent*coinbase_taker_fee;
+//             //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+//             //     //new state of coinbase wallet below
+//             //     *coinbase_wallet -= total_spent;
+//             //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;  
+//             // //kraken calculations
+//             //     //let kraken_taker_fee = 0.0026;                
+//             //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+//             //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+//             //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+//             //     //*kraken_wallet += money_from_sell_after_fees;    
+//             //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;        
+//             // //bitstamp calculations
+//             //     let bitstamp_taker_fee = 0.004;
+//             //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+//             //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+//             //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+//             //     *bitstamp_wallet += money_from_sell_after_fees;
+//             // //this will count as value after
+//             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;   
+//             //     //value_after = 56
+//             //     //coinbase = 57
+//             //     //bitstamp = 58
+//             //     //kraken = 59
+//             //     //gemini = 60
+//             //     //since this is coinbase and kraken being updated, I will update:
+//             //     //  56, 57, 59
+//             //     let indices = [56, 57, 58];
+//             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+//             //     //01/24/24 - removed and added:
+//             //         //neural_network.update_input(&indices, &new_values);
+//             //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+//             //         //neural_network.update_input(&indices, &transformed_values).await;
+//             //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+//             //         neural_network.update_input(&indices, &scaled_values).await;        
+//             //     return Ok(value_after)
+//     }
+//     pub async fn s_i18_sol_8_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+//         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
+// 			//03/02/24 - added:
+//             // let now = Utc::now();
+//             // let time_stamp = now.timestamp().to_string();
+//             // let method = "GET";
+//             // let request_path = "/api/v3/brokerage/best_bid_ask";
+//             // let body = "";
+//             // let message = format!("{}{}{}{}", &time_stamp, 
+//             // &method, &request_path, &body);
+//             // type HmacSha256 = Hmac<Sha256>;
+//             // fn sign(message: &str, coinbase_secret: &str) -> String {
+//             // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+//             //             .expect("HMAC can take key of any size");
+//             // mac.update(message.as_bytes());
+//             // let result = mac.finalize();
+//             // let code_bytes = result.into_bytes();
+//             // hex::encode(code_bytes)
+//             // }
+//             // let coinbase_signature = sign(&message, &coinbase_secret);    
+//             // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+//             // .header("CB-ACCESS-KEY", coinbase_api_key)
+//             // .header("CB-ACCESS-SIGN", &coinbase_signature)
+//             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+//             // .build()
+//             // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //manages the error I described above
+//             // //let request = match request {
+//             // //Ok(req) => req,
+//             // //Err(e) => {
+//             // //eprintln!("Failed to build request: \n{}", e);
+//             // //return Err(e);
+//             // //}
+//             // //};    
+//             // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //let response = match response {
+//             // //    Ok(resp) => resp,
+//             // //    Err(e) => {
+//             // //        eprintln!("Failed to execute request: \n{}", e);
+//             // //        return Err(e);
+//             // //    }
+//             // //};    
+//             // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;    
+//             // //added 12/29/23
+//             // //this is the parsing
+//             // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // let mut coinbase_sell_price = 0.0;
+//             // let mut coinbase_buy_price = 0.0;    
+//             // // Access the pricebooks array
+//             // if let Some(pricebooks) = v["pricebooks"].as_array() {
+//             //     // Iterate over each pricebook
+//             //     for pricebook in pricebooks {
+//             //         // Access the product_id, bids, and asks
+//             //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
+//             //         let bids = &pricebook["bids"][0];
+//             //         let asks = &pricebook["asks"][0];            
+//             //         // Access the price and size of the bids and asks
+//             //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
+//             //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");            
+//             //         println!("Product ID: {}", product_id);
+//             //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
+//             //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
+//             //     }
+//             // }    
+//             //manages any errors from line above
+//             //let response_text = match response_text {
+//             //    Ok(t) => t,
+//             //    Err(e) => {
+//             //        eprintln!("Failed to read response text: \n{}", e);
+//             //        return;
+//             //    }
+//             //};    
+//             //prints the actual response
+//             //println!("list accounts response\n{:?}", &response_text);            
+// 	//03/02/24 - added:
+// 		let now = Utc::now();
+// 		let time_stamp = now.timestamp().to_string();
+// 		let method = "GET";
+// 		let request_path = "/api/v3/brokerage/best_bid_ask";
+// 		let body = "";
+// 		let message = format!("{}{}{}{}", &time_stamp, 
+// 			&method, &request_path, &body);
+// 		type HmacSha256 = Hmac<Sha256>;
+// 		fn sign(message: &str, coinbase_secret: &str) -> String {
+// 			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+// 					.expect("HMAC can take key of any size");
+// 			mac.update(message.as_bytes());
+// 			let result = mac.finalize();
+// 			let code_bytes = result.into_bytes();
+// 			hex::encode(code_bytes)
+// 		}
+// 		let coinbase_signature = sign(&message, &coinbase_secret);		
+// 		let mut coinbase_buy_price_ask: Option<f64> = None;
+// 		let mut attempts = 0;
+// 		let mut success = false;
+// 		loop {
+// 			attempts +=1;
+// 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+// 			.header("CB-ACCESS-KEY", coinbase_api_key)
+// 			.header("CB-ACCESS-SIGN", &coinbase_signature)
+// 			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
+// 			.build();
+// 			match request {
+// 				Ok(req) => {
+// 					let response = client.execute(req).await;
+// 					match response {
+// 						Ok(resp) => {
+// 							let response_text = resp.text().await;
+// 							match response_text {
+// 								Ok(text) => {
+// 									match serde_json::from_str::<Value>(&text) {
+// 										Ok(v) => {
+// 											if let Some(pricebooks) = v["pricebooks"].as_array() {
+// 												for pricebook in pricebooks {
+// 													//let product_id = pricebook["product_id"].as_str();
+// 													//let bids = &pricebook["bids"][0];
+// 													let asks = &pricebook["asks"][0];
+// 													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+// 													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();		
+// 													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
+// 														(/*Some(bid_str),*/ Some(ask_str)) => {
+// 															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
+// 																(/*Ok(bid_str),*/ Ok(ask_str)) => {
+// 																	//coinbase_sell_price_bid = Some(bid_str);
+// 																	coinbase_buy_price_ask = Some(ask_str);	
+// 																		success = true;
+// 																},
+// 																_ => {
+// 																	log::error!("i18:  coinbase:  Failed to f64 parse JSON");
+// 																	if attempts > 3 {
+// 																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 																	}
+// 																	continue ;
+// 																}
+// 															}
+// 														},
+// 														_ => {
+// 															log::error!("i18:  coinbase:  Failed to get ask price");
+// 															if attempts > 3 {
+// 																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+// 																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+// 															}
+// 															continue ;
+// 														}
+// 													}
+// 												}
+// 											//03/02/24 - added else condition
+// 											} else {
+// 												log::error!("i18:  coinbase:  Failed to get pricebooks as array.");
+// 												if attempts > 3 {
+// 													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+// 												}
+// 												continue;
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i18:  coinbase:  Failed to parse outer JSON as str.");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 											}
+// 											continue ; // Continue to the next iteration if parsing fails
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i18:  coinbase:  Failed to get response text.");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue ; // Continue to the next iteration if getting response text fails
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i18:  coinbase:  Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue; // Continue to the next iteration if executing request fails
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i18:  coinbase:  Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue; // Continue to the next iteration if building request fails
+// 				}
+// 			}
+// 			if success == true {
+// 				break;
+// 			}
+// 		}
+//             //02/09/24 - updated tokio. removed:  
+//                 //delay_for(Duration::from_secs(3)).await;
+//             //02/09/24 - updated tokio. added in its place:
+//             println!("sol 8 coinbase bitstamp: 3 sec delay");
+//             let when = tokio::time::Instant::now() + Duration::from_secs(3);
+//             tokio::time::sleep_until(when).await;
+//     //-------------------------Bitstamp---------------------------//
+//                 //Bitstamp for some reason needs nonce to be 36 characters long. 
+// 	//	nonce is basically a unique id that needs to be different every time you make a request. 
+// 	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+// 	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+// 	//	and just make it a random 36 char string from it.
+// 	//the exact same as the Coinbase signature. we'll see if it works
+// 	//apparently it doesnt so I will code comment it out for now
+// 	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 	//											.expect("HMAC can take key of any size");
+// 	//	mac.update(bitstamp_message.as_bytes());
+// 	//	let result = mac.finalize();
+// 	//	let code_bytes = result.into_bytes();
+// 	//	hex::encode(code_bytes)
+// 	//}
+// 	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 			.expect("HMAC can take key of any size");
+// 		mac.update(bitstamp_message.as_bytes());
+// 		let result = mac.finalize();
+// 		let code_bytes = result.into_bytes();
+// 		hex::encode(code_bytes)
+// 	}
+// 	let content_type = "application/x-www-form-urlencoded";
+// 	let payload_string = "offset=1";
+// 	//if we needed content_type, it is here
+// 	//let content_type = "application/json";
+// 	//this is the bitstamp message IF we needed content_type
+// 	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+// 	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// //--------------------Account-balances------------------------------------------//
+// 	let the_uuid = Uuid::new_v4();
+// 	let bitstamp_nonce = the_uuid.to_string();
+// 	let bitstamp_timestamp = now.timestamp_millis().to_string();
+// 	//let content_type = "application/x-www-form-urlencoded";
+// 	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+// 			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// 	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+// 	//03/02/24 - removed:
+// 	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 	// 		.header("X-Auth-Signature", bitstamp_signature)
+// 	// 		.header("X-Auth-Nonce", bitstamp_nonce)
+// 	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
+// 	// 		.header("X-Auth-Version", "v2")
+// 	// 		//.header("Content-Type", content_type)
+// 	// 		//.body(payload_string)
+// 	// 		.build()
+// 	// 		.expect("\ncould not build bitstamp_request");
+// 	// 	let bitstamp_response = client.execute(bitstamp_request).await
+// 	// 		.expect("Failed to execute Bitstamp request");
+// 	// 	let bitstamp_response_text = bitstamp_response.text().await
+// 	// 		.expect("Failed to turn response into text");
+// 	// 	//probably dont need "bitstamp" once we transfer this to the actual function
+// 	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+// 	//     .expect("Failed to parse JSON");
+// 	// // Extract the bid and ask values
+// 	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+// 	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);       
+// 	//03/02/24 - added:
+// 		let mut success = false;
+// 		let mut attempts = 0;
+// 		let mut value_after: Option<f64> = None;
+// 		while !success && attempts <=3 {
+// 			attempts += 1;
+// 			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 				.header("X-Auth-Signature", &bitstamp_signature)
+// 				.header("X-Auth-Nonce", &bitstamp_nonce)
+// 				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+// 				.header("X-Auth-Version", "v2")
+// 				.build() {
+// 				Ok(bitstamp_request) => {
+// 					match client.execute(bitstamp_request).await {
+// 						Ok(bitstamp_response) => {
+// 							match bitstamp_response.text().await {
+// 								Ok(bitstamp_response_text) => {
+// 									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+// 										Ok(v) => {
+// 											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+// 											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+// 											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+// 												(Some(bid_str), Some(ask_str)) => {
+// 													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+// 														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+// 															// Place your calculations and updates here
+// 															//coinbase calculations to buy
+// 															let coinbase_taker_fee = 0.008;
+// 															let fraction_of_wallet_im_using = 0.08; //aka 8 percent
+// 															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
+// 															let fee_for_purchase = total_spent*coinbase_taker_fee;
+// 															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+// 															*coinbase_wallet -= total_spent;
+// 															let amount_of_sol = 
+// 															money_going_to_sol_after_fees/coinbase_buy_price_ask
+// 																							.expect(&format!("i18: coinbase_buy_price_ask is somehow Not Some. 
+// 																							even though to get to this point it had to be Some. 
+// 																							coinbase_buy_price_ask: {:?}
+// 																							Honestly restart the program from the last saved state. 
+// 																							The most likely error is a bit got flipped after the loop",
+// 																							&coinbase_buy_price_ask));
+// 															//bitstamp calculations for sell
+// 															let bitstamp_taker_fee = 0.004;
+// 															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+// 															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+// 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+// 															*bitstamp_wallet += money_from_sell_after_fees;
+// 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+// 															if let Some(mut value_after) = value_after {
+// 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+// 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+// 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);															
+// 																//value_after = 56
+// 																//coinbase = 57
+// 																//bitstamp = 58
+// 																//kraken = 59
+// 																//gemini = 60
+// 																//since this is coinbase and bitstamp being updated, I will update:
+// 																//  56, 57, 58
+// 																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+// 																let indices = [56, 57, 58];
+// 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+// 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 																neural_network.update_input(&indices, &scaled_values).await;
+// 															}
+// 															//03/08/24 - removed:
+// 															// //value_after = 56
+// 															// //coinbase = 57
+// 															// //bitstamp = 58
+// 															// //kraken = 59
+// 															// //gemini = 60
+// 															// //since this is coinbase and bitstamp being updated, I will update:
+// 															// //  56, 57, 58
+// 															// let indices = [56, 57, 58];
+// 															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+// 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 															// neural_network.update_input(&indices, &scaled_values).await;
+// 															success = true;
+// 														},
+// 														_ => {
+// 															log::error!("i18: Failed to f64 parse bid or ask price");
+// 															if attempts > 3 {
+// 																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 															}
+// 															continue;
+// 														}
+// 													}
+// 												},
+// 												_ => {
+// 													log::error!("i18: Failed to originally parse bid or ask price");
+// 													if attempts > 3 {
+// 														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 													}
+// 													continue;
+// 												}
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i18: Failed to parse JSON");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+// 											}
+// 											continue;
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i18: failed to get response text");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue;
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i18: Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue;
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i18: Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue;
+// 				}
+// 			}
+// 		}
+// 		match value_after {
+// 			Some(value) => return Ok(value),
+// 			None => {
+// 				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+// 				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+// 			}
+// 		}
+// 			//03/02/24 - removed:
+//             // //coinbase calculations
+//             //     let coinbase_taker_fee = 0.008;   
+//             //     let total_spent = 0.03*(*coinbase_wallet);
+//             //     let fee_for_purchase = total_spent*coinbase_taker_fee;
+//             //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+//             //     //new state of coinbase wallet below
+//             //     *coinbase_wallet -= total_spent;
+//             //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;    
+//             // //kraken calculations
+//             //     //let kraken_taker_fee = 0.0026;                
+//             //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+//             //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+//             //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+//             //     //*kraken_wallet += money_from_sell_after_fees;    
+//             //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;        
+//             // //bitstamp calculations
+//             //     let bitstamp_taker_fee = 0.004;
+//             //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+//             //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+//             //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+//             //     *bitstamp_wallet += money_from_sell_after_fees;
+//             // //this will count as value after
+//             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;    
+//             //     //value_after = 56
+//             //     //coinbase = 57
+//             //     //bitstamp = 58
+//             //     //kraken = 59
+//             //     //gemini = 60
+//             //     //since this is coinbase and kraken being updated, I will update:
+//             //     //  56, 57, 59
+//             //     let indices = [56, 57, 58];
+//             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+//             //     //01/24/24 - removed and added:
+//             //         //neural_network.update_input(&indices, &new_values);
+//             //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+//             //         //neural_network.update_input(&indices, &transformed_values).await;
+//             //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+//             //         neural_network.update_input(&indices, &scaled_values).await;    
+//             //     return Ok(value_after)
+//     }
+//     pub async fn s_i19_sol_9_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+//         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
+// 			//03/02/24 - added:
+//             // let now = Utc::now();
+//             // let time_stamp = now.timestamp().to_string();
+//             // let method = "GET";
+//             // let request_path = "/api/v3/brokerage/best_bid_ask";
+//             // let body = "";
+//             // let message = format!("{}{}{}{}", &time_stamp, 
+//             // &method, &request_path, &body);
+//             // type HmacSha256 = Hmac<Sha256>;
+//             // fn sign(message: &str, coinbase_secret: &str) -> String {
+//             // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+//             //             .expect("HMAC can take key of any size");
+//             // mac.update(message.as_bytes());
+//             // let result = mac.finalize();
+//             // let code_bytes = result.into_bytes();
+//             // hex::encode(code_bytes)
+//             // }
+//             // let coinbase_signature = sign(&message, &coinbase_secret);    
+//             // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+//             // .header("CB-ACCESS-KEY", coinbase_api_key)
+//             // .header("CB-ACCESS-SIGN", &coinbase_signature)
+//             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+//             // .build()
+//             // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //manages the error I described above
+//             // //let request = match request {
+//             // //Ok(req) => req,
+//             // //Err(e) => {
+//             // //eprintln!("Failed to build request: \n{}", e);
+//             // //return Err(e);
+//             // //}
+//             // //};    
+//             // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //let response = match response {
+//             // //    Ok(resp) => resp,
+//             // //    Err(e) => {
+//             // //        eprintln!("Failed to execute request: \n{}", e);
+//             // //        return Err(e);
+//             // //    }
+//             // //};       
+//             // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;    
+//             // //added 12/29/23
+//             // //this is the parsing
+//             // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // let mut coinbase_sell_price = 0.0;
+//             // let mut coinbase_buy_price = 0.0;    
+//             // // Access the pricebooks array
+//             // if let Some(pricebooks) = v["pricebooks"].as_array() {
+//             //     // Iterate over each pricebook
+//             //     for pricebook in pricebooks {
+//             //         // Access the product_id, bids, and asks
+//             //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
+//             //         let bids = &pricebook["bids"][0];
+//             //         let asks = &pricebook["asks"][0];            
+//             //         // Access the price and size of the bids and asks
+//             //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
+//             //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");            
+//             //         println!("Product ID: {}", product_id);
+//             //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
+//             //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
+//             //     }
+//             // }    
+//             //manages any errors from line above
+//             //let response_text = match response_text {
+//             //    Ok(t) => t,
+//             //    Err(e) => {
+//             //        eprintln!("Failed to read response text: \n{}", e);
+//             //        return;
+//             //    }
+//             //};    
+//             //prints the actual response
+//             //println!("list accounts response\n{:?}", &response_text);            
+// 	//03/02/24 - added:
+// 		let now = Utc::now();
+// 		let time_stamp = now.timestamp().to_string();
+// 		let method = "GET";
+// 		let request_path = "/api/v3/brokerage/best_bid_ask";
+// 		let body = "";
+// 		let message = format!("{}{}{}{}", &time_stamp, 
+// 			&method, &request_path, &body);
+// 		type HmacSha256 = Hmac<Sha256>;
+// 		fn sign(message: &str, coinbase_secret: &str) -> String {
+// 			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+// 					.expect("HMAC can take key of any size");
+// 			mac.update(message.as_bytes());
+// 			let result = mac.finalize();
+// 			let code_bytes = result.into_bytes();
+// 			hex::encode(code_bytes)
+// 		}
+// 		let coinbase_signature = sign(&message, &coinbase_secret);		
+// 		let mut coinbase_buy_price_ask: Option<f64> = None;
+// 		let mut attempts = 0;
+// 		let mut success = false;
+// 		loop {
+// 			attempts +=1;
+// 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+// 			.header("CB-ACCESS-KEY", coinbase_api_key)
+// 			.header("CB-ACCESS-SIGN", &coinbase_signature)
+// 			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
+// 			.build();
+// 			match request {
+// 				Ok(req) => {
+// 					let response = client.execute(req).await;
+// 					match response {
+// 						Ok(resp) => {
+// 							let response_text = resp.text().await;
+// 							match response_text {
+// 								Ok(text) => {
+// 									match serde_json::from_str::<Value>(&text) {
+// 										Ok(v) => {
+// 											if let Some(pricebooks) = v["pricebooks"].as_array() {
+// 												for pricebook in pricebooks {
+// 													//let product_id = pricebook["product_id"].as_str();
+// 													//let bids = &pricebook["bids"][0];
+// 													let asks = &pricebook["asks"][0];
+// 													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+// 													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();		
+// 													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
+// 														(/*Some(bid_str),*/ Some(ask_str)) => {
+// 															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
+// 																(/*Ok(bid_str),*/ Ok(ask_str)) => {
+// 																	//coinbase_sell_price_bid = Some(bid_str);
+// 																	coinbase_buy_price_ask = Some(ask_str);	
+// 																		success = true;
+// 																},
+// 																_ => {
+// 																	log::error!("i19:  coinbase:  Failed to f64 parse JSON");
+// 																	if attempts > 3 {
+// 																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 																	}
+// 																	continue ;
+// 																}
+// 															}
+// 														},
+// 														_ => {
+// 															log::error!("i19:  coinbase:  Failed to get ask price");
+// 															if attempts > 3 {
+// 																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+// 																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+// 															}
+// 															continue ;
+// 														}
+// 													}
+// 												}
+// 											//03/02/24 - added else condition
+// 											} else {
+// 												log::error!("i19:  coinbase:  Failed to get pricebooks as array.");
+// 												if attempts > 3 {
+// 													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+// 												}
+// 												continue;
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i19:  coinbase:  Failed to parse outer JSON as str.");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 											}
+// 											continue ; // Continue to the next iteration if parsing fails
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i19:  coinbase:  Failed to get response text.");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue ; // Continue to the next iteration if getting response text fails
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i19:  coinbase:  Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue; // Continue to the next iteration if executing request fails
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i19:  coinbase:  Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue; // Continue to the next iteration if building request fails
+// 				}
+// 			}
+// 			if success == true {
+// 				break;
+// 			}
+// 		} 
+//             //02/09/24 - updated tokio. removed:  
+//                 //delay_for(Duration::from_secs(3)).await;
+//             //02/09/24 - updated tokio. added in its place:
+//             println!("sol 9 coinbase bitstamp: 3 sec delay");
+//             let when = tokio::time::Instant::now() + Duration::from_secs(3);
+//             tokio::time::sleep_until(when).await;
+//     //-------------------------Bitstamp---------------------------//
+//                 //Bitstamp for some reason needs nonce to be 36 characters long. 
+// 	//	nonce is basically a unique id that needs to be different every time you make a request. 
+// 	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+// 	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+// 	//	and just make it a random 36 char string from it.	
+// 	//the exact same as the Coinbase signature. we'll see if it works
+// 	//apparently it doesnt so I will code comment it out for now
+// 	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 	//											.expect("HMAC can take key of any size");
+// 	//	mac.update(bitstamp_message.as_bytes());
+// 	//	let result = mac.finalize();
+// 	//	let code_bytes = result.into_bytes();
+// 	//	hex::encode(code_bytes)
+// 	//}
+// 	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 			.expect("HMAC can take key of any size");
+// 		mac.update(bitstamp_message.as_bytes());
+// 		let result = mac.finalize();
+// 		let code_bytes = result.into_bytes();
+// 		hex::encode(code_bytes)
+// 	}
+// 	let content_type = "application/x-www-form-urlencoded";
+// 	let payload_string = "offset=1";
+// 	//if we needed content_type, it is here
+// 	//let content_type = "application/json";
+// 	//this is the bitstamp message IF we needed content_type
+// 	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+// 	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// //--------------------Account-balances------------------------------------------//
+// 	let the_uuid = Uuid::new_v4();
+// 	let bitstamp_nonce = the_uuid.to_string();
+// 	let bitstamp_timestamp = now.timestamp_millis().to_string();
+// 	//let content_type = "application/x-www-form-urlencoded";
+// 	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+// 			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// 	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+// 	//03/02/24 - removed:
+// 	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 	// 		.header("X-Auth-Signature", bitstamp_signature)
+// 	// 		.header("X-Auth-Nonce", bitstamp_nonce)
+// 	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
+// 	// 		.header("X-Auth-Version", "v2")
+// 	// 		//.header("Content-Type", content_type)
+// 	// 		//.body(payload_string)
+// 	// 		.build()
+// 	// 		.expect("\ncould not build bitstamp_request");
+// 	// 	let bitstamp_response = client.execute(bitstamp_request).await
+// 	// 		.expect("Failed to execute Bitstamp request");
+// 	// 	let bitstamp_response_text = bitstamp_response.text().await
+// 	// 		.expect("Failed to turn response into text");
+// 	// 	//probably dont need "bitstamp" once we transfer this to the actual function
+// 	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+// 	//     .expect("Failed to parse JSON");
+// 	// // Extract the bid and ask values
+// 	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+// 	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
+// 	//03/02/24 - added:
+// 		let mut success = false;
+// 		let mut attempts = 0;
+// 		let mut value_after: Option<f64> = None;
+// 		while !success && attempts <=3 {
+// 			attempts += 1;
+// 			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 				.header("X-Auth-Signature", &bitstamp_signature)
+// 				.header("X-Auth-Nonce", &bitstamp_nonce)
+// 				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+// 				.header("X-Auth-Version", "v2")
+// 				.build() {
+// 				Ok(bitstamp_request) => {
+// 					match client.execute(bitstamp_request).await {
+// 						Ok(bitstamp_response) => {
+// 							match bitstamp_response.text().await {
+// 								Ok(bitstamp_response_text) => {
+// 									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+// 										Ok(v) => {
+// 											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+// 											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+// 											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+// 												(Some(bid_str), Some(ask_str)) => {
+// 													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+// 														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+// 															// Place your calculations and updates here
+// 															//coinbase calculations to buy
+// 															let coinbase_taker_fee = 0.008;
+// 															let fraction_of_wallet_im_using = 0.09; //aka 9 percent
+// 															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
+// 															let fee_for_purchase = total_spent*coinbase_taker_fee;
+// 															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+// 															*coinbase_wallet -= total_spent;
+// 															let amount_of_sol = 
+// 															money_going_to_sol_after_fees/coinbase_buy_price_ask
+// 																							.expect(&format!("i19: coinbase_buy_price_ask is somehow Not Some. 
+// 																							even though to get to this point it had to be Some. 
+// 																							coinbase_buy_price_ask: {:?}
+// 																							Honestly restart the program from the last saved state. 
+// 																							The most likely error is a bit got flipped after the loop",
+// 																							&coinbase_buy_price_ask));
+// 															//bitstamp calculations for sell
+// 															let bitstamp_taker_fee = 0.004;
+// 															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+// 															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+// 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+// 															*bitstamp_wallet += money_from_sell_after_fees;
+// 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+// 															if let Some(mut value_after) = value_after {
+// 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+// 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+// 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);																
+// 																//value_after = 56
+// 																//coinbase = 57
+// 																//bitstamp = 58
+// 																//kraken = 59
+// 																//gemini = 60
+// 																//since this is coinbase and bitstamp being updated, I will update:
+// 																//  56, 57, 58
+// 																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+// 																let indices = [56, 57, 58];
+// 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+// 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 																neural_network.update_input(&indices, &scaled_values).await;
+// 															}
+// 															//03/08/24 - removed:
+// 															// //value_after = 56
+// 															// //coinbase = 57
+// 															// //bitstamp = 58
+// 															// //kraken = 59
+// 															// //gemini = 60
+// 															// //since this is coinbase and bitstamp being updated, I will update:
+// 															// //  56, 57, 58
+// 															// let indices = [56, 57, 58];
+// 															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+// 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 															// neural_network.update_input(&indices, &scaled_values).await;
+// 															success = true;
+// 														},
+// 														_ => {
+// 															log::error!("i19: Failed to f64 parse bid or ask price");
+// 															if attempts > 3 {
+// 																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 															}
+// 															continue;
+// 														}
+// 													}
+// 												},
+// 												_ => {
+// 													log::error!("i19: Failed to originally parse bid or ask price");
+// 													if attempts > 3 {
+// 														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 													}
+// 													continue;
+// 												}
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i19: Failed to parse JSON");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+// 											}
+// 											continue;
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i19: failed to get response text");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue;
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i19: Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue;
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i19: Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue;
+// 				}
+// 			}
+// 		}
+// 		match value_after {
+// 			Some(value) => return Ok(value),
+// 			None => {
+// 				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+// 				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+// 			}
+// 		}
+// 			//03/02/24 - removed:
+//             // //coinbase calculations
+//             //     let coinbase_taker_fee = 0.008;  
+//             //     let total_spent = 0.03*(*coinbase_wallet);
+//             //     let fee_for_purchase = total_spent*coinbase_taker_fee;
+//             //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+//             //     //new state of coinbase wallet below
+//             //     *coinbase_wallet -= total_spent;
+//             //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;  
+//             // //kraken calculations
+//             //     //let kraken_taker_fee = 0.0026;              
+//             //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+//             //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+//             //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+//             //     //*kraken_wallet += money_from_sell_after_fees;
+//             //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             // //bitstamp calculations
+//             //     let bitstamp_taker_fee = 0.004;
+//             //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+//             //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+//             //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+//             //     *bitstamp_wallet += money_from_sell_after_fees;
+//             // //this will count as value after
+//             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             //     //value_after = 56
+//             //     //coinbase = 57
+//             //     //bitstamp = 58
+//             //     //kraken = 59
+//             //     //gemini = 60
+//             //     //since this is coinbase and kraken being updated, I will update:
+//             //     //  56, 57, 59
+//             //     let indices = [56, 57, 58];
+//             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+//             //     //01/24/24 - removed and added:
+//             //         //neural_network.update_input(&indices, &new_values);
+//             //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+//             //         //neural_network.update_input(&indices, &transformed_values).await;
+//             //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+//             //         neural_network.update_input(&indices, &scaled_values).await;
+//             //     return Ok(value_after)
+//     }
+//     pub async fn s_i20_sol_10_coinbase_bitstamp( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &mut f64,
+//         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, bitstamp_secret: &str, bitstamp_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
+// 			//03/02/24 - added:
+//             // let now = Utc::now();
+//             // let time_stamp = now.timestamp().to_string();
+//             // let method = "GET";
+//             // let request_path = "/api/v3/brokerage/best_bid_ask";
+//             // let body = "";
+//             // let message = format!("{}{}{}{}", &time_stamp, 
+//             // &method, &request_path, &body);
+//             // type HmacSha256 = Hmac<Sha256>;
+//             // fn sign(message: &str, coinbase_secret: &str) -> String {
+//             // let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+//             //             .expect("HMAC can take key of any size");
+//             // mac.update(message.as_bytes());
+//             // let result = mac.finalize();
+//             // let code_bytes = result.into_bytes();
+//             // hex::encode(code_bytes)
+//             // }
+//             // let coinbase_signature = sign(&message, &coinbase_secret);
+//             // let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+//             // .header("CB-ACCESS-KEY", coinbase_api_key)
+//             // .header("CB-ACCESS-SIGN", &coinbase_signature)
+//             // .header("CB-ACCESS-TIMESTAMP", &time_stamp)
+//             // .build()
+//             // .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //manages the error I described above
+//             // //let request = match request {
+//             // //Ok(req) => req,
+//             // //Err(e) => {
+//             // //eprintln!("Failed to build request: \n{}", e);
+//             // //return Err(e);
+//             // //}
+//             // //};   
+//             // let response = client.execute(request).await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // //let response = match response {
+//             // //    Ok(resp) => resp,
+//             // //    Err(e) => {
+//             // //        eprintln!("Failed to execute request: \n{}", e);
+//             // //        return Err(e);
+//             // //    }
+//             // //};       
+//             // let response_text = response.text().await.map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;   
+//             // //added 12/29/23
+//             // //this is the parsing
+//             // let v: Value = serde_json::from_str(&response_text).map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?;
+//             // let mut coinbase_sell_price = 0.0;
+//             // let mut coinbase_buy_price = 0.0;   
+//             // // Access the pricebooks array
+//             // if let Some(pricebooks) = v["pricebooks"].as_array() {
+//             //     // Iterate over each pricebook
+//             //     for pricebook in pricebooks {
+//             //         // Access the product_id, bids, and asks
+//             //         let product_id = pricebook["product_id"].as_str().unwrap_or("");
+//             //         let bids = &pricebook["bids"][0];
+//             //         let asks = &pricebook["asks"][0];       
+//             //         // Access the price and size of the bids and asks
+//             //         coinbase_sell_price = bids["price"].as_str().unwrap_or("price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let bid_size = bids["size"].as_str().unwrap_or("size not found");
+//             //         coinbase_buy_price = asks["price"].as_str().unwrap_or("ask price not found").parse::<f64>().unwrap_or(-1.0);
+//             //         let ask_size = asks["size"].as_str().unwrap_or("ask size not found");      
+//             //         println!("Product ID: {}", product_id);
+//             //         //println!("Best bid: {} (size: {})", bid_price, bid_size);
+//             //         //println!("Best ask: {} (size: {})", ask_price, ask_size);
+//             //     }
+//             // }
+//             //manages any errors from line above
+//             //let response_text = match response_text {
+//             //    Ok(t) => t,
+//             //    Err(e) => {
+//             //        eprintln!("Failed to read response text: \n{}", e);
+//             //        return;
+//             //    }
+//             //};
+//             //prints the actual response
+//             //println!("list accounts response\n{:?}", &response_text);
+// 	//03/02/24 - added:
+// 		let now = Utc::now();
+// 		let time_stamp = now.timestamp().to_string();
+// 		let method = "GET";
+// 		let request_path = "/api/v3/brokerage/best_bid_ask";
+// 		let body = "";
+// 		let message = format!("{}{}{}{}", &time_stamp, 
+// 			&method, &request_path, &body);
+// 		type HmacSha256 = Hmac<Sha256>;
+// 		fn sign(message: &str, coinbase_secret: &str) -> String {
+// 			let mut mac = HmacSha256::new_from_slice(&coinbase_secret.as_bytes())
+// 					.expect("HMAC can take key of any size");
+// 			mac.update(message.as_bytes());
+// 			let result = mac.finalize();
+// 			let code_bytes = result.into_bytes();
+// 			hex::encode(code_bytes)
+// 		}
+// 		let coinbase_signature = sign(&message, &coinbase_secret);
+// 		let mut coinbase_buy_price_ask: Option<f64> = None;
+// 		let mut attempts = 0;
+// 		let mut success = false;
+// 		loop {
+// 			attempts +=1;
+// 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
+// 			.header("CB-ACCESS-KEY", coinbase_api_key)
+// 			.header("CB-ACCESS-SIGN", &coinbase_signature)
+// 			.header("CB-ACCESS-TIMESTAMP", &time_stamp)
+// 			.build();
+// 			match request {
+// 				Ok(req) => {
+// 					let response = client.execute(req).await;
+// 					match response {
+// 						Ok(resp) => {
+// 							let response_text = resp.text().await;
+// 							match response_text {
+// 								Ok(text) => {
+// 									match serde_json::from_str::<Value>(&text) {
+// 										Ok(v) => {
+// 											if let Some(pricebooks) = v["pricebooks"].as_array() {
+// 												for pricebook in pricebooks {
+// 													//let product_id = pricebook["product_id"].as_str();
+// 													//let bids = &pricebook["bids"][0];
+// 													let asks = &pricebook["asks"][0];
+// 													//let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+// 													let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
+// 													match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
+// 														(/*Some(bid_str),*/ Some(ask_str)) => {
+// 															match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
+// 																(/*Ok(bid_str),*/ Ok(ask_str)) => {
+// 																	//coinbase_sell_price_bid = Some(bid_str);
+// 																	coinbase_buy_price_ask = Some(ask_str);
+// 																		success = true;
+// 																},
+// 																_ => {
+// 																	log::error!("i20:  coinbase:  Failed to f64 parse JSON");
+// 																	if attempts > 3 {
+// 																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 																	}
+// 																	continue ;
+// 																}
+// 															}
+// 														},
+// 														_ => {
+// 															log::error!("i20:  coinbase:  Failed to get ask price");
+// 															if attempts > 3 {
+// 																//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+// 																panic!("Failed to get ask price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+// 															}
+// 															continue ;
+// 														}
+// 													}
+// 												}
+// 											//03/02/24 - added else condition
+// 											} else {
+// 												log::error!("i20:  coinbase:  Failed to get pricebooks as array.");
+// 												if attempts > 3 {
+// 													panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
+// 												}
+// 												continue;
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i20:  coinbase:  Failed to parse outer JSON as str.");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+// 											}
+// 											continue ; // Continue to the next iteration if parsing fails
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i20:  coinbase:  Failed to get response text.");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue ; // Continue to the next iteration if getting response text fails
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i20:  coinbase:  Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue; // Continue to the next iteration if executing request fails
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i20:  coinbase:  Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue; // Continue to the next iteration if building request fails
+// 				}
+// 			}
+// 			if success == true {
+// 				break;
+// 			}
+// 		}
+//             //02/09/24 - updated tokio. removed:  
+//                 //delay_for(Duration::from_secs(3)).await;
+//             //02/09/24 - updated tokio. added in its place:
+//             println!("sol 10 coinbase bitstamp: 3 sec delay");
+//             let when = tokio::time::Instant::now() + Duration::from_secs(3);
+//             tokio::time::sleep_until(when).await;
+//     //-------------------------Bitstamp---------------------------//
+//                 //Bitstamp for some reason needs nonce to be 36 characters long. 
+// 	//	nonce is basically a unique id that needs to be different every time you make a request. 
+// 	//	usually time-since-UNIX epoch will do but for some reason bitstmap requires both a timestamp
+// 	//	and a nonce. Because of the nonce needing to be 36 chars, it's easier to use a uuid crate 
+// 	//	and just make it a random 36 char string from it.
+// 	//the exact same as the Coinbase signature. we'll see if it works
+// 	//apparently it doesnt so I will code comment it out for now
+// 	//fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 	//	let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 	//											.expect("HMAC can take key of any size");
+// 	//	mac.update(bitstamp_message.as_bytes());
+// 	//	let result = mac.finalize();
+// 	//	let code_bytes = result.into_bytes();
+// 	//	hex::encode(code_bytes)
+// 	//}
+// 	fn bitstamp_sign(bitstamp_message: &str, bitstamp_secret: &str) -> String {
+// 		let mut mac = HmacSha256::new_from_slice(&bitstamp_secret.as_bytes())
+// 			.expect("HMAC can take key of any size");
+// 		mac.update(bitstamp_message.as_bytes());
+// 		let result = mac.finalize();
+// 		let code_bytes = result.into_bytes();
+// 		hex::encode(code_bytes)
+// 	}
+// 	let content_type = "application/x-www-form-urlencoded";
+// 	let payload_string = "offset=1";
+// 	//if we needed content_type, it is here
+// 	//let content_type = "application/json";
+// 	//this is the bitstamp message IF we needed content_type
+// 	//let bitstamp_message = format!("BITSTAMP {}POSThttps://www.bitstamp.net/api/v2/account_balances/{}{}{}v2{}", 
+// 	//	bitstamp_api_key, content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// //--------------------Account-balances------------------------------------------//
+// 	let the_uuid = Uuid::new_v4();
+// 	let bitstamp_nonce = the_uuid.to_string();
+// 	let bitstamp_timestamp = now.timestamp_millis().to_string();
+// 	//let content_type = "application/x-www-form-urlencoded";
+// 	let bitstamp_message = format!("BITSTAMP {}GETwww.bitstamp.net/api/v2/ticker/sol-usd/{}{}{}{}v2{}", 
+// 			bitstamp_api_key, "", content_type, bitstamp_nonce, bitstamp_timestamp, payload_string);
+// 	let bitstamp_signature = bitstamp_sign(&bitstamp_message, &bitstamp_secret);
+// 	//03/02/24 - removed:
+// 	// 	let bitstamp_request = client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 	// 		.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 	// 		.header("X-Auth-Signature", bitstamp_signature)
+// 	// 		.header("X-Auth-Nonce", bitstamp_nonce)
+// 	// 		.header("X-Auth-Timestamp", bitstamp_timestamp)
+// 	// 		.header("X-Auth-Version", "v2")
+// 	// 		//.header("Content-Type", content_type)
+// 	// 		//.body(payload_string)
+// 	// 		.build()
+// 	// 		.expect("\ncould not build bitstamp_request");
+// 	// 	let bitstamp_response = client.execute(bitstamp_request).await
+// 	// 		.expect("Failed to execute Bitstamp request");
+// 	// 	let bitstamp_response_text = bitstamp_response.text().await
+// 	// 		.expect("Failed to turn response into text");
+// 	// 	//probably dont need "bitstamp" once we transfer this to the actual function
+// 	//     let v: serde_json::Value = serde_json::from_str(&bitstamp_response_text)
+// 	//     .expect("Failed to parse JSON");
+// 	// // Extract the bid and ask values
+// 	//     let bitstamp_sell_price_bid = v["bid"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     let bitstamp_buy_price_ask = v["ask"].as_str().unwrap().parse::<f64>().unwrap();
+// 	//     println!("Bid: {}, Ask: {}", bitstamp_sell_price_bid, bitstamp_buy_price_ask);
+// 	// 	println!("Bitstamp:\n{:?}", bitstamp_response_text);
+// 	//03/02/24 - added:
+// 		let mut success = false;
+// 		let mut attempts = 0;
+// 		let mut value_after: Option<f64> = None;
+// 		while !success && attempts <=3 {
+// 			attempts += 1;
+// 			match client.get("https://www.bitstamp.net/api/v2/ticker/solusd/")
+// 				.header("X-Auth", format!("BITSTAMP {}", bitstamp_api_key))
+// 				.header("X-Auth-Signature", &bitstamp_signature)
+// 				.header("X-Auth-Nonce", &bitstamp_nonce)
+// 				.header("X-Auth-Timestamp", &bitstamp_timestamp)
+// 				.header("X-Auth-Version", "v2")
+// 				.build() {
+// 				Ok(bitstamp_request) => {
+// 					match client.execute(bitstamp_request).await {
+// 						Ok(bitstamp_response) => {
+// 							match bitstamp_response.text().await {
+// 								Ok(bitstamp_response_text) => {
+// 									match serde_json::from_str::<Value>(&bitstamp_response_text) {
+// 										Ok(v) => {
+// 											let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
+// 											let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+// 											match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
+// 												(Some(bid_str), Some(ask_str)) => {
+// 													match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
+// 														(Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
+// 															// Place your calculations and updates here
+// 															//coinbase calculations to buy
+// 															let coinbase_taker_fee = 0.008;
+// 															let fraction_of_wallet_im_using = 0.10; //aka 10 percent
+// 															let total_spent = fraction_of_wallet_im_using*(*coinbase_wallet);
+// 															let fee_for_purchase = total_spent*coinbase_taker_fee;
+// 															let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+// 															*coinbase_wallet -= total_spent;
+// 															let amount_of_sol = 
+// 															money_going_to_sol_after_fees/coinbase_buy_price_ask
+// 																							.expect(&format!("i20: coinbase_buy_price_ask is somehow Not Some. 
+// 																							even though to get to this point it had to be Some. 
+// 																							coinbase_buy_price_ask: {:?}
+// 																							Honestly restart the program from the last saved state. 
+// 																							The most likely error is a bit got flipped after the loop",
+// 																							&coinbase_buy_price_ask));
+// 															//bitstamp calculations for sell
+// 															let bitstamp_taker_fee = 0.004;
+// 															let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+// 															let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+// 															let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+// 															*bitstamp_wallet += money_from_sell_after_fees;
+// 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
+// 															if let Some(mut value_after) = value_after {
+// 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+// 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+// 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+// 																//value_after = 56
+// 																//coinbase = 57
+// 																//bitstamp = 58
+// 																//kraken = 59
+// 																//gemini = 60
+// 																//since this is coinbase and bitstamp being updated, I will update:
+// 																//  56, 57, 58
+// 																//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+// 																let indices = [56, 57, 58];
+// 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+// 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 																neural_network.update_input(&indices, &scaled_values).await;
+// 															}
+// 															//03/08/24 - removed:
+// 															// //value_after = 56
+// 															// //coinbase = 57
+// 															// //bitstamp = 58
+// 															// //kraken = 59
+// 															// //gemini = 60
+// 															// //since this is coinbase and bitstamp being updated, I will update:
+// 															// //  56, 57, 58
+// 															// let indices = [56, 57, 58];
+// 															// let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
+// 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+// 															// neural_network.update_input(&indices, &scaled_values).await;
+// 															success = true;
+// 														},
+// 														_ => {
+// 															log::error!("i20: Failed to f64 parse bid or ask price");
+// 															if attempts > 3 {
+// 																panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 															}
+// 															continue;
+// 														}
+// 													}
+// 												},
+// 												_ => {
+// 													log::error!("i20: Failed to originally parse bid or ask price");
+// 													if attempts > 3 {
+// 														panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
+// 													}
+// 													continue;
+// 												}
+// 											}
+// 										},
+// 										Err(_) => {
+// 											log::error!("i20: Failed to parse JSON");
+// 											if attempts > 3 {
+// 												panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
+// 											}
+// 											continue;
+// 										}
+// 									}
+// 								},
+// 								Err(_) => {
+// 									log::error!("i20: failed to get response text");
+// 									if attempts > 3 {
+// 										panic!("Failed to get response text after 3 attempts");
+// 									}
+// 									continue;
+// 								}
+// 							}
+// 						},
+// 						Err(_) => {
+// 							log::error!("i20: Failed to execute request");
+// 							if attempts > 3 {
+// 								panic!("Failed to execute request after 3 attempts");
+// 							}
+// 							continue;
+// 						}
+// 					}
+// 				},
+// 				Err(_) => {
+// 					log::error!("i20: Failed to build request");
+// 					if attempts > 3 {
+// 						panic!("Failed to build request after 3 attempts");
+// 					}
+// 					continue;
+// 				}
+// 			}
+// 		}
+// 		match value_after {
+// 			Some(value) => return Ok(value),
+// 			None => {
+// 				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+// 				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+// 			}
+// 		}
+// 			//03/02/24 - removed:
+//             // //coinbase calculations
+//             //     let coinbase_taker_fee = 0.008;
+//             //     let total_spent = 0.03*(*coinbase_wallet);
+//             //     let fee_for_purchase = total_spent*coinbase_taker_fee;
+//             //     let money_going_to_sol_after_fees = total_spent - fee_for_purchase;
+//             //     //new state of coinbase wallet below
+//             //     *coinbase_wallet -= total_spent;
+//             //     let amount_of_sol = money_going_to_sol_after_fees/coinbase_buy_price;
+//             // //kraken calculations
+//             //     //let kraken_taker_fee = 0.0026;        
+//             //     //let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
+//             //     //let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
+//             //     //let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+//             //     //*kraken_wallet += money_from_sell_after_fees;
+//             //     //let value_after = *kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             // //bitstamp calculations
+//             //     let bitstamp_taker_fee = 0.004;
+//             //     let money_from_sell_before_fees = amount_of_sol * bitstamp_sell_price_bid;
+//             //     let fee_for_sell = money_from_sell_before_fees * bitstamp_taker_fee;
+//             //     let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
+//             //     *bitstamp_wallet += money_from_sell_after_fees;
+//             // //this will count as value after
+//             //     let value_after = kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet;
+//             //     //value_after = 56
+//             //     //coinbase = 57
+//             //     //bitstamp = 58
+//             //     //kraken = 59
+//             //     //gemini = 60
+//             //     //since this is coinbase and kraken being updated, I will update:
+//             //     //  56, 57, 59
+//             //     let indices = [56, 57, 58];
+//             //     let new_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
+//             //     //01/24/24 - removed and added:
+//             //         //neural_network.update_input(&indices, &new_values);
+//             //         //let transformed_values: Vec<f64> = new_values.iter().map(|x: &f64| x.ln()).collect();
+//             //         //neural_network.update_input(&indices, &transformed_values).await;
+//             //         let scaled_values: Vec<f64> = new_values.iter().map(|&x| x / divisor).collect();
+//             //         neural_network.update_input(&indices, &scaled_values).await;
+//             //     return Ok(value_after)
+//     }
+//     //end removal
     //gemini has withdraw minimums of 10 dollars
     /*
     pub async fn s_i21_sol_1_gemini_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &f64, bitstamp_wallet: &f64,

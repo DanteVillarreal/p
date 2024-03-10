@@ -1862,7 +1862,8 @@
 			//03/05/24 - changed to 0.4
 			//03/06/24 - changed to 0.5. then 0.6 then 0.7 then 0.8
 			//03/09/24 - changed to 0.99. then 0.9
-			let gamma = 0.9;
+			//03/10/24 - changed to 0.99
+			let gamma = 0.99;
 			//initialize the largest Q-value so far and its index
 			//let mut index_of_largest_qvalue_in_next_state: Option<usize> = None;
 			let mut largest_qvalue_so_far_in_next_state = f64::MIN;
@@ -2789,12 +2790,14 @@
 						//02/02/24 - changed from 0.2 to 0.1
 						//02/28/24 - changed from 0.1 to 0.001 then to 0.00001 then .000_0001
 						//02/29/24 - changed back to 0.1
-							if gradient_layer.data[j][k] > 0.1 {
-								gradient_layer.data[j][k] = 0.1;
-							}
-							else if gradient_layer.data[j][k] < -0.1 {
-								gradient_layer.data[j][k] = -0.1;
-							} 
+						//03/10/24 - removed gradient cap.
+						//	uncomment if you want gradient cap
+							// if gradient_layer.data[j][k] > 0.1 {
+							// 	gradient_layer.data[j][k] = 0.1;
+							// }
+							// else if gradient_layer.data[j][k] < -0.1 {
+							// 	gradient_layer.data[j][k] = -0.1;
+							// } 
 					}
 				}
 			}
@@ -4519,7 +4522,8 @@
 				&q_value_for_current_state, &target_q_value);
 			//02/02/24 - changed from 0.0001 to 0.00001
 			//02/29/24 - from 0.00001 to 0.000_001
-			let learning_rate = 0.1;
+			//03/10/24 - changed to 1.0
+			let learning_rate = 1.0;
 			self.el_update_weights(&learning_rate);
 			
 			//03/10/24 - added:

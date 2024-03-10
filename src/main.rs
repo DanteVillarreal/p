@@ -2092,7 +2092,8 @@ async fn main()   {
                                     //make our neural network learn from replay buffer
                                     //02/02/24 - changed from 0.0001 to 0.00001
                                     //03/09/24 - changed to 0.1
-                                    let learning_rate = 0.1;
+                                    //03/10/24 - changed to 1.0
+                                    let learning_rate = 1.0;
                                     neural_network.el_update_weights(&learning_rate);
                                     
                                     //03/10/24 - added:

@@ -2094,8 +2094,9 @@ async fn main()   {
                                     //03/09/24 - changed to 0.1
                                     let learning_rate = 0.1;
                                     neural_network.el_update_weights(&learning_rate);
-
-
+                                    
+                                    //03/10/24 - added:
+                                    neural_network.save_all_gradients();
 
 
 

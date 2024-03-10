@@ -2817,6 +2817,33 @@
 
 
 
+//03/10/24 - added:
+	pub fn save_all_gradients(&self) {
+		let base_path = "D:\\Downloads\\PxOmni\\zgradients";
+		let file_path = Path::new(base_path).join("all_gradients.csv");
+
+			match fs::OpenOptions::new().write(true).append(true).create(true).open(&file_path) {
+				Ok(mut file) => {
+					for gradient_layer in self.gradients.layers.iter() {
+						for sub_vec in &gradient_layer.data {
+							let line = sub_vec.iter()
+								.map(|&value| value.to_string())
+								.collect::<Vec<String>>()
+								.join(",");
+							match writeln!(file, "{}", line) {
+								Ok(_) => (),
+								Err(e) => {
+									panic!("save_all_gradients: Failed to write to file after 3 attempts. Error: {}", e);
+								}
+							}
+						}
+					}
+				},
+				Err(e) => {
+						panic!("save_all_gradients: Failed to open file after 3 attempts. Error: {}", e);
+				}
+			}
+	}
 
 
 
@@ -4494,6 +4521,9 @@
 			//02/29/24 - from 0.00001 to 0.000_001
 			let learning_rate = 0.1;
 			self.el_update_weights(&learning_rate);
+			
+			//03/10/24 - added:
+			self.save_all_gradients();
 		}
 
 	}

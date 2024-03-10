@@ -368,10 +368,19 @@ MAY NEED TO STANDARDIZE IT USING STD DEV AND MIN MAX USING HISTORICAL DATA.
 03/08/24 - modified handle_all_gemini to have standardization.          JESUS IS GOOD. We got this!
 03/08/24 - NEED TO REMOVE INPUTS FOR A1 AND B1 FOR KRAKEN. SO IN TOTAL REMOVE 6 INPUTS. THEN NEED TO REMOVE DIVISOR and scale it too.
 03/09/24 - fixed ALL of the indices. including value prior, coinbase, bitstamp, kraken, and gemini wallet. had to thus delete divisor and change all the functions in action_functions.rs. I am restarting from 0. gamma = 0.99. gradient cap +-0.1. learning_rate = 0.1.              JESUS IS GOOD. We got this
-Here is how I will do future iterations: I will keep learning rate the same, and first change gamma. if it doesnt succeed when it gets to 0.2, go back to 0.99 and divide learning rate by 10. then repeat until it works. 1. remove all replay buffers. 2. remove saved states. 3. rename p, websocket_client, and q value logs. 4. add extra space in rewards doc for next run.               JESUS IS GOOD. We got this!
+Here is how I will do future iterations: I will keep learning rate the same, and first change gamma. if it doesnt succeed when it gets to 0.1, go back to 0.99 and divide learning rate by 10. then repeat until it works. 1. remove all replay buffers. 2. remove saved states. 3. rename p, websocket_client, and q value logs. 4. add extra space in rewards doc for next run.               JESUS IS GOOD. We got this!
                 DONT FORGET TO CHANGE LEARNING_RATE IN MAIN TOO if you ever change it.
 03/08/24 - already had to fix an error.         JESUS IS GOOD. I got this!
 03/09/24 - fixed another error.                 JESUS IS GOOD. We got this!
 03/09/24 - changed number of inputs in initialization. code commented out some functions that were not being used in action_functions.rs.               JESUS IS GOOD. We got this!
 03/09/24 - added print statements that include time for gemini xrp and solana because in 15 minutes somehow it didnt update xrp a single time. sus.     JESUS IS GOOD. We got this!
 03/09/24 - changed some heartbeat log::info! in kraken and coinbase to println!.                JESUS IS GOOD. We got this!
+03/09/24 - did the same to bitstamp.
+03/09/24 - when: gamma = 0.99. gradient cap +-0.1. learning_rate = 0.1., within 4 iterations, average went to 4600. new values: gamma = 0.9. gradient cap +-0.1. learning_rate = 0.1.1. remove all replay buffers. 2. remove saved states. 3. rename p, websocket_client, and q value logs. 4. add extra space in rewards doc for next run.               JESUS IS GOOD. We got this!
+03/09/24 - need to change how Im calculating value_prior and value_after. I have to UNscale them before I put them into the reward function. And UNscale value_after before I return it. Have to UNscale all wallets too. Next step is also to log the gradient values each iteration and then make a histogram
+        1. unscale in main                         =======DONE
+        2. unscale in network.rs - NONE NECESSARY
+        3. unscale in action_functions.rs          =======DONE
+        4. unscale in execute_action_functions.rs NOT NECESSARY
+        5. do 1 hidden layer
+03/09/24 - made values returned like coinbase/bitstamp/gemini/kraken wallets back to unscaled. Also, changed hidden layers to 1. Next step is to log the gradient values each iteration and then make a histogram.		JESUS IS GOOD. With Gods strength, I got this!

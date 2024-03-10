@@ -1460,6 +1460,12 @@ use crate::standardization_functions;
 
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+																					//03/09/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let coinbase_wallet_unscaled = *coinbase_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
+
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -1477,6 +1483,12 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*coinbase_wallet = coinbase_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																	}
 																	else {
@@ -1981,6 +1993,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+																					//03/10/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let coinbase_wallet_unscaled = *coinbase_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
+
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -1998,6 +2016,12 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+
+																					//03/10/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*coinbase_wallet = coinbase_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																	}
 																	else {
@@ -2500,26 +2524,38 @@ use crate::standardization_functions;
 																		
 																		
 																		//this will count as value after
-																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-																				if let Some(mut value_after) = value_after {
-																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
-																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																					
+                                                                        value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+                                                                        if let Some(mut value_after) = value_after {
+                                                                            //03/09/24 - added for unscaling
+                                                                            let value_after_unscaled = value_after;
+                                                                            let coinbase_wallet_unscaled = *coinbase_wallet;
+                                                                            let kraken_wallet_unscaled = *kraken_wallet;
 
-																					//value_after = 56
-																					//coinbase = 57
-																					//bitstamp = 58
-																					//kraken = 59
-																					//gemini = 60
-																					//since this is kraken and gemini being updated, I will update:
-																					//  56, 57, 59
-																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																					let indices = [56, 57, 59];
-																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
-																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
-																				}
+
+                                                                            *kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+                                                                            *coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+                                                                            value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+                                                                            
+
+                                                                            //value_after = 56
+                                                                            //coinbase = 57
+                                                                            //bitstamp = 58
+                                                                            //kraken = 59
+                                                                            //gemini = 60
+                                                                            //since this is kraken and gemini being updated, I will update:
+                                                                            //  56, 57, 59
+                                                                            //IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+                                                                            let indices = [56, 57, 59];
+                                                                            let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                                                                            //let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                            neural_network.update_input(&indices, &scaled_values).await;
+
+
+                                                                            //03/09/24 - added for unscaling:
+                                                                            value_after = value_after_unscaled;
+                                                                            *coinbase_wallet = coinbase_wallet_unscaled;
+                                                                            *kraken_wallet = kraken_wallet_unscaled;
+                                                                        }
 																	}
 																	else {
 																		log::error!("i7: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -3021,26 +3057,38 @@ use crate::standardization_functions;
 																		
 																		
 																		//this will count as value after
-																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-																				if let Some(mut value_after) = value_after {
-																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
-																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																					
+                                                                        value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+                                                                        if let Some(mut value_after) = value_after {
+                                                                            //03/09/24 - added for unscaling
+                                                                            let value_after_unscaled = value_after;
+                                                                            let coinbase_wallet_unscaled = *coinbase_wallet;
+                                                                            let kraken_wallet_unscaled = *kraken_wallet;
 
-																					//value_after = 56
-																					//coinbase = 57
-																					//bitstamp = 58
-																					//kraken = 59
-																					//gemini = 60
-																					//since this is kraken and gemini being updated, I will update:
-																					//  56, 57, 59
-																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																					let indices = [56, 57, 59];
-																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
-																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																					neural_network.update_input(&indices, &scaled_values).await;
-																				}
+
+                                                                            *kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+                                                                            *coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+                                                                            value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+                                                                            
+
+                                                                            //value_after = 56
+                                                                            //coinbase = 57
+                                                                            //bitstamp = 58
+                                                                            //kraken = 59
+                                                                            //gemini = 60
+                                                                            //since this is kraken and gemini being updated, I will update:
+                                                                            //  56, 57, 59
+                                                                            //IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+                                                                            let indices = [56, 57, 59];
+                                                                            let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                                                                            //let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                            neural_network.update_input(&indices, &scaled_values).await;
+
+
+                                                                            //03/09/24 - added for unscaling:
+                                                                            value_after = value_after_unscaled;
+                                                                            *coinbase_wallet = coinbase_wallet_unscaled;
+                                                                            *kraken_wallet = kraken_wallet_unscaled;
+                                                                        }
 																	}
 																	else {
 																		log::error!("i8: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -3542,26 +3590,38 @@ use crate::standardization_functions;
 																		
 																		
 
-																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-																		if let Some(mut value_after) = value_after {
-																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
-																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																			
+                                                                            value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+                                                                            if let Some(mut value_after) = value_after {
+                                                                                //03/09/24 - added for unscaling
+                                                                                let value_after_unscaled = value_after;
+                                                                                let coinbase_wallet_unscaled = *coinbase_wallet;
+                                                                                let kraken_wallet_unscaled = *kraken_wallet;
 
-																			//value_after = 56
-																			//coinbase = 57
-																			//bitstamp = 58
-																			//kraken = 59
-																			//gemini = 60
-																			//since this is kraken and gemini being updated, I will update:
-																			//  56, 57, 59
-																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																			let indices = [56, 57, 59];
-																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
-																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																			neural_network.update_input(&indices, &scaled_values).await;
-																		}
+
+                                                                                *kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+                                                                                *coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+                                                                                value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+                                                                                
+
+                                                                                //value_after = 56
+                                                                                //coinbase = 57
+                                                                                //bitstamp = 58
+                                                                                //kraken = 59
+                                                                                //gemini = 60
+                                                                                //since this is kraken and gemini being updated, I will update:
+                                                                                //  56, 57, 59
+                                                                                //IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+                                                                                let indices = [56, 57, 59];
+                                                                                let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                                                                                //let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                                neural_network.update_input(&indices, &scaled_values).await;
+
+
+                                                                                //03/09/24 - added for unscaling:
+                                                                                value_after = value_after_unscaled;
+                                                                                *coinbase_wallet = coinbase_wallet_unscaled;
+                                                                                *kraken_wallet = kraken_wallet_unscaled;
+                                                                            }
 																	}
 																	else {
 																		log::error!("i9: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -4063,26 +4123,38 @@ use crate::standardization_functions;
 																		
 																		
 																		//this will count as value after
-																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
-																		if let Some(mut value_after) = value_after {
-																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
-																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
-																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
-																			
+                                                                        value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
+                                                                        if let Some(mut value_after) = value_after {
+                                                                            //03/09/24 - added for unscaling
+                                                                            let value_after_unscaled = value_after;
+                                                                            let coinbase_wallet_unscaled = *coinbase_wallet;
+                                                                            let kraken_wallet_unscaled = *kraken_wallet;
 
-																			//value_after = 56
-																			//coinbase = 57
-																			//bitstamp = 58
-																			//kraken = 59
-																			//gemini = 60
-																			//since this is kraken and gemini being updated, I will update:
-																			//  56, 57, 59
-																			//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
-																			let indices = [56, 57, 59];
-																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
-																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
-																			neural_network.update_input(&indices, &scaled_values).await;
-																		}
+
+                                                                            *kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+                                                                            *coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
+                                                                            value_after = standardization_functions::normal_value_prior_standardization(&value_after);
+                                                                            
+
+                                                                            //value_after = 56
+                                                                            //coinbase = 57
+                                                                            //bitstamp = 58
+                                                                            //kraken = 59
+                                                                            //gemini = 60
+                                                                            //since this is kraken and gemini being updated, I will update:
+                                                                            //  56, 57, 59
+                                                                            //IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
+                                                                            let indices = [56, 57, 59];
+                                                                            let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
+                                                                            //let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
+                                                                            neural_network.update_input(&indices, &scaled_values).await;
+
+
+                                                                            //03/09/24 - added for unscaling:
+                                                                            value_after = value_after_unscaled;
+                                                                            *coinbase_wallet = coinbase_wallet_unscaled;
+                                                                            *kraken_wallet = kraken_wallet_unscaled;
+                                                                        }
 																	}
 																	else {
 																		log::error!("i10: Kraken sell price is None. Response text was: {}", kraken_response_text);
@@ -8999,6 +9071,11 @@ use crate::standardization_functions;
 
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																			if let Some(mut value_after) = value_after {
+                                                                                //03/10/24 - added for unscaling
+																				let value_after_unscaled = value_after;
+																				let gemini_wallet_unscaled = *gemini_wallet;
+																				let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -9016,6 +9093,15 @@ use crate::standardization_functions;
 																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																				neural_network.update_input(&indices, &scaled_values).await;
+
+
+
+                                                                                //03/09/24 - added for unscaling:
+                                                                                value_after = value_after_unscaled;
+                                                                                *gemini_wallet = gemini_wallet_unscaled;
+                                                                                *coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                                
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -9510,6 +9596,11 @@ use crate::standardization_functions;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																			if let Some(mut value_after) = value_after {
+                                                                                //03/10/24 - added for unscaling
+																				let value_after_unscaled = value_after;
+																				let gemini_wallet_unscaled = *gemini_wallet;
+																				let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -9527,6 +9618,15 @@ use crate::standardization_functions;
 																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																				neural_network.update_input(&indices, &scaled_values).await;
+
+
+
+                                                                                //03/10/24 - added for unscaling:
+                                                                                value_after = value_after_unscaled;
+                                                                                *gemini_wallet = gemini_wallet_unscaled;
+                                                                                *coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                                
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -10021,6 +10121,11 @@ use crate::standardization_functions;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																			if let Some(mut value_after) = value_after {
+                                                                                //03/10/24 - added for unscaling
+																				let value_after_unscaled = value_after;
+																				let gemini_wallet_unscaled = *gemini_wallet;
+																				let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -10038,6 +10143,15 @@ use crate::standardization_functions;
 																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																				neural_network.update_input(&indices, &scaled_values).await;
+
+
+
+                                                                                //03/10/24 - added for unscaling:
+                                                                                value_after = value_after_unscaled;
+                                                                                *gemini_wallet = gemini_wallet_unscaled;
+                                                                                *coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                                
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -10532,6 +10646,11 @@ use crate::standardization_functions;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																			if let Some(mut value_after) = value_after {
+                                                                                //03/10/24 - added for unscaling
+																				let value_after_unscaled = value_after;
+																				let gemini_wallet_unscaled = *gemini_wallet;
+																				let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -10549,6 +10668,15 @@ use crate::standardization_functions;
 																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																				neural_network.update_input(&indices, &scaled_values).await;
+
+
+
+                                                                                //03/10/24 - added for unscaling:
+                                                                                value_after = value_after_unscaled;
+                                                                                *gemini_wallet = gemini_wallet_unscaled;
+                                                                                *coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                                
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -11043,6 +11171,11 @@ use crate::standardization_functions;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																			if let Some(mut value_after) = value_after {
+                                                                                //03/10/24 - added for unscaling
+																				let value_after_unscaled = value_after;
+																				let gemini_wallet_unscaled = *gemini_wallet;
+																				let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -11060,6 +11193,15 @@ use crate::standardization_functions;
 																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																				neural_network.update_input(&indices, &scaled_values).await;
+
+
+
+                                                                                //03/10/24 - added for unscaling:
+                                                                                value_after = value_after_unscaled;
+                                                                                *gemini_wallet = gemini_wallet_unscaled;
+                                                                                *coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                                
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -11554,6 +11696,11 @@ use crate::standardization_functions;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																			if let Some(mut value_after) = value_after {
+                                                                                //03/10/24 - added for unscaling
+																				let value_after_unscaled = value_after;
+																				let gemini_wallet_unscaled = *gemini_wallet;
+																				let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -11571,6 +11718,15 @@ use crate::standardization_functions;
 																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																				neural_network.update_input(&indices, &scaled_values).await;
+
+
+
+                                                                                //03/10/24 - added for unscaling:
+                                                                                value_after = value_after_unscaled;
+                                                                                *gemini_wallet = gemini_wallet_unscaled;
+                                                                                *coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                                
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -12065,6 +12221,11 @@ use crate::standardization_functions;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																			if let Some(mut value_after) = value_after {
+                                                                                //03/10/24 - added for unscaling
+																				let value_after_unscaled = value_after;
+																				let gemini_wallet_unscaled = *gemini_wallet;
+																				let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -12082,6 +12243,15 @@ use crate::standardization_functions;
 																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																				neural_network.update_input(&indices, &scaled_values).await;
+
+
+
+                                                                                //03/10/24 - added for unscaling:
+                                                                                value_after = value_after_unscaled;
+                                                                                *gemini_wallet = gemini_wallet_unscaled;
+                                                                                *coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                                
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -12575,6 +12745,11 @@ use crate::standardization_functions;
 																			*coinbase_wallet += money_from_sell_after_fees;
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																			if let Some(mut value_after) = value_after {
+                                                                                //03/10/24 - added for unscaling
+																				let value_after_unscaled = value_after;
+																				let gemini_wallet_unscaled = *gemini_wallet;
+																				let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																				*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																				*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																				value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -12592,6 +12767,15 @@ use crate::standardization_functions;
 																				let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																				//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																				neural_network.update_input(&indices, &scaled_values).await;
+
+
+
+                                                                                //03/10/24 - added for unscaling:
+                                                                                value_after = value_after_unscaled;
+                                                                                *gemini_wallet = gemini_wallet_unscaled;
+                                                                                *coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                                
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -14069,6 +14253,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+                                                                                    //03/09/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let gemini_wallet_unscaled = *gemini_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -14086,6 +14276,12 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*gemini_wallet = gemini_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -14554,6 +14750,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+                                                                                    //03/09/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let gemini_wallet_unscaled = *gemini_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -14571,6 +14773,12 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*gemini_wallet = gemini_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -15039,6 +15247,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+                                                                                    //03/09/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let gemini_wallet_unscaled = *gemini_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -15056,6 +15270,12 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*gemini_wallet = gemini_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -15524,6 +15744,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+                                                                                    //03/09/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let gemini_wallet_unscaled = *gemini_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -15541,6 +15767,12 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*gemini_wallet = gemini_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -16009,6 +16241,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+                                                                                    //03/09/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let gemini_wallet_unscaled = *gemini_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -16019,13 +16257,19 @@ use crate::standardization_functions;
 																					//bitstamp = 58
 																					//kraken = 59
 																					//gemini = 60
-																					//since this is kraken and gemini being updated, I will update:
+																					//since this is coinbase and gemini being updated, I will update:
 																					//  56, 59, 60
 																					//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																					let indices = [56, 59, 60];
 																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*gemini_wallet = gemini_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -16494,6 +16738,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+                                                                                    //03/09/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let gemini_wallet_unscaled = *gemini_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -16511,6 +16761,12 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*gemini_wallet = gemini_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -17417,6 +17673,12 @@ use crate::standardization_functions;
 														*bitstamp_wallet += money_from_sell_after_fees;
 														value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
 														if let Some(mut value_after) = value_after {
+
+															//03/09/24 - added for unscaling
+															let value_after_unscaled = value_after;
+															let gemini_wallet_unscaled = *gemini_wallet;
+															let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 															*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 															*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 															value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -17434,6 +17696,11 @@ use crate::standardization_functions;
 															let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
 															//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															neural_network.update_input(&indices, &scaled_values).await;
+
+															//03/10/24 - added for unscaling:
+															value_after = value_after_unscaled;
+															*gemini_wallet = gemini_wallet_unscaled;
+															*bitstamp_wallet = bitstamp_wallet_unscaled;
 														}
 														//03/08/24 - removed:
 														// //value_after = 56
@@ -22300,6 +22567,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling after putted scaled values in network
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -22316,6 +22589,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -22911,6 +23189,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling after putted scaled values in network
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -22927,6 +23211,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -23522,6 +23811,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling after putted scaled values in network
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -23538,6 +23833,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -24133,6 +24433,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling after putted scaled values in network
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -24149,6 +24455,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -24744,6 +25055,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling after putted scaled values in network
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -24760,6 +25077,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -25355,6 +25677,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling after putted scaled values in network
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -25371,6 +25699,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -26517,7 +26850,7 @@ use crate::standardization_functions;
     }
     */
     //begin removal
-
+	//DO NOT USE SOL BITSTAMP
     pub async fn s_i65_sol_5_kraken_bitstamp( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &mut f64,
         gemini_wallet: &f64, bitstamp_secret: &str, bitstamp_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
@@ -29971,7 +30304,7 @@ use crate::standardization_functions;
 			//     return Ok(value_after)
 
     }
-    
+    //DO NOT USE SOL BITSTAMP.
 	//end removal//
     pub async fn s_i75_xlm_5_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
@@ -30391,6 +30724,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+																					//03/10/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let coinbase_wallet_unscaled = *coinbase_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -30407,6 +30746,11 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*coinbase_wallet = coinbase_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -30944,6 +31288,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+																					//03/10/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let coinbase_wallet_unscaled = *coinbase_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -30960,6 +31310,11 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*coinbase_wallet = coinbase_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -31497,6 +31852,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+																					//03/10/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let coinbase_wallet_unscaled = *coinbase_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -31513,6 +31874,11 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*coinbase_wallet = coinbase_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -32050,6 +32416,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+																					//03/10/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let coinbase_wallet_unscaled = *coinbase_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -32066,6 +32438,11 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*coinbase_wallet = coinbase_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -32603,6 +32980,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+																					//03/10/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let coinbase_wallet_unscaled = *coinbase_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -32619,6 +33002,11 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*coinbase_wallet = coinbase_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -33156,6 +33544,12 @@ use crate::standardization_functions;
 																		//this will count as value after
 																				value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																				if let Some(mut value_after) = value_after {
+
+																					//03/10/24 - added for unscaling
+																					let value_after_unscaled = value_after;
+																					let coinbase_wallet_unscaled = *coinbase_wallet;
+																					let kraken_wallet_unscaled = *kraken_wallet;
+
 																					*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																					*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																					value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -33172,6 +33566,11 @@ use crate::standardization_functions;
 																					let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																					//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																					neural_network.update_input(&indices, &scaled_values).await;
+
+																					//03/09/24 - added for unscaling:
+																					value_after = value_after_unscaled;
+																					*coinbase_wallet = coinbase_wallet_unscaled;
+																					*kraken_wallet = kraken_wallet_unscaled;
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -33676,6 +34075,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let coinbase_wallet_unscaled = *coinbase_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -33692,6 +34097,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/09/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*coinbase_wallet = coinbase_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -34225,6 +34635,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let coinbase_wallet_unscaled = *coinbase_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -34241,6 +34657,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*coinbase_wallet = coinbase_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -34774,6 +35195,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let coinbase_wallet_unscaled = *coinbase_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -34790,6 +35217,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*coinbase_wallet = coinbase_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -35323,6 +35755,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let coinbase_wallet_unscaled = *coinbase_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -35339,6 +35777,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*coinbase_wallet = coinbase_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -35872,6 +36315,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let coinbase_wallet_unscaled = *coinbase_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -35888,6 +36337,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*coinbase_wallet = coinbase_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -36421,6 +36875,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let coinbase_wallet_unscaled = *coinbase_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -36437,6 +36897,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*coinbase_wallet = coinbase_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -36970,6 +37435,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let coinbase_wallet_unscaled = *coinbase_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -36986,6 +37457,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*coinbase_wallet = coinbase_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -37519,6 +37995,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let coinbase_wallet_unscaled = *coinbase_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -37535,6 +38017,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*coinbase_wallet = coinbase_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -38055,6 +38542,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -38071,6 +38564,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/09/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -38620,6 +39118,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -38636,6 +39140,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/09/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -39185,6 +39694,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -39201,6 +39716,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/09/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -39748,6 +40268,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -39764,6 +40290,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/09/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -40309,8 +40840,13 @@ use crate::standardization_functions;
 																		let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
-																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -40327,6 +40863,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/09/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -40874,6 +41415,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+																			let kraken_wallet_unscaled = *kraken_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -40890,6 +41437,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/09/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
+																			*kraken_wallet = kraken_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -41416,6 +41968,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let kraken_wallet_unscaled = *kraken_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -41432,6 +41990,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*kraken_wallet = kraken_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -41918,6 +42481,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let kraken_wallet_unscaled = *kraken_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -41934,6 +42503,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*kraken_wallet = kraken_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -42420,6 +42994,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let kraken_wallet_unscaled = *kraken_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -42436,6 +43016,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*kraken_wallet = kraken_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -42922,6 +43507,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let kraken_wallet_unscaled = *kraken_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -42938,6 +43529,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*kraken_wallet = kraken_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -43424,6 +44020,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let kraken_wallet_unscaled = *kraken_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -43440,6 +44042,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*kraken_wallet = kraken_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -43926,6 +44533,12 @@ use crate::standardization_functions;
 															*bitstamp_wallet += money_from_sell_after_fees;
 															value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 															if let Some(mut value_after) = value_after {
+
+																//03/10/24 - added for unscaling
+																let value_after_unscaled = value_after;
+																let kraken_wallet_unscaled = *kraken_wallet;
+																let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -43942,6 +44555,11 @@ use crate::standardization_functions;
 																let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																neural_network.update_input(&indices, &scaled_values).await;
+
+																//03/10/24 - added for unscaling:
+																value_after = value_after_unscaled;
+																*kraken_wallet = kraken_wallet_unscaled;
+																*bitstamp_wallet = bitstamp_wallet_unscaled;
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -44469,6 +45087,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let coinbase_wallet_unscaled = *coinbase_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -44478,13 +45102,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  56, 58, 59
+																	//since this is coinbase and bitstamp being updated, I will update:
+																	//  56, 57, 58
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 57, 58];
 																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*coinbase_wallet = coinbase_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -45017,6 +45646,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let coinbase_wallet_unscaled = *coinbase_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -45026,13 +45661,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  56, 58, 59
+																	//since this is coinbase and bitstamp being updated, I will update:
+																	//  56, 57, 58
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 57, 58];
 																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*coinbase_wallet = coinbase_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -45567,6 +46207,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let coinbase_wallet_unscaled = *coinbase_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -45576,13 +46222,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  56, 58, 59
+																	//since this is coinbase and bitstamp being updated, I will update:
+																	//  56, 57, 58
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 57, 58];
 																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*coinbase_wallet = coinbase_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -46117,6 +46768,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let coinbase_wallet_unscaled = *coinbase_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -46126,13 +46783,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  56, 58, 59
+																	//since this is coinbase and bitstamp being updated, I will update:
+																	//  56, 57, 58
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 57, 58];
 																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*coinbase_wallet = coinbase_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -46665,6 +47327,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let coinbase_wallet_unscaled = *coinbase_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -46674,13 +47342,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  56, 58, 59
+																	//since this is coinbase and bitstamp being updated, I will update:
+																	//  56, 57, 58
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 57, 58];
 																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*coinbase_wallet = coinbase_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -47214,6 +47887,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let coinbase_wallet_unscaled = *coinbase_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -47223,13 +47902,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  56, 58, 59
+																	//since this is coinbase and bitstamp being updated, I will update:
+																	//  56, 57, 58
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 57, 58];
 																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*coinbase_wallet = coinbase_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -47762,6 +48446,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let coinbase_wallet_unscaled = *coinbase_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -47771,13 +48461,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  56, 58, 59
+																	//since this is coinbase and bitstamp being updated, I will update:
+																	//  56, 57, 58
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 57, 58];
 																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*coinbase_wallet = coinbase_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -48310,6 +49005,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + *coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let coinbase_wallet_unscaled = *coinbase_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -48319,13 +49020,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and kraken being updated, I will update:
-																	//  56, 58, 59
+																	//since this is coinbase and bitstamp being updated, I will update:
+																	//  56, 57, 58
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 57, 58];
 																	let scaled_values = [value_after, *coinbase_wallet, *bitstamp_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*coinbase_wallet = coinbase_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -48738,6 +49444,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let gemini_wallet_unscaled = *gemini_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -48754,6 +49466,11 @@ use crate::standardization_functions;
 																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+
+																	//03/01/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*gemini_wallet = gemini_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -49164,6 +49881,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let gemini_wallet_unscaled = *gemini_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -49180,6 +49903,11 @@ use crate::standardization_functions;
 																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+
+																	//03/01/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*gemini_wallet = gemini_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -49588,6 +50316,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let gemini_wallet_unscaled = *gemini_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -49604,6 +50338,11 @@ use crate::standardization_functions;
 																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+
+																	//03/01/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*gemini_wallet = gemini_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -50014,6 +50753,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let gemini_wallet_unscaled = *gemini_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -50030,6 +50775,11 @@ use crate::standardization_functions;
 																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+
+																	//03/01/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*gemini_wallet = gemini_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -50440,6 +51190,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let gemini_wallet_unscaled = *gemini_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -50456,6 +51212,11 @@ use crate::standardization_functions;
 																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+
+																	//03/01/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*gemini_wallet = gemini_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -50866,6 +51627,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let gemini_wallet_unscaled = *gemini_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -50882,6 +51649,11 @@ use crate::standardization_functions;
 																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+
+																	//03/01/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*gemini_wallet = gemini_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -51292,6 +52064,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let gemini_wallet_unscaled = *gemini_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -51308,6 +52086,11 @@ use crate::standardization_functions;
 																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+
+																	//03/01/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*gemini_wallet = gemini_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -51718,6 +52501,12 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(kraken_wallet + coinbase_wallet + *gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let gemini_wallet_unscaled = *gemini_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+
 																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -51734,6 +52523,11 @@ use crate::standardization_functions;
 																	let scaled_values = [value_after, *bitstamp_wallet, *gemini_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+
+																	//03/01/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*gemini_wallet = gemini_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -52192,8 +52986,14 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
-																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let kraken_wallet_unscaled = *kraken_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
 																	
 																	//value_after = 56
@@ -52201,13 +53001,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and gemini being updated, I will update:
-																	//  56, 58, 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 58, 59];
 																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*kraken_wallet = kraken_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -52674,8 +53479,14 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
-																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let kraken_wallet_unscaled = *kraken_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
 																	
 																	//value_after = 56
@@ -52683,13 +53494,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and gemini being updated, I will update:
-																	//  56, 58, 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 58, 59];
 																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*kraken_wallet = kraken_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -53157,8 +53973,14 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
-																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let kraken_wallet_unscaled = *kraken_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
 																	
 																	//value_after = 56
@@ -53166,13 +53988,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and gemini being updated, I will update:
-																	//  56, 58, 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 58, 59];
 																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*kraken_wallet = kraken_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -53640,8 +54467,14 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
-																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let kraken_wallet_unscaled = *kraken_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
 																	
 																	//value_after = 56
@@ -53649,13 +54482,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and gemini being updated, I will update:
-																	//  56, 58, 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 58, 59];
 																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*kraken_wallet = kraken_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -54123,8 +54961,14 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
-																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let kraken_wallet_unscaled = *kraken_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
 																	
 																	//value_after = 56
@@ -54132,13 +54976,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and gemini being updated, I will update:
-																	//  56, 58, 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 58, 59];
 																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*kraken_wallet = kraken_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -54606,8 +55455,14 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
-																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let kraken_wallet_unscaled = *kraken_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
 																	
 																	//value_after = 56
@@ -54615,13 +55470,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and gemini being updated, I will update:
-																	//  56, 58, 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 58, 59];
 																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*kraken_wallet = kraken_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -55089,8 +55949,14 @@ use crate::standardization_functions;
                                                                 *bitstamp_wallet += money_from_sell_after_fees;
                                                                 value_after = Some(*kraken_wallet + coinbase_wallet + gemini_wallet + *bitstamp_wallet);
 																if let Some(mut value_after) = value_after {
-																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
+
+																	//03/10/24 - added for unscaling
+																	let value_after_unscaled = value_after;
+																	let kraken_wallet_unscaled = *kraken_wallet;
+																	let bitstamp_wallet_unscaled = *bitstamp_wallet;
+	
 																	*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
+																	*bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet);
 																	value_after = standardization_functions::normal_value_prior_standardization(&value_after);
 																	
 																	//value_after = 56
@@ -55098,13 +55964,18 @@ use crate::standardization_functions;
 																	//bitstamp = 58
 																	//kraken = 59
 																	//gemini = 60
-																	//since this is bitstamp and gemini being updated, I will update:
-																	//  56, 58, 60
+																	//since this is bitstamp and kraken being updated, I will update:
+																	//  56, 58, 59
 																	//IT MUST BE ONE TO ONE. IN ORDER. so if Im changing coinbase_wallet 2nd, i need to put in 2nd place 57
 																	let indices = [56, 58, 59];
 																	let scaled_values = [value_after, *bitstamp_wallet, *kraken_wallet];
 																	//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																	neural_network.update_input(&indices, &scaled_values).await;
+	
+																	//03/10/24 - added for unscaling:
+																	value_after = value_after_unscaled;
+																	*kraken_wallet = kraken_wallet_unscaled;
+																	*bitstamp_wallet = bitstamp_wallet_unscaled;
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -55540,6 +56411,12 @@ use crate::standardization_functions;
 																		*coinbase_wallet += money_from_sell_after_fees;
 																		value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let gemini_wallet_unscaled = *gemini_wallet;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -55556,6 +56433,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*gemini_wallet = gemini_wallet_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -56005,6 +56887,12 @@ use crate::standardization_functions;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let gemini_wallet_unscaled = *gemini_wallet;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -56021,6 +56909,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*gemini_wallet = gemini_wallet_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -56470,6 +57363,12 @@ use crate::standardization_functions;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let gemini_wallet_unscaled = *gemini_wallet;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -56486,6 +57385,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*gemini_wallet = gemini_wallet_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -56935,6 +57839,12 @@ use crate::standardization_functions;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let gemini_wallet_unscaled = *gemini_wallet;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -56951,6 +57861,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*gemini_wallet = gemini_wallet_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -57400,6 +58315,12 @@ use crate::standardization_functions;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let gemini_wallet_unscaled = *gemini_wallet;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -57416,6 +58337,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*gemini_wallet = gemini_wallet_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -57865,6 +58791,12 @@ use crate::standardization_functions;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let gemini_wallet_unscaled = *gemini_wallet;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -57881,6 +58813,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*gemini_wallet = gemini_wallet_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -58330,6 +59267,12 @@ use crate::standardization_functions;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let gemini_wallet_unscaled = *gemini_wallet;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -58346,6 +59289,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*gemini_wallet = gemini_wallet_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -58794,6 +59742,12 @@ use crate::standardization_functions;
                                                                         *coinbase_wallet += money_from_sell_after_fees;
                                                                         value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
+
+																			//03/10/24 - added for unscaling
+																			let value_after_unscaled = value_after;
+																			let gemini_wallet_unscaled = *gemini_wallet;
+																			let coinbase_wallet_unscaled = *coinbase_wallet;
+
 																			*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																			*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																			value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -58810,6 +59764,11 @@ use crate::standardization_functions;
 																			let scaled_values = [value_after, *coinbase_wallet, *gemini_wallet];
 																			//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			neural_network.update_input(&indices, &scaled_values).await;
+
+																			//03/10/24 - added for unscaling:
+																			value_after = value_after_unscaled;
+																			*gemini_wallet = gemini_wallet_unscaled;
+																			*coinbase_wallet = coinbase_wallet_unscaled;
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -59277,6 +60236,11 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/09/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let gemini_wallet_unscaled = *gemini_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -59293,6 +60257,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*gemini_wallet = gemini_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -59746,6 +60715,11 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/09/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let gemini_wallet_unscaled = *gemini_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -59762,6 +60736,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*gemini_wallet = gemini_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -60216,6 +61195,11 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/09/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let gemini_wallet_unscaled = *gemini_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -60232,6 +61216,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*gemini_wallet = gemini_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -60685,6 +61674,11 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/09/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let gemini_wallet_unscaled = *gemini_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -60701,6 +61695,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*gemini_wallet = gemini_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -61155,6 +62154,11 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/09/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let gemini_wallet_unscaled = *gemini_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -61171,6 +62175,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*gemini_wallet = gemini_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -61625,6 +62634,11 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/09/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let gemini_wallet_unscaled = *gemini_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -61641,6 +62655,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*gemini_wallet = gemini_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -62095,6 +63114,11 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/09/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let gemini_wallet_unscaled = *gemini_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -62111,6 +63135,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*gemini_wallet = gemini_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -62565,6 +63594,11 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/09/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let gemini_wallet_unscaled = *gemini_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						*gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -62581,6 +63615,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *kraken_wallet, *gemini_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*gemini_wallet = gemini_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -63129,6 +64168,12 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/10/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let coinbase_wallet_unscaled = *coinbase_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
+	
 																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -63145,6 +64190,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+	
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*coinbase_wallet = coinbase_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -63676,6 +64726,12 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/10/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let coinbase_wallet_unscaled = *coinbase_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
+	
 																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -63692,6 +64748,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+	
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*coinbase_wallet = coinbase_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -64223,6 +65284,12 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/10/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let coinbase_wallet_unscaled = *coinbase_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
+	
 																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -64239,6 +65306,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+	
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*coinbase_wallet = coinbase_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -64770,6 +65842,12 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/10/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let coinbase_wallet_unscaled = *coinbase_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
+	
 																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -64786,6 +65864,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+	
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*coinbase_wallet = coinbase_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -65317,6 +66400,12 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/10/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let coinbase_wallet_unscaled = *coinbase_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
+	
 																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -65333,6 +66422,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+	
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*coinbase_wallet = coinbase_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -65864,6 +66958,12 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/10/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let coinbase_wallet_unscaled = *coinbase_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
+	
 																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -65880,6 +66980,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+	
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*coinbase_wallet = coinbase_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -66411,6 +67516,12 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/10/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let coinbase_wallet_unscaled = *coinbase_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
+	
 																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -66427,6 +67538,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+	
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*coinbase_wallet = coinbase_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -66958,6 +68074,12 @@ use crate::standardization_functions;
 																			//this will count as value after
 																					value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																					if let Some(mut value_after) = value_after {
+
+																						//03/10/24 - added for unscaling
+																						let value_after_unscaled = value_after;
+																						let coinbase_wallet_unscaled = *coinbase_wallet;
+																						let kraken_wallet_unscaled = *kraken_wallet;
+	
 																						*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																						*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																						value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -66974,6 +68096,11 @@ use crate::standardization_functions;
 																						let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																						//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																						neural_network.update_input(&indices, &scaled_values).await;
+	
+																						//03/09/24 - added for unscaling:
+																						value_after = value_after_unscaled;
+																						*coinbase_wallet = coinbase_wallet_unscaled;
+																						*kraken_wallet = kraken_wallet_unscaled;
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -67382,6 +68509,12 @@ use crate::standardization_functions;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																	if let Some(mut value_after) = value_after {
+
+																		//03/10/24 - added for unscaling
+																		let value_after_unscaled = value_after;
+																		let coinbase_wallet_unscaled = *coinbase_wallet;
+																		let kraken_wallet_unscaled = *kraken_wallet;
+
 																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -67398,6 +68531,11 @@ use crate::standardization_functions;
 																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		neural_network.update_input(&indices, &scaled_values).await;
+
+																		//03/09/24 - added for unscaling:
+																		value_after = value_after_unscaled;
+																		*coinbase_wallet = coinbase_wallet_unscaled;
+																		*kraken_wallet = kraken_wallet_unscaled;
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -67857,6 +68995,12 @@ use crate::standardization_functions;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																	if let Some(mut value_after) = value_after {
+
+																		//03/10/24 - added for unscaling
+																		let value_after_unscaled = value_after;
+																		let coinbase_wallet_unscaled = *coinbase_wallet;
+																		let kraken_wallet_unscaled = *kraken_wallet;
+
 																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -67873,6 +69017,11 @@ use crate::standardization_functions;
 																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		neural_network.update_input(&indices, &scaled_values).await;
+
+																		//03/09/24 - added for unscaling:
+																		value_after = value_after_unscaled;
+																		*coinbase_wallet = coinbase_wallet_unscaled;
+																		*kraken_wallet = kraken_wallet_unscaled;
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -68332,6 +69481,12 @@ use crate::standardization_functions;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																	if let Some(mut value_after) = value_after {
+
+																		//03/10/24 - added for unscaling
+																		let value_after_unscaled = value_after;
+																		let coinbase_wallet_unscaled = *coinbase_wallet;
+																		let kraken_wallet_unscaled = *kraken_wallet;
+
 																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -68348,6 +69503,11 @@ use crate::standardization_functions;
 																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		neural_network.update_input(&indices, &scaled_values).await;
+
+																		//03/09/24 - added for unscaling:
+																		value_after = value_after_unscaled;
+																		*coinbase_wallet = coinbase_wallet_unscaled;
+																		*kraken_wallet = kraken_wallet_unscaled;
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -68807,6 +69967,12 @@ use crate::standardization_functions;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																	if let Some(mut value_after) = value_after {
+
+																		//03/10/24 - added for unscaling
+																		let value_after_unscaled = value_after;
+																		let coinbase_wallet_unscaled = *coinbase_wallet;
+																		let kraken_wallet_unscaled = *kraken_wallet;
+
 																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -68823,6 +69989,11 @@ use crate::standardization_functions;
 																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		neural_network.update_input(&indices, &scaled_values).await;
+
+																		//03/09/24 - added for unscaling:
+																		value_after = value_after_unscaled;
+																		*coinbase_wallet = coinbase_wallet_unscaled;
+																		*kraken_wallet = kraken_wallet_unscaled;
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -69282,6 +70453,12 @@ use crate::standardization_functions;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																	if let Some(mut value_after) = value_after {
+
+																		//03/10/24 - added for unscaling
+																		let value_after_unscaled = value_after;
+																		let coinbase_wallet_unscaled = *coinbase_wallet;
+																		let kraken_wallet_unscaled = *kraken_wallet;
+
 																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -69298,6 +70475,11 @@ use crate::standardization_functions;
 																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		neural_network.update_input(&indices, &scaled_values).await;
+
+																		//03/09/24 - added for unscaling:
+																		value_after = value_after_unscaled;
+																		*coinbase_wallet = coinbase_wallet_unscaled;
+																		*kraken_wallet = kraken_wallet_unscaled;
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -69757,6 +70939,12 @@ use crate::standardization_functions;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																	if let Some(mut value_after) = value_after {
+
+																		//03/10/24 - added for unscaling
+																		let value_after_unscaled = value_after;
+																		let coinbase_wallet_unscaled = *coinbase_wallet;
+																		let kraken_wallet_unscaled = *kraken_wallet;
+
 																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -69773,6 +70961,11 @@ use crate::standardization_functions;
 																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		neural_network.update_input(&indices, &scaled_values).await;
+
+																		//03/09/24 - added for unscaling:
+																		value_after = value_after_unscaled;
+																		*coinbase_wallet = coinbase_wallet_unscaled;
+																		*kraken_wallet = kraken_wallet_unscaled;
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -70232,6 +71425,12 @@ use crate::standardization_functions;
                                                                     *coinbase_wallet += money_from_sell_after_fees;
                                                                     value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																	if let Some(mut value_after) = value_after {
+
+																		//03/10/24 - added for unscaling
+																		let value_after_unscaled = value_after;
+																		let coinbase_wallet_unscaled = *coinbase_wallet;
+																		let kraken_wallet_unscaled = *kraken_wallet;
+
 																		*coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
 																		*kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
 																		value_after = standardization_functions::normal_value_prior_standardization(&value_after);
@@ -70248,6 +71447,11 @@ use crate::standardization_functions;
 																		let scaled_values = [value_after, *coinbase_wallet, *kraken_wallet];
 																		//let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		neural_network.update_input(&indices, &scaled_values).await;
+
+																		//03/09/24 - added for unscaling:
+																		value_after = value_after_unscaled;
+																		*coinbase_wallet = coinbase_wallet_unscaled;
+																		*kraken_wallet = kraken_wallet_unscaled;
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56

@@ -1237,7 +1237,7 @@ async fn main()   {
     //01/24/24 - was: (65, 75, 2) now it's below. input size from execute_action_functions.
 
     //uncomment this if you want to initialize the network from new
-        neural_network.initialization(88, 107, 2); // Initialize with [input size], [output size], [# hidden layers]
+        neural_network.initialization(88, 107, 1); // Initialize with [input size], [output size], [# hidden layers]
 
     //uncomment this if you want to load from a saved state
         //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1708845504745"; // Replace with your file path
@@ -2175,13 +2175,21 @@ async fn main()   {
             
                                 
                                 //this value of the wallets for the inputs
+                                //03/09/24 - added:
+                                let value_prior_unscaled = value_prior;
+                                let coinbase_wallet_unscaled = coinbase_wallet;
+                                let gemini_wallet_unscaled = gemini_wallet;
+                                let bitstamp_wallet_unscaled = bitstamp_wallet;
+                                let kraken_wallet_unscaled = kraken_wallet;
                                 //03/08/24 - updated indices
                                 let indices = [56, 57, 58, 59, 60];
+                                //scale everything
                                 value_prior = standardization_functions::normal_value_prior_standardization(&value_prior);
                                 coinbase_wallet = standardization_functions::normal_wallet_standardization(&coinbase_wallet);
                                 bitstamp_wallet = standardization_functions::normal_wallet_standardization(&bitstamp_wallet); 
                                 kraken_wallet = standardization_functions::normal_wallet_standardization(&kraken_wallet);
                                 gemini_wallet = standardization_functions::normal_wallet_standardization(&gemini_wallet);
+                                //put scaled values in an array to then one to one match them to the index and update that index
                                 let scaled_values = [value_prior, coinbase_wallet, 
                                     bitstamp_wallet, kraken_wallet, gemini_wallet];
 
@@ -2193,6 +2201,12 @@ async fn main()   {
                                 let (index_chosen_for_current_state, q_value_for_current_state, 
                                     the_reward);
                                 println!("iteration number is this: {}", i);
+                                //03/09/24 - added to UNscale value_after and wallets for the cycle funciton
+                                    value_prior = value_prior_unscaled;
+                                    coinbase_wallet = coinbase_wallet_unscaled;
+                                    gemini_wallet = gemini_wallet_unscaled;
+                                    kraken_wallet = kraken_wallet_unscaled;
+                                    bitstamp_wallet = bitstamp_wallet_unscaled;
                                 //this is to get us the values that part two is going ot use
                                 let result = neural_network.cycle_part_one_of_two(i, &mut epsilon, 
                                     &mut value_prior, &mut coinbase_wallet, &mut kraken_wallet,

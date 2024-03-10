@@ -1354,8 +1354,8 @@ pub async fn handle_all_bitstamp(prefix: &str, message: &str, shared_neural_netw
         }
         else if prefix.contains("consolidated heartbeat") || 
         prefix.contains("subscription received") {
-            //03/08/24 - changed from println! to log::info!
-            log::info!("WSP Bitstamp: standard server messages. Ignoring...");
+            //03/08/24 - changed from println! to log::info!. back to prinln on 03 09 24
+            println!("WSP Bitstamp: standard server messages. Ignoring...");
             break;
         }
         else {

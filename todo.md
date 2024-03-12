@@ -396,3 +396,4 @@ restarting from 0. gamma = 0.99. no gradient cap. learning rate = 1. CHANGE LEAR
 03/10/24 - failed within a few iterations. I will try again, but this time with more information when the gradients are logged.         JESUS IS GOOD. With his strength, we got this!
 03/10/24 - updated s_0 on action_functions.rs.          JESUS IS GOOD. With his strength, we got this!
 03/12/24 - created save_all_weights and updated save_all_gradients.             JESUS IS GOOD. With his strength, we got this!
+03/12/24 - added save_all_weights fn calls.             JESUS IS GOOD. With his strength, we got this!

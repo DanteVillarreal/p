@@ -2098,6 +2098,8 @@ async fn main()   {
                                     
                                     //03/10/24 - added:
                                     neural_network.save_all_gradients();
+                                    //03/12/24 - added:
+                                    neural_network.save_all_weights();
 
 
 

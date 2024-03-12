@@ -2885,7 +2885,7 @@
 						}
 						writeln!(file, "\n").unwrap(); // Two new lines after each layer
 					}
-					writeln!(file, "finished iteration");
+					writeln!(file, "finished iteration").unwrap();
 					//if it was Ok, break out of loop when done
 					break;
 				},
@@ -4581,6 +4581,8 @@
 			
 			//03/10/24 - added:
 			self.save_all_gradients();
+			//03/12/24 - added:
+			self.save_all_weights();
 		}
 
 	}

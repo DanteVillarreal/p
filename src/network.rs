@@ -2744,7 +2744,14 @@
 			
 			last_gradient_layer.data[j][*current_q_value_index] = loss_derivative*derivative_of_output_neuron*output_of_from_neuron;
 
-			
+			//03/12/24 - added:
+			    // Apply gradient cap
+				if last_gradient_layer.data[j][*current_q_value_index] > 1.0 {
+					last_gradient_layer.data[j][*current_q_value_index] = 1.0;
+				}
+				else if last_gradient_layer.data[j][*current_q_value_index] < -1.0 {
+					last_gradient_layer.data[j][*current_q_value_index] = -1.0;
+				}
 		}
 
 		// Second for-loop: Calculate gradients for all other weights
@@ -2792,12 +2799,12 @@
 						//02/29/24 - changed back to 0.1
 						//03/10/24 - removed gradient cap.
 						//	uncomment if you want gradient cap
-							// if gradient_layer.data[j][k] > 0.1 {
-							// 	gradient_layer.data[j][k] = 0.1;
-							// }
-							// else if gradient_layer.data[j][k] < -0.1 {
-							// 	gradient_layer.data[j][k] = -0.1;
-							// } 
+							if gradient_layer.data[j][k] > 1.0 {
+								gradient_layer.data[j][k] = 1.0;
+							}
+							else if gradient_layer.data[j][k] < -1.0 {
+								gradient_layer.data[j][k] = -1.0;
+							} 
 					}
 				}
 			}

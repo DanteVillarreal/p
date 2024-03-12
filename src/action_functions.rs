@@ -115,8 +115,10 @@ use crate::standardization_functions;
     //then [exchange sell]
 
     pub fn s_i0_do_nothing(value_prior: &f64) -> Result<f64, Box<dyn Error + Send>>{
-		Ok(standardization_functions::normal_value_prior_standardization(&value_prior))
-        //Ok(*value_prior)
+        //03/10/24 - removed standardization function because we only standardize it when
+        //      we want to update the input. since the input doesnt change, nothing to update
+		    //Ok(standardization_functions::normal_value_prior_standardization(&value_prior))
+        Ok(*value_prior)
     }
     //cant use 1 through 4 because minimum Kraken buy is 0.2 SOL
     /*

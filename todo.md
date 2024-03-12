@@ -395,3 +395,4 @@ USED!!!
 restarting from 0. gamma = 0.99. no gradient cap. learning rate = 1. CHANGE LEARNING RATE IN MAIN ANDDDDDD NETWORK.RS      1. remove all replay buffers. 2. rename p, websocket_client, and q value logs. 3. add extra space in rewards doc for next run.            JESUS IS GOOD. With his strength, we got this!
 03/10/24 - failed within a few iterations. I will try again, but this time with more information when the gradients are logged.         JESUS IS GOOD. With his strength, we got this!
 03/10/24 - updated s_0 on action_functions.rs.          JESUS IS GOOD. With his strength, we got this!
+03/12/24 - created save_all_weights and updated save_all_gradients.             JESUS IS GOOD. With his strength, we got this!

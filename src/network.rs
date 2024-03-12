@@ -2860,6 +2860,46 @@
 			}
 		} 
 	}
+//03/12/24 - added:
+	pub fn save_all_weights(&self) {
+		let base_path = "D:\\Downloads\\PxOmni\\zweights";
+		let file_path = Path::new(base_path).join("all_weights.csv");
+		let mut attempts = 0;
+		loop {
+			attempts+=1;
+			match fs::OpenOptions::new().write(true).append(true).create(true).open(&file_path) {
+				Ok(mut file) => {
+					for (layer_index, weight_layer) in self.weights.iter().enumerate() {
+						writeln!(file, "Layer {}", layer_index + 1).unwrap();
+						for (row_index, sub_vec) in weight_layer.data.iter().enumerate() {
+							let line = sub_vec.iter()
+								.map(|&value| value.to_string())
+								.collect::<Vec<String>>()
+								.join(",");
+							match writeln!(file, "Row {}: {}", row_index + 1, line) {
+								Ok(_) => (),
+								Err(e) => {
+									panic!("save_all_weights: Failed to write to file after 3 attempts. Error: {}", e);
+								}
+							}
+						}
+						writeln!(file, "\n").unwrap(); // Two new lines after each layer
+					}
+					writeln!(file, "finished iteration");
+					//if it was Ok, break out of loop when done
+					break;
+				},
+				Err(e) => {
+					attempts+=1;
+					log::error!("save_all_weights: Failed to open file.
+					attempt #: {}\nError: {}", attempts, e);
+					if attempts > 3 {
+						panic!("save_all_weights: Failed to open file Error: {}", e);
+					}
+				}
+			}
+		} 
+	}
 
 
 

@@ -2824,28 +2824,41 @@
 	pub fn save_all_gradients(&self) {
 		let base_path = "D:\\Downloads\\PxOmni\\zgradients";
 		let file_path = Path::new(base_path).join("all_gradients.csv");
-
+		let mut attempts = 0;
+		loop {
+			attempts+=1;
 			match fs::OpenOptions::new().write(true).append(true).create(true).open(&file_path) {
 				Ok(mut file) => {
-					for gradient_layer in self.gradients.layers.iter() {
-						for sub_vec in &gradient_layer.data {
+					for (layer_index, gradient_layer) in self.gradients.layers.iter().enumerate() {
+						writeln!(file, "Layer {}", layer_index + 1).unwrap();
+						for (row_index, sub_vec) in gradient_layer.data.iter().enumerate() {
 							let line = sub_vec.iter()
 								.map(|&value| value.to_string())
 								.collect::<Vec<String>>()
 								.join(",");
-							match writeln!(file, "{}", line) {
+							match writeln!(file, "Row {}: {}", row_index + 1, line) {
 								Ok(_) => (),
 								Err(e) => {
 									panic!("save_all_gradients: Failed to write to file after 3 attempts. Error: {}", e);
 								}
 							}
 						}
+						writeln!(file, "\n").unwrap(); // Two new lines after each layer
 					}
+					writeln!(file, "finished iteration").unwrap();
+					//if it was Ok, break out of loop when done
+					break;
 				},
 				Err(e) => {
-						panic!("save_all_gradients: Failed to open file after 3 attempts. Error: {}", e);
+					attempts+=1;
+					log::error!("save_all_gradients: Failed to open file.
+					attempt #: {}\nError: {}", attempts, e);
+					if attempts > 3 {
+						panic!("save_all_gradients: Failed to open file Error: {}", e);
+					}
 				}
 			}
+		} 
 	}
 
 

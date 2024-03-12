@@ -385,4 +385,12 @@ Here is how I will do future iterations: I will keep learning rate the same, and
         5. do 1 hidden layer
 03/09/24 - made values returned like coinbase/bitstamp/gemini/kraken wallets back to unscaled. Also, changed hidden layers to 1. Next step is to log the gradient values each iteration and then make a histogram.		JESUS IS GOOD. With Gods strength, I got this!
 03/10/24 - created save gradients fn that logs all gradients in a csv. Then I implemented it.           JESUS IS GOOD. With his strength, we got this!
-03/10/24 - restarting from 0. gamma = 0.99. no gradient cap. learning rate = 1. CHANGE LEARNING RATE IN MAIN ANDDDDDD NETWORK.RS      1. remove all replay buffers. 2. rename p, websocket_client, and q value logs. 3. add extra space in rewards doc for next run.            JESUS IS GOOD. With his strength, we got this!
+03/10/24 - 
+ONE
+HIDDEN
+LAYER
+IS
+BEING
+USED!!!
+restarting from 0. gamma = 0.99. no gradient cap. learning rate = 1. CHANGE LEARNING RATE IN MAIN ANDDDDDD NETWORK.RS      1. remove all replay buffers. 2. rename p, websocket_client, and q value logs. 3. add extra space in rewards doc for next run.            JESUS IS GOOD. With his strength, we got this!
+03/10/24 - failed within a few iterations. I will try again, but this time with more information when the gradients are logged.         JESUS IS GOOD. With his strength, we got this!

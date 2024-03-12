@@ -2746,11 +2746,11 @@
 
 			//03/12/24 - added:
 			    // Apply gradient cap
-				if last_gradient_layer.data[j][*current_q_value_index] > 1.0 {
-					last_gradient_layer.data[j][*current_q_value_index] = 1.0;
+				if last_gradient_layer.data[j][*current_q_value_index] > 10.0 {
+					last_gradient_layer.data[j][*current_q_value_index] = 10.0;
 				}
-				else if last_gradient_layer.data[j][*current_q_value_index] < -1.0 {
-					last_gradient_layer.data[j][*current_q_value_index] = -1.0;
+				else if last_gradient_layer.data[j][*current_q_value_index] < -10.0 {
+					last_gradient_layer.data[j][*current_q_value_index] = -10.0;
 				}
 		}
 
@@ -2799,11 +2799,11 @@
 						//02/29/24 - changed back to 0.1
 						//03/10/24 - removed gradient cap.
 						//	uncomment if you want gradient cap
-							if gradient_layer.data[j][k] > 1.0 {
-								gradient_layer.data[j][k] = 1.0;
+							if gradient_layer.data[j][k] > 10.0 {
+								gradient_layer.data[j][k] = 10.0;
 							}
-							else if gradient_layer.data[j][k] < -1.0 {
-								gradient_layer.data[j][k] = -1.0;
+							else if gradient_layer.data[j][k] < -10.0 {
+								gradient_layer.data[j][k] = -10.0;
 							} 
 					}
 				}
@@ -4583,7 +4583,8 @@
 			//02/02/24 - changed from 0.0001 to 0.00001
 			//02/29/24 - from 0.00001 to 0.000_001
 			//03/10/24 - changed to 1.0
-			let learning_rate = 1.0;
+			//03/12/24 - changed to 0.1
+			let learning_rate = 0.1;
 			self.el_update_weights(&learning_rate);
 			
 			//03/10/24 - added:

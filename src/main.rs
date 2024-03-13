@@ -2093,8 +2093,8 @@ async fn main()   {
                                     //02/02/24 - changed from 0.0001 to 0.00001
                                     //03/09/24 - changed to 0.1
                                     //03/10/24 - changed to 1.0
-                                    //03/12/24 - changed to 0.1
-                                    let learning_rate = 0.1;
+                                    //03/12/24 - changed to 0.1. 03/13/24  - to 0.01
+                                    let learning_rate = 0.01;
                                     neural_network.el_update_weights(&learning_rate);
                                     
                                     //03/10/24 - added:

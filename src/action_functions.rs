@@ -41101,18 +41101,18 @@ use crate::standardization_functions;
 																		//success = true;
 																},
 																_ => {
-																	log::error!("i99: failed to parse JSON to f64");
+																	log::error!("i99: failed to parse JSON to f64 Response text: {}", text);
 																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																		panic!("Failed to parse JSON after {} attempts. Response text: {}", &attempts, text);
 																	}
 																	continue ;
 																}
 															}
 														},
 														_ => {
-															log::error!("i99: Failed to get bid");
+															log::error!("i99: Failed to get bid Response text: {}", text);
 															if attempts > 3 {
-																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																panic!("Failed to get bid after {} attempts. Bid: {:?}", &attempts, before_parse_coinbase_sell_price_bid);
 															}
 															continue ;
 														}
@@ -41121,9 +41121,9 @@ use crate::standardization_functions;
 											}
 										},
 										Err(_) => {
-											log::error!("i99: failed to parse JSON as str");
+											log::error!("i99: failed to parse JSON as str. Response text: {}", text);
 											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+												panic!("Failed to parse JSON after {} attempts. Response text: {}", &attempts, text);
 											}
 											continue ; // Continue to the next iteration if parsing fails
 										}
@@ -41132,7 +41132,7 @@ use crate::standardization_functions;
 								Err(_) => {
 									log::error!("i99: failed to get response text");
 									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
+										panic!("Failed to get response text after {} attempts", &attempts);
 									}
 									continue ; // Continue to the next iteration if getting response text fails
 								}
@@ -41141,7 +41141,7 @@ use crate::standardization_functions;
 						Err(_) => {
 							log::error!("i99: Failed to execute request");
 							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
+								panic!("Failed to execute request after {} attempts", &attempts);
 							}
 							continue; // Continue to the next iteration if executing request fails
 						}
@@ -41150,7 +41150,7 @@ use crate::standardization_functions;
 				Err(_) => {
 					log::error!("i99: Failed to build request");
 					if attempts > 3 {
-						panic!("i99: Failed to build request after 3 attempts");
+						panic!("i99: Failed to build request after {} attempts", &attempts);
 					}
 					continue; // Continue to the next iteration if building request fails
 				}

@@ -404,3 +404,4 @@ restarting from 0. gamma = 0.99. no gradient cap. learning rate = 1. CHANGE LEAR
 03/13/24 - changed learning rate to 0.01 in network and main.rs. gamma = 0.99, gradient cap = +-10, learning rate = 0.01.               JESUS IS GOOD. With his strength, we got this!
 03/13/24 - added Huber Loss function, added i in save gradients/weights and cycle part 2 fn then in their parameters. gamma = 0.99, gradient cap = +-10, learning rate = 0.01.          JESUS IS GOOD. With his strength, we got this!
 03/13/24 - weird error in i99 functiton again. Adding more detailed error checking.             JESUS IS GOOD. With his strength, we got this!
+03/13/24 - interlude commit.            JESUS IS GOOD. With his strength, we got this!

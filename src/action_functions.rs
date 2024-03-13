@@ -40988,8 +40988,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-        //03/12/24 - removed:
-		//let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
@@ -41050,6 +41050,7 @@ use crate::standardization_functions;
 																		let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
 																		let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																		*coinbase_wallet += money_from_sell_after_fees;
+																		value_after = Some(*kraken_wallet + *coinbase_wallet + gemini_wallet + bitstamp_wallet);
 																		if let Some(mut value_after) = value_after {
 
 																			//03/10/24 - added for unscaling
@@ -41079,7 +41080,7 @@ use crate::standardization_functions;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
 
-                                                                            //03/12/24 - added:
+                                                                            //03/13/24 - added:
                                                                             return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
@@ -41095,71 +41096,70 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                        //03/12/24 - removed:
-																		//success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
-																	log::error!("i99: failed to parse JSON to f64 Response text: {}", text);
+																	log::error!("i99: failed to parse JSON to f64");
 																	if attempts > 3 {
-																		panic!("Failed to parse JSON after {} attempts. Response text: {}", &attempts, text);
+																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
 																	}
-																	// continue ;
+																	continue ;
 																}
 															}
 														},
 														_ => {
-															log::error!("i99: Failed to get bid Response text: {}", text);
+															log::error!("i99: Failed to get bid");
 															if attempts > 3 {
-																panic!("Failed to get bid after {} attempts. Bid: {:?}", &attempts, before_parse_coinbase_sell_price_bid);
+																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 															}
-															// continue ;
+															continue ;
 														}
 													}
 												}
 											}
 										},
 										Err(_) => {
-											log::error!("i99: failed to parse JSON as str. Response text: {}", text);
-                                            println!("i99: failed to parse JSON as str. Response text: {}", text);
+											log::error!("i99: failed to parse JSON as str");
 											if attempts > 3 {
-												panic!("Failed to parse JSON after {} attempts. Response text: {}", &attempts, text);
+												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
 											}
-											// continue ; // Continue to the next iteration if parsing fails
+											continue ; // Continue to the next iteration if parsing fails
 										}
 									}
 								},
 								Err(_) => {
 									log::error!("i99: failed to get response text");
 									if attempts > 3 {
-										panic!("Failed to get response text after {} attempts", &attempts);
+										panic!("Failed to get response text after 3 attempts");
 									}
-									// continue ; // Continue to the next iteration if getting response text fails
+									continue ; // Continue to the next iteration if getting response text fails
 								}
 							}
 						},
 						Err(_) => {
 							log::error!("i99: Failed to execute request");
 							if attempts > 3 {
-								panic!("Failed to execute request after {} attempts", &attempts);
+								panic!("Failed to execute request after 3 attempts");
 							}
-							// continue; // Continue to the next iteration if executing request fails
+							continue; // Continue to the next iteration if executing request fails
 						}
 					}
 				},
 				Err(_) => {
 					log::error!("i99: Failed to build request");
 					if attempts > 3 {
-						panic!("i99: Failed to build request after {} attempts", &attempts);
+						panic!("i99: Failed to build request after 3 attempts");
 					}
-					// continue; // Continue to the next iteration if building request fails
+					continue; // Continue to the next iteration if building request fails
 				}
 			}
-            //03/12/24 - removed:
+            //03/13/24 - removed:
 			// if success == true {
 			// 	break;
 			// }
 		}
-
+        //03/13/24 - removed:
 		// match value_after {
 		// 	Some(value) => return Ok(value),
 		// 	None => {
@@ -49232,7 +49232,7 @@ use crate::standardization_functions;
 
         //02/28/24 - added:
             //03/13/24 - removed:
-            // let mut success = false;
+            let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
@@ -49333,7 +49333,7 @@ use crate::standardization_functions;
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
                                                                 //03/13/24 - removed:
-                                                                // success = true;
+                                                                success = true;
                                                             },
 															_ => {
 																log::error!("i120: Failed to f64 parse bid or ask price");

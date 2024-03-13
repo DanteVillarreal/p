@@ -4601,8 +4601,8 @@
 			//02/02/24 - changed from 0.0001 to 0.00001
 			//02/29/24 - from 0.00001 to 0.000_001
 			//03/10/24 - changed to 1.0
-			//03/12/24 - changed to 0.1. 03/13/24 - to 0.01
-			let learning_rate = 0.01;
+			//03/12/24 - changed to 0.1. 03/13/24 - to 0.01 then 0.001
+			let learning_rate = 0.001;
 			self.el_update_weights(&learning_rate);
 			
 			//03/10/24 - added:

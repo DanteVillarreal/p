@@ -1491,6 +1491,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*coinbase_wallet = coinbase_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																	}
 																	else {
@@ -1524,9 +1527,10 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i5: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed. not needed since it will only break if it returns
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
@@ -1595,13 +1599,13 @@ use crate::standardization_functions;
     
     
             //     return Ok(value_after)
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
     }
 
     pub async fn s_i6_sol_6_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
@@ -2024,6 +2028,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*coinbase_wallet = coinbase_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																	}
 																	else {
@@ -2057,9 +2064,10 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i6: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed. not needed since it will only break if it returns
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
@@ -2128,13 +2136,14 @@ use crate::standardization_functions;
     
     
             //     return Ok(value_after)
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
     }
 
     pub async fn s_i7_sol_7_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
@@ -2557,6 +2566,9 @@ use crate::standardization_functions;
                                                                             value_after = value_after_unscaled;
                                                                             *coinbase_wallet = coinbase_wallet_unscaled;
                                                                             *kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
                                                                         }
 																	}
 																	else {
@@ -2590,9 +2602,10 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i7: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed. not needed since it will only break if it returns
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
@@ -2661,13 +2674,14 @@ use crate::standardization_functions;
     
     
             //     return Ok(value_after)
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
     }
 
     pub async fn s_i8_sol_8_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
@@ -3090,6 +3104,9 @@ use crate::standardization_functions;
                                                                             value_after = value_after_unscaled;
                                                                             *coinbase_wallet = coinbase_wallet_unscaled;
                                                                             *kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
                                                                         }
 																	}
 																	else {
@@ -3123,9 +3140,10 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i8: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed. not needed since it will only break if it returns
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
@@ -3194,13 +3212,14 @@ use crate::standardization_functions;
     
     
             //     return Ok(value_after)
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
     }
 
     pub async fn s_i9_sol_9_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
@@ -3623,6 +3642,9 @@ use crate::standardization_functions;
                                                                                 value_after = value_after_unscaled;
                                                                                 *coinbase_wallet = coinbase_wallet_unscaled;
                                                                                 *kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                //03/13/24 - added:
+                                                                                return Ok(value_after);
                                                                             }
 																	}
 																	else {
@@ -3656,9 +3678,10 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i9: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed. not needed since it will only break if it returns
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
@@ -3727,13 +3750,14 @@ use crate::standardization_functions;
     
     
             //     return Ok(value_after)
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
     }
 
     pub async fn s_i10_sol_10_coinbase_kraken( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
@@ -4156,6 +4180,9 @@ use crate::standardization_functions;
                                                                             value_after = value_after_unscaled;
                                                                             *coinbase_wallet = coinbase_wallet_unscaled;
                                                                             *kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
                                                                         }
 																	}
 																	else {
@@ -4189,9 +4216,10 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i10: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed. not needed since it will only break if it returns
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
@@ -4260,13 +4288,14 @@ use crate::standardization_functions;
     
     
             //     return Ok(value_after)
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
     }
     //coinbase has 10 dollar minimum order size:
 //https://www.businessinsider.com/personal-finance/bitstamp-crypto-exchange-review#:~:text=Bitstamp%20has%20a%20%240%20minimum,of%20more%20than%20%24100%20million).
@@ -9103,7 +9132,8 @@ use crate::standardization_functions;
                                                                                 *gemini_wallet = gemini_wallet_unscaled;
                                                                                 *coinbase_wallet = coinbase_wallet_unscaled;
 
-                                                                                
+                                                                                //03/13/24 - added:
+                                                                                return Ok(value_after);
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -9118,7 +9148,8 @@ use crate::standardization_functions;
 																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			// neural_network.update_input(&indices, &scaled_values).await;
 
-																			success = true;
+                                                                            //03/13/24 - removed
+																			//success = true;
 																	},
 																	_ => {
 																		log::error!("i23: failed to parse JSON to f64");
@@ -9175,18 +9206,19 @@ use crate::standardization_functions;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
-				if success == true {
-					break;
-				}
+                //03/13/24 - removed
+				// if success == true {
+				// 	break;
+				// }
 			}
-	
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
-					//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-					panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-				}
-			}
+            //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
+			// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+			// 	}
+			// }
 
 
 
@@ -9537,7 +9569,8 @@ use crate::standardization_functions;
 			let mut coinbase_sell_price_bid: Option<f64> = None;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
-			let mut success = false;
+            //03/13/24 - removed:
+			// let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -9628,7 +9661,8 @@ use crate::standardization_functions;
                                                                                 *gemini_wallet = gemini_wallet_unscaled;
                                                                                 *coinbase_wallet = coinbase_wallet_unscaled;
 
-                                                                                
+                                                                                //03/13/24 - added:
+                                                                                return Ok(value_after);
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -9643,7 +9677,8 @@ use crate::standardization_functions;
 																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			// neural_network.update_input(&indices, &scaled_values).await;
 
-																			success = true;
+                                                                            //03/13/24 - removed:
+																			// success = true;
 																	},
 																	_ => {
 																		log::error!("i24: failed to parse JSON to f64");
@@ -9700,18 +9735,19 @@ use crate::standardization_functions;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
-				if success == true {
-					break;
-				}
+                //03/13/24 - removed:
+				// if success == true {
+				// 	break;
+				// }
 			}
-	
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
-					//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-					panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-				}
-			}
+            //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
+			// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+			// 	}
+			// }
 
 
 
@@ -10062,7 +10098,8 @@ use crate::standardization_functions;
 			let mut coinbase_sell_price_bid: Option<f64> = None;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
-			let mut success = false;
+            //03/13/24 - removed:
+			//let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -10153,7 +10190,8 @@ use crate::standardization_functions;
                                                                                 *gemini_wallet = gemini_wallet_unscaled;
                                                                                 *coinbase_wallet = coinbase_wallet_unscaled;
 
-                                                                                
+                                                                                //03/13/24 - added:
+                                                                                return Ok(value_after);
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -10168,7 +10206,8 @@ use crate::standardization_functions;
 																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			// neural_network.update_input(&indices, &scaled_values).await;
 
-																			success = true;
+                                                                            //03/13/24 - removed:
+																			// success = true;
 																	},
 																	_ => {
 																		log::error!("i25: failed to parse JSON to f64");
@@ -10225,18 +10264,19 @@ use crate::standardization_functions;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
-				if success == true {
-					break;
-				}
+                //03/13/24 - removed:
+				// if success == true {
+				// 	break;
+				// }
 			}
-	
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
-					//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-					panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-				}
-			}
+            //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
+			// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+			// 	}
+			// }
 
 
 
@@ -10587,7 +10627,8 @@ use crate::standardization_functions;
 			let mut coinbase_sell_price_bid: Option<f64> = None;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
-			let mut success = false;
+            //03/13/24 - removed:
+			// let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -10678,7 +10719,8 @@ use crate::standardization_functions;
                                                                                 *gemini_wallet = gemini_wallet_unscaled;
                                                                                 *coinbase_wallet = coinbase_wallet_unscaled;
 
-                                                                                
+                                                                                //03/13/24 - added:
+                                                                                return Ok(value_after);
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -10693,7 +10735,8 @@ use crate::standardization_functions;
 																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			// neural_network.update_input(&indices, &scaled_values).await;
 
-																			success = true;
+                                                                            //03/13/24 - removed:
+																			// success = true;
 																	},
 																	_ => {
 																		log::error!("i26: failed to parse JSON to f64");
@@ -10750,18 +10793,19 @@ use crate::standardization_functions;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
-				if success == true {
-					break;
-				}
+                //03/13/24 - removed:
+				// if success == true {
+				// 	break;
+				// }
 			}
-	
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
-					//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-					panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-				}
-			}
+            //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
+			// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+			// 	}
+			// }
 
 
 
@@ -11112,7 +11156,8 @@ use crate::standardization_functions;
 			let mut coinbase_sell_price_bid: Option<f64> = None;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
-			let mut success = false;
+            //03/13/24 - removed:
+			// let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -11203,7 +11248,8 @@ use crate::standardization_functions;
                                                                                 *gemini_wallet = gemini_wallet_unscaled;
                                                                                 *coinbase_wallet = coinbase_wallet_unscaled;
 
-                                                                                
+                                                                                //03/13/24 - added:
+                                                                                return Ok(value_after);
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -11218,7 +11264,8 @@ use crate::standardization_functions;
 																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			// neural_network.update_input(&indices, &scaled_values).await;
 
-																			success = true;
+                                                                            //03/13/24 - removed:
+																			// success = true;
 																	},
 																	_ => {
 																		log::error!("i27: failed to parse JSON to f64");
@@ -11275,18 +11322,19 @@ use crate::standardization_functions;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
-				if success == true {
-					break;
-				}
+                //03/13/24 - removed:
+				// if success == true {
+				// 	break;
+				// }
 			}
-	
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
-					//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-					panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-				}
-			}
+            //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
+			// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+			// 	}
+			// }
 
 
 
@@ -11637,7 +11685,8 @@ use crate::standardization_functions;
 			let mut coinbase_sell_price_bid: Option<f64> = None;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
-			let mut success = false;
+            //03/13/24 - removed:
+			// let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -11728,7 +11777,8 @@ use crate::standardization_functions;
                                                                                 *gemini_wallet = gemini_wallet_unscaled;
                                                                                 *coinbase_wallet = coinbase_wallet_unscaled;
 
-                                                                                
+                                                                                //03/13/24 - added:
+                                                                                return Ok(value_after);
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -11743,7 +11793,8 @@ use crate::standardization_functions;
 																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			// neural_network.update_input(&indices, &scaled_values).await;
 
-																			success = true;
+                                                                            //03/13/24 - removed:
+																			// success = true;
 																	},
 																	_ => {
 																		log::error!("i28: failed to parse JSON to f64");
@@ -11800,18 +11851,19 @@ use crate::standardization_functions;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
-				if success == true {
-					break;
-				}
+                //03/13/24 - removed:
+				// if success == true {
+				// 	break;
+				// }
 			}
-	
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
-					//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-					panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-				}
-			}
+            //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
+			// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+			// 	}
+			// }
 
 
 
@@ -12162,7 +12214,8 @@ use crate::standardization_functions;
 			let mut coinbase_sell_price_bid: Option<f64> = None;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
-			let mut success = false;
+            //03/13/24 - removed:
+			// let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -12253,7 +12306,8 @@ use crate::standardization_functions;
                                                                                 *gemini_wallet = gemini_wallet_unscaled;
                                                                                 *coinbase_wallet = coinbase_wallet_unscaled;
 
-                                                                                
+                                                                                //03/13/24 - added:
+                                                                                return Ok(value_after);
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -12268,7 +12322,8 @@ use crate::standardization_functions;
 																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			// neural_network.update_input(&indices, &scaled_values).await;
 
-																			success = true;
+                                                                            //03/13/24 - removed:
+																			// success = true;
 																	},
 																	_ => {
 																		log::error!("i29: failed to parse JSON to f64");
@@ -12325,18 +12380,19 @@ use crate::standardization_functions;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
-				if success == true {
-					break;
-				}
+                //03/13/24 - removed:
+				// if success == true {
+				// 	break;
+				// }
 			}
-	
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
-					//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-					panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-				}
-			}
+            //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
+			// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+			// 	}
+			// }
 
 
 
@@ -12686,7 +12742,8 @@ use crate::standardization_functions;
 			let mut coinbase_sell_price_bid: Option<f64> = None;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
-			let mut success = false;
+            //03/13/24 - removed:
+			// let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -12777,7 +12834,8 @@ use crate::standardization_functions;
                                                                                 *gemini_wallet = gemini_wallet_unscaled;
                                                                                 *coinbase_wallet = coinbase_wallet_unscaled;
 
-                                                                                
+                                                                                //03/13/24 - added:
+                                                                                return Ok(value_after);
 																			}
 																			//03/08/24 - removed:
 																			// //value_after = 56
@@ -12792,7 +12850,8 @@ use crate::standardization_functions;
 																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			// neural_network.update_input(&indices, &scaled_values).await;
 
-																			success = true;
+                                                                            //03/13/24 - removed:
+																			// success = true;
 																	},
 																	_ => {
 																		log::error!("i30: failed to parse JSON to f64");
@@ -12849,18 +12908,19 @@ use crate::standardization_functions;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
-				if success == true {
-					break;
-				}
+                //03/13/24 - removed:
+				// if success == true {
+				// 	break;
+				// }
 			}
-	
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
-					//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-					panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-				}
-			}
+            //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
+			// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+			// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+			// 	}
+			// }
 
 
 
@@ -14284,6 +14344,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*gemini_wallet = gemini_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -14332,10 +14395,10 @@ use crate::standardization_functions;
 		
 			// Continue with your logic here...
 			// Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
-		
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed since no more need for a break statement
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 		
 			attempts += 1;
 			if attempts >= 3 {
@@ -14467,15 +14530,15 @@ use crate::standardization_functions;
     
             //     return Ok(value_after)
 		//03/02/24 - added:
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
-					
-					panic!("Failed to get a valid value after {} attempts. 
-					Final values: kraken_sell_price_bid = {:?}
-					gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-				}
-			}
+        //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
+			// 		panic!("Failed to get a valid value after {} attempts. 
+			// 		Final values: kraken_sell_price_bid = {:?}
+			// 		gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+			// 	}
+			// }
 
     }
 
@@ -14781,6 +14844,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*gemini_wallet = gemini_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - removed:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -14830,9 +14896,10 @@ use crate::standardization_functions;
 			// Continue with your logic here...
 			// Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
 		
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 		
 			attempts += 1;
 			if attempts >= 3 {
@@ -14964,15 +15031,16 @@ use crate::standardization_functions;
     
             //     return Ok(value_after)
 		//03/02/24 - added:
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
+        //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
 					
-					panic!("Failed to get a valid value after {} attempts. 
-					Final values: kraken_sell_price_bid = {:?}
-					gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-				}
-			}
+			// 		panic!("Failed to get a valid value after {} attempts. 
+			// 		Final values: kraken_sell_price_bid = {:?}
+			// 		gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+			// 	}
+			// }
 
     }
 
@@ -15278,6 +15346,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*gemini_wallet = gemini_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -15326,10 +15397,10 @@ use crate::standardization_functions;
 		
 			// Continue with your logic here...
 			// Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
-		
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 		
 			attempts += 1;
 			if attempts >= 3 {
@@ -15461,15 +15532,16 @@ use crate::standardization_functions;
     
             //     return Ok(value_after)
 		//03/02/24 - added:
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
+        //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
 					
-					panic!("Failed to get a valid value after {} attempts. 
-					Final values: kraken_sell_price_bid = {:?}
-					gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-				}
-			}
+			// 		panic!("Failed to get a valid value after {} attempts. 
+			// 		Final values: kraken_sell_price_bid = {:?}
+			// 		gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+			// 	}
+			// }
 
     }
     
@@ -15775,6 +15847,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*gemini_wallet = gemini_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -15823,10 +15898,10 @@ use crate::standardization_functions;
 		
 			// Continue with your logic here...
 			// Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
-		
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 		
 			attempts += 1;
 			if attempts >= 3 {
@@ -15958,15 +16033,16 @@ use crate::standardization_functions;
     
             //     return Ok(value_after)
 		//03/02/24 - added:
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
+        //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
 					
-					panic!("Failed to get a valid value after {} attempts. 
-					Final values: kraken_sell_price_bid = {:?}
-					gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-				}
-			}
+			// 		panic!("Failed to get a valid value after {} attempts. 
+			// 		Final values: kraken_sell_price_bid = {:?}
+			// 		gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+			// 	}
+			// }
 
     }
 
@@ -16272,6 +16348,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*gemini_wallet = gemini_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -16320,10 +16399,10 @@ use crate::standardization_functions;
 		
 			// Continue with your logic here...
 			// Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
-		
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 		
 			attempts += 1;
 			if attempts >= 3 {
@@ -16455,15 +16534,15 @@ use crate::standardization_functions;
     
             //     return Ok(value_after)
 		//03/02/24 - added:
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
-					
-					panic!("Failed to get a valid value after {} attempts. 
-					Final values: kraken_sell_price_bid = {:?}
-					gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-				}
-			}
+        //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
+			// 		panic!("Failed to get a valid value after {} attempts. 
+			// 		Final values: kraken_sell_price_bid = {:?}
+			// 		gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+			// 	}
+			// }
 
     }
 
@@ -16769,6 +16848,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*gemini_wallet = gemini_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -16817,10 +16899,10 @@ use crate::standardization_functions;
 		
 			// Continue with your logic here...
 			// Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
-		
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 		
 			attempts += 1;
 			if attempts >= 3 {
@@ -16952,15 +17034,16 @@ use crate::standardization_functions;
     
             //     return Ok(value_after)
 		//03/02/24 - added:
-			match value_after {
-				Some(value) => return Ok(value),
-				None => {
+        //03/13/24 - removed:
+			// match value_after {
+			// 	Some(value) => return Ok(value),
+			// 	None => {
 					
-					panic!("Failed to get a valid value after {} attempts. 
-					Final values: kraken_sell_price_bid = {:?}
-					gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-				}
-			}
+			// 		panic!("Failed to get a valid value after {} attempts. 
+			// 		Final values: kraken_sell_price_bid = {:?}
+			// 		gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+			// 	}
+			// }
 
     }
     //gemini has withdraw minimums of 10 dollars: 
@@ -22504,7 +22587,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		//let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -22596,6 +22680,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -22609,8 +22696,8 @@ use crate::standardization_functions;
 																		// let new_values = [value_after, Some(*coinbase_wallet), Some(*kraken_wallet)];
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
-
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i55: failed to parse JSON to f64");
@@ -22667,18 +22754,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -23126,7 +23214,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -23218,6 +23307,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -23232,7 +23324,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i56: failed to parse JSON to f64");
@@ -23289,18 +23382,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -23748,7 +23842,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -23840,6 +23935,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -23854,7 +23952,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i57: failed to parse JSON to f64");
@@ -23911,18 +24010,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -24370,7 +24470,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -24462,6 +24563,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -24476,7 +24580,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i58: failed to parse JSON to f64");
@@ -24533,18 +24638,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -24992,7 +25098,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -25084,6 +25191,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -25098,7 +25208,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i59: failed to parse JSON to f64");
@@ -25155,18 +25266,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -25244,7 +25356,7 @@ use crate::standardization_functions;
 
      }
 
-	 pub async fn s_i60_sol_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
+	pub async fn s_i60_sol_10_kraken_coinbase( coinbase_wallet: &mut f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
         gemini_wallet: &f64, coinbase_secret: &str, coinbase_api_key: &str, client: reqwest::Client, kraken_secret: &str, kraken_api_key: &str, neural_network: &mut NeuralNetwork)-> Result<f64, Box<dyn Error + Send>> {
         //look at m, then look at functions to figure out current price of sol at coinbase,
         //      then do .01 * coinbase_wallet - trading_fee = how much sol in usd Im sending. 
@@ -25614,7 +25726,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -25706,6 +25819,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -25720,7 +25836,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i56: failed to parse JSON to f64");
@@ -25777,18 +25894,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -30753,6 +30871,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*coinbase_wallet = coinbase_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -30798,22 +30919,25 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i75: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
 				panic!("i75: Failed after 3 attempts");
 			}
 		}
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
 
 
 
@@ -31317,6 +31441,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*coinbase_wallet = coinbase_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -31362,22 +31489,24 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i76: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
 				panic!("i76: Failed after 3 attempts");
 			}
 		}
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
 
 
 
@@ -31881,6 +32010,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*coinbase_wallet = coinbase_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -31926,22 +32058,24 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i77: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
 				panic!("i77: Failed after 3 attempts");
 			}
 		}
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
 
 
 
@@ -32445,6 +32579,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*coinbase_wallet = coinbase_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -32490,22 +32627,24 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i78: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
 				panic!("i78: Failed after 3 attempts");
 			}
 		}
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
 
 
 
@@ -33009,6 +33148,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*coinbase_wallet = coinbase_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -33054,22 +33196,24 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i79: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
 				panic!("i79: Failed after 3 attempts");
 			}
 		}
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
 
 
 
@@ -33573,6 +33717,9 @@ use crate::standardization_functions;
 																					value_after = value_after_unscaled;
 																					*coinbase_wallet = coinbase_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                    //03/13/24 - added:
+                                                                                    return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
 																				// //value_after = 56
@@ -33618,22 +33765,24 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i80: Failed to build kraken request. Error was: {}", e),
 			}
-			if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-				break; // Exit the loop if everything is successful
-			}
+            //03/13/24 - removed:
+			// if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+			// 	break; // Exit the loop if everything is successful
+			// }
 
 			attempts += 1;
 			if attempts >= 3 {
 				panic!("i80: Failed after 3 attempts");
 			}
 		}
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_buy_price_ask = {:?}", attempts, coinbase_buy_price_ask);
+		// 	}
+		// }
 
 
 
@@ -34104,6 +34253,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*coinbase_wallet = coinbase_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -34118,7 +34270,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i83: Failed to f64 parse bid or ask price");
@@ -34175,6 +34328,7 @@ use crate::standardization_functions;
 			}
 		}
 
+        //03/13/24 - removed:
 		match value_after {
 			Some(value) => return Ok(value),
 			None => {
@@ -34664,6 +34818,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*coinbase_wallet = coinbase_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -34678,7 +34835,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i84: Failed to f64 parse bid or ask price");
@@ -35224,6 +35382,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*coinbase_wallet = coinbase_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -35238,7 +35399,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i85: Failed to f64 parse bid or ask price");
@@ -35784,6 +35946,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*coinbase_wallet = coinbase_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -35798,7 +35963,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i86: Failed to f64 parse bid or ask price");
@@ -36344,6 +36510,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*coinbase_wallet = coinbase_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -36358,7 +36527,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i87: Failed to f64 parse bid or ask price");
@@ -36904,6 +37074,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*coinbase_wallet = coinbase_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -36918,7 +37091,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i88: Failed to f64 parse bid or ask price");
@@ -37464,6 +37638,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*coinbase_wallet = coinbase_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -37478,7 +37655,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i89: Failed to f64 parse bid or ask price");
@@ -38024,6 +38202,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*coinbase_wallet = coinbase_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -38038,7 +38219,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i90: Failed to f64 parse bid or ask price");
@@ -38479,7 +38661,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
@@ -38571,6 +38754,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -38585,7 +38771,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i95: failed to parse JSON to f64");
@@ -38642,18 +38829,20 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
 
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -39055,7 +39244,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
@@ -39147,6 +39337,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -39161,7 +39354,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i96: failed to parse JSON to f64");
@@ -39218,18 +39412,20 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
 
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -39631,7 +39827,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
@@ -39723,6 +39920,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -39737,7 +39937,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i97: failed to parse JSON to f64");
@@ -39794,18 +39995,20 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
 
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -40207,7 +40410,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
@@ -40297,6 +40501,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -40311,7 +40518,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i98: failed to parse JSON to f64");
@@ -40368,18 +40576,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -40781,7 +40990,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/12/24 - removed:
+		//let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
@@ -40870,6 +41080,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/12/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -40884,7 +41097,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/12/24 - removed:
+																		//success = true;
 																},
 																_ => {
 																	log::error!("i99: failed to parse JSON to f64");
@@ -40941,18 +41155,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/12/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
 
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -41354,7 +41569,8 @@ use crate::standardization_functions;
 		let mut coinbase_sell_price_bid: Option<f64> = None;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XLM-USD")
@@ -41444,6 +41660,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
 																			*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -41458,7 +41677,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																},
 																_ => {
 																	log::error!("i100: failed to parse JSON to f64");
@@ -41515,18 +41735,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 
 
 
@@ -41912,11 +42133,12 @@ use crate::standardization_functions;
 
 
 	//03/05/24 - added:
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		let mut attempts = 0;
 		let mut value_after: Option<f64> = None;
 
-		while !success && attempts <=3 {
+		while attempts <=3 {
 			attempts += 1;
 
 			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
@@ -41997,6 +42219,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*kraken_wallet = kraken_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -42011,7 +42236,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i105: Failed to f64 parse bid or ask price");
@@ -42425,11 +42651,12 @@ use crate::standardization_functions;
 
 
 	//03/05/24 - added:
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		let mut attempts = 0;
 		let mut value_after: Option<f64> = None;
 
-		while !success && attempts <=3 {
+		while attempts <=3 {
 			attempts += 1;
 
 			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
@@ -42510,6 +42737,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*kraken_wallet = kraken_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -42524,7 +42754,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i106: Failed to f64 parse bid or ask price");
@@ -42938,11 +43169,12 @@ use crate::standardization_functions;
 
 
 	//03/05/24 - added:
-		let mut success = false;
+    //03/13/24 - removed:
+		// let mut success = false;
 		let mut attempts = 0;
 		let mut value_after: Option<f64> = None;
 
-		while !success && attempts <=3 {
+		while attempts <=3 {
 			attempts += 1;
 
 			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
@@ -43023,6 +43255,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*kraken_wallet = kraken_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -43037,7 +43272,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i107: Failed to f64 parse bid or ask price");
@@ -43451,11 +43687,12 @@ use crate::standardization_functions;
 
 
 	//03/05/24 - added:
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		let mut attempts = 0;
 		let mut value_after: Option<f64> = None;
 
-		while !success && attempts <=3 {
+		while  attempts <=3 {
 			attempts += 1;
 
 			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
@@ -43536,6 +43773,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*kraken_wallet = kraken_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -43550,7 +43790,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i108: Failed to f64 parse bid or ask price");
@@ -43964,11 +44205,12 @@ use crate::standardization_functions;
 
 
 	//03/05/24 - added:
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		let mut attempts = 0;
 		let mut value_after: Option<f64> = None;
 
-		while !success && attempts <=3 {
+		while  attempts <=3 {
 			attempts += 1;
 
 			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
@@ -44049,6 +44291,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*kraken_wallet = kraken_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -44063,7 +44308,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i109: Failed to f64 parse bid or ask price");
@@ -44477,11 +44723,12 @@ use crate::standardization_functions;
 
 
 	//03/05/24 - added:
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		let mut attempts = 0;
 		let mut value_after: Option<f64> = None;
 
-		while !success && attempts <=3 {
+		while attempts <=3 {
 			attempts += 1;
 
 			match client.get("https://www.bitstamp.net/api/v2/ticker/xlmusd/")
@@ -44562,6 +44809,9 @@ use crate::standardization_functions;
 																value_after = value_after_unscaled;
 																*kraken_wallet = kraken_wallet_unscaled;
 																*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                //03/13/24 - added:
+                                                                return Ok(value_after);
 															}
 															//03/08/24 - removed:
 															// //value_after = 56
@@ -44576,7 +44826,8 @@ use crate::standardization_functions;
 															// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 															// neural_network.update_input(&indices, &scaled_values).await;
 
-															success = true;
+                                                            //03/13/24 - removed:
+															// success = true;
 														},
 														_ => {
 															log::error!("i110: Failed to f64 parse bid or ask price");
@@ -45033,11 +45284,12 @@ use crate::standardization_functions;
 
 
         //02/28/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -45116,6 +45368,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*coinbase_wallet = coinbase_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -45130,7 +45385,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i113: Failed to f64 parse bid or ask price");
@@ -45592,11 +45848,12 @@ use crate::standardization_functions;
 
 
         //02/28/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -45675,6 +45932,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*coinbase_wallet = coinbase_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -45689,9 +45949,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-
-
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i114: Failed to f64 parse bid or ask price");
@@ -46153,11 +46412,12 @@ use crate::standardization_functions;
 
 
         //02/28/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -46236,6 +46496,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*coinbase_wallet = coinbase_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -46250,9 +46513,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-
-
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i115: Failed to f64 parse bid or ask price");
@@ -46714,11 +46976,12 @@ use crate::standardization_functions;
 
 
         //02/28/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -46797,6 +47060,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*coinbase_wallet = coinbase_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -46811,7 +47077,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i116: Failed to f64 parse bid or ask price");
@@ -47273,11 +47540,12 @@ use crate::standardization_functions;
 
 
         //02/28/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -47356,6 +47624,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*coinbase_wallet = coinbase_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -47370,8 +47641,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i117: Failed to f64 parse bid or ask price");
@@ -47833,11 +48104,12 @@ use crate::standardization_functions;
 
 
         //02/28/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -47916,6 +48188,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*coinbase_wallet = coinbase_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -47930,7 +48205,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i118: Failed to f64 parse bid or ask price");
@@ -48392,11 +48668,12 @@ use crate::standardization_functions;
 
 
         //02/28/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -48475,6 +48752,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*coinbase_wallet = coinbase_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -48489,7 +48769,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i119: Failed to f64 parse bid or ask price");
@@ -48951,7 +49232,8 @@ use crate::standardization_functions;
 
 
         //02/28/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
@@ -49034,6 +49316,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*coinbase_wallet = coinbase_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -49048,7 +49333,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i120: Failed to f64 parse bid or ask price");
@@ -49389,11 +49675,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -49473,6 +49760,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*gemini_wallet = gemini_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -49487,7 +49777,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i123: Failed to f64 parse bid or ask price");
@@ -49826,11 +50117,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -49910,6 +50202,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*gemini_wallet = gemini_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -49924,7 +50219,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i124: Failed to f64 parse bid or ask price");
@@ -50263,11 +50559,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -50345,6 +50642,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*gemini_wallet = gemini_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -50359,7 +50659,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i125: Failed to f64 parse bid or ask price");
@@ -50698,11 +50999,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -50782,6 +51084,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*gemini_wallet = gemini_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -50796,7 +51101,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i126: Failed to f64 parse bid or ask price");
@@ -51135,11 +51441,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -51219,6 +51526,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*gemini_wallet = gemini_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -51233,7 +51543,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i127: Failed to f64 parse bid or ask price");
@@ -51572,11 +51883,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -51656,6 +51968,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*gemini_wallet = gemini_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -51670,7 +51985,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i128: Failed to f64 parse bid or ask price");
@@ -52009,11 +52325,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -52093,6 +52410,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*gemini_wallet = gemini_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -52107,7 +52427,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i129: Failed to f64 parse bid or ask price");
@@ -52446,11 +52767,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -52530,6 +52852,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*gemini_wallet = gemini_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -52544,7 +52869,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i130: Failed to f64 parse bid or ask price");
@@ -52931,11 +53257,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -53015,6 +53342,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*kraken_wallet = kraken_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -53029,7 +53359,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i134: Failed to f64 parse bid or ask price");
@@ -53424,11 +53755,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -53508,6 +53840,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*kraken_wallet = kraken_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -53522,7 +53857,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i135: Failed to f64 parse bid or ask price");
@@ -53918,11 +54254,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -54002,6 +54339,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*kraken_wallet = kraken_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -54016,7 +54356,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i136: Failed to f64 parse bid or ask price");
@@ -54412,11 +54753,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -54496,6 +54838,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*kraken_wallet = kraken_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -54510,7 +54855,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i137: Failed to f64 parse bid or ask price");
@@ -54906,11 +55252,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -54990,6 +55337,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*kraken_wallet = kraken_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -55004,7 +55354,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i138: Failed to f64 parse bid or ask price");
@@ -55400,11 +55751,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while  attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -55484,6 +55836,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*kraken_wallet = kraken_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -55498,7 +55853,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i139: Failed to f64 parse bid or ask price");
@@ -55894,11 +56250,12 @@ use crate::standardization_functions;
 
 
 			//03/05/24 - added:
-            let mut success = false;
+            //03/13/24 - removed:
+            // let mut success = false;
             let mut attempts = 0;
             let mut value_after: Option<f64> = None;
 
-            while !success && attempts <=3 {
+            while attempts <=3 {
                 attempts += 1;
 
                 match client.get("https://www.bitstamp.net/api/v2/ticker/xrpusd/")
@@ -55978,6 +56335,9 @@ use crate::standardization_functions;
 																	value_after = value_after_unscaled;
 																	*kraken_wallet = kraken_wallet_unscaled;
 																	*bitstamp_wallet = bitstamp_wallet_unscaled;
+
+                                                                    //03/13/24 - added:
+                                                                    return Ok(value_after);
 																}
 																//03/08/24 - removed:
                                                                 // //value_after = 56
@@ -55992,7 +56352,8 @@ use crate::standardization_functions;
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                success = true;
+                                                                //03/13/24 - removed:
+                                                                // success = true;
                                                             },
 															_ => {
 																log::error!("i140: Failed to f64 parse bid or ask price");
@@ -56344,7 +56705,8 @@ use crate::standardization_functions;
 		//let coinbase_buy_price_ask: Option<f64>;
 		let mut value_after: Option<f64> = None;
 		//02/28/24 - changed to false
-		let mut success = false;
+        //03/13/24 - removed:
+		// let mut success = false;
 		loop {
 			attempts +=1;
 			let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
@@ -56440,6 +56802,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*gemini_wallet = gemini_wallet_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -56454,7 +56819,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-																		success = true;
+                                                                        //03/13/24 - removed:
+																		// success = true;
 																	},
 																	_ => {
 																		log::error!("i143: failed to parse JSON to f64");
@@ -56511,18 +56877,20 @@ use crate::standardization_functions;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
-				if success == true {
-					break;
-				}
+                //03/13/24 - removed:
+				// if success == true {
+				// 	break;
+				// }
 			}
 
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
-				//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-				panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-			}
-		}
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
+		// 		//panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+		// 		panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+		// 	}
+		// }
 		//02/27/24 - removed and placed above^
 			//         //gemini calculations for buy 
 			//     //this should equal 0.4%
@@ -56820,7 +57188,8 @@ use crate::standardization_functions;
         //let coinbase_buy_price_ask: Option<f64>;
         let mut value_after: Option<f64> = None;
         //03/02/24 - changed to false
-        let mut success = false;
+        //03/13/24 - removed:
+        // let mut success = false;
         loop {
             attempts +=1;
             let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
@@ -56916,6 +57285,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*gemini_wallet = gemini_wallet_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -56930,7 +57302,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                        success = true;
+                                                                        //03/13/24 - removed:
+                                                                        // success = true;
 																},
 																_ => {
 																	log::error!("i144: failed to parse JSON to f64");
@@ -56987,18 +57360,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-        match value_after {
-            Some(value) => return Ok(value),
-            None => {
-                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-            }
-        }
+        //03/13/24 - removed:
+        // match value_after {
+        //     Some(value) => return Ok(value),
+        //     None => {
+        //         //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+        //         panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+        //     }
+        // }
         //02/27/24 - removed and placed above^
             //         //gemini calculations for buy 
             //     //this should equal 0.4%
@@ -57296,7 +57670,8 @@ use crate::standardization_functions;
         //let coinbase_buy_price_ask: Option<f64>;
         let mut value_after: Option<f64> = None;
         //03/02/24 - changed to false
-        let mut success = false;
+        //03/13/24 - removed:
+        // let mut success = false;
         loop {
             attempts +=1;
             let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
@@ -57392,6 +57767,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*gemini_wallet = gemini_wallet_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -57406,7 +57784,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                        success = true;
+                                                                        //03/13/24 - removed:
+                                                                        // success = true;
 																},
 																_ => {
 																	log::error!("i145: failed to parse JSON to f64");
@@ -57463,18 +57842,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-        match value_after {
-            Some(value) => return Ok(value),
-            None => {
-                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-            }
-        }
+        //03/13/24 - removed:
+        // match value_after {
+        //     Some(value) => return Ok(value),
+        //     None => {
+        //         //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+        //         panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+        //     }
+        // }
         //02/27/24 - removed and placed above^
             //         //gemini calculations for buy 
             //     //this should equal 0.4%
@@ -57772,7 +58152,8 @@ use crate::standardization_functions;
         //let coinbase_buy_price_ask: Option<f64>;
         let mut value_after: Option<f64> = None;
         //03/02/24 - changed to false
-        let mut success = false;
+        //03/13/24 - removed:
+        // let mut success = false;
         loop {
             attempts +=1;
             let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
@@ -57868,6 +58249,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*gemini_wallet = gemini_wallet_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -57882,7 +58266,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                        success = true;
+                                                                        //03/13/24 - removed:
+                                                                        // success = true;
 																},
 																_ => {
 																	log::error!("i146: failed to parse JSON to f64");
@@ -57939,18 +58324,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-        match value_after {
-            Some(value) => return Ok(value),
-            None => {
-                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-            }
-        }
+        //03/13/24 - removed:
+        // match value_after {
+        //     Some(value) => return Ok(value),
+        //     None => {
+        //         //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+        //         panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+        //     }
+        // }
         //02/27/24 - removed and placed above^
             //         //gemini calculations for buy 
             //     //this should equal 0.4%
@@ -58248,7 +58634,8 @@ use crate::standardization_functions;
         //let coinbase_buy_price_ask: Option<f64>;
         let mut value_after: Option<f64> = None;
         //03/02/24 - changed to false
-        let mut success = false;
+        //03/13/24 - removed:
+        // let mut success = false;
         loop {
             attempts +=1;
             let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
@@ -58344,6 +58731,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*gemini_wallet = gemini_wallet_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -58358,7 +58748,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                        success = true;
+                                                                        //03/13/24 - removed:
+                                                                        // success = true;
 																},
 																_ => {
 																	log::error!("i147: failed to parse JSON to f64");
@@ -58415,18 +58806,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-        match value_after {
-            Some(value) => return Ok(value),
-            None => {
-                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-            }
-        }
+        //03/13/24 - removed:
+        // match value_after {
+        //     Some(value) => return Ok(value),
+        //     None => {
+        //         //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+        //         panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+        //     }
+        // }
         //02/27/24 - removed and placed above^
             //         //gemini calculations for buy 
             //     //this should equal 0.4%
@@ -58724,7 +59116,8 @@ use crate::standardization_functions;
         //let coinbase_buy_price_ask: Option<f64>;
         let mut value_after: Option<f64> = None;
         //03/02/24 - changed to false
-        let mut success = false;
+        //03/13/24 - removed:
+        // let mut success = false;
         loop {
             attempts +=1;
             let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
@@ -58820,6 +59213,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*gemini_wallet = gemini_wallet_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -58834,7 +59230,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                        success = true;
+                                                                        //03/13/24 - removed:
+                                                                        // success = true;
 																},
 																_ => {
 																	log::error!("i148: failed to parse JSON to f64");
@@ -58891,18 +59288,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-        match value_after {
-            Some(value) => return Ok(value),
-            None => {
-                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-            }
-        }
+        //03/13/24 - removed:
+        // match value_after {
+        //     Some(value) => return Ok(value),
+        //     None => {
+        //         //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+        //         panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+        //     }
+        // }
         //02/27/24 - removed and placed above^
             //         //gemini calculations for buy 
             //     //this should equal 0.4%
@@ -59200,7 +59598,8 @@ use crate::standardization_functions;
         //let coinbase_buy_price_ask: Option<f64>;
         let mut value_after: Option<f64> = None;
         //03/02/24 - changed to false
-        let mut success = false;
+        //03/13/24 - removed:
+        // let mut success = false;
         loop {
             attempts +=1;
             let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
@@ -59296,6 +59695,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*gemini_wallet = gemini_wallet_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -59310,7 +59712,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                        success = true;
+                                                                        //03/13/24 - removed:
+                                                                        // success = true;
 																},
 																_ => {
 																	log::error!("i149: failed to parse JSON to f64");
@@ -59367,18 +59770,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-        match value_after {
-            Some(value) => return Ok(value),
-            None => {
-                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-            }
-        }
+        //03/13/24 - removed:
+        // match value_after {
+        //     Some(value) => return Ok(value),
+        //     None => {
+        //         //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+        //         panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+        //     }
+        // }
         //02/27/24 - removed and placed above^
             //         //gemini calculations for buy 
             //     //this should equal 0.4%
@@ -59675,7 +60079,8 @@ use crate::standardization_functions;
         //let coinbase_buy_price_ask: Option<f64>;
         let mut value_after: Option<f64> = None;
         //03/02/24 - changed to false
-        let mut success = false;
+        //03/13/24 - removed:
+        // let mut success = false;
         loop {
             attempts +=1;
             let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=XRP-USD")
@@ -59771,6 +60176,9 @@ use crate::standardization_functions;
 																			value_after = value_after_unscaled;
 																			*gemini_wallet = gemini_wallet_unscaled;
 																			*coinbase_wallet = coinbase_wallet_unscaled;
+
+                                                                            //03/13/24 - added:
+                                                                            return Ok(value_after);
 																		}
 																		//03/08/24 - removed:
 																		// //value_after = 56
@@ -59785,7 +60193,8 @@ use crate::standardization_functions;
 																		// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																		// neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                        success = true;
+                                                                        //03/13/24 - removed:
+                                                                        // success = true;
 																},
 																_ => {
 																	log::error!("i150: failed to parse JSON to f64");
@@ -59842,18 +60251,19 @@ use crate::standardization_functions;
 					continue; // Continue to the next iteration if building request fails
 				}
 			}
-			if success == true {
-				break;
-			}
+            //03/13/24 - removed:
+			// if success == true {
+			// 	break;
+			// }
 		}
-
-        match value_after {
-            Some(value) => return Ok(value),
-            None => {
-                //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
-                panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
-            }
-        }
+        //03/13/24 - removed:
+        // match value_after {
+        //     Some(value) => return Ok(value),
+        //     None => {
+        //         //panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}, coinbase_buy_price_ask = {:?}", attempts, coinbase_sell_price_bid, coinbase_buy_price_ask);
+        //         panic!("Failed to get a valid value after {} attempts. Final values: coinbase_sell_price_bid = {:?}", attempts, coinbase_sell_price_bid);
+        //     }
+        // }
         //02/27/24 - removed and placed above^
             //         //gemini calculations for buy 
             //     //this should equal 0.4%
@@ -60264,6 +60674,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*gemini_wallet = gemini_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -60312,10 +60725,10 @@ use crate::standardization_functions;
 			
 				// Continue with your logic here...
 				// Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
-			
-				if kraken_sell_price_bid.is_some() {
-					break; // Exit the loop if everything is successful
-				}
+                //03/13/24 - removed:
+				// if kraken_sell_price_bid.is_some() {
+				// 	break; // Exit the loop if everything is successful
+				// }
 			
 				attempts += 1;
 				if attempts >= 3 {
@@ -60404,15 +60817,16 @@ use crate::standardization_functions;
 		//         neural_network.update_input(&indices, &scaled_values).await;
 
 		//     return Ok(value_after)
-		match value_after {
-			Some(value) => return Ok(value),
-			None => {
+        //03/13/24 - removed:
+		// match value_after {
+		// 	Some(value) => return Ok(value),
+		// 	None => {
 				
-				panic!("Failed to get a valid value after {} attempts. 
-				Final values: kraken_sell_price_bid = {:?}
-				gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-			}
-		}
+		// 		panic!("Failed to get a valid value after {} attempts. 
+		// 		Final values: kraken_sell_price_bid = {:?}
+		// 		gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+		// 	}
+		// }
 	}
 
     pub async fn s_i154_xrp_4_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
@@ -60743,6 +61157,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*gemini_wallet = gemini_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -60793,9 +61210,10 @@ use crate::standardization_functions;
                 // Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
             
 				//03/05/24 - removed the && ...
-                if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-                    break; // Exit the loop if everything is successful
-                }
+                //03/13/24 - removed:
+                // if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+                //     break; // Exit the loop if everything is successful
+                // }
             
                 attempts += 1;
                 if attempts >= 3 {
@@ -60884,15 +61302,16 @@ use crate::standardization_functions;
         //         neural_network.update_input(&indices, &scaled_values).await;
 
         //     return Ok(value_after)
-        match value_after {
-            Some(value) => return Ok(value),
-            None => {
+        //03/13/24 - removed:
+        // match value_after {
+        //     Some(value) => return Ok(value),
+        //     None => {
                 
-                panic!("Failed to get a valid value after {} attempts. 
-                Final values: kraken_sell_price_bid = {:?}
-                gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-            }
-        }
+        //         panic!("Failed to get a valid value after {} attempts. 
+        //         Final values: kraken_sell_price_bid = {:?}
+        //         gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+        //     }
+        // }
 }
 
 	pub async fn s_i155_xrp_5_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
@@ -61223,6 +61642,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*gemini_wallet = gemini_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -61273,9 +61695,10 @@ use crate::standardization_functions;
                 // Remember to handle the case when kraken_sell_price_bid and kraken_buy_price_ask are None
             
 				//03/05/24 - removed the && ...
-                if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
-                    break; // Exit the loop if everything is successful
-                }
+                //03/13/24 - removed:
+                // if kraken_sell_price_bid.is_some() /*&& kraken_buy_price_ask.is_some()*/ {
+                //     break; // Exit the loop if everything is successful
+                // }
             
                 attempts += 1;
                 if attempts >= 3 {
@@ -61364,15 +61787,16 @@ use crate::standardization_functions;
         //         neural_network.update_input(&indices, &scaled_values).await;
 
         //     return Ok(value_after)
-        match value_after {
-            Some(value) => return Ok(value),
-            None => {
+        //03/13/24 - removed:
+        // match value_after {
+        //     Some(value) => return Ok(value),
+        //     None => {
                 
-                panic!("Failed to get a valid value after {} attempts. 
-                Final values: kraken_sell_price_bid = {:?}
-                gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
-            }
-        }
+        //         panic!("Failed to get a valid value after {} attempts. 
+        //         Final values: kraken_sell_price_bid = {:?}
+        //         gemini_buy_ask = {:?}", attempts, &kraken_sell_price_bid, &gemini_buy_ask);
+        //     }
+        // }
     }
 
     pub async fn s_i156_xrp_6_gemini_kraken( coinbase_wallet: &f64, kraken_wallet: &mut f64, bitstamp_wallet: &f64,
@@ -61702,6 +62126,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*gemini_wallet = gemini_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -62182,6 +62609,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*gemini_wallet = gemini_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -62662,6 +63092,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*gemini_wallet = gemini_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -63142,6 +63575,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*gemini_wallet = gemini_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -63622,6 +64058,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*gemini_wallet = gemini_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -64197,6 +64636,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*coinbase_wallet = coinbase_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -64755,6 +65197,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*coinbase_wallet = coinbase_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -65313,6 +65758,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*coinbase_wallet = coinbase_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -65871,6 +66319,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*coinbase_wallet = coinbase_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -66429,6 +66880,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*coinbase_wallet = coinbase_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -66987,6 +67441,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*coinbase_wallet = coinbase_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -67545,6 +68002,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*coinbase_wallet = coinbase_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -68103,6 +68563,9 @@ use crate::standardization_functions;
 																						value_after = value_after_unscaled;
 																						*coinbase_wallet = coinbase_wallet_unscaled;
 																						*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                                        //03/13/24 - added:
+                                                                                        return Ok(value_after);
 																					}
 																					//03/08/24 - removed:
 																					// //value_after = 56
@@ -68538,6 +69001,9 @@ use crate::standardization_functions;
 																		value_after = value_after_unscaled;
 																		*coinbase_wallet = coinbase_wallet_unscaled;
 																		*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                        //03/13/24 - added:
+                                                                        return Ok(value_after);
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -69024,6 +69490,9 @@ use crate::standardization_functions;
 																		value_after = value_after_unscaled;
 																		*coinbase_wallet = coinbase_wallet_unscaled;
 																		*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                        //03/13/24 - added:
+                                                                        return Ok(value_after);
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -69510,6 +69979,9 @@ use crate::standardization_functions;
 																		value_after = value_after_unscaled;
 																		*coinbase_wallet = coinbase_wallet_unscaled;
 																		*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                        //03/13/24 - added:
+                                                                        return Ok(value_after);
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -69996,6 +70468,9 @@ use crate::standardization_functions;
 																		value_after = value_after_unscaled;
 																		*coinbase_wallet = coinbase_wallet_unscaled;
 																		*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                        //03/13/24 - added:
+                                                                        return Ok(value_after);
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -70482,6 +70957,9 @@ use crate::standardization_functions;
 																		value_after = value_after_unscaled;
 																		*coinbase_wallet = coinbase_wallet_unscaled;
 																		*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                        //03/13/24 - added:
+                                                                        return Ok(value_after);
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -70968,6 +71446,9 @@ use crate::standardization_functions;
 																		value_after = value_after_unscaled;
 																		*coinbase_wallet = coinbase_wallet_unscaled;
 																		*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                        //03/13/24 - added:
+                                                                        return Ok(value_after);
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56
@@ -71454,6 +71935,9 @@ use crate::standardization_functions;
 																		value_after = value_after_unscaled;
 																		*coinbase_wallet = coinbase_wallet_unscaled;
 																		*kraken_wallet = kraken_wallet_unscaled;
+
+                                                                        //03/13/24 - added:
+                                                                        return Ok(value_after);
 																	}
 																	//03/08/24 - removed:
 																	// //value_after = 56

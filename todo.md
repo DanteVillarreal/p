@@ -400,3 +400,4 @@ restarting from 0. gamma = 0.99. no gradient cap. learning rate = 1. CHANGE LEAR
 03/12/24 - adding gradient cap to be 1. gamma, learning_rate, gradient cap = 1.         JESUS IS GOOD. With his strength, we got this!
 03/12/24 - applying gradient cap to be +-1 for all gradients, not just last layer. gamma, learning_rate, gradient cap = 1.         JESUS IS GOOD. With his strength, we got this!
 03/12/24 - Saw that many of my gradients were reaching +-1 so I will increase gradient cap to +-10 and then apply a learning rate of 0.1. so: gamma = 1.0, gradient cap = +-10, learning_rate = 0.1.            JESUS IS GOOD. With his strength, we got this!
+03/13/24 - was getting an error saying that value after is None even though it is Some, so I have corrected all the action functions so this does not happen anymore.                   JESUS IS GOOD. With his strength, we got this!

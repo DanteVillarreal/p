@@ -2710,6 +2710,20 @@
 		//initialize gradient layer to 0
 		//iterate through weight layer in reverse and apply formula to calculate gradient
 
+		//03/13/24 - formulas for Huber Loss function. this could help in convergence
+			let delta = 1.0;
+			let td_error = current_q_value - target_q_value;
+			let loss_derivative;
+			if td_error.abs() <= delta {
+				loss_derivative = td_error;
+			}
+			else {
+				loss_derivative = delta * td_error.signum();
+			}
+
+
+
+
 		//initializes gradient_layer's data to 0
 		for gradient_layer in &mut self.gradients.layers {
 			for row in &mut gradient_layer.data {
@@ -2720,7 +2734,8 @@
 		}
 
 		//setting up formulas
-		let loss_derivative = calculate_loss_derivative(&current_q_value, &target_q_value);
+		//03/13/24 - removed:
+		// let loss_derivative = calculate_loss_derivative(&current_q_value, &target_q_value);
 		let derivative_of_output_neuron = leaky_relu_derivative(self.layers.last().unwrap().data[0][*current_q_value_index]);
 		//let mut derivative_of_to_neuron: Option<f64>;
 
@@ -2828,7 +2843,8 @@
 
 
 //03/10/24 - added:
-	pub fn save_all_gradients(&self) {
+	//03/13/24 - added i 
+	pub fn save_all_gradients(&self, i: &usize) {
 		let base_path = "D:\\Downloads\\PxOmni\\zgradients";
 		let file_path = Path::new(base_path).join("all_gradients.csv");
 		let mut attempts = 0;
@@ -2852,7 +2868,7 @@
 						}
 						writeln!(file, "\n").unwrap(); // Two new lines after each layer
 					}
-					writeln!(file, "finished iteration").unwrap();
+					writeln!(file, "finished iteration {}", &i).unwrap();
 					//if it was Ok, break out of loop when done
 					break;
 				},
@@ -2868,10 +2884,12 @@
 		} 
 	}
 //03/12/24 - added:
-	pub fn save_all_weights(&self) {
+	//03/13/24 - added i 
+	pub fn save_all_weights(&self, i: &usize) {
 		let base_path = "D:\\Downloads\\PxOmni\\zweights";
 		let file_path = Path::new(base_path).join("all_weights.csv");
 		let mut attempts = 0;
+		
 		loop {
 			attempts+=1;
 			match fs::OpenOptions::new().write(true).append(true).create(true).open(&file_path) {
@@ -2892,7 +2910,7 @@
 						}
 						writeln!(file, "\n").unwrap(); // Two new lines after each layer
 					}
-					writeln!(file, "finished iteration").unwrap();
+					writeln!(file, "finished iteration {}", &i).unwrap();
 					//if it was Ok, break out of loop when done
 					break;
 				},
@@ -4571,10 +4589,10 @@
 
 		}
 
-
+		//03/13/24 - added i
 		pub fn cycle_part_two_of_two(&mut self, 
 			index_chosen_for_current_state: usize, 
-			q_value_for_current_state: f64, the_reward: f64) {
+			q_value_for_current_state: f64, the_reward: f64, i: &usize) {
 
 			//this just finishes everything up
 			let target_q_value = self.calculate_target_q_value(the_reward);
@@ -4588,9 +4606,9 @@
 			self.el_update_weights(&learning_rate);
 			
 			//03/10/24 - added:
-			self.save_all_gradients();
+			self.save_all_gradients(&i);
 			//03/12/24 - added:
-			self.save_all_weights();
+			self.save_all_weights(&i);
 		}
 
 	}

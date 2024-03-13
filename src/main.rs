@@ -2097,10 +2097,10 @@ async fn main()   {
                                     let learning_rate = 0.01;
                                     neural_network.el_update_weights(&learning_rate);
                                     
-                                    //03/10/24 - added:
-                                    neural_network.save_all_gradients();
-                                    //03/12/24 - added:
-                                    neural_network.save_all_weights();
+                                    //03/10/24 - added. 03/13/24 - added i
+                                    neural_network.save_all_gradients(&i);
+                                    //03/12/24 - added: 03/13/24 - added i
+                                    neural_network.save_all_weights(&i);
 
 
 
@@ -2246,7 +2246,7 @@ async fn main()   {
                                     next_state : next_state_input_layer_clone,
                                 };
                                 neural_network.cycle_part_two_of_two(index_chosen_for_current_state,
-                                    q_value_for_current_state, the_reward);
+                                    q_value_for_current_state, the_reward, &i);
                                 let _unused_variable = neural_network.save_v2();
             
             

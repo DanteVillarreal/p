@@ -2850,7 +2850,13 @@
 	//03/13/24 - added i 
 	pub fn save_all_gradients(&self, i: &usize) {
 		let base_path = "D:\\Downloads\\PxOmni\\zgradients";
-		let file_path = Path::new(base_path).join("all_gradients.csv");
+		//03/14/24 - added. this now allows for the files to not be so large and
+		//		take a while to open up:
+			let file_number = i / 1000;
+			let file_name = format!("all_gradients{}.csv", file_number);
+			let file_path = Path::new(base_path).join(file_name);
+		//03/14/24 - removed:
+			//let file_path = Path::new(base_path).join("all_gradients.csv");
 		let mut attempts = 0;
 		loop {
 			attempts+=1;
@@ -2891,7 +2897,13 @@
 	//03/13/24 - added i 
 	pub fn save_all_weights(&self, i: &usize) {
 		let base_path = "D:\\Downloads\\PxOmni\\zweights";
-		let file_path = Path::new(base_path).join("all_weights.csv");
+		//03/14/24 - added. this now allows for the files to not be so large and
+		//		take a while to open up:
+			let file_number = i / 1000;
+			let file_name = format!("all_weights{}.csv", file_number);
+			let file_path = Path::new(base_path).join(file_name);
+		//03/14/24 - removed:	
+			//let file_path = Path::new(base_path).join("all_weights.csv");
 		let mut attempts = 0;
 		
 		loop {

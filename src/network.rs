@@ -2765,11 +2765,12 @@
 
 			//03/12/24 - added:
 			    // Apply gradient cap
-				if last_gradient_layer.data[j][*current_q_value_index] > 10.0 {
-					last_gradient_layer.data[j][*current_q_value_index] = 10.0;
+				//03/14/24 - changed to 5
+				if last_gradient_layer.data[j][*current_q_value_index] > 5.0 {
+					last_gradient_layer.data[j][*current_q_value_index] = 5.0;
 				}
-				else if last_gradient_layer.data[j][*current_q_value_index] < -10.0 {
-					last_gradient_layer.data[j][*current_q_value_index] = -10.0;
+				else if last_gradient_layer.data[j][*current_q_value_index] < -5.0 {
+					last_gradient_layer.data[j][*current_q_value_index] = -5.0;
 				}
 		}
 
@@ -2817,12 +2818,13 @@
 						//02/28/24 - changed from 0.1 to 0.001 then to 0.00001 then .000_0001
 						//02/29/24 - changed back to 0.1
 						//03/10/24 - removed gradient cap.
+						//03/14/24 - change to 5.
 						//	uncomment if you want gradient cap
-							if gradient_layer.data[j][k] > 10.0 {
-								gradient_layer.data[j][k] = 10.0;
+							if gradient_layer.data[j][k] > 5.0 {
+								gradient_layer.data[j][k] = 5.0;
 							}
-							else if gradient_layer.data[j][k] < -10.0 {
-								gradient_layer.data[j][k] = -10.0;
+							else if gradient_layer.data[j][k] < -5.0 {
+								gradient_layer.data[j][k] = -5.0;
 							} 
 					}
 				}

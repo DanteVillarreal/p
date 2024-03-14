@@ -473,7 +473,13 @@
 		// just epsilon would be like saying, go to this address in memory, and 
 		//		subtract 0.0001 from it. NANI?? ARE YOU SURE YOU WANT TO DO THAT
 		//02/03/24 - changed to 0.000001
-		*epsilon -= 0.000001;
+		//03/14/24 - changed to -0.0001 so it will reach 0 within 10000 iterations
+		*epsilon -= 0.0001;
+
+		//03/14/24 - so epsilon doesn't decrease past 0
+		if *epsilon < 0.0 {
+			*epsilon = 0.0;
+		}
 
 		if p >= *epsilon {
 			//01/28/24 - changed false to true here. 
@@ -1055,6 +1061,8 @@
 				//		 a value
 				//01/28/24 - added exploit_or_explore as a return value
 				(index, largest_qvalue_so_far, exploit_or_explore)
+
+				
 				//in this point in the code, i now have the index of the largest q value.
 				//This value is now returned.
 				//In the next function or module, I must then choose the function
@@ -1312,7 +1320,7 @@
 				else {
 					//01/24/24 - modified to say last layer didnt exist
 					//		instead of was empty
-					panic!("last_layer.data did not exist. this is in fn exploration_or_exploration when
+					panic!("last_layer.data did not exist. this is in fn exploration_or_exploration_v2 when
 					 exploit_or_explore == true");
 				}
 
@@ -3927,11 +3935,13 @@
 			//02/28/24 - added:
 				self.save_last_network_layer(&i);
 			//02/06/24 - removed:
-				//let (index_chosen_for_current_state, q_value_for_current_state, exploration_or_exploitation) = 
-				//	self.exploration_or_exploitation(epsilon);
+			//uncomment if you want to use regular exploration or exploitation
+				let (index_chosen_for_current_state, q_value_for_current_state, exploration_or_exploitation) = 
+					self.exploration_or_exploitation(epsilon);
 			//02/06/24 - added in its place:
-			let (index_chosen_for_current_state, q_value_for_current_state, exploration_or_exploitation) = 
-				self.exploration_or_exploitation_v2(&i);
+			//uncomment if you want to use explor_exploit v2
+			// let (index_chosen_for_current_state, q_value_for_current_state, exploration_or_exploitation) = 
+			// 	self.exploration_or_exploitation_v2(&i);
 
 
 			let value_after = self.choose_action_function(value_prior, 

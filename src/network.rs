@@ -1152,7 +1152,10 @@
 				//02/17/24 - changed from 1300 to 3000
 				if i <= &3000 {
 					//every 10 iterations, make it exploit. aka true
-					if i%10 == 0 {
+					//03/14/24 - changed to 11 so that it wont try to exploit when doing a 
+					//		replay buffer. It wont, but so that it DOES EXPLOIT before 3000
+					//		iterations.
+					if i%11 == 0 {
 						exploit_or_explore = Some(true);
 					}
 					else {
@@ -2711,7 +2714,8 @@
 		//iterate through weight layer in reverse and apply formula to calculate gradient
 
 		//03/13/24 - formulas for Huber Loss function. this could help in convergence
-			let delta = 1.0;
+			//03/14/24 - delta = 2.0
+			let delta = 2.0;
 			let td_error = current_q_value - target_q_value;
 			let loss_derivative;
 			if td_error.abs() <= delta {
@@ -4601,8 +4605,8 @@
 			//02/02/24 - changed from 0.0001 to 0.00001
 			//02/29/24 - from 0.00001 to 0.000_001
 			//03/10/24 - changed to 1.0
-			//03/12/24 - changed to 0.1. 03/13/24 - to 0.01 then 0.001
-			let learning_rate = 0.001;
+			//03/12/24 - changed to 0.1. 03/13/24 - to 0.01 then 0.001 then 0.0001
+			let learning_rate = 0.0001;
 			self.el_update_weights(&learning_rate);
 			
 			//03/10/24 - added:

@@ -2723,17 +2723,21 @@
 
 		//03/13/24 - formulas for Huber Loss function. this could help in convergence
 			//03/14/24 - delta = 2.0
-			let delta = 2.0;
+			let delta = 1.0;
 			let td_error = current_q_value - target_q_value;
-			let loss_derivative;
+			let mut loss_derivative;
 			if td_error.abs() <= delta {
 				loss_derivative = td_error;
 			}
 			else {
 				loss_derivative = delta * td_error.signum();
 			}
+			//03/15/24 - from c-dqn paper. adding it. seeing if it works. page 7. equation 12
+				let lmsbe = td_error.powi(2);
 
-
+				if lmsbe > loss_derivative {
+					loss_derivative = lmsbe;
+				}
 
 
 		//initializes gradient_layer's data to 0

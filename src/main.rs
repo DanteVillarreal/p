@@ -2119,6 +2119,8 @@ async fn main()   {
                                         could not sample from replay buffer. 
                                         The current state of the neural network is: {:?}", i, neural_network);
                                 }
+                                //03/14/24 - added to save after every iteration:
+                                let _unused_variable = neural_network.save_v2();
                                     
                         }
 

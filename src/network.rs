@@ -474,7 +474,8 @@
 		//		subtract 0.0001 from it. NANI?? ARE YOU SURE YOU WANT TO DO THAT
 		//02/03/24 - changed to 0.000001
 		//03/14/24 - changed to -0.0001 so it will reach 0 within 10000 iterations
-		*epsilon -= 0.0001;
+		//03/16/24 - changed to -0.00002 so it will reach 0 within 50000 iterations
+		*epsilon -= 0.00002;
 
 		//03/14/24 - so epsilon doesn't decrease past 0
 		if *epsilon < 0.0 {

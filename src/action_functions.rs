@@ -10310,12 +10310,12 @@ use crate::standardization_functions;
 														let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
 														//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 			
-														match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-															(Some(bid_str), /*Some(ask_str)*/) => {
-																match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																	(Ok(bid_str), /*Ok(ask_str)*/) => {
+														match before_parse_coinbase_sell_price_bid {
+															Some(bid_str) => {
+																match bid_str.parse::<f64>() {
+																	Ok(bid_str) => {
 																		coinbase_sell_price_bid = Some(bid_str);
-																		//coinbase_buy_price_ask = Some(ask_str);
+
 	
 																		// Place your calculations and updates here
 																			let gemini_taker_fee = 0.004;
@@ -10392,58 +10392,84 @@ use crate::standardization_functions;
                                                                             //03/13/24 - removed:
 																			// success = true;
 																	},
-																	_ => {
-																		log::error!("i25: failed to parse JSON to f64");
+																	Err(e) => {
+																		log::error!("i25: failed to parse JSON to f64. response text: {}
+                                                                        erroR: {}", &text, e);
 																		if attempts > 3 {
-																			panic!("i25: Failed to parse JSON after 3 attempts. Response text: {}", text);
+																			panic!("i25: Failed to parse JSON after 3 attempts. Response text: {}", &text);
 																		}
+                                                                        log::error!("10secwait");
+                                                                        let when = tokio::time::Instant::now() +
+                                                                            tokio::time::Duration::from_secs(10);
+                                                                        tokio::time::sleep_until(when).await;
 																		continue ;
 																	}
 																}
 															},
-															_ => {
-																log::error!("i25: Failed to get bid");
+															None => {
+																log::error!("i25: Failed to get bid. response text: {} ", &text);
 																if attempts > 3 {
 																	panic!("i25: Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 																}
+                                                                log::error!("10secwait");
+                                                                let when = tokio::time::Instant::now() +
+                                                                    tokio::time::Duration::from_secs(10);
+                                                                tokio::time::sleep_until(when).await;
 																continue ;
 															}
 														}
 													}
 												}
 											},
-											Err(_) => {
-												log::error!("i25: failed to parse JSON");
+											Err(e) => {
+												log::error!("i25: failed to parse JSON. response text: {}
+                                                error: {}", &text, e);
 												if attempts > 3 {
 													panic!("i25: Failed to parse JSON after 3 attempts. Response text: {}", text);
 												}
+                                                log::error!("10secwait");
+                                                let when = tokio::time::Instant::now() +
+                                                    tokio::time::Duration::from_secs(10);
+                                                tokio::time::sleep_until(when).await;
 												continue ; // Continue to the next iteration if parsing fails
 											}
 										}
 									},
-									Err(_) => {
-										log::error!("i25: failed to get response text");
+									Err(e) => {
+										log::error!("i25: failed to get response text. error: {}", e);
 										if attempts > 3 {
 											panic!("i25: Failed to get response text after 3 attempts");
 										}
+                                        log::error!("10secwait");
+                                        let when = tokio::time::Instant::now() +
+                                            tokio::time::Duration::from_secs(10);
+                                        tokio::time::sleep_until(when).await;
 										continue ; // Continue to the next iteration if getting response text fails
 									}
 								}
 							},
-							Err(_) => {
-								log::error!("i25: Failed to execute request");
+							Err(e) => {
+								log::error!("i25: Failed to execute request. error: {}", e);
 								if attempts > 3 {
 									panic!("i25: Failed to execute request after 3 attempts");
 								}
+                                log::error!("10secwait");
+                                let when = tokio::time::Instant::now() +
+                                    tokio::time::Duration::from_secs(10);
+                                tokio::time::sleep_until(when).await;
 								continue; // Continue to the next iteration if executing request fails
 							}
 						}
 					},
-					Err(_) => {
-						log::error!("i25: Failed to build request");
+					Err(e) => {
+						log::error!("i25: Failed to build request. error: {}", e);
 						if attempts > 3 {
 							panic!("i25: Failed to build request after 3 attempts");
 						}
+                        log::error!("10secwait");
+                        let when = tokio::time::Instant::now() +
+                            tokio::time::Duration::from_secs(10);
+                        tokio::time::sleep_until(when).await;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}

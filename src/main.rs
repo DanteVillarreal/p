@@ -1240,7 +1240,7 @@ async fn main()   {
         //neural_network.initialization(88, 107, 1); // Initialize with [input size], [output size], [# hidden layers]
 
     //uncomment this if you want to load from a saved state
-        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1710680791396"; // Replace with your file path
+        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1710831598636"; // Replace with your file path
         neural_network = NeuralNetwork::load(path).expect("couldn't load network");
         neural_network.print_layers();
     //the first number in the initialization and the number below MUST be the same size
@@ -1275,8 +1275,8 @@ async fn main()   {
 
 
 
-    //NOT FOR PARSING BUT I NEED THIS BEFORE THE FOR LOOP STARTS
-    let mut epsilon = 1.0;
+    //CHANGE THIS NUMBER IF RESTARTING FROM A SAVED STATE SO YOU DO THE CORRECT AMOUNT OF EXPLORATION
+    let mut epsilon = 0.955;
     //---------beginning of code so I can execute functions----------//
 
 
@@ -1958,9 +1958,9 @@ async fn main()   {
     //02/23/24 - added in its place:
     //02/27/24 - changed to 26698.
     //02/28/24 - restarting at 0
-    //03/19/24 - changed to 8946
+    //03/19/24 - changed to 8946 then 9826
 		let iteration_counter_for_for_loop_total = 
-			Arc::new(Mutex::new(8946));
+			Arc::new(Mutex::new(9826));
     
     loop {
         // Create a new AtomicBool wrapped in an Arc for each iteration

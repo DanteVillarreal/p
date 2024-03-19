@@ -417,3 +417,11 @@ gamma = 0.99, gradient cap = +-5, learning rate = 0.0001, detla = 2,epsilon -= 0
 03/18/24 - fixing error loop so that I get a 10 sec wait in between attempts. Redid i5 to 10. next step is to do next group until finished.             JESUS IS GOOD. With his strength, we got this!
 03/18/24 - fixed up to i30. Next step is to do the next group until finished.           JESUS IS GOOD. With his strength, we got this!
 03/19/24 - fixed up to i40. Next step is to do the next group until finished. REALIZED that the error was due to Gemini server maintenance! So: im deleting the last 20 replay buffers and the last 20 saved states and  restarting. Saved state: 1710680791396. iteration: 8946. gamma = 0.99, gradient cap = +-5, learning rate = 0.0001, delta = 2, epsilon decay = -0.00002.
+03/19/24 - after looking at the q values, I saw that the avg was different than where it ended. I noticed that a careful check, Yes, the neural network is actually the same one I once had. Were good.         JESUS IS GOOD. With his strength, we got this!
+03/19/24 - restart due to gemini server maintenance. saved state: 1710831598636 iteration: 9826 . im stopping just before 2am aka when they started the maintenance. Im changing epsilon decay as well to be in 200,000 instead of 20,000 because well have "low expectations" so lets see how it will be.              JESUS IS GOOD. With his strength, we got this!
+MAKE
+SURE
+TO CHANGE 
+EPSILON IN MAIN
+WHEN NOT
+RESTARTING

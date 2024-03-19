@@ -9071,24 +9071,29 @@ use crate::standardization_functions;
 															// Continue with your logic here using `ask`
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i23: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i23: gemini:  Failed to parse ask as f64: {}
+                                                        response text: {}", e, &text),
 													}
 												},
-												None => log::error!("i23: gemini:  Failed to get ask as string"),
+												None => log::error!("i23: gemini:  Failed to get ask as string. text: {}", text),
 											}
 										},
-										Err(_) => log::error!("i23: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i23: gemini:  Failed to parse JSON: {}
+                                        response text: {}", e, &text),
 									}
 								},
-								Err(_) => log::error!("i23: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i23: gemini:  Failed to turn response into text: {}", e),
 							}
 						},
-						Err(_) => log::error!("i23: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i23: gemini:  Failed to execute Gemini request: {}", e),
 					}
 				},
-				Err(_) => log::error!("i23:gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i23: gemini:  Couldn't build gemini request: {}", e),
 			}
-		
+            log::error!("10 sec wait for i23 error. current attempt #: {}", attempts);
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			attempts += 1;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
@@ -9219,7 +9224,8 @@ use crate::standardization_functions;
 			let mut coinbase_sell_price_bid: Option<f64> = None;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
-			let mut success = false;
+            //03/13/24 - removed:
+			//let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -9247,12 +9253,12 @@ use crate::standardization_functions;
 														let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
 														//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 			
-														match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-															(Some(bid_str), /*Some(ask_str)*/) => {
-																match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																	(Ok(bid_str), /*Ok(ask_str)*/) => {
+														match before_parse_coinbase_sell_price_bid {
+															Some(bid_str) => {
+																match bid_str.parse::<f64>() {
+																	Ok(bid_str) => {
 																		coinbase_sell_price_bid = Some(bid_str);
-																		//coinbase_buy_price_ask = Some(ask_str);
+
 	
 																		// Place your calculations and updates here
 																			let gemini_taker_fee = 0.004;
@@ -9278,8 +9284,6 @@ use crate::standardization_functions;
 																			let fee_for_sell = money_from_sell_before_fees * coinbase_taker_fee;
 																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*coinbase_wallet += money_from_sell_after_fees;
-
-
 																			value_after = Some(kraken_wallet + *coinbase_wallet + *gemini_wallet + bitstamp_wallet);
 																			if let Some(mut value_after) = value_after {
                                                                                 //03/10/24 - added for unscaling
@@ -9307,7 +9311,7 @@ use crate::standardization_functions;
 
 
 
-                                                                                //03/09/24 - added for unscaling:
+                                                                                //03/10/24 - added for unscaling:
                                                                                 value_after = value_after_unscaled;
                                                                                 *gemini_wallet = gemini_wallet_unscaled;
                                                                                 *coinbase_wallet = coinbase_wallet_unscaled;
@@ -9328,65 +9332,91 @@ use crate::standardization_functions;
 																			// let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
 																			// neural_network.update_input(&indices, &scaled_values).await;
 
-                                                                            //03/13/24 - removed
-																			//success = true;
+                                                                            //03/13/24 - removed:
+																			// success = true;
 																	},
-																	_ => {
-																		log::error!("i23: failed to parse JSON to f64");
+																	Err(e) => {
+																		log::error!("i23: failed to parse JSON to f64. response text: {}
+                                                                        erroR: {}", &text, e);
 																		if attempts > 3 {
-																			panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																			panic!("i23: Failed to parse JSON after 3 attempts. Response text: {}", &text);
 																		}
+                                                                        log::error!("10secwait");
+                                                                        let when = tokio::time::Instant::now() +
+                                                                            tokio::time::Duration::from_secs(10);
+                                                                        tokio::time::sleep_until(when).await;
 																		continue ;
 																	}
 																}
 															},
-															_ => {
-																log::error!("i23: Failed to get bid");
+															None => {
+																log::error!("i23: Failed to get bid. response text: {} ", &text);
 																if attempts > 3 {
-																	panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																	panic!("i23: Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 																}
+                                                                log::error!("10secwait");
+                                                                let when = tokio::time::Instant::now() +
+                                                                    tokio::time::Duration::from_secs(10);
+                                                                tokio::time::sleep_until(when).await;
 																continue ;
 															}
 														}
 													}
 												}
 											},
-											Err(_) => {
-												log::error!("i23: failed to parse JSON");
+											Err(e) => {
+												log::error!("i23: failed to parse JSON. response text: {}
+                                                error: {}", &text, e);
 												if attempts > 3 {
-													panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+													panic!("i23: Failed to parse JSON after 3 attempts. Response text: {}", text);
 												}
+                                                log::error!("10secwait");
+                                                let when = tokio::time::Instant::now() +
+                                                    tokio::time::Duration::from_secs(10);
+                                                tokio::time::sleep_until(when).await;
 												continue ; // Continue to the next iteration if parsing fails
 											}
 										}
 									},
-									Err(_) => {
-										log::error!("i23: failed to get response text");
+									Err(e) => {
+										log::error!("i23: failed to get response text. error: {}", e);
 										if attempts > 3 {
-											panic!("Failed to get response text after 3 attempts");
+											panic!("i23: Failed to get response text after 3 attempts");
 										}
+                                        log::error!("10secwait");
+                                        let when = tokio::time::Instant::now() +
+                                            tokio::time::Duration::from_secs(10);
+                                        tokio::time::sleep_until(when).await;
 										continue ; // Continue to the next iteration if getting response text fails
 									}
 								}
 							},
-							Err(_) => {
-								log::error!("i23: Failed to execute request");
+							Err(e) => {
+								log::error!("i23: Failed to execute request. error: {}", e);
 								if attempts > 3 {
-									panic!("Failed to execute request after 3 attempts");
+									panic!("i23: Failed to execute request after 3 attempts");
 								}
+                                log::error!("10secwait");
+                                let when = tokio::time::Instant::now() +
+                                    tokio::time::Duration::from_secs(10);
+                                tokio::time::sleep_until(when).await;
 								continue; // Continue to the next iteration if executing request fails
 							}
 						}
 					},
-					Err(_) => {
-						log::error!("i23: Failed to build request");
+					Err(e) => {
+						log::error!("i23: Failed to build request. error: {}", e);
 						if attempts > 3 {
 							panic!("i23: Failed to build request after 3 attempts");
 						}
+                        log::error!("10secwait");
+                        let when = tokio::time::Instant::now() +
+                            tokio::time::Duration::from_secs(10);
+                        tokio::time::sleep_until(when).await;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
-                //03/13/24 - removed
+                //03/13/24 - removed:
 				// if success == true {
 				// 	break;
 				// }
@@ -9601,24 +9631,29 @@ use crate::standardization_functions;
 															// Continue with your logic here using `ask`
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i24: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i24: gemini:  Failed to parse ask as f64: {}
+                                                        response text: {}", e, &text),
 													}
 												},
-												None => log::error!("i24: gemini:  Failed to get ask as string"),
+												None => log::error!("i24: gemini:  Failed to get ask as string. text: {}", text),
 											}
 										},
-										Err(_) => log::error!("i24: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i24: gemini:  Failed to parse JSON: {}
+                                        response text: {}", e, &text),
 									}
 								},
-								Err(_) => log::error!("i24: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i24: gemini:  Failed to turn response into text: {}", e),
 							}
 						},
-						Err(_) => log::error!("i24: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i24: gemini:  Failed to execute Gemini request: {}", e),
 					}
 				},
-				Err(_) => log::error!("i24: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i24: gemini:  Couldn't build gemini request: {}", e),
 			}
-		
+            log::error!("10 sec wait for i24 error. current attempt #: {}", attempts);
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			attempts += 1;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
@@ -9750,7 +9785,7 @@ use crate::standardization_functions;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
             //03/13/24 - removed:
-			// let mut success = false;
+			//let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -9778,12 +9813,12 @@ use crate::standardization_functions;
 														let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
 														//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 			
-														match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-															(Some(bid_str), /*Some(ask_str)*/) => {
-																match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																	(Ok(bid_str), /*Ok(ask_str)*/) => {
+														match before_parse_coinbase_sell_price_bid {
+															Some(bid_str) => {
+																match bid_str.parse::<f64>() {
+																	Ok(bid_str) => {
 																		coinbase_sell_price_bid = Some(bid_str);
-																		//coinbase_buy_price_ask = Some(ask_str);
+
 	
 																		// Place your calculations and updates here
 																			let gemini_taker_fee = 0.004;
@@ -9860,58 +9895,84 @@ use crate::standardization_functions;
                                                                             //03/13/24 - removed:
 																			// success = true;
 																	},
-																	_ => {
-																		log::error!("i24: failed to parse JSON to f64");
+																	Err(e) => {
+																		log::error!("i24: failed to parse JSON to f64. response text: {}
+                                                                        erroR: {}", &text, e);
 																		if attempts > 3 {
-																			panic!("i24: Failed to parse JSON after 3 attempts. Response text: {}", text);
+																			panic!("i24: Failed to parse JSON after 3 attempts. Response text: {}", &text);
 																		}
+                                                                        log::error!("10secwait");
+                                                                        let when = tokio::time::Instant::now() +
+                                                                            tokio::time::Duration::from_secs(10);
+                                                                        tokio::time::sleep_until(when).await;
 																		continue ;
 																	}
 																}
 															},
-															_ => {
-																log::error!("i24: Failed to get bid");
+															None => {
+																log::error!("i24: Failed to get bid. response text: {} ", &text);
 																if attempts > 3 {
 																	panic!("i24: Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 																}
+                                                                log::error!("10secwait");
+                                                                let when = tokio::time::Instant::now() +
+                                                                    tokio::time::Duration::from_secs(10);
+                                                                tokio::time::sleep_until(when).await;
 																continue ;
 															}
 														}
 													}
 												}
 											},
-											Err(_) => {
-												log::error!("i24: failed to parse JSON");
+											Err(e) => {
+												log::error!("i24: failed to parse JSON. response text: {}
+                                                error: {}", &text, e);
 												if attempts > 3 {
 													panic!("i24: Failed to parse JSON after 3 attempts. Response text: {}", text);
 												}
+                                                log::error!("10secwait");
+                                                let when = tokio::time::Instant::now() +
+                                                    tokio::time::Duration::from_secs(10);
+                                                tokio::time::sleep_until(when).await;
 												continue ; // Continue to the next iteration if parsing fails
 											}
 										}
 									},
-									Err(_) => {
-										log::error!("i24: failed to get response text");
+									Err(e) => {
+										log::error!("i24: failed to get response text. error: {}", e);
 										if attempts > 3 {
 											panic!("i24: Failed to get response text after 3 attempts");
 										}
+                                        log::error!("10secwait");
+                                        let when = tokio::time::Instant::now() +
+                                            tokio::time::Duration::from_secs(10);
+                                        tokio::time::sleep_until(when).await;
 										continue ; // Continue to the next iteration if getting response text fails
 									}
 								}
 							},
-							Err(_) => {
-								log::error!("i24: Failed to execute request");
+							Err(e) => {
+								log::error!("i24: Failed to execute request. error: {}", e);
 								if attempts > 3 {
 									panic!("i24: Failed to execute request after 3 attempts");
 								}
+                                log::error!("10secwait");
+                                let when = tokio::time::Instant::now() +
+                                    tokio::time::Duration::from_secs(10);
+                                tokio::time::sleep_until(when).await;
 								continue; // Continue to the next iteration if executing request fails
 							}
 						}
 					},
-					Err(_) => {
-						log::error!("i24: Failed to build request");
+					Err(e) => {
+						log::error!("i24: Failed to build request. error: {}", e);
 						if attempts > 3 {
 							panic!("i24: Failed to build request after 3 attempts");
 						}
+                        log::error!("10secwait");
+                        let when = tokio::time::Instant::now() +
+                            tokio::time::Duration::from_secs(10);
+                        tokio::time::sleep_until(when).await;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
@@ -10130,13 +10191,15 @@ use crate::standardization_functions;
 															// Continue with your logic here using `ask`
 															break; // Exit the loop if everything is successful
 														},
-														Err(e) => log::error!("i25: gemini:  Failed to parse ask as f64: {}", e),
+														Err(e) => log::error!("i25: gemini:  Failed to parse ask as f64: {}
+                                                        response text: {}", e, &text),
 													}
 												},
 												None => log::error!("i25: gemini:  Failed to get ask as string. text: {}", text),
 											}
 										},
-										Err(e) => log::error!("i25: gemini:  Failed to parse JSON: {}", e),
+										Err(e) => log::error!("i25: gemini:  Failed to parse JSON: {}
+                                        response text: {}", e, &text),
 									}
 								},
 								Err(e) => log::error!("i25: gemini:  Failed to turn response into text: {}", e),
@@ -10147,9 +10210,9 @@ use crate::standardization_functions;
 				},
 				Err(e) => log::error!("i25: gemini:  Couldn't build gemini request: {}", e),
 			}
-            log::error!("1 sec wait for i25 error. current attempt #: {}", attempts);
+            log::error!("10 sec wait for i25 error. current attempt #: {}", attempts);
             let when = tokio::time::Instant::now() +
-                tokio::time::Duration::from_secs(1);
+                tokio::time::Duration::from_secs(10);
             tokio::time::sleep_until(when).await;
 			attempts += 1;
 			//03/02/24 - changed from >= to >
@@ -10688,24 +10751,29 @@ use crate::standardization_functions;
 															// Continue with your logic here using `ask`
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i26: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i26: gemini:  Failed to parse ask as f64: {}
+                                                        response text: {}", e, &text),
 													}
 												},
-												None => log::error!("i26: gemini:  Failed to get ask as string"),
+												None => log::error!("i26: gemini:  Failed to get ask as string. text: {}", text),
 											}
 										},
-										Err(_) => log::error!("i26: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i26: gemini:  Failed to parse JSON: {}
+                                        response text: {}", e, &text),
 									}
 								},
-								Err(_) => log::error!("i26: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i26: gemini:  Failed to turn response into text: {}", e),
 							}
 						},
-						Err(_) => log::error!("i26: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i26: gemini:  Failed to execute Gemini request: {}", e),
 					}
 				},
-				Err(_) => log::error!("i26: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i26: gemini:  Couldn't build gemini request: {}", e),
 			}
-		
+            log::error!("10 sec wait for i26 error. current attempt #: {}", attempts);
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			attempts += 1;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
@@ -10837,7 +10905,7 @@ use crate::standardization_functions;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
             //03/13/24 - removed:
-			// let mut success = false;
+			//let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -10865,12 +10933,12 @@ use crate::standardization_functions;
 														let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
 														//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 			
-														match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-															(Some(bid_str), /*Some(ask_str)*/) => {
-																match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																	(Ok(bid_str), /*Ok(ask_str)*/) => {
+														match before_parse_coinbase_sell_price_bid {
+															Some(bid_str) => {
+																match bid_str.parse::<f64>() {
+																	Ok(bid_str) => {
 																		coinbase_sell_price_bid = Some(bid_str);
-																		//coinbase_buy_price_ask = Some(ask_str);
+
 	
 																		// Place your calculations and updates here
 																			let gemini_taker_fee = 0.004;
@@ -10947,58 +11015,84 @@ use crate::standardization_functions;
                                                                             //03/13/24 - removed:
 																			// success = true;
 																	},
-																	_ => {
-																		log::error!("i26: failed to parse JSON to f64");
+																	Err(e) => {
+																		log::error!("i26: failed to parse JSON to f64. response text: {}
+                                                                        erroR: {}", &text, e);
 																		if attempts > 3 {
-																			panic!("i26: Failed to parse JSON after 3 attempts. Response text: {}", text);
+																			panic!("i26: Failed to parse JSON after 3 attempts. Response text: {}", &text);
 																		}
+                                                                        log::error!("10secwait");
+                                                                        let when = tokio::time::Instant::now() +
+                                                                            tokio::time::Duration::from_secs(10);
+                                                                        tokio::time::sleep_until(when).await;
 																		continue ;
 																	}
 																}
 															},
-															_ => {
-																log::error!("i26: Failed to get bid");
+															None => {
+																log::error!("i26: Failed to get bid. response text: {} ", &text);
 																if attempts > 3 {
 																	panic!("i26: Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 																}
+                                                                log::error!("10secwait");
+                                                                let when = tokio::time::Instant::now() +
+                                                                    tokio::time::Duration::from_secs(10);
+                                                                tokio::time::sleep_until(when).await;
 																continue ;
 															}
 														}
 													}
 												}
 											},
-											Err(_) => {
-												log::error!("i26: failed to parse JSON");
+											Err(e) => {
+												log::error!("i26: failed to parse JSON. response text: {}
+                                                error: {}", &text, e);
 												if attempts > 3 {
 													panic!("i26: Failed to parse JSON after 3 attempts. Response text: {}", text);
 												}
+                                                log::error!("10secwait");
+                                                let when = tokio::time::Instant::now() +
+                                                    tokio::time::Duration::from_secs(10);
+                                                tokio::time::sleep_until(when).await;
 												continue ; // Continue to the next iteration if parsing fails
 											}
 										}
 									},
-									Err(_) => {
-										log::error!("i26: failed to get response text");
+									Err(e) => {
+										log::error!("i26: failed to get response text. error: {}", e);
 										if attempts > 3 {
 											panic!("i26: Failed to get response text after 3 attempts");
 										}
+                                        log::error!("10secwait");
+                                        let when = tokio::time::Instant::now() +
+                                            tokio::time::Duration::from_secs(10);
+                                        tokio::time::sleep_until(when).await;
 										continue ; // Continue to the next iteration if getting response text fails
 									}
 								}
 							},
-							Err(_) => {
-								log::error!("i26: Failed to execute request");
+							Err(e) => {
+								log::error!("i26: Failed to execute request. error: {}", e);
 								if attempts > 3 {
 									panic!("i26: Failed to execute request after 3 attempts");
 								}
+                                log::error!("10secwait");
+                                let when = tokio::time::Instant::now() +
+                                    tokio::time::Duration::from_secs(10);
+                                tokio::time::sleep_until(when).await;
 								continue; // Continue to the next iteration if executing request fails
 							}
 						}
 					},
-					Err(_) => {
-						log::error!("i26: Failed to build request");
+					Err(e) => {
+						log::error!("i26: Failed to build request. error: {}", e);
 						if attempts > 3 {
 							panic!("i26: Failed to build request after 3 attempts");
 						}
+                        log::error!("10secwait");
+                        let when = tokio::time::Instant::now() +
+                            tokio::time::Duration::from_secs(10);
+                        tokio::time::sleep_until(when).await;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
@@ -11217,24 +11311,29 @@ use crate::standardization_functions;
 															// Continue with your logic here using `ask`
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i27: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i27: gemini:  Failed to parse ask as f64: {}
+                                                        response text: {}", e, &text),
 													}
 												},
-												None => log::error!("i27: gemini:  Failed to get ask as string"),
+												None => log::error!("i27: gemini:  Failed to get ask as string. text: {}", text),
 											}
 										},
-										Err(_) => log::error!("i27: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i27: gemini:  Failed to parse JSON: {}
+                                        response text: {}", e, &text),
 									}
 								},
-								Err(_) => log::error!("i27: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i27: gemini:  Failed to turn response into text: {}", e),
 							}
 						},
-						Err(_) => log::error!("i27: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i27: gemini:  Failed to execute Gemini request: {}", e),
 					}
 				},
-				Err(_) => log::error!("i27: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i27: gemini:  Couldn't build gemini request: {}", e),
 			}
-		
+            log::error!("1 sec wait for i27 error. current attempt #: {}", attempts);
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(1);
+            tokio::time::sleep_until(when).await;
 			attempts += 1;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
@@ -11366,7 +11465,7 @@ use crate::standardization_functions;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
             //03/13/24 - removed:
-			// let mut success = false;
+			//let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -11394,12 +11493,12 @@ use crate::standardization_functions;
 														let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
 														//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 			
-														match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-															(Some(bid_str), /*Some(ask_str)*/) => {
-																match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																	(Ok(bid_str), /*Ok(ask_str)*/) => {
+														match before_parse_coinbase_sell_price_bid {
+															Some(bid_str) => {
+																match bid_str.parse::<f64>() {
+																	Ok(bid_str) => {
 																		coinbase_sell_price_bid = Some(bid_str);
-																		//coinbase_buy_price_ask = Some(ask_str);
+
 	
 																		// Place your calculations and updates here
 																			let gemini_taker_fee = 0.004;
@@ -11476,58 +11575,84 @@ use crate::standardization_functions;
                                                                             //03/13/24 - removed:
 																			// success = true;
 																	},
-																	_ => {
-																		log::error!("i27: failed to parse JSON to f64");
+																	Err(e) => {
+																		log::error!("i27: failed to parse JSON to f64. response text: {}
+                                                                        erroR: {}", &text, e);
 																		if attempts > 3 {
-																			panic!("i27: Failed to parse JSON after 3 attempts. Response text: {}", text);
+																			panic!("i27: Failed to parse JSON after 3 attempts. Response text: {}", &text);
 																		}
+                                                                        log::error!("10secwait");
+                                                                        let when = tokio::time::Instant::now() +
+                                                                            tokio::time::Duration::from_secs(10);
+                                                                        tokio::time::sleep_until(when).await;
 																		continue ;
 																	}
 																}
 															},
-															_ => {
-																log::error!("i27: Failed to get bid");
+															None => {
+																log::error!("i27: Failed to get bid. response text: {} ", &text);
 																if attempts > 3 {
 																	panic!("i27: Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 																}
+                                                                log::error!("10secwait");
+                                                                let when = tokio::time::Instant::now() +
+                                                                    tokio::time::Duration::from_secs(10);
+                                                                tokio::time::sleep_until(when).await;
 																continue ;
 															}
 														}
 													}
 												}
 											},
-											Err(_) => {
-												log::error!("i27: failed to parse JSON");
+											Err(e) => {
+												log::error!("i27: failed to parse JSON. response text: {}
+                                                error: {}", &text, e);
 												if attempts > 3 {
 													panic!("i27: Failed to parse JSON after 3 attempts. Response text: {}", text);
 												}
+                                                log::error!("10secwait");
+                                                let when = tokio::time::Instant::now() +
+                                                    tokio::time::Duration::from_secs(10);
+                                                tokio::time::sleep_until(when).await;
 												continue ; // Continue to the next iteration if parsing fails
 											}
 										}
 									},
-									Err(_) => {
-										log::error!("i27: failed to get response text");
+									Err(e) => {
+										log::error!("i27: failed to get response text. error: {}", e);
 										if attempts > 3 {
 											panic!("i27: Failed to get response text after 3 attempts");
 										}
+                                        log::error!("10secwait");
+                                        let when = tokio::time::Instant::now() +
+                                            tokio::time::Duration::from_secs(10);
+                                        tokio::time::sleep_until(when).await;
 										continue ; // Continue to the next iteration if getting response text fails
 									}
 								}
 							},
-							Err(_) => {
-								log::error!("i27: Failed to execute request");
+							Err(e) => {
+								log::error!("i27: Failed to execute request. error: {}", e);
 								if attempts > 3 {
 									panic!("i27: Failed to execute request after 3 attempts");
 								}
+                                log::error!("10secwait");
+                                let when = tokio::time::Instant::now() +
+                                    tokio::time::Duration::from_secs(10);
+                                tokio::time::sleep_until(when).await;
 								continue; // Continue to the next iteration if executing request fails
 							}
 						}
 					},
-					Err(_) => {
-						log::error!("i27: Failed to build request");
+					Err(e) => {
+						log::error!("i27: Failed to build request. error: {}", e);
 						if attempts > 3 {
 							panic!("i27: Failed to build request after 3 attempts");
 						}
+                        log::error!("10secwait");
+                        let when = tokio::time::Instant::now() +
+                            tokio::time::Duration::from_secs(10);
+                        tokio::time::sleep_until(when).await;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
@@ -11746,24 +11871,29 @@ use crate::standardization_functions;
 															// Continue with your logic here using `ask`
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i28: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i28: gemini:  Failed to parse ask as f64: {}
+                                                        response text: {}", e, &text),
 													}
 												},
-												None => log::error!("i28: gemini:  Failed to get ask as string"),
+												None => log::error!("i28: gemini:  Failed to get ask as string. text: {}", text),
 											}
 										},
-										Err(_) => log::error!("i28: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i28: gemini:  Failed to parse JSON: {}
+                                        response text: {}", e, &text),
 									}
 								},
-								Err(_) => log::error!("i28: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i28: gemini:  Failed to turn response into text: {}", e),
 							}
 						},
-						Err(_) => log::error!("i28: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i28: gemini:  Failed to execute Gemini request: {}", e),
 					}
 				},
-				Err(_) => log::error!("i28: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i28: gemini:  Couldn't build gemini request: {}", e),
 			}
-		
+            log::error!("10 sec wait for i28 error. current attempt #: {}", attempts);
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			attempts += 1;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
@@ -11895,7 +12025,7 @@ use crate::standardization_functions;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
             //03/13/24 - removed:
-			// let mut success = false;
+			//let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -11923,12 +12053,12 @@ use crate::standardization_functions;
 														let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
 														//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 			
-														match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-															(Some(bid_str), /*Some(ask_str)*/) => {
-																match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																	(Ok(bid_str), /*Ok(ask_str)*/) => {
+														match before_parse_coinbase_sell_price_bid {
+															Some(bid_str) => {
+																match bid_str.parse::<f64>() {
+																	Ok(bid_str) => {
 																		coinbase_sell_price_bid = Some(bid_str);
-																		//coinbase_buy_price_ask = Some(ask_str);
+
 	
 																		// Place your calculations and updates here
 																			let gemini_taker_fee = 0.004;
@@ -12005,58 +12135,84 @@ use crate::standardization_functions;
                                                                             //03/13/24 - removed:
 																			// success = true;
 																	},
-																	_ => {
-																		log::error!("i28: failed to parse JSON to f64");
+																	Err(e) => {
+																		log::error!("i28: failed to parse JSON to f64. response text: {}
+                                                                        erroR: {}", &text, e);
 																		if attempts > 3 {
-																			panic!("i28: Failed to parse JSON after 3 attempts. Response text: {}", text);
+																			panic!("i28: Failed to parse JSON after 3 attempts. Response text: {}", &text);
 																		}
+                                                                        log::error!("10secwait");
+                                                                        let when = tokio::time::Instant::now() +
+                                                                            tokio::time::Duration::from_secs(10);
+                                                                        tokio::time::sleep_until(when).await;
 																		continue ;
 																	}
 																}
 															},
-															_ => {
-																log::error!("i28: Failed to get bid");
+															None => {
+																log::error!("i28: Failed to get bid. response text: {} ", &text);
 																if attempts > 3 {
 																	panic!("i28: Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 																}
+                                                                log::error!("10secwait");
+                                                                let when = tokio::time::Instant::now() +
+                                                                    tokio::time::Duration::from_secs(10);
+                                                                tokio::time::sleep_until(when).await;
 																continue ;
 															}
 														}
 													}
 												}
 											},
-											Err(_) => {
-												log::error!("i28: failed to parse JSON");
+											Err(e) => {
+												log::error!("i28: failed to parse JSON. response text: {}
+                                                error: {}", &text, e);
 												if attempts > 3 {
 													panic!("i28: Failed to parse JSON after 3 attempts. Response text: {}", text);
 												}
+                                                log::error!("10secwait");
+                                                let when = tokio::time::Instant::now() +
+                                                    tokio::time::Duration::from_secs(10);
+                                                tokio::time::sleep_until(when).await;
 												continue ; // Continue to the next iteration if parsing fails
 											}
 										}
 									},
-									Err(_) => {
-										log::error!("i28: failed to get response text");
+									Err(e) => {
+										log::error!("i28: failed to get response text. error: {}", e);
 										if attempts > 3 {
 											panic!("i28: Failed to get response text after 3 attempts");
 										}
+                                        log::error!("10secwait");
+                                        let when = tokio::time::Instant::now() +
+                                            tokio::time::Duration::from_secs(10);
+                                        tokio::time::sleep_until(when).await;
 										continue ; // Continue to the next iteration if getting response text fails
 									}
 								}
 							},
-							Err(_) => {
-								log::error!("i28: Failed to execute request");
+							Err(e) => {
+								log::error!("i28: Failed to execute request. error: {}", e);
 								if attempts > 3 {
 									panic!("i28: Failed to execute request after 3 attempts");
 								}
+                                log::error!("10secwait");
+                                let when = tokio::time::Instant::now() +
+                                    tokio::time::Duration::from_secs(10);
+                                tokio::time::sleep_until(when).await;
 								continue; // Continue to the next iteration if executing request fails
 							}
 						}
 					},
-					Err(_) => {
-						log::error!("i28: Failed to build request");
+					Err(e) => {
+						log::error!("i28: Failed to build request. error: {}", e);
 						if attempts > 3 {
 							panic!("i28: Failed to build request after 3 attempts");
 						}
+                        log::error!("10secwait");
+                        let when = tokio::time::Instant::now() +
+                            tokio::time::Duration::from_secs(10);
+                        tokio::time::sleep_until(when).await;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
@@ -12275,24 +12431,29 @@ use crate::standardization_functions;
 															// Continue with your logic here using `ask`
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i29: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i29: gemini:  Failed to parse ask as f64: {}
+                                                        response text: {}", e, &text),
 													}
 												},
-												None => log::error!("i29: gemini:  Failed to get ask as string"),
+												None => log::error!("i29: gemini:  Failed to get ask as string. text: {}", text),
 											}
 										},
-										Err(_) => log::error!("i29: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i29: gemini:  Failed to parse JSON: {}
+                                        response text: {}", e, &text),
 									}
 								},
-								Err(_) => log::error!("i29: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i29: gemini:  Failed to turn response into text: {}", e),
 							}
 						},
-						Err(_) => log::error!("i29: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i29: gemini:  Failed to execute Gemini request: {}", e),
 					}
 				},
-				Err(_) => log::error!("i29: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i29: gemini:  Couldn't build gemini request: {}", e),
 			}
-		
+            log::error!("10 sec wait for i29 error. current attempt #: {}", attempts);
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			attempts += 1;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
@@ -12424,7 +12585,7 @@ use crate::standardization_functions;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
             //03/13/24 - removed:
-			// let mut success = false;
+			//let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -12452,12 +12613,12 @@ use crate::standardization_functions;
 														let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
 														//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 			
-														match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-															(Some(bid_str), /*Some(ask_str)*/) => {
-																match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																	(Ok(bid_str), /*Ok(ask_str)*/) => {
+														match before_parse_coinbase_sell_price_bid {
+															Some(bid_str) => {
+																match bid_str.parse::<f64>() {
+																	Ok(bid_str) => {
 																		coinbase_sell_price_bid = Some(bid_str);
-																		//coinbase_buy_price_ask = Some(ask_str);
+
 	
 																		// Place your calculations and updates here
 																			let gemini_taker_fee = 0.004;
@@ -12534,58 +12695,84 @@ use crate::standardization_functions;
                                                                             //03/13/24 - removed:
 																			// success = true;
 																	},
-																	_ => {
-																		log::error!("i29: failed to parse JSON to f64");
+																	Err(e) => {
+																		log::error!("i29: failed to parse JSON to f64. response text: {}
+                                                                        erroR: {}", &text, e);
 																		if attempts > 3 {
-																			panic!("i29: Failed to parse JSON after 3 attempts. Response text: {}", text);
+																			panic!("i29: Failed to parse JSON after 3 attempts. Response text: {}", &text);
 																		}
+                                                                        log::error!("10secwait");
+                                                                        let when = tokio::time::Instant::now() +
+                                                                            tokio::time::Duration::from_secs(10);
+                                                                        tokio::time::sleep_until(when).await;
 																		continue ;
 																	}
 																}
 															},
-															_ => {
-																log::error!("i29: Failed to get bid");
+															None => {
+																log::error!("i29: Failed to get bid. response text: {} ", &text);
 																if attempts > 3 {
 																	panic!("i29: Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 																}
+                                                                log::error!("10secwait");
+                                                                let when = tokio::time::Instant::now() +
+                                                                    tokio::time::Duration::from_secs(10);
+                                                                tokio::time::sleep_until(when).await;
 																continue ;
 															}
 														}
 													}
 												}
 											},
-											Err(_) => {
-												log::error!("i29: failed to parse JSON");
+											Err(e) => {
+												log::error!("i29: failed to parse JSON. response text: {}
+                                                error: {}", &text, e);
 												if attempts > 3 {
 													panic!("i29: Failed to parse JSON after 3 attempts. Response text: {}", text);
 												}
+                                                log::error!("10secwait");
+                                                let when = tokio::time::Instant::now() +
+                                                    tokio::time::Duration::from_secs(10);
+                                                tokio::time::sleep_until(when).await;
 												continue ; // Continue to the next iteration if parsing fails
 											}
 										}
 									},
-									Err(_) => {
-										log::error!("i29: failed to get response text");
+									Err(e) => {
+										log::error!("i29: failed to get response text. error: {}", e);
 										if attempts > 3 {
 											panic!("i29: Failed to get response text after 3 attempts");
 										}
+                                        log::error!("10secwait");
+                                        let when = tokio::time::Instant::now() +
+                                            tokio::time::Duration::from_secs(10);
+                                        tokio::time::sleep_until(when).await;
 										continue ; // Continue to the next iteration if getting response text fails
 									}
 								}
 							},
-							Err(_) => {
-								log::error!("i29: Failed to execute request");
+							Err(e) => {
+								log::error!("i29: Failed to execute request. error: {}", e);
 								if attempts > 3 {
 									panic!("i29: Failed to execute request after 3 attempts");
 								}
+                                log::error!("10secwait");
+                                let when = tokio::time::Instant::now() +
+                                    tokio::time::Duration::from_secs(10);
+                                tokio::time::sleep_until(when).await;
 								continue; // Continue to the next iteration if executing request fails
 							}
 						}
 					},
-					Err(_) => {
-						log::error!("i29: Failed to build request");
+					Err(e) => {
+						log::error!("i29: Failed to build request. error: {}", e);
 						if attempts > 3 {
 							panic!("i29: Failed to build request after 3 attempts");
 						}
+                        log::error!("10secwait");
+                        let when = tokio::time::Instant::now() +
+                            tokio::time::Duration::from_secs(10);
+                        tokio::time::sleep_until(when).await;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
@@ -12801,26 +12988,32 @@ use crate::standardization_functions;
 													match ask_str.parse::<f64>() {
 														Ok(ask) => {
 															gemini_buy_ask = Some(ask);
+															// Continue with your logic here using `ask`
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i30: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i30: gemini:  Failed to parse ask as f64: {}
+                                                        response text: {}", e, &text),
 													}
 												},
-												None => log::error!("i30: gemini:  Failed to get ask as string"),
+												None => log::error!("i30: gemini:  Failed to get ask as string. text: {}", text),
 											}
 										},
-										Err(_) => log::error!("i30: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i30: gemini:  Failed to parse JSON: {}
+                                        response text: {}", e, &text),
 									}
 								},
-								Err(_) => log::error!("i30: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i30: gemini:  Failed to turn response into text: {}", e),
 							}
 						},
-						Err(_) => log::error!("i30: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i30: gemini:  Failed to execute Gemini request: {}", e),
 					}
 				},
-				Err(_) => log::error!("i30: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i30: gemini:  Couldn't build gemini request: {}", e),
 			}
-		
+            log::error!("10 sec wait for i30 error. current attempt #: {}", attempts);
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			attempts += 1;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
@@ -12952,7 +13145,7 @@ use crate::standardization_functions;
 			//let coinbase_buy_price_ask: Option<f64>;
 			let mut value_after: Option<f64> = None;
             //03/13/24 - removed:
-			// let mut success = false;
+			//let mut success = false;
 			loop {
 				attempts +=1;
 				let request = client.get("https://api.coinbase.com/api/v3/brokerage/best_bid_ask?product_ids=SOL-USD")
@@ -12980,12 +13173,12 @@ use crate::standardization_functions;
 														let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
 														//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 			
-														match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-															(Some(bid_str), /*Some(ask_str)*/) => {
-																match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																	(Ok(bid_str), /*Ok(ask_str)*/) => {
+														match before_parse_coinbase_sell_price_bid {
+															Some(bid_str) => {
+																match bid_str.parse::<f64>() {
+																	Ok(bid_str) => {
 																		coinbase_sell_price_bid = Some(bid_str);
-																		//coinbase_buy_price_ask = Some(ask_str);
+
 	
 																		// Place your calculations and updates here
 																			let gemini_taker_fee = 0.004;
@@ -13062,58 +13255,84 @@ use crate::standardization_functions;
                                                                             //03/13/24 - removed:
 																			// success = true;
 																	},
-																	_ => {
-																		log::error!("i30: failed to parse JSON to f64");
+																	Err(e) => {
+																		log::error!("i30: failed to parse JSON to f64. response text: {}
+                                                                        erroR: {}", &text, e);
 																		if attempts > 3 {
-																			panic!("i30: Failed to parse JSON after 3 attempts. Response text: {}", text);
+																			panic!("i30: Failed to parse JSON after 3 attempts. Response text: {}", &text);
 																		}
+                                                                        log::error!("10secwait");
+                                                                        let when = tokio::time::Instant::now() +
+                                                                            tokio::time::Duration::from_secs(10);
+                                                                        tokio::time::sleep_until(when).await;
 																		continue ;
 																	}
 																}
 															},
-															_ => {
-																log::error!("i30: Failed to get bid");
+															None => {
+																log::error!("i30: Failed to get bid. response text: {} ", &text);
 																if attempts > 3 {
 																	panic!("i30: Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
 																}
+                                                                log::error!("10secwait");
+                                                                let when = tokio::time::Instant::now() +
+                                                                    tokio::time::Duration::from_secs(10);
+                                                                tokio::time::sleep_until(when).await;
 																continue ;
 															}
 														}
 													}
 												}
 											},
-											Err(_) => {
-												log::error!("i30: failed to parse JSON");
+											Err(e) => {
+												log::error!("i30: failed to parse JSON. response text: {}
+                                                error: {}", &text, e);
 												if attempts > 3 {
 													panic!("i30: Failed to parse JSON after 3 attempts. Response text: {}", text);
 												}
+                                                log::error!("10secwait");
+                                                let when = tokio::time::Instant::now() +
+                                                    tokio::time::Duration::from_secs(10);
+                                                tokio::time::sleep_until(when).await;
 												continue ; // Continue to the next iteration if parsing fails
 											}
 										}
 									},
-									Err(_) => {
-										log::error!("i30: failed to get response text");
+									Err(e) => {
+										log::error!("i30: failed to get response text. error: {}", e);
 										if attempts > 3 {
 											panic!("i30: Failed to get response text after 3 attempts");
 										}
+                                        log::error!("10secwait");
+                                        let when = tokio::time::Instant::now() +
+                                            tokio::time::Duration::from_secs(10);
+                                        tokio::time::sleep_until(when).await;
 										continue ; // Continue to the next iteration if getting response text fails
 									}
 								}
 							},
-							Err(_) => {
-								log::error!("i30: Failed to execute request");
+							Err(e) => {
+								log::error!("i30: Failed to execute request. error: {}", e);
 								if attempts > 3 {
 									panic!("i30: Failed to execute request after 3 attempts");
 								}
+                                log::error!("10secwait");
+                                let when = tokio::time::Instant::now() +
+                                    tokio::time::Duration::from_secs(10);
+                                tokio::time::sleep_until(when).await;
 								continue; // Continue to the next iteration if executing request fails
 							}
 						}
 					},
-					Err(_) => {
-						log::error!("i30: Failed to build request");
+					Err(e) => {
+						log::error!("i30: Failed to build request. error: {}", e);
 						if attempts > 3 {
 							panic!("i30: Failed to build request after 3 attempts");
 						}
+                        log::error!("10secwait");
+                        let when = tokio::time::Instant::now() +
+                            tokio::time::Duration::from_secs(10);
+                        tokio::time::sleep_until(when).await;
 						continue; // Continue to the next iteration if building request fails
 					}
 				}
@@ -14339,25 +14558,34 @@ use crate::standardization_functions;
 															gemini_buy_ask = Some(ask);
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i35: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i35: gemini:  Failed to parse ask as f64.
+                                                        response text: {}
+                                                        error: {}", &text, e),
 													}
 												},
-												None => log::error!("i35: gemini:  Failed to get ask as string"),
+												None => log::error!("i35: gemini:  Failed to get ask as string.
+                                                response text: {}", &text),
 											}
 										},
-										Err(_) => log::error!("i35: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i35: gemini:  Failed to parse JSON.
+                                        response text: {}
+                                        error: {}", &text, e),
 									}
 								},
-								Err(_) => log::error!("i35: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i35: gemini:  Failed to turn response into text. error: {}", e),
 							}
 						},
-						Err(_) => log::error!("i35: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i35: gemini:  Failed to execute Gemini request: {}", e),
 					}
 				},
-				Err(_) => log::error!("i35: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i35: gemini:  Couldn't build gemini request: {}", e),
 			}
 		
 			attempts += 1;
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
 				panic!("Failed after 3 attempts");
@@ -14490,13 +14718,11 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(solusd) = value["result"]["SOLUSD"].as_object() {
 
-												match (/*solusd["a"][0].as_str(),*/ solusd["b"][0].as_str()) {
-													(/*Some(ask_str),*/ Some(bid_str)) => {
-														match (/*ask_str.parse::<f64>(),*/ bid_str.parse::<f64>()) {
-															(/*Ok(ask),*/ Ok(bid)) => {
-																//kraken_buy_price_ask = Some(ask);
+												match  solusd["b"][0].as_str() {
+													Some(bid_str) => {
+														match bid_str.parse::<f64>() {
+															Ok(bid) => {
 																kraken_sell_price_bid = Some(bid);
-																// Continue with your logic here...
 
 																let gemini_taker_fee = 0.004;
 																let fraction_of_wallet_im_using = 0.05; //aka 5 percent
@@ -14510,7 +14736,6 @@ use crate::standardization_functions;
 																	if let Some(kraken_sell_price_bid) = kraken_sell_price_bid {
 																		
 																		let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
-																		// Continue with your logic here...
 																		//kraken calculations - for sell
 																			let kraken_taker_fee = 0.0026;
 																			
@@ -14580,10 +14805,11 @@ use crate::standardization_functions;
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i35: Failed to parse ask or bid as f64"),
+															Err(e) => log::error!("i35: Failed to parse ask or bid as f64Response text was: {}
+                                                            erroR: {}", kraken_response_text, e),
 														}
 													},
-													_ => log::error!("i35: Failed to get ask or bid as string"),
+													None => log::error!("i35: Failed to get ask or bid as stringResponse text was: {}", kraken_response_text),
 												}										
 											} 
 											else {
@@ -14610,6 +14836,10 @@ use crate::standardization_functions;
 			// }
 		
 			attempts += 1;
+            log::info!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(3 * 60);
+            tokio::time::sleep_until(when).await;
 			if attempts >= 3 {
 				panic!("Failed after 3 attempts");
 			}
@@ -14839,25 +15069,34 @@ use crate::standardization_functions;
 															gemini_buy_ask = Some(ask);
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i36: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i36: gemini:  Failed to parse ask as f64.
+                                                        response text: {}
+                                                        error: {}", &text, e),
 													}
 												},
-												None => log::error!("i36: gemini:  Failed to get ask as string"),
+												None => log::error!("i36: gemini:  Failed to get ask as string.
+                                                response text: {}", &text),
 											}
 										},
-										Err(_) => log::error!("i36: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i36: gemini:  Failed to parse JSON.
+                                        response text: {}
+                                        error: {}", &text, e),
 									}
 								},
-								Err(_) => log::error!("i36: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i36: gemini:  Failed to turn response into text.error: {}", e),
 							}
 						},
-						Err(_) => log::error!("i36: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i36: gemini:  Failed to execute Gemini request. error: {}",e),
 					}
 				},
-				Err(_) => log::error!("i36: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i36: gemini:  Couldn't build gemini request. error: {}", e),
 			}
 		
 			attempts += 1;
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
 				panic!("Failed after 3 attempts");
@@ -14990,13 +15229,11 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(solusd) = value["result"]["SOLUSD"].as_object() {
 
-												match (/*solusd["a"][0].as_str(),*/ solusd["b"][0].as_str()) {
-													(/*Some(ask_str),*/ Some(bid_str)) => {
-														match (/*ask_str.parse::<f64>(),*/ bid_str.parse::<f64>()) {
-															(/*Ok(ask),*/ Ok(bid)) => {
-																//kraken_buy_price_ask = Some(ask);
+												match  solusd["b"][0].as_str() {
+													Some(bid_str) => {
+														match bid_str.parse::<f64>() {
+															Ok(bid) => {
 																kraken_sell_price_bid = Some(bid);
-																// Continue with your logic here...
 
 																let gemini_taker_fee = 0.004;
 																let fraction_of_wallet_im_using = 0.06; //aka 6 percent
@@ -15010,7 +15247,6 @@ use crate::standardization_functions;
 																	if let Some(kraken_sell_price_bid) = kraken_sell_price_bid {
 																		
 																		let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
-																		// Continue with your logic here...
 																		//kraken calculations - for sell
 																			let kraken_taker_fee = 0.0026;
 																			
@@ -15054,7 +15290,7 @@ use crate::standardization_functions;
 																					*gemini_wallet = gemini_wallet_unscaled;
 																					*kraken_wallet = kraken_wallet_unscaled;
 
-                                                                                    //03/13/24 - removed:
+                                                                                    //03/13/24 - added:
                                                                                     return Ok(value_after);
 																				}
 																				//03/08/24 - removed:
@@ -15080,10 +15316,11 @@ use crate::standardization_functions;
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i36: Failed to parse ask or bid as f64"),
+															Err(e) => log::error!("i36: Failed to parse ask or bid as f64Response text was: {}
+                                                            erroR: {}", kraken_response_text, e),
 														}
 													},
-													_ => log::error!("i36: Failed to get ask or bid as string"),
+													None => log::error!("i36: Failed to get ask or bid as stringResponse text was: {}", kraken_response_text),
 												}
 											} 
 											else {
@@ -15111,6 +15348,10 @@ use crate::standardization_functions;
 			// }
 		
 			attempts += 1;
+            log::info!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(3 * 60);
+            tokio::time::sleep_until(when).await;
 			if attempts >= 3 {
 				panic!("Failed after 3 attempts");
 			}
@@ -15341,25 +15582,34 @@ use crate::standardization_functions;
 															gemini_buy_ask = Some(ask);
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i37: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i36: gemini:  Failed to parse ask as f64.
+                                                        response text: {}
+                                                        error: {}", &text, e),
 													}
 												},
-												None => log::error!("i37: gemini:  Failed to get ask as string"),
+												None => log::error!("i36: gemini:  Failed to get ask as string.
+                                                response text: {}", &text),
 											}
 										},
-										Err(_) => log::error!("i37: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i36: gemini:  Failed to parse JSON.
+                                        response text: {}
+                                        error: {}", &text, e),
 									}
 								},
-								Err(_) => log::error!("i37:gemini:   Failed to turn response into text"),
+								Err(e) => log::error!("i36: gemini:  Failed to turn response into text.error: {}", e),
 							}
 						},
-						Err(_) => log::error!("i37: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i36: gemini:  Failed to execute Gemini request. error: {}",e),
 					}
 				},
-				Err(_) => log::error!("i37: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i36: gemini:  Couldn't build gemini request. error: {}", e),
 			}
 		
 			attempts += 1;
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
 				panic!("Failed after 3 attempts");
@@ -15492,13 +15742,11 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(solusd) = value["result"]["SOLUSD"].as_object() {
 
-												match (/*solusd["a"][0].as_str(),*/ solusd["b"][0].as_str()) {
-													(/*Some(ask_str),*/ Some(bid_str)) => {
-														match (/*ask_str.parse::<f64>(),*/ bid_str.parse::<f64>()) {
-															(/*Ok(ask),*/ Ok(bid)) => {
-																//kraken_buy_price_ask = Some(ask);
+												match  solusd["b"][0].as_str() {
+													Some(bid_str) => {
+														match bid_str.parse::<f64>() {
+															Ok(bid) => {
 																kraken_sell_price_bid = Some(bid);
-																// Continue with your logic here...
 
 																let gemini_taker_fee = 0.004;
 																let fraction_of_wallet_im_using = 0.07; //aka 7 percent
@@ -15512,13 +15760,12 @@ use crate::standardization_functions;
 																	if let Some(kraken_sell_price_bid) = kraken_sell_price_bid {
 																		
 																		let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
-																		// Continue with your logic here...
 																		//kraken calculations - for sell
 																			let kraken_taker_fee = 0.0026;
 																			
 																			let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
 																			let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*kraken_wallet += money_from_sell_after_fees;
 																		
 																		
@@ -15582,10 +15829,11 @@ use crate::standardization_functions;
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i37: Failed to parse ask or bid as f64"),
+															Err(e) => log::error!("i37: Failed to parse ask or bid as f64Response text was: {}
+                                                            erroR: {}", kraken_response_text, e),
 														}
 													},
-													_ => log::error!("i37: Failed to get ask or bid as string"),
+													None => log::error!("i37: Failed to get ask or bid as stringResponse text was: {}", kraken_response_text),
 												}										
 											} 
 											else {
@@ -15612,6 +15860,10 @@ use crate::standardization_functions;
 			// }
 		
 			attempts += 1;
+            log::info!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(3 * 60);
+            tokio::time::sleep_until(when).await;
 			if attempts >= 3 {
 				panic!("Failed after 3 attempts");
 			}
@@ -15842,25 +16094,34 @@ use crate::standardization_functions;
 															gemini_buy_ask = Some(ask);
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i38: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i38: gemini:  Failed to parse ask as f64.
+                                                        response text: {}
+                                                        error: {}", &text, e),
 													}
 												},
-												None => log::error!("i38: gemini:  Failed to get ask as string"),
+												None => log::error!("i38: gemini:  Failed to get ask as string.
+                                                response text: {}", &text),
 											}
 										},
-										Err(_) => log::error!("i38: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i38: gemini:  Failed to parse JSON.
+                                        response text: {}
+                                        error: {}", &text, e),
 									}
 								},
-								Err(_) => log::error!("i38: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i38: gemini:  Failed to turn response into text.error: {}", e),
 							}
 						},
-						Err(_) => log::error!("i38: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i38: gemini:  Failed to execute Gemini request. error: {}",e),
 					}
 				},
-				Err(_) => log::error!("i38: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i38: gemini:  Couldn't build gemini request. error: {}", e),
 			}
 		
 			attempts += 1;
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
 				panic!("Failed after 3 attempts");
@@ -15993,13 +16254,11 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(solusd) = value["result"]["SOLUSD"].as_object() {
 
-												match (/*solusd["a"][0].as_str(),*/ solusd["b"][0].as_str()) {
-													(/*Some(ask_str),*/ Some(bid_str)) => {
-														match (/*ask_str.parse::<f64>(),*/ bid_str.parse::<f64>()) {
-															(/*Ok(ask),*/ Ok(bid)) => {
-																//kraken_buy_price_ask = Some(ask);
+												match  solusd["b"][0].as_str() {
+													Some(bid_str) => {
+														match bid_str.parse::<f64>() {
+															Ok(bid) => {
 																kraken_sell_price_bid = Some(bid);
-																// Continue with your logic here...
 
 																let gemini_taker_fee = 0.004;
 																let fraction_of_wallet_im_using = 0.08; //aka 8 percent
@@ -16013,13 +16272,12 @@ use crate::standardization_functions;
 																	if let Some(kraken_sell_price_bid) = kraken_sell_price_bid {
 																		
 																		let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
-																		// Continue with your logic here...
 																		//kraken calculations - for sell
 																			let kraken_taker_fee = 0.0026;
 																			
 																			let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
 																			let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*kraken_wallet += money_from_sell_after_fees;
 																		
 																		
@@ -16083,11 +16341,12 @@ use crate::standardization_functions;
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i38: Failed to parse ask or bid as f64"),
+															Err(e) => log::error!("i38: Failed to parse ask or bid as f64Response text was: {}
+                                                            erroR: {}", kraken_response_text, e),
 														}
 													},
-													_ => log::error!("i38: Failed to get ask or bid as string"),
-												}										
+													None => log::error!("i38: Failed to get ask or bid as stringResponse text was: {}", kraken_response_text),
+												}									
 											} 
 											else {
 												log::error!("i38: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
@@ -16113,6 +16372,10 @@ use crate::standardization_functions;
 			// }
 		
 			attempts += 1;
+            log::info!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(3 * 60);
+            tokio::time::sleep_until(when).await;
 			if attempts >= 3 {
 				panic!("Failed after 3 attempts");
 			}
@@ -16343,25 +16606,34 @@ use crate::standardization_functions;
 															gemini_buy_ask = Some(ask);
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i39: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i39: gemini:  Failed to parse ask as f64.
+                                                        response text: {}
+                                                        error: {}", &text, e),
 													}
 												},
-												None => log::error!("i39: gemini:  Failed to get ask as string"),
+												None => log::error!("i39: gemini:  Failed to get ask as string.
+                                                response text: {}", &text),
 											}
 										},
-										Err(_) => log::error!("i39: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i39: gemini:  Failed to parse JSON.
+                                        response text: {}
+                                        error: {}", &text, e),
 									}
 								},
-								Err(_) => log::error!("i39: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i39: gemini:  Failed to turn response into text.error: {}", e),
 							}
 						},
-						Err(_) => log::error!("i39: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i39: gemini:  Failed to execute Gemini request. error: {}",e),
 					}
 				},
-				Err(_) => log::error!("i39: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i39: gemini:  Couldn't build gemini request. error: {}", e),
 			}
 		
 			attempts += 1;
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
 				panic!("Failed after 3 attempts");
@@ -16494,13 +16766,11 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(solusd) = value["result"]["SOLUSD"].as_object() {
 
-												match (/*solusd["a"][0].as_str(),*/ solusd["b"][0].as_str()) {
-													(/*Some(ask_str),*/ Some(bid_str)) => {
-														match (/*ask_str.parse::<f64>(),*/ bid_str.parse::<f64>()) {
-															(/*Ok(ask),*/ Ok(bid)) => {
-																//kraken_buy_price_ask = Some(ask);
+												match  solusd["b"][0].as_str() {
+													Some(bid_str) => {
+														match bid_str.parse::<f64>() {
+															Ok(bid) => {
 																kraken_sell_price_bid = Some(bid);
-																// Continue with your logic here...
 
 																let gemini_taker_fee = 0.004;
 																let fraction_of_wallet_im_using = 0.09; //aka 9 percent
@@ -16514,13 +16784,12 @@ use crate::standardization_functions;
 																	if let Some(kraken_sell_price_bid) = kraken_sell_price_bid {
 																		
 																		let amount_of_sol = money_going_to_sol_after_fees/gemini_buy_ask;
-																		// Continue with your logic here...
 																		//kraken calculations - for sell
 																			let kraken_taker_fee = 0.0026;
 																			
 																			let money_from_sell_before_fees = amount_of_sol * kraken_sell_price_bid;
 																			let fee_for_sell = money_from_sell_before_fees * kraken_taker_fee;
-																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell ;
+																			let money_from_sell_after_fees = money_from_sell_before_fees - fee_for_sell;
 																			*kraken_wallet += money_from_sell_after_fees;
 																		
 																		
@@ -16584,11 +16853,12 @@ use crate::standardization_functions;
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i39: Failed to parse ask or bid as f64"),
+															Err(e) => log::error!("i39: Failed to parse ask or bid as f64Response text was: {}
+                                                            erroR: {}", kraken_response_text, e),
 														}
 													},
-													_ => log::error!("i39: Failed to get ask or bid as string"),
-												}										
+													None => log::error!("i39: Failed to get ask or bid as stringResponse text was: {}", kraken_response_text),
+												}									
 											} 
 											else {
 												log::error!("i39: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
@@ -16614,6 +16884,10 @@ use crate::standardization_functions;
 			// }
 		
 			attempts += 1;
+            log::info!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(3 * 60);
+            tokio::time::sleep_until(when).await;
 			if attempts >= 3 {
 				panic!("Failed after 3 attempts");
 			}
@@ -16843,25 +17117,34 @@ use crate::standardization_functions;
 															gemini_buy_ask = Some(ask);
 															break; // Exit the loop if everything is successful
 														},
-														Err(_) => log::error!("i40: gemini:  Failed to parse ask as f64"),
+														Err(e) => log::error!("i40: gemini:  Failed to parse ask as f64.
+                                                        response text: {}
+                                                        error: {}", &text, e),
 													}
 												},
-												None => log::error!("i40: gemini:  Failed to get ask as string"),
+												None => log::error!("i40: gemini:  Failed to get ask as string.
+                                                response text: {}", &text),
 											}
 										},
-										Err(_) => log::error!("i40: gemini:  Failed to parse JSON"),
+										Err(e) => log::error!("i40: gemini:  Failed to parse JSON.
+                                        response text: {}
+                                        error: {}", &text, e),
 									}
 								},
-								Err(_) => log::error!("i40: gemini:  Failed to turn response into text"),
+								Err(e) => log::error!("i40: gemini:  Failed to turn response into text.error: {}", e),
 							}
 						},
-						Err(_) => log::error!("i40: gemini:  Failed to execute Gemini request"),
+						Err(e) => log::error!("i40: gemini:  Failed to execute Gemini request. error: {}",e),
 					}
 				},
-				Err(_) => log::error!("i40: gemini:  Couldn't build gemini request"),
+				Err(e) => log::error!("i40: gemini:  Couldn't build gemini request. error: {}", e),
 			}
 		
 			attempts += 1;
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 			//03/02/24 - changed from >= to >
 			if attempts > 3 {
 				panic!("Failed after 3 attempts");

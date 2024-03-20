@@ -1276,7 +1276,7 @@ async fn main()   {
 
 
     //CHANGE THIS NUMBER IF RESTARTING FROM A SAVED STATE SO YOU DO THE CORRECT AMOUNT OF EXPLORATION
-    let mut epsilon = 0.955;
+    let mut epsilon = 0.9055;
     //---------beginning of code so I can execute functions----------//
 
 
@@ -1959,8 +1959,9 @@ async fn main()   {
     //02/27/24 - changed to 26698.
     //02/28/24 - restarting at 0
     //03/19/24 - changed to 8946 then 9826
+    //03/20/24 - changed to 18900
 		let iteration_counter_for_for_loop_total = 
-			Arc::new(Mutex::new(9826));
+			Arc::new(Mutex::new(18900));
     
     loop {
         // Create a new AtomicBool wrapped in an Arc for each iteration

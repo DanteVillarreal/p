@@ -424,5 +424,5 @@ SURE
 TO CHANGE 
 EPSILON IN MAIN
 WHEN NOT
-RESTARTING
-03/20/24 - got an error at iteration 18922 it was about i50. didnt have the response text NOR error message. This is what I did. I fixed up to i80. Im going to go ahead and rerun it from 18900 and remove the last 22 saved states and replay buffers. Tomorrow night after everything I will work to get more action functions to properly display errors and to sleep before a retry. iteration: 18900. gamma = 0.99, gradient cap = +-5, learning rate = 0.0001, delta = 1, epsilon decay = -0.000005;             JESUS IS GOOD. With his strength, we got this!
+RESTARTING from 0
+03/20/24 - got an error at iteration 18922 it was about i50. didnt have the response text NOR error message. This is what I did. I fixed up to i80. Im going to go ahead and rerun it from 18900 and remove the last 22 saved states and replay buffers. Tomorrow night after everything I will work to get more action functions to properly display errors and to sleep before a retry. iteration: 18900. gamma = 0.99, gradient cap = +-5, learning rate = 0.0001, delta = 1, epsilon = 0.9055. epsilon decay = -0.000005;             JESUS IS GOOD. With his strength, we got this!

@@ -1240,7 +1240,7 @@ async fn main()   {
         //neural_network.initialization(88, 107, 1); // Initialize with [input size], [output size], [# hidden layers]
 
     //uncomment this if you want to load from a saved state
-        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1710831598636"; // Replace with your file path
+        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1710953272571"; // Replace with your file path
         neural_network = NeuralNetwork::load(path).expect("couldn't load network");
         neural_network.print_layers();
     //the first number in the initialization and the number below MUST be the same size

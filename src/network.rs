@@ -2734,12 +2734,13 @@
 			else {
 				loss_derivative = delta * td_error.signum();
 			}
-			//03/15/24 - from c-dqn paper. adding it. seeing if it works. page 7. equation 12
-				let lmsbe = td_error.powi(2);
+			//03/23/24 - removed:
+			// //03/15/24 - from c-dqn paper. adding it. seeing if it works. page 7. equation 12
+			// 	let lmsbe = td_error.powi(2);
 
-				if lmsbe > loss_derivative {
-					loss_derivative = lmsbe;
-				}
+			// 	if lmsbe > loss_derivative {
+			// 		loss_derivative = lmsbe;
+			// 	}
 
 
 		//initializes gradient_layer's data to 0

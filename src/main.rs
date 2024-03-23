@@ -1237,12 +1237,12 @@ async fn main()   {
     //01/24/24 - was: (65, 75, 2) now it's below. input size from execute_action_functions.
 
     //uncomment this if you want to initialize the network from new
-        //neural_network.initialization(88, 107, 1); // Initialize with [input size], [output size], [# hidden layers]
+        neural_network.initialization(88, 107, 1); // Initialize with [input size], [output size], [# hidden layers]
 
     //uncomment this if you want to load from a saved state
-        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1710953272571"; // Replace with your file path
-        neural_network = NeuralNetwork::load(path).expect("couldn't load network");
-        neural_network.print_layers();
+        //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1710953272571"; // Replace with your file path
+        //neural_network = NeuralNetwork::load(path).expect("couldn't load network");
+        //neural_network.print_layers();
     //the first number in the initialization and the number below MUST be the same size
     //01/24/24 - removed
         //let mut updated = [false; 60];
@@ -1276,7 +1276,7 @@ async fn main()   {
 
 
     //CHANGE THIS NUMBER IF RESTARTING FROM A SAVED STATE SO YOU DO THE CORRECT AMOUNT OF EXPLORATION
-    let mut epsilon = 0.9055;
+    let mut epsilon = 1.0;
     //---------beginning of code so I can execute functions----------//
 
 
@@ -1960,8 +1960,9 @@ async fn main()   {
     //02/28/24 - restarting at 0
     //03/19/24 - changed to 8946 then 9826
     //03/20/24 - changed to 18900
+    //03/21/24 - changed to 0
 		let iteration_counter_for_for_loop_total = 
-			Arc::new(Mutex::new(18900));
+			Arc::new(Mutex::new(0));
     
     loop {
         // Create a new AtomicBool wrapped in an Arc for each iteration
@@ -2096,7 +2097,8 @@ async fn main()   {
                                     //03/09/24 - changed to 0.1
                                     //03/10/24 - changed to 1.0
                                     //03/12/24 - changed to 0.1. 03/13/24  - to 0.01 then 0.001 then 0.0001
-                                    let learning_rate = 0.0001;
+                                    //03/21/24 - changed to 0.00001
+                                    let learning_rate = 0.00001;
                                     neural_network.el_update_weights(&learning_rate);
                                     
                                     //03/10/24 - added. 03/13/24 - added i

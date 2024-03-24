@@ -1876,7 +1876,8 @@
 			//03/06/24 - changed to 0.5. then 0.6 then 0.7 then 0.8
 			//03/09/24 - changed to 0.99. then 0.9
 			//03/10/24 - changed to 0.99
-			let gamma = 0.99;
+			//03/24/24 - changed ot 0.9
+			let gamma = 0.9;
 			//initialize the largest Q-value so far and its index
 			//let mut index_of_largest_qvalue_in_next_state: Option<usize> = None;
 			let mut largest_qvalue_so_far_in_next_state = f64::MIN;
@@ -2735,12 +2736,12 @@
 				loss_derivative = delta * td_error.signum();
 			}
 			//03/23/24 - removed:
-			// //03/15/24 - from c-dqn paper. adding it. seeing if it works. page 7. equation 12
-			// 	let lmsbe = td_error.powi(2);
+			//03/15/24 - from c-dqn paper. adding it. seeing if it works. page 7. equation 12
+				let lmsbe = td_error.powi(2);
 
-			// 	if lmsbe > loss_derivative {
-			// 		loss_derivative = lmsbe;
-			// 	}
+				if lmsbe > loss_derivative {
+					loss_derivative = lmsbe;
+				}
 
 
 		//initializes gradient_layer's data to 0

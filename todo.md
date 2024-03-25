@@ -430,3 +430,4 @@ RESTARTING from 0
 gamma = 0.99, gradient cap = +-5, learning rate = 0.0001, delta = 1, epsilon = 0.9055. epsilon decay = -0.000005. learning_rate = 0.00001.
 03/23/24 - removed lMSBE. going to restart.             JESUS IS GOOD. With his strength, we got this!
 03/24/24 - decreasing gamma to 0.9 and doing a full restart WITH lMSBE. gamma = 0.9, gradient cap = +-5, learning rate = 0.0001, delta = 1, epsilon = 0.9055. epsilon decay = -0.000005. learning_rate = 0.00001.               JESUS IS GOOD. With his strength, we got this!
+03/25/24 - added more robust error details for up to i90.               JESUS IS GOOD. With his strength, we got this!

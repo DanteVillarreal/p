@@ -2028,7 +2028,7 @@ async fn main()   {
                 println!(" delay to warm up neural network...
             This will take 15 minutes...");
             let when = tokio::time::Instant::now() +
-                 tokio::time::Duration::from_secs(3 * 60);
+                 tokio::time::Duration::from_secs(15 * 60);
             tokio::time::sleep_until(when).await;
 
                 //start loop at whatever number the counter is at

@@ -1237,12 +1237,12 @@ async fn main()   {
     //01/24/24 - was: (65, 75, 2) now it's below. input size from execute_action_functions.
 
     //uncomment this if you want to initialize the network from new
-        neural_network.initialization(88, 107, 1); // Initialize with [input size], [output size], [# hidden layers]
+        //neural_network.initialization(88, 107, 1); // Initialize with [input size], [output size], [# hidden layers]
 
     //uncomment this if you want to load from a saved state
-        //let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1710953272571"; // Replace with your file path
-        //neural_network = NeuralNetwork::load(path).expect("couldn't load network");
-        //neural_network.print_layers();
+        let path = "D:\\Downloads\\PxOmni\\rust_save_states\\1711409060583"; // Replace with your file path
+        neural_network = NeuralNetwork::load(path).expect("couldn't load network");
+        neural_network.print_layers();
     //the first number in the initialization and the number below MUST be the same size
     //01/24/24 - removed
         //let mut updated = [false; 60];
@@ -1276,7 +1276,7 @@ async fn main()   {
 
 
     //CHANGE THIS NUMBER IF RESTARTING FROM A SAVED STATE SO YOU DO THE CORRECT AMOUNT OF EXPLORATION
-    let mut epsilon = 1.0;
+    let mut epsilon = 0.891745;
     //---------beginning of code so I can execute functions----------//
 
 
@@ -1961,8 +1961,9 @@ async fn main()   {
     //03/19/24 - changed to 8946 then 9826
     //03/20/24 - changed to 18900
     //03/21/24 - changed to 0
+    //03/26/24 - changed to 21651
 		let iteration_counter_for_for_loop_total = 
-			Arc::new(Mutex::new(0));
+			Arc::new(Mutex::new(21651));
     
     loop {
         // Create a new AtomicBool wrapped in an Arc for each iteration
@@ -2424,9 +2425,13 @@ async fn main()   {
                                     *iteration_counter_for_for_loop_this_iteration);
                             },
                             Err(e) => {
-                                panic!("Failed to kill the websocket client: {:?}
+                                //03/26/24 - changed from panic to log error because the websocket
+                                //       client might already be killed and I dont want it to panic
+                                //       if it cant kill something thats already dead
+                                log::error!("Failed to kill the websocket client: {:?}
                                 total iteration: {}
-                                this loop's iteration: {}", e,
+                                this loop's iteration: {}
+                                IT MIGHT ALREADY BE KILLED", e,
 								*iteration_counter_for_for_loop_total, 
                                 *iteration_counter_for_for_loop_this_iteration);
                             }

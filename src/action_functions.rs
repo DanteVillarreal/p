@@ -39340,20 +39340,22 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
 
-												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
-													(Some(ask_str), /*Some(bid_str)*/) => {
-														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
-															(Ok(ask), /*Ok(bid)*/) => {
+												match xlmusd["a"][0].as_str() {
+													Some(ask_str) => {
+														match ask_str.parse::<f64>() {
+															Ok(ask)=> {
 																kraken_buy_price_ask = Some(ask);
 																//kraken_sell_price_bid = Some(bid);
 
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i95: Kraken: Failed to parse ask or bid as f64"),
+                                                            //03/26/24 - revamped
+															Err(e) => log::error!("i95: Kraken: Failed to parse ask or bid as f64. response text: {}
+                                                            error: {}", &kraken_response_text, &e),
 														}
 													},
-													_ => log::error!("i95: Kraken: Failed to get ask or bid as string"),
+													None => log::error!("i95: Kraken: Failed to get ask or bid as string. response text: {}", &kraken_response_text),
 												}										
 											}
 											else {
@@ -39374,6 +39376,11 @@ use crate::standardization_functions;
 			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
 				break; // Exit the loop if everything is successful
 			}
+            //03/26/24 - added:
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 
 			attempts += 1;
 			if attempts >= 3 {
@@ -39541,18 +39548,16 @@ use crate::standardization_functions;
 										Ok(v) => {
 											if let Some(pricebooks) = v["pricebooks"].as_array() {
 												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													let bids = &pricebook["bids"][0];
-													//let asks = &pricebook["asks"][0];
-													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 
-													match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-														(Some(bid_str), /*Some(ask_str)*/) => {
-															match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																(Ok(bid_str), /*Ok(ask_str)*/) => {
+													let bids = &pricebook["bids"][0];
+													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+
+													match before_parse_coinbase_sell_price_bid {
+														Some(bid_str) => {
+															match bid_str.parse::<f64>() {
+																Ok(bid_str) => {
 																	coinbase_sell_price_bid = Some(bid_str);
-																	//coinbase_buy_price_ask = Some(ask_str);
+
 
 																	// Place your calculations and updates here
 																		let kraken_taker_fee = 0.0026;
@@ -39631,65 +39636,76 @@ use crate::standardization_functions;
                                                                         //03/13/24 - removed:
 																		// success = true;
 																},
-																_ => {
-																	log::error!("i95: failed to parse JSON to f64");
+																Err(e) => {
+																	log::error!("i95: failed to parse JSON to f64. response text: {}
+                                                                    error: {}", &text, &e);
 																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																		panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                        error: {}", &attempts, &text, &e);
 																	}
-																	continue ;
+                                                                    //03/26/24 - removed continues. seem unnecessary.
+																	//continue ;
 																}
 															}
 														},
-														_ => {
-															log::error!("i95: Failed to get bid");
+														None => {
+															log::error!("i95: Failed to get bid. response text: {}
+                                                            Bid: {:?}", &text, &before_parse_coinbase_sell_price_bid);
 															if attempts > 3 {
-																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																panic!("Failed to get bid after {} attempts. Bid: {:?}
+                                                                response text: {}", &attempts, before_parse_coinbase_sell_price_bid, &text);
 															}
-															continue ;
+															//continue ;
 														}
 													}
 												}
 											}
 										},
-										Err(_) => {
-											log::error!("i95: failed to parse JSON as str");
+										Err(e) => {
+											log::error!("i95: failed to parse JSON as str. response text: {}
+                                            error: {}", &text, &e);
 											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+												panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                error: {}", &attempts, &text, &e);
 											}
-											continue ; // Continue to the next iteration if parsing fails
+											//continue ; // Continue to the next iteration if parsing fails
 										}
 									}
 								},
-								Err(_) => {
-									log::error!("i95: failed to get response text");
+								Err(e) => {
+									log::error!("i95: failed to get response text. error: {}", &e);
 									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
+										panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
 									}
-									continue ; // Continue to the next iteration if getting response text fails
+									//continue ; // Continue to the next iteration if getting response text fails
 								}
 							}
 						},
-						Err(_) => {
-							log::error!("i95: Failed to execute request");
+						Err(e) => {
+							log::error!("i95: Failed to execute request. error: {}", e);
 							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
+								panic!("Failed to execute request after {} attempts. error: {}", &attempts, &e);
 							}
-							continue; // Continue to the next iteration if executing request fails
+							//continue; // Continue to the next iteration if executing request fails
 						}
 					}
 				},
-				Err(_) => {
-					log::error!("i95: Failed to build request");
+				Err(e) => {
+					log::error!("i95: Failed to build request. error: {}", &e);
 					if attempts > 3 {
-						panic!("i95: Failed to build request after 3 attempts");
+						panic!("i95: Failed to build request after {} attempts. error: {}", &attempts, &e);
 					}
-					continue; // Continue to the next iteration if building request fails
+					//continue; // Continue to the next iteration if building request fails
 				}
 			}
             //03/13/24 - removed:
 			// if success == true {
 			// 	break;
 			// }
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 		}
 
         //03/13/24 - removed:
@@ -39923,20 +39939,22 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
 
-												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
-													(Some(ask_str), /*Some(bid_str)*/) => {
-														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
-															(Ok(ask), /*Ok(bid)*/) => {
+												match xlmusd["a"][0].as_str() {
+													Some(ask_str) => {
+														match ask_str.parse::<f64>() {
+															Ok(ask)=> {
 																kraken_buy_price_ask = Some(ask);
 																//kraken_sell_price_bid = Some(bid);
 
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i96: Failed to parse ask or bid as f64"),
+                                                            //03/26/24 - revamped
+															Err(e) => log::error!("i96: Kraken: Failed to parse ask or bid as f64. response text: {}
+                                                            error: {}", &kraken_response_text, &e),
 														}
 													},
-													_ => log::error!("i96: Failed to get ask or bid as string"),
+													None => log::error!("i96: Kraken: Failed to get ask or bid as string. response text: {}", &kraken_response_text),
 												}										
 											}
 											else {
@@ -39957,10 +39975,15 @@ use crate::standardization_functions;
 			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
 				break; // Exit the loop if everything is successful
 			}
+            //03/26/24 - added:
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 
 			attempts += 1;
 			if attempts >= 3 {
-				panic!("Failed after 3 attempts");
+				panic!("Failed after {} attempts", &attempts);
 			}
 		}
 
@@ -40124,18 +40147,16 @@ use crate::standardization_functions;
 										Ok(v) => {
 											if let Some(pricebooks) = v["pricebooks"].as_array() {
 												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													let bids = &pricebook["bids"][0];
-													//let asks = &pricebook["asks"][0];
-													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 
-													match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-														(Some(bid_str), /*Some(ask_str)*/) => {
-															match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																(Ok(bid_str), /*Ok(ask_str)*/) => {
+													let bids = &pricebook["bids"][0];
+													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+
+													match before_parse_coinbase_sell_price_bid {
+														Some(bid_str) => {
+															match bid_str.parse::<f64>() {
+																Ok(bid_str) => {
 																	coinbase_sell_price_bid = Some(bid_str);
-																	//coinbase_buy_price_ask = Some(ask_str);
+
 
 																	// Place your calculations and updates here
 																		let kraken_taker_fee = 0.0026;
@@ -40214,65 +40235,76 @@ use crate::standardization_functions;
                                                                         //03/13/24 - removed:
 																		// success = true;
 																},
-																_ => {
-																	log::error!("i96: failed to parse JSON to f64");
+																Err(e) => {
+																	log::error!("i96: failed to parse JSON to f64. response text: {}
+                                                                    error: {}", &text, &e);
 																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																		panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                        error: {}", &attempts, &text, &e);
 																	}
-																	continue ;
+                                                                    //03/26/24 - removed continues. seem unnecessary.
+																	//continue ;
 																}
 															}
 														},
-														_ => {
-															log::error!("i96: Failed to get bid");
+														None => {
+															log::error!("i96: Failed to get bid. response text: {}
+                                                            Bid: {:?}", &text, &before_parse_coinbase_sell_price_bid);
 															if attempts > 3 {
-																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																panic!("Failed to get bid after {} attempts. Bid: {:?}
+                                                                response text: {}", &attempts, before_parse_coinbase_sell_price_bid, &text);
 															}
-															continue ;
+															//continue ;
 														}
 													}
 												}
 											}
 										},
-										Err(_) => {
-											log::error!("i96: failed to parse JSON as str");
+										Err(e) => {
+											log::error!("i96: failed to parse JSON as str. response text: {}
+                                            error: {}", &text, &e);
 											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+												panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                error: {}", &attempts, &text, &e);
 											}
-											continue ; // Continue to the next iteration if parsing fails
+											//continue ; // Continue to the next iteration if parsing fails
 										}
 									}
 								},
-								Err(_) => {
-									log::error!("i96: failed to get response text");
+								Err(e) => {
+									log::error!("i96: failed to get response text. error: {}", &e);
 									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
+										panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
 									}
-									continue ; // Continue to the next iteration if getting response text fails
+									//continue ; // Continue to the next iteration if getting response text fails
 								}
 							}
 						},
-						Err(_) => {
-							log::error!("i96: Failed to execute request");
+						Err(e) => {
+							log::error!("i96: Failed to execute request. error: {}", e);
 							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
+								panic!("Failed to execute request after {} attempts. error: {}", &attempts, &e);
 							}
-							continue; // Continue to the next iteration if executing request fails
+							//continue; // Continue to the next iteration if executing request fails
 						}
 					}
 				},
-				Err(_) => {
-					log::error!("i96: Failed to build request");
+				Err(e) => {
+					log::error!("i96: Failed to build request. error: {}", &e);
 					if attempts > 3 {
-						panic!("i96: Failed to build request after 3 attempts");
+						panic!("i96: Failed to build request after {} attempts. error: {}", &attempts, &e);
 					}
-					continue; // Continue to the next iteration if building request fails
+					//continue; // Continue to the next iteration if building request fails
 				}
 			}
             //03/13/24 - removed:
 			// if success == true {
 			// 	break;
 			// }
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 		}
 
         //03/13/24 - removed:
@@ -40506,20 +40538,22 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
 
-												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
-													(Some(ask_str), /*Some(bid_str)*/) => {
-														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
-															(Ok(ask), /*Ok(bid)*/) => {
+												match xlmusd["a"][0].as_str() {
+													Some(ask_str) => {
+														match ask_str.parse::<f64>() {
+															Ok(ask)=> {
 																kraken_buy_price_ask = Some(ask);
 																//kraken_sell_price_bid = Some(bid);
 
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i97: Kraken: Failed to parse ask or bid as f64"),
+                                                            //03/26/24 - revamped
+															Err(e) => log::error!("i97: Kraken: Failed to parse ask or bid as f64. response text: {}
+                                                            error: {}", &kraken_response_text, &e),
 														}
 													},
-													_ => log::error!("i97: Kraken: Failed to get ask or bid as string"),
+													None => log::error!("i97: Kraken: Failed to get ask or bid as string. response text: {}", &kraken_response_text),
 												}										
 											}
 											else {
@@ -40540,10 +40574,15 @@ use crate::standardization_functions;
 			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
 				break; // Exit the loop if everything is successful
 			}
+            //03/26/24 - added:
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 
 			attempts += 1;
 			if attempts >= 3 {
-				panic!("Failed after 3 attempts");
+				panic!("Failed after {} attempts", &attempts);
 			}
 		}
 
@@ -40707,18 +40746,16 @@ use crate::standardization_functions;
 										Ok(v) => {
 											if let Some(pricebooks) = v["pricebooks"].as_array() {
 												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													let bids = &pricebook["bids"][0];
-													//let asks = &pricebook["asks"][0];
-													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 
-													match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-														(Some(bid_str), /*Some(ask_str)*/) => {
-															match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																(Ok(bid_str), /*Ok(ask_str)*/) => {
+													let bids = &pricebook["bids"][0];
+													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+
+													match before_parse_coinbase_sell_price_bid {
+														Some(bid_str) => {
+															match bid_str.parse::<f64>() {
+																Ok(bid_str) => {
 																	coinbase_sell_price_bid = Some(bid_str);
-																	//coinbase_buy_price_ask = Some(ask_str);
+
 
 																	// Place your calculations and updates here
 																		let kraken_taker_fee = 0.0026;
@@ -40797,65 +40834,76 @@ use crate::standardization_functions;
                                                                         //03/13/24 - removed:
 																		// success = true;
 																},
-																_ => {
-																	log::error!("i97: failed to parse JSON to f64");
+																Err(e) => {
+																	log::error!("i97: failed to parse JSON to f64. response text: {}
+                                                                    error: {}", &text, &e);
 																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																		panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                        error: {}", &attempts, &text, &e);
 																	}
-																	continue ;
+                                                                    //03/26/24 - removed continues. seem unnecessary.
+																	//continue ;
 																}
 															}
 														},
-														_ => {
-															log::error!("i97: Failed to get bid");
+														None => {
+															log::error!("i97: Failed to get bid. response text: {}
+                                                            Bid: {:?}", &text, &before_parse_coinbase_sell_price_bid);
 															if attempts > 3 {
-																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																panic!("Failed to get bid after {} attempts. Bid: {:?}
+                                                                response text: {}", &attempts, before_parse_coinbase_sell_price_bid, &text);
 															}
-															continue ;
+															//continue ;
 														}
 													}
 												}
 											}
 										},
-										Err(_) => {
-											log::error!("i97: failed to parse JSON as str");
+										Err(e) => {
+											log::error!("i97: failed to parse JSON as str. response text: {}
+                                            error: {}", &text, &e);
 											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+												panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                error: {}", &attempts, &text, &e);
 											}
-											continue ; // Continue to the next iteration if parsing fails
+											//continue ; // Continue to the next iteration if parsing fails
 										}
 									}
 								},
-								Err(_) => {
-									log::error!("i97: failed to get response text");
+								Err(e) => {
+									log::error!("i97: failed to get response text. error: {}", &e);
 									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
+										panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
 									}
-									continue ; // Continue to the next iteration if getting response text fails
+									//continue ; // Continue to the next iteration if getting response text fails
 								}
 							}
 						},
-						Err(_) => {
-							log::error!("i97: Failed to execute request");
+						Err(e) => {
+							log::error!("i97: Failed to execute request. error: {}", e);
 							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
+								panic!("Failed to execute request after {} attempts. error: {}", &attempts, &e);
 							}
-							continue; // Continue to the next iteration if executing request fails
+							//continue; // Continue to the next iteration if executing request fails
 						}
 					}
 				},
-				Err(_) => {
-					log::error!("i97: Failed to build request");
+				Err(e) => {
+					log::error!("i97: Failed to build request. error: {}", &e);
 					if attempts > 3 {
-						panic!("i97: Failed to build request after 3 attempts");
+						panic!("i97: Failed to build request after {} attempts. error: {}", &attempts, &e);
 					}
-					continue; // Continue to the next iteration if building request fails
+					//continue; // Continue to the next iteration if building request fails
 				}
 			}
             //03/13/24 - removed:
 			// if success == true {
 			// 	break;
 			// }
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 		}
 
         //03/13/24 - removed:
@@ -41089,20 +41137,22 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
 
-												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
-													(Some(ask_str), /*Some(bid_str)*/) => {
-														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
-															(Ok(ask), /*Ok(bid)*/) => {
+												match xlmusd["a"][0].as_str() {
+													Some(ask_str) => {
+														match ask_str.parse::<f64>() {
+															Ok(ask)=> {
 																kraken_buy_price_ask = Some(ask);
 																//kraken_sell_price_bid = Some(bid);
 
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i98: Kraken: Failed to parse ask or bid as f64"),
+                                                            //03/26/24 - revamped
+															Err(e) => log::error!("i98: Kraken: Failed to parse ask or bid as f64. response text: {}
+                                                            error: {}", &kraken_response_text, &e),
 														}
 													},
-													_ => log::error!("i98: Kraken: Failed to get ask or bid as string"),
+													None => log::error!("i98: Kraken: Failed to get ask or bid as string. response text: {}", &kraken_response_text),
 												}										
 											}
 											else {
@@ -41123,10 +41173,15 @@ use crate::standardization_functions;
 			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
 				break; // Exit the loop if everything is successful
 			}
+            //03/26/24 - added:
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 
 			attempts += 1;
 			if attempts >= 3 {
-				panic!("Failed after 3 attempts");
+				panic!("Failed after {} attempts", &attempts);
 			}
 		}
 
@@ -41290,18 +41345,16 @@ use crate::standardization_functions;
 										Ok(v) => {
 											if let Some(pricebooks) = v["pricebooks"].as_array() {
 												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													let bids = &pricebook["bids"][0];
-													//let asks = &pricebook["asks"][0];
-													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 
-													match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-														(Some(bid_str), /*Some(ask_str)*/) => {
-															match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																(Ok(bid_str), /*Ok(ask_str)*/) => {
+													let bids = &pricebook["bids"][0];
+													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+
+													match before_parse_coinbase_sell_price_bid {
+														Some(bid_str) => {
+															match bid_str.parse::<f64>() {
+																Ok(bid_str) => {
 																	coinbase_sell_price_bid = Some(bid_str);
-																	//coinbase_buy_price_ask = Some(ask_str);
+
 
 																	// Place your calculations and updates here
 																		let kraken_taker_fee = 0.0026;
@@ -41309,6 +41362,8 @@ use crate::standardization_functions;
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
 																		*kraken_wallet -= total_spent;
 
 																		let amount_of_xlm_before_withdraw_fee = 
@@ -41378,65 +41433,76 @@ use crate::standardization_functions;
                                                                         //03/13/24 - removed:
 																		// success = true;
 																},
-																_ => {
-																	log::error!("i98: failed to parse JSON to f64");
+																Err(e) => {
+																	log::error!("i98: failed to parse JSON to f64. response text: {}
+                                                                    error: {}", &text, &e);
 																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																		panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                        error: {}", &attempts, &text, &e);
 																	}
-																	continue ;
+                                                                    //03/26/24 - removed continues. seem unnecessary.
+																	//continue ;
 																}
 															}
 														},
-														_ => {
-															log::error!("i98: Failed to get bid");
+														None => {
+															log::error!("i98: Failed to get bid. response text: {}
+                                                            Bid: {:?}", &text, &before_parse_coinbase_sell_price_bid);
 															if attempts > 3 {
-																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																panic!("Failed to get bid after {} attempts. Bid: {:?}
+                                                                response text: {}", &attempts, before_parse_coinbase_sell_price_bid, &text);
 															}
-															continue ;
+															//continue ;
 														}
 													}
 												}
 											}
 										},
-										Err(_) => {
-											log::error!("i98: failed to parse JSON as str");
+										Err(e) => {
+											log::error!("i98: failed to parse JSON as str. response text: {}
+                                            error: {}", &text, &e);
 											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+												panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                error: {}", &attempts, &text, &e);
 											}
-											continue ; // Continue to the next iteration if parsing fails
+											//continue ; // Continue to the next iteration if parsing fails
 										}
 									}
 								},
-								Err(_) => {
-									log::error!("i98: failed to get response text");
+								Err(e) => {
+									log::error!("i98: failed to get response text. error: {}", &e);
 									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
+										panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
 									}
-									continue ; // Continue to the next iteration if getting response text fails
+									//continue ; // Continue to the next iteration if getting response text fails
 								}
 							}
 						},
-						Err(_) => {
-							log::error!("i98: Failed to execute request");
+						Err(e) => {
+							log::error!("i98: Failed to execute request. error: {}", e);
 							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
+								panic!("Failed to execute request after {} attempts. error: {}", &attempts, &e);
 							}
-							continue; // Continue to the next iteration if executing request fails
+							//continue; // Continue to the next iteration if executing request fails
 						}
 					}
 				},
-				Err(_) => {
-					log::error!("i98: Failed to build request");
+				Err(e) => {
+					log::error!("i98: Failed to build request. error: {}", &e);
 					if attempts > 3 {
-						panic!("i98: Failed to build request after 3 attempts");
+						panic!("i98: Failed to build request after {} attempts. error: {}", &attempts, &e);
 					}
-					continue; // Continue to the next iteration if building request fails
+					//continue; // Continue to the next iteration if building request fails
 				}
 			}
             //03/13/24 - removed:
 			// if success == true {
 			// 	break;
 			// }
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 		}
         //03/13/24 - removed:
 		// match value_after {
@@ -41669,20 +41735,22 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
 
-												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
-													(Some(ask_str), /*Some(bid_str)*/) => {
-														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
-															(Ok(ask), /*Ok(bid)*/) => {
+												match xlmusd["a"][0].as_str() {
+													Some(ask_str) => {
+														match ask_str.parse::<f64>() {
+															Ok(ask)=> {
 																kraken_buy_price_ask = Some(ask);
 																//kraken_sell_price_bid = Some(bid);
 
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i99: Kraken: Failed to parse ask or bid as f64"),
+                                                            //03/26/24 - revamped
+															Err(e) => log::error!("i99: Kraken: Failed to parse ask or bid as f64. response text: {}
+                                                            error: {}", &kraken_response_text, &e),
 														}
 													},
-													_ => log::error!("i99: Kraken: Failed to get ask or bid as string"),
+													None => log::error!("i99: Kraken: Failed to get ask or bid as string. response text: {}", &kraken_response_text),
 												}										
 											}
 											else {
@@ -41703,10 +41771,15 @@ use crate::standardization_functions;
 			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
 				break; // Exit the loop if everything is successful
 			}
+            //03/26/24 - added:
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 
 			attempts += 1;
 			if attempts >= 3 {
-				panic!("Failed after 3 attempts");
+				panic!("Failed after {} attempts", &attempts);
 			}
 		}
 
@@ -41870,18 +41943,16 @@ use crate::standardization_functions;
 										Ok(v) => {
 											if let Some(pricebooks) = v["pricebooks"].as_array() {
 												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													let bids = &pricebook["bids"][0];
-													//let asks = &pricebook["asks"][0];
-													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 
-													match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-														(Some(bid_str), /*Some(ask_str)*/) => {
-															match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																(Ok(bid_str), /*Ok(ask_str)*/) => {
+													let bids = &pricebook["bids"][0];
+													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+
+													match before_parse_coinbase_sell_price_bid {
+														Some(bid_str) => {
+															match bid_str.parse::<f64>() {
+																Ok(bid_str) => {
 																	coinbase_sell_price_bid = Some(bid_str);
-																	//coinbase_buy_price_ask = Some(ask_str);
+
 
 																	// Place your calculations and updates here
 																		let kraken_taker_fee = 0.0026;
@@ -41889,6 +41960,8 @@ use crate::standardization_functions;
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
 																		*kraken_wallet -= total_spent;
 
 																		let amount_of_xlm_before_withdraw_fee = 
@@ -41958,65 +42031,76 @@ use crate::standardization_functions;
                                                                         //03/13/24 - removed:
 																		// success = true;
 																},
-																_ => {
-																	log::error!("i99: failed to parse JSON to f64");
+																Err(e) => {
+																	log::error!("i99: failed to parse JSON to f64. response text: {}
+                                                                    error: {}", &text, &e);
 																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																		panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                        error: {}", &attempts, &text, &e);
 																	}
-																	continue ;
+                                                                    //03/26/24 - removed continues. seem unnecessary.
+																	//continue ;
 																}
 															}
 														},
-														_ => {
-															log::error!("i99: Failed to get bid");
+														None => {
+															log::error!("i99: Failed to get bid. response text: {}
+                                                            Bid: {:?}", &text, &before_parse_coinbase_sell_price_bid);
 															if attempts > 3 {
-																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																panic!("Failed to get bid after {} attempts. Bid: {:?}
+                                                                response text: {}", &attempts, before_parse_coinbase_sell_price_bid, &text);
 															}
-															continue ;
+															//continue ;
 														}
 													}
 												}
 											}
 										},
-										Err(_) => {
-											log::error!("i99: failed to parse JSON as str");
+										Err(e) => {
+											log::error!("i99: failed to parse JSON as str. response text: {}
+                                            error: {}", &text, &e);
 											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+												panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                error: {}", &attempts, &text, &e);
 											}
-											continue ; // Continue to the next iteration if parsing fails
+											//continue ; // Continue to the next iteration if parsing fails
 										}
 									}
 								},
-								Err(_) => {
-									log::error!("i99: failed to get response text");
+								Err(e) => {
+									log::error!("i99: failed to get response text. error: {}", &e);
 									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
+										panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
 									}
-									continue ; // Continue to the next iteration if getting response text fails
+									//continue ; // Continue to the next iteration if getting response text fails
 								}
 							}
 						},
-						Err(_) => {
-							log::error!("i99: Failed to execute request");
+						Err(e) => {
+							log::error!("i99: Failed to execute request. error: {}", e);
 							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
+								panic!("Failed to execute request after {} attempts. error: {}", &attempts, &e);
 							}
-							continue; // Continue to the next iteration if executing request fails
+							//continue; // Continue to the next iteration if executing request fails
 						}
 					}
 				},
-				Err(_) => {
-					log::error!("i99: Failed to build request");
+				Err(e) => {
+					log::error!("i99: Failed to build request. error: {}", &e);
 					if attempts > 3 {
-						panic!("i99: Failed to build request after 3 attempts");
+						panic!("i99: Failed to build request after {} attempts. error: {}", &attempts, &e);
 					}
-					continue; // Continue to the next iteration if building request fails
+					//continue; // Continue to the next iteration if building request fails
 				}
 			}
             //03/13/24 - removed:
 			// if success == true {
 			// 	break;
 			// }
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 		}
         //03/13/24 - removed:
 		// match value_after {
@@ -42249,20 +42333,22 @@ use crate::standardization_functions;
 										Ok(value) => {
 											if let Some(xlmusd) = value["result"]["XXLMZUSD"].as_object() {
 
-												match (xlmusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
-													(Some(ask_str), /*Some(bid_str)*/) => {
-														match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
-															(Ok(ask), /*Ok(bid)*/) => {
+												match xlmusd["a"][0].as_str() {
+													Some(ask_str) => {
+														match ask_str.parse::<f64>() {
+															Ok(ask)=> {
 																kraken_buy_price_ask = Some(ask);
 																//kraken_sell_price_bid = Some(bid);
 
 																//03/05/24 - dont think this break is necessary
 																//break; // Exit the loop if everything is successful
 															},
-															_ => log::error!("i100: Kraken: Failed to parse ask or bid as f64"),
+                                                            //03/26/24 - revamped
+															Err(e) => log::error!("i100: Kraken: Failed to parse ask or bid as f64. response text: {}
+                                                            error: {}", &kraken_response_text, &e),
 														}
 													},
-													_ => log::error!("i100: Kraken: Failed to get ask or bid as string"),
+													None => log::error!("i100: Kraken: Failed to get ask or bid as string. response text: {}", &kraken_response_text),
 												}										
 											}
 											else {
@@ -42283,10 +42369,15 @@ use crate::standardization_functions;
 			if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
 				break; // Exit the loop if everything is successful
 			}
+            //03/26/24 - added:
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 
 			attempts += 1;
 			if attempts >= 3 {
-				panic!("Failed after 3 attempts");
+				panic!("Failed after {} attempts", &attempts);
 			}
 		}
 
@@ -42450,18 +42541,16 @@ use crate::standardization_functions;
 										Ok(v) => {
 											if let Some(pricebooks) = v["pricebooks"].as_array() {
 												for pricebook in pricebooks {
-													//let product_id = pricebook["product_id"].as_str();
-													let bids = &pricebook["bids"][0];
-													//let asks = &pricebook["asks"][0];
-													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
-													//let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
 
-													match (before_parse_coinbase_sell_price_bid, /*before_parse_coinbase_buy_price_ask*/) {
-														(Some(bid_str), /*Some(ask_str)*/) => {
-															match (bid_str.parse::<f64>(), /*ask_str.parse::<f64>()*/) {
-																(Ok(bid_str), /*Ok(ask_str)*/) => {
+													let bids = &pricebook["bids"][0];
+													let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
+
+													match before_parse_coinbase_sell_price_bid {
+														Some(bid_str) => {
+															match bid_str.parse::<f64>() {
+																Ok(bid_str) => {
 																	coinbase_sell_price_bid = Some(bid_str);
-																	//coinbase_buy_price_ask = Some(ask_str);
+
 
 																	// Place your calculations and updates here
 																		let kraken_taker_fee = 0.0026;
@@ -42469,6 +42558,8 @@ use crate::standardization_functions;
 																		let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																		let fee_for_purchase = total_spent*kraken_taker_fee;
 																		let money_going_to_xlm_after_fees = total_spent - fee_for_purchase;
+																		//03/05/24 - changed from -= money_going_to_sol_after_fees to
+																		//				  total_spent;
 																		*kraken_wallet -= total_spent;
 
 																		let amount_of_xlm_before_withdraw_fee = 
@@ -42538,65 +42629,76 @@ use crate::standardization_functions;
                                                                         //03/13/24 - removed:
 																		// success = true;
 																},
-																_ => {
-																	log::error!("i100: failed to parse JSON to f64");
+																Err(e) => {
+																	log::error!("i100: failed to parse JSON to f64. response text: {}
+                                                                    error: {}", &text, &e);
 																	if attempts > 3 {
-																		panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+																		panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                        error: {}", &attempts, &text, &e);
 																	}
-																	continue ;
+                                                                    //03/26/24 - removed continues. seem unnecessary.
+																	//continue ;
 																}
 															}
 														},
-														_ => {
-															log::error!("i100: Failed to get bid");
+														None => {
+															log::error!("i100: Failed to get bid. response text: {}
+                                                            Bid: {:?}", &text, &before_parse_coinbase_sell_price_bid);
 															if attempts > 3 {
-																panic!("Failed to get bid after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
+																panic!("Failed to get bid after {} attempts. Bid: {:?}
+                                                                response text: {}", &attempts, before_parse_coinbase_sell_price_bid, &text);
 															}
-															continue ;
+															//continue ;
 														}
 													}
 												}
 											}
 										},
-										Err(_) => {
-											log::error!("i100: failed to parse JSON as str");
+										Err(e) => {
+											log::error!("i100: failed to parse JSON as str. response text: {}
+                                            error: {}", &text, &e);
 											if attempts > 3 {
-												panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+												panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                error: {}", &attempts, &text, &e);
 											}
-											continue ; // Continue to the next iteration if parsing fails
+											//continue ; // Continue to the next iteration if parsing fails
 										}
 									}
 								},
-								Err(_) => {
-									log::error!("i100: failed to get response text");
+								Err(e) => {
+									log::error!("i100: failed to get response text. error: {}", &e);
 									if attempts > 3 {
-										panic!("Failed to get response text after 3 attempts");
+										panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
 									}
-									continue ; // Continue to the next iteration if getting response text fails
+									//continue ; // Continue to the next iteration if getting response text fails
 								}
 							}
 						},
-						Err(_) => {
-							log::error!("i100: Failed to execute request");
+						Err(e) => {
+							log::error!("i100: Failed to execute request. error: {}", e);
 							if attempts > 3 {
-								panic!("Failed to execute request after 3 attempts");
+								panic!("Failed to execute request after {} attempts. error: {}", &attempts, &e);
 							}
-							continue; // Continue to the next iteration if executing request fails
+							//continue; // Continue to the next iteration if executing request fails
 						}
 					}
 				},
-				Err(_) => {
-					log::error!("i100: Failed to build request");
+				Err(e) => {
+					log::error!("i100: Failed to build request. error: {}", &e);
 					if attempts > 3 {
-						panic!("i100: Failed to build request after 3 attempts");
+						panic!("i100: Failed to build request after {} attempts. error: {}", &attempts, &e);
 					}
-					continue; // Continue to the next iteration if building request fails
+					//continue; // Continue to the next iteration if building request fails
 				}
 			}
             //03/13/24 - removed:
 			// if success == true {
 			// 	break;
 			// }
+            log::error!("10secwait");
+            let when = tokio::time::Instant::now() +
+                tokio::time::Duration::from_secs(10);
+            tokio::time::sleep_until(when).await;
 		}
         //03/13/24 - removed:
 		// match value_after {

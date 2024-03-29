@@ -46144,87 +46144,104 @@ use crate::standardization_functions;
                                                 Ok(v) => {
                                                     if let Some(pricebooks) = v["pricebooks"].as_array() {
                                                         for pricebook in pricebooks {
-                                                            //let product_id = pricebook["product_id"].as_str();
-                                                            //let bids = &pricebook["bids"][0];
                                                             let asks = &pricebook["asks"][0];
-                                                            //let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
                                                             let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-                
-                                                            match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-                                                                (/*Some(bid_str),*/ Some(ask_str)) => {
-                                                                    match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-                                                                        (/*Ok(bid_str),*/ Ok(ask_str)) => {
-                                                                            //coinbase_sell_price_bid = Some(bid_str);
+        
+                                                            match before_parse_coinbase_buy_price_ask {
+                                                                Some(ask_str) => {
+                                                                    match ask_str.parse::<f64>() {
+                                                                        Ok(ask_str) => {
+        
                                                                             coinbase_buy_price_ask = Some(ask_str);
-																			
+            
                                                                                 success = true;
                                                                         },
-                                                                        _ => {
-																			log::error!("i113: coinbase: Failed to parse json into f64");
+                                                                        Err(e) => {
+                                                                            log::error!("i113:  coinbase:  Failed to f64 parse JSON.
+                                                                            response text: {}
+                                                                            error: {}", &text, &e);
                                                                             if attempts > 3 {
-                                                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                                                panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                                error: {}", &attempts, text, &e);
                                                                             }
-                                                                            continue ;
+                                                                            //03/20/24 - dont see point of all these continues
+                                                                            //continue ;
                                                                         }
                                                                     }
                                                                 },
-                                                                _ => {
-																	log::error!("i113: coinbase: Failed to get bid price ");
+                                                                None => {
+                                                                    log::error!("i113: coinbase:   Failed to get ask price
+                                                                    response text: {}", &text);
                                                                     if attempts > 3 {
-                                                                        //panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                                        panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+                                                                        panic!("Failed to get ask price after {} attempts. Ask: {:?}
+                                                                        response text: {}", &attempts, before_parse_coinbase_buy_price_ask, &text);
                                                                     }
-                                                                    continue ;
+                                                                    //continue ;
                                                                 }
                                                             }
                                                         }
-													//03/02/24 - added else condition
-													} else {
-														log::error!("i113: coinbase: Failed to get pricebooks as array.");
-														if attempts > 3 {
-															panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-														}
-														continue;
-													}
-												},
-                                                Err(_) => {
-													log::error!("i113: coinbase: Failed to parse JSON to str");
-                                                    if attempts > 3 {
-                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                    //03/02/24 - added else condition
+                                                    } else {
+                                                        log::error!("i113:  coinbase:  Failed to get pricebooks as array.
+                                                        response text: {}", &text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get pricebooks as array after {} attempts. Response text: {}", &attempts, text);
+                                                        }
+                                                        //continue;
                                                     }
-                                                    continue ; // Continue to the next iteration if parsing fails
+                                                },
+                                                Err(e) => {
+                                                    log::error!("i113:  coinbase:  Failed to parse outer JSON as str.
+                                                    response text: {}
+                                                    error: {}", &text, &e);
+                                                    if attempts > 3 {
+                                                        panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                        response text: {}", &attempts, text, &e);
+                                                    }
+                                                    //continue ; 
                                                 }
                                             }
                                         },
-                                        Err(_) => {
-											log::error!("i113: coinbase: Failed to get response text");
+                                        Err(e) => {
+                                            log::error!("i113:  coinbase:  Failed to get response text.
+                                            error: {}", &e);
                                             if attempts > 3 {
-                                                panic!("Failed to get response text after 3 attempts");
+                                                panic!("Failed to get response text after {} attempts
+                                                error: {}", &attempts, &e);
                                             }
-                                            continue ; // Continue to the next iteration if getting response text fails
+                                            //continue ; 
                                         }
                                     }
                                 },
-                                Err(_) => {
-									log::error!("i113: coinbase: Failed to execute request.");
+                                Err(e) => {
+                                    log::error!("i113:  coinbase:  Failed to execute request
+                                    error: {}", &e);
                                     if attempts > 3 {
-                                        panic!("Failed to execute request after 3 attempts");
+                                        panic!("Failed to execute request after {} attempts
+                                        error: {}", &attempts, &e);
                                     }
-                                    continue; // Continue to the next iteration if executing request fails
+                                    //continue; 
                                 }
                             }
                         },
-                        Err(_) => {
-							log::error!("i113: coinbase: Failed to build request");
+                        Err(e) => {
+                            log::error!("i113:  coinbase:  Failed to build request
+                            error: {}", &e);
                             if attempts > 3 {
-                                panic!("Failed to build request after 3 attempts");
+                                panic!("Failed to build request after {} attempts
+                                error: {}", &attempts, &e);
                             }
-                            continue; // Continue to the next iteration if building request fails
+                            //continue; 
                         }
                     }
+                    //03/20/24 - unnecessary. just put the break above. but i will do it later. not trying to change the logic rn
                     if success == true {
                         break;
                     }
+                    log::error!("10secwait");
+                    let when = tokio::time::Instant::now() +
+                        tokio::time::Duration::from_secs(10);
+                    tokio::time::sleep_until(when).await;
                 }
 
 
@@ -46369,13 +46386,13 @@ use crate::standardization_functions;
                                         match serde_json::from_str::<Value>(&bitstamp_response_text) {
                                             Ok(v) => {
                                                 let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-                                                    (Some(bid_str), Some(ask_str)) => {
-                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
+                                                //let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+    
+                                                match before_parse_bitstamp_sell_price_bid {
+                                                    Some(bid_str) => {
+                                                        match bid_str.parse::<f64>() {
+                                                            Ok(bitstamp_sell_price_bid) => {
+    
                                                                 // Place your calculations and updates here
                                                                 //coinbase calculations to buy
                                                                 let coinbase_taker_fee = 0.008;
@@ -46434,7 +46451,7 @@ use crate::standardization_functions;
                                                                     //03/13/24 - added:
                                                                     return Ok(value_after);
 																}
-																//03/08/24 - removed:
+                                                                //03/08/24 - removed:
                                                                 // //value_after = 56
                                                                 // //coinbase = 57
                                                                 // //bitstamp = 58
@@ -46446,64 +46463,74 @@ use crate::standardization_functions;
                                                                 // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
-
+    
                                                                 //03/13/24 - removed:
                                                                 // success = true;
                                                             },
-															_ => {
-																log::error!("i113: Failed to f64 parse bid or ask price");
-																if attempts > 3 {
-																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-																}
-																continue;
-															}
-														}
-													},
-													_ => {
-														log::error!("i113: Failed to originally parse bid or ask price");
-														if attempts > 3 {
-															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-														}
-														continue;
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i113: Failed to parse JSON");
-												if attempts > 3 {
-													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-												}
-												continue;
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i113: failed to get response text");
-										if attempts > 3 {
-											panic!("Failed to get response text after 3 attempts");
-										}
-										continue;
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i113: Failed to execute request");
-								if attempts > 3 {
-									panic!("Failed to execute request after 3 attempts");
-								}
-								continue;
-							}
-						}
-					},
-					Err(_) => {
-						log::error!("i113: Failed to build request");
-						if attempts > 3 {
-							panic!("Failed to build request after 3 attempts");
-						}
-						continue;
-					}
-				}
-			}
+                                                            Err(e) => {
+                                                                log::error!("i113: Failed to f64 parse bid. response text: {}
+                                                                error: {} ", &bitstamp_response_text, &e);
+                                                                if attempts > 3 {
+                                                                    panic!("Failed to parse f64 bid or ask price after {} attempts. 
+                                                                    response text: {}
+                                                                    error: {}", &attempts, &bitstamp_response_text, &e);
+                                                                }
+                                                                //03/24/24 - removing continues because no point.
+                                                                //continue;
+                                                            }
+                                                        }
+                                                    },
+                                                    None => {
+                                                        log::error!("i113: Failed to originally parse bid or ask price. reponse text: {}", &bitstamp_response_text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get bid or ask price after {} attempts. response text: {}", &attempts, &bitstamp_response_text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                }
+                                            },
+                                            Err(e) => {
+                                                log::error!("i113: Failed to parse JSONresponse text: {}
+                                                error: {} ", &bitstamp_response_text, &e);
+                                                if attempts > 3 {
+                                                    panic!("Failed to parse JSON after {} attempts. response text: {}
+                                                    error: {} ", &attempts, &bitstamp_response_text, &e);
+                                                }
+                                                //continue;
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        log::error!("i113: failed to get response text. error: {}", &e);
+                                        if attempts > 3 {
+                                            panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
+                                        }
+                                        //continue;
+                                    }
+                                }
+                            },
+                            Err(e) => {
+                                log::error!("i113: Failed to execute request. error: {}", &e);
+                                if attempts > 3 {
+                                    panic!("Failed to execute request after {} attemptserror: {}", &attempts, &e);
+                                }
+                                //continue;
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("i113: Failed to build requesterror: {}", &e);
+                        if attempts > 3 {
+                            panic!("Failed to build request after {} attemptserror: {}", &attempts, &e);
+                        }
+                        //continue;
+                    }
+                }
+                log::error!("10secwait");
+                let when = tokio::time::Instant::now() +
+                    tokio::time::Duration::from_secs(10);
+                tokio::time::sleep_until(when).await;
+            }
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -46708,88 +46735,105 @@ use crate::standardization_functions;
                                                 Ok(v) => {
                                                     if let Some(pricebooks) = v["pricebooks"].as_array() {
                                                         for pricebook in pricebooks {
-                                                            //let product_id = pricebook["product_id"].as_str();
-                                                            //let bids = &pricebook["bids"][0];
                                                             let asks = &pricebook["asks"][0];
-                                                            //let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
                                                             let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-                
-                                                            match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-                                                                (/*Some(bid_str),*/ Some(ask_str)) => {
-                                                                    match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-                                                                        (/*Ok(bid_str),*/ Ok(ask_str)) => {
-                                                                            //coinbase_sell_price_bid = Some(bid_str);
+        
+                                                            match before_parse_coinbase_buy_price_ask {
+                                                                Some(ask_str) => {
+                                                                    match ask_str.parse::<f64>() {
+                                                                        Ok(ask_str) => {
+        
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
-																			},
-																			_ => {
-																				log::error!("i114: coinbase: Failed to parse json into f64");
-																				if attempts > 3 {
-																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																				}
-																				continue ;
-																			}
-																		}
-																	},
-																	_ => {
-																		log::error!("i114: coinbase: Failed to get bid price ");
-																		if attempts > 3 {
-																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-																		}
-																		continue ;
-																	}
-																}
-															}
-														//03/02/24 - added else condition
-														} else {
-															log::error!("i114: coinbase: Failed to get pricebooks as array.");
-															if attempts > 3 {
-																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-															}
-															continue;
-														}
-													},
-													Err(_) => {
-														log::error!("i114: coinbase: Failed to parse JSON to str");
-														if attempts > 3 {
-															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-														}
-														continue ; // Continue to the next iteration if parsing fails
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i114: coinbase: Failed to get response text");
-												if attempts > 3 {
-													panic!("Failed to get response text after 3 attempts");
-												}
-												continue ; // Continue to the next iteration if getting response text fails
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i114: coinbase: Failed to execute request.");
-										if attempts > 3 {
-											panic!("Failed to execute request after 3 attempts");
-										}
-										continue; // Continue to the next iteration if executing request fails
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i114: coinbase: Failed to build request");
-								if attempts > 3 {
-									panic!("Failed to build request after 3 attempts");
-								}
-								continue; // Continue to the next iteration if building request fails
-							}
-						}
-						if success == true {
-							break;
-						}
-					}
+                                                                        },
+                                                                        Err(e) => {
+                                                                            log::error!("i114:  coinbase:  Failed to f64 parse JSON.
+                                                                            response text: {}
+                                                                            error: {}", &text, &e);
+                                                                            if attempts > 3 {
+                                                                                panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                                error: {}", &attempts, text, &e);
+                                                                            }
+                                                                            //03/20/24 - dont see point of all these continues
+                                                                            //continue ;
+                                                                        }
+                                                                    }
+                                                                },
+                                                                None => {
+                                                                    log::error!("i114: coinbase:   Failed to get ask price
+                                                                    response text: {}", &text);
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to get ask price after {} attempts. Ask: {:?}
+                                                                        response text: {}", &attempts, before_parse_coinbase_buy_price_ask, &text);
+                                                                    }
+                                                                    //continue ;
+                                                                }
+                                                            }
+                                                        }
+                                                    //03/02/24 - added else condition
+                                                    } else {
+                                                        log::error!("i114:  coinbase:  Failed to get pricebooks as array.
+                                                        response text: {}", &text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get pricebooks as array after {} attempts. Response text: {}", &attempts, text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                },
+                                                Err(e) => {
+                                                    log::error!("i114:  coinbase:  Failed to parse outer JSON as str.
+                                                    response text: {}
+                                                    error: {}", &text, &e);
+                                                    if attempts > 3 {
+                                                        panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                        response text: {}", &attempts, text, &e);
+                                                    }
+                                                    //continue ; 
+                                                }
+                                            }
+                                        },
+                                        Err(e) => {
+                                            log::error!("i114:  coinbase:  Failed to get response text.
+                                            error: {}", &e);
+                                            if attempts > 3 {
+                                                panic!("Failed to get response text after {} attempts
+                                                error: {}", &attempts, &e);
+                                            }
+                                            //continue ; 
+                                        }
+                                    }
+                                },
+                                Err(e) => {
+                                    log::error!("i114:  coinbase:  Failed to execute request
+                                    error: {}", &e);
+                                    if attempts > 3 {
+                                        panic!("Failed to execute request after {} attempts
+                                        error: {}", &attempts, &e);
+                                    }
+                                    //continue; 
+                                }
+                            }
+                        },
+                        Err(e) => {
+                            log::error!("i114:  coinbase:  Failed to build request
+                            error: {}", &e);
+                            if attempts > 3 {
+                                panic!("Failed to build request after {} attempts
+                                error: {}", &attempts, &e);
+                            }
+                            //continue; 
+                        }
+                    }
+                    //03/20/24 - unnecessary. just put the break above. but i will do it later. not trying to change the logic rn
+                    if success == true {
+                        break;
+                    }
+                    log::error!("10secwait");
+                    let when = tokio::time::Instant::now() +
+                        tokio::time::Duration::from_secs(10);
+                    tokio::time::sleep_until(when).await;
+                }
 
 
 
@@ -46933,13 +46977,13 @@ use crate::standardization_functions;
                                         match serde_json::from_str::<Value>(&bitstamp_response_text) {
                                             Ok(v) => {
                                                 let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-                                                    (Some(bid_str), Some(ask_str)) => {
-                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
+                                                //let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+    
+                                                match before_parse_bitstamp_sell_price_bid {
+                                                    Some(bid_str) => {
+                                                        match bid_str.parse::<f64>() {
+                                                            Ok(bitstamp_sell_price_bid) => {
+    
                                                                 // Place your calculations and updates here
                                                                 //coinbase calculations to buy
                                                                 let coinbase_taker_fee = 0.008;
@@ -46998,7 +47042,7 @@ use crate::standardization_functions;
                                                                     //03/13/24 - added:
                                                                     return Ok(value_after);
 																}
-																//03/08/24 - removed:
+                                                                //03/08/24 - removed:
                                                                 // //value_after = 56
                                                                 // //coinbase = 57
                                                                 // //bitstamp = 58
@@ -47010,64 +47054,74 @@ use crate::standardization_functions;
                                                                 // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
-
+    
                                                                 //03/13/24 - removed:
                                                                 // success = true;
                                                             },
-															_ => {
-																log::error!("i114: Failed to f64 parse bid or ask price");
-																if attempts > 3 {
-																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-																}
-																continue;
-															}
-														}
-													},
-													_ => {
-														log::error!("i114: Failed to originally parse bid or ask price");
-														if attempts > 3 {
-															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-														}
-														continue;
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i114: Failed to parse JSON");
-												if attempts > 3 {
-													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-												}
-												continue;
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i114: failed to get response text");
-										if attempts > 3 {
-											panic!("Failed to get response text after 3 attempts");
-										}
-										continue;
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i114: Failed to execute request");
-								if attempts > 3 {
-									panic!("Failed to execute request after 3 attempts");
-								}
-								continue;
-							}
-						}
-					},
-					Err(_) => {
-						log::error!("i114: Failed to build request");
-						if attempts > 3 {
-							panic!("Failed to build request after 3 attempts");
-						}
-						continue;
-					}
-				}
-			}
+                                                            Err(e) => {
+                                                                log::error!("i114: Failed to f64 parse bid. response text: {}
+                                                                error: {} ", &bitstamp_response_text, &e);
+                                                                if attempts > 3 {
+                                                                    panic!("Failed to parse f64 bid or ask price after {} attempts. 
+                                                                    response text: {}
+                                                                    error: {}", &attempts, &bitstamp_response_text, &e);
+                                                                }
+                                                                //03/24/24 - removing continues because no point.
+                                                                //continue;
+                                                            }
+                                                        }
+                                                    },
+                                                    None => {
+                                                        log::error!("i114: Failed to originally parse bid or ask price. reponse text: {}", &bitstamp_response_text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get bid or ask price after {} attempts. response text: {}", &attempts, &bitstamp_response_text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                }
+                                            },
+                                            Err(e) => {
+                                                log::error!("i114: Failed to parse JSONresponse text: {}
+                                                error: {} ", &bitstamp_response_text, &e);
+                                                if attempts > 3 {
+                                                    panic!("Failed to parse JSON after {} attempts. response text: {}
+                                                    error: {} ", &attempts, &bitstamp_response_text, &e);
+                                                }
+                                                //continue;
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        log::error!("i114: failed to get response text. error: {}", &e);
+                                        if attempts > 3 {
+                                            panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
+                                        }
+                                        //continue;
+                                    }
+                                }
+                            },
+                            Err(e) => {
+                                log::error!("i143: Failed to execute request. error: {}", &e);
+                                if attempts > 3 {
+                                    panic!("Failed to execute request after {} attemptserror: {}", &attempts, &e);
+                                }
+                                //continue;
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("i114: Failed to build requesterror: {}", &e);
+                        if attempts > 3 {
+                            panic!("Failed to build request after {} attemptserror: {}", &attempts, &e);
+                        }
+                        //continue;
+                    }
+                }
+                log::error!("10secwait");
+                let when = tokio::time::Instant::now() +
+                    tokio::time::Duration::from_secs(10);
+                tokio::time::sleep_until(when).await;
+            }
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -47272,88 +47326,105 @@ use crate::standardization_functions;
                                                 Ok(v) => {
                                                     if let Some(pricebooks) = v["pricebooks"].as_array() {
                                                         for pricebook in pricebooks {
-                                                            //let product_id = pricebook["product_id"].as_str();
-                                                            //let bids = &pricebook["bids"][0];
                                                             let asks = &pricebook["asks"][0];
-                                                            //let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
                                                             let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-                
-                                                            match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-                                                                (/*Some(bid_str),*/ Some(ask_str)) => {
-                                                                    match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-                                                                        (/*Ok(bid_str),*/ Ok(ask_str)) => {
-                                                                            //coinbase_sell_price_bid = Some(bid_str);
+        
+                                                            match before_parse_coinbase_buy_price_ask {
+                                                                Some(ask_str) => {
+                                                                    match ask_str.parse::<f64>() {
+                                                                        Ok(ask_str) => {
+        
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
-																			},
-																			_ => {
-																				log::error!("i115: coinbase: Failed to parse json into f64");
-																				if attempts > 3 {
-																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																				}
-																				continue ;
-																			}
-																		}
-																	},
-																	_ => {
-																		log::error!("i115: coinbase: Failed to get bid price ");
-																		if attempts > 3 {
-																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-																		}
-																		continue ;
-																	}
-																}
-															}
-														//03/02/24 - added else condition
-														} else {
-															log::error!("i115: coinbase: Failed to get pricebooks as array.");
-															if attempts > 3 {
-																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-															}
-															continue;
-														}
-													},
-													Err(_) => {
-														log::error!("i115: coinbase: Failed to parse JSON to str");
-														if attempts > 3 {
-															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-														}
-														continue ; // Continue to the next iteration if parsing fails
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i115: coinbase: Failed to get response text");
-												if attempts > 3 {
-													panic!("Failed to get response text after 3 attempts");
-												}
-												continue ; // Continue to the next iteration if getting response text fails
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i115: coinbase: Failed to execute request.");
-										if attempts > 3 {
-											panic!("Failed to execute request after 3 attempts");
-										}
-										continue; // Continue to the next iteration if executing request fails
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i115: coinbase: Failed to build request");
-								if attempts > 3 {
-									panic!("Failed to build request after 3 attempts");
-								}
-								continue; // Continue to the next iteration if building request fails
-							}
-						}
-						if success == true {
-							break;
-						}
-					}
+                                                                        },
+                                                                        Err(e) => {
+                                                                            log::error!("i115:  coinbase:  Failed to f64 parse JSON.
+                                                                            response text: {}
+                                                                            error: {}", &text, &e);
+                                                                            if attempts > 3 {
+                                                                                panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                                error: {}", &attempts, text, &e);
+                                                                            }
+                                                                            //03/20/24 - dont see point of all these continues
+                                                                            //continue ;
+                                                                        }
+                                                                    }
+                                                                },
+                                                                None => {
+                                                                    log::error!("i115: coinbase:   Failed to get ask price
+                                                                    response text: {}", &text);
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to get ask price after {} attempts. Ask: {:?}
+                                                                        response text: {}", &attempts, before_parse_coinbase_buy_price_ask, &text);
+                                                                    }
+                                                                    //continue ;
+                                                                }
+                                                            }
+                                                        }
+                                                    //03/02/24 - added else condition
+                                                    } else {
+                                                        log::error!("i115:  coinbase:  Failed to get pricebooks as array.
+                                                        response text: {}", &text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get pricebooks as array after {} attempts. Response text: {}", &attempts, text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                },
+                                                Err(e) => {
+                                                    log::error!("i115:  coinbase:  Failed to parse outer JSON as str.
+                                                    response text: {}
+                                                    error: {}", &text, &e);
+                                                    if attempts > 3 {
+                                                        panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                        response text: {}", &attempts, text, &e);
+                                                    }
+                                                    //continue ; 
+                                                }
+                                            }
+                                        },
+                                        Err(e) => {
+                                            log::error!("i115:  coinbase:  Failed to get response text.
+                                            error: {}", &e);
+                                            if attempts > 3 {
+                                                panic!("Failed to get response text after {} attempts
+                                                error: {}", &attempts, &e);
+                                            }
+                                            //continue ; 
+                                        }
+                                    }
+                                },
+                                Err(e) => {
+                                    log::error!("i115:  coinbase:  Failed to execute request
+                                    error: {}", &e);
+                                    if attempts > 3 {
+                                        panic!("Failed to execute request after {} attempts
+                                        error: {}", &attempts, &e);
+                                    }
+                                    //continue; 
+                                }
+                            }
+                        },
+                        Err(e) => {
+                            log::error!("i115:  coinbase:  Failed to build request
+                            error: {}", &e);
+                            if attempts > 3 {
+                                panic!("Failed to build request after {} attempts
+                                error: {}", &attempts, &e);
+                            }
+                            //continue; 
+                        }
+                    }
+                    //03/20/24 - unnecessary. just put the break above. but i will do it later. not trying to change the logic rn
+                    if success == true {
+                        break;
+                    }
+                    log::error!("10secwait");
+                    let when = tokio::time::Instant::now() +
+                        tokio::time::Duration::from_secs(10);
+                    tokio::time::sleep_until(when).await;
+                }
 
 
 
@@ -47497,13 +47568,13 @@ use crate::standardization_functions;
                                         match serde_json::from_str::<Value>(&bitstamp_response_text) {
                                             Ok(v) => {
                                                 let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-                                                    (Some(bid_str), Some(ask_str)) => {
-                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
+                                                //let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+    
+                                                match before_parse_bitstamp_sell_price_bid {
+                                                    Some(bid_str) => {
+                                                        match bid_str.parse::<f64>() {
+                                                            Ok(bitstamp_sell_price_bid) => {
+    
                                                                 // Place your calculations and updates here
                                                                 //coinbase calculations to buy
                                                                 let coinbase_taker_fee = 0.008;
@@ -47562,7 +47633,7 @@ use crate::standardization_functions;
                                                                     //03/13/24 - added:
                                                                     return Ok(value_after);
 																}
-																//03/08/24 - removed:
+                                                                //03/08/24 - removed:
                                                                 // //value_after = 56
                                                                 // //coinbase = 57
                                                                 // //bitstamp = 58
@@ -47574,64 +47645,74 @@ use crate::standardization_functions;
                                                                 // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
-
+    
                                                                 //03/13/24 - removed:
                                                                 // success = true;
                                                             },
-															_ => {
-																log::error!("i115: Failed to f64 parse bid or ask price");
-																if attempts > 3 {
-																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-																}
-																continue;
-															}
-														}
-													},
-													_ => {
-														log::error!("i115: Failed to originally parse bid or ask price");
-														if attempts > 3 {
-															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-														}
-														continue;
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i115: Failed to parse JSON");
-												if attempts > 3 {
-													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-												}
-												continue;
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i115: failed to get response text");
-										if attempts > 3 {
-											panic!("Failed to get response text after 3 attempts");
-										}
-										continue;
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i115: Failed to execute request");
-								if attempts > 3 {
-									panic!("Failed to execute request after 3 attempts");
-								}
-								continue;
-							}
-						}
-					},
-					Err(_) => {
-						log::error!("i115: Failed to build request");
-						if attempts > 3 {
-							panic!("Failed to build request after 3 attempts");
-						}
-						continue;
-					}
-				}
-			}
+                                                            Err(e) => {
+                                                                log::error!("i115: Failed to f64 parse bid. response text: {}
+                                                                error: {} ", &bitstamp_response_text, &e);
+                                                                if attempts > 3 {
+                                                                    panic!("Failed to parse f64 bid or ask price after {} attempts. 
+                                                                    response text: {}
+                                                                    error: {}", &attempts, &bitstamp_response_text, &e);
+                                                                }
+                                                                //03/24/24 - removing continues because no point.
+                                                                //continue;
+                                                            }
+                                                        }
+                                                    },
+                                                    None => {
+                                                        log::error!("i115: Failed to originally parse bid or ask price. reponse text: {}", &bitstamp_response_text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get bid or ask price after {} attempts. response text: {}", &attempts, &bitstamp_response_text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                }
+                                            },
+                                            Err(e) => {
+                                                log::error!("i115: Failed to parse JSONresponse text: {}
+                                                error: {} ", &bitstamp_response_text, &e);
+                                                if attempts > 3 {
+                                                    panic!("Failed to parse JSON after {} attempts. response text: {}
+                                                    error: {} ", &attempts, &bitstamp_response_text, &e);
+                                                }
+                                                //continue;
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        log::error!("i115: failed to get response text. error: {}", &e);
+                                        if attempts > 3 {
+                                            panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
+                                        }
+                                        //continue;
+                                    }
+                                }
+                            },
+                            Err(e) => {
+                                log::error!("i115: Failed to execute request. error: {}", &e);
+                                if attempts > 3 {
+                                    panic!("Failed to execute request after {} attemptserror: {}", &attempts, &e);
+                                }
+                                //continue;
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("i115: Failed to build requesterror: {}", &e);
+                        if attempts > 3 {
+                            panic!("Failed to build request after {} attemptserror: {}", &attempts, &e);
+                        }
+                        //continue;
+                    }
+                }
+                log::error!("10secwait");
+                let when = tokio::time::Instant::now() +
+                    tokio::time::Duration::from_secs(10);
+                tokio::time::sleep_until(when).await;
+            }
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -47836,88 +47917,105 @@ use crate::standardization_functions;
                                                 Ok(v) => {
                                                     if let Some(pricebooks) = v["pricebooks"].as_array() {
                                                         for pricebook in pricebooks {
-                                                            //let product_id = pricebook["product_id"].as_str();
-                                                            //let bids = &pricebook["bids"][0];
                                                             let asks = &pricebook["asks"][0];
-                                                            //let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
                                                             let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-                
-                                                            match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-                                                                (/*Some(bid_str),*/ Some(ask_str)) => {
-                                                                    match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-                                                                        (/*Ok(bid_str),*/ Ok(ask_str)) => {
-                                                                            //coinbase_sell_price_bid = Some(bid_str);
+        
+                                                            match before_parse_coinbase_buy_price_ask {
+                                                                Some(ask_str) => {
+                                                                    match ask_str.parse::<f64>() {
+                                                                        Ok(ask_str) => {
+        
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
-																			},
-																			_ => {
-																				log::error!("i116: coinbase: Failed to parse json into f64");
-																				if attempts > 3 {
-																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																				}
-																				continue ;
-																			}
-																		}
-																	},
-																	_ => {
-																		log::error!("i116: coinbase: Failed to get bid price ");
-																		if attempts > 3 {
-																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-																		}
-																		continue ;
-																	}
-																}
-															}
-														//03/02/24 - added else condition
-														} else {
-															log::error!("i116: coinbase: Failed to get pricebooks as array.");
-															if attempts > 3 {
-																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-															}
-															continue;
-														}
-													},
-													Err(_) => {
-														log::error!("i116: coinbase: Failed to parse JSON to str");
-														if attempts > 3 {
-															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-														}
-														continue ; // Continue to the next iteration if parsing fails
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i116: coinbase: Failed to get response text");
-												if attempts > 3 {
-													panic!("Failed to get response text after 3 attempts");
-												}
-												continue ; // Continue to the next iteration if getting response text fails
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i116: coinbase: Failed to execute request.");
-										if attempts > 3 {
-											panic!("Failed to execute request after 3 attempts");
-										}
-										continue; // Continue to the next iteration if executing request fails
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i116: coinbase: Failed to build request");
-								if attempts > 3 {
-									panic!("Failed to build request after 3 attempts");
-								}
-								continue; // Continue to the next iteration if building request fails
-							}
-						}
-						if success == true {
-							break;
-						}
-					}
+                                                                        },
+                                                                        Err(e) => {
+                                                                            log::error!("i116:  coinbase:  Failed to f64 parse JSON.
+                                                                            response text: {}
+                                                                            error: {}", &text, &e);
+                                                                            if attempts > 3 {
+                                                                                panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                                error: {}", &attempts, text, &e);
+                                                                            }
+                                                                            //03/20/24 - dont see point of all these continues
+                                                                            //continue ;
+                                                                        }
+                                                                    }
+                                                                },
+                                                                None => {
+                                                                    log::error!("i116: coinbase:   Failed to get ask price
+                                                                    response text: {}", &text);
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to get ask price after {} attempts. Ask: {:?}
+                                                                        response text: {}", &attempts, before_parse_coinbase_buy_price_ask, &text);
+                                                                    }
+                                                                    //continue ;
+                                                                }
+                                                            }
+                                                        }
+                                                    //03/02/24 - added else condition
+                                                    } else {
+                                                        log::error!("i116:  coinbase:  Failed to get pricebooks as array.
+                                                        response text: {}", &text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get pricebooks as array after {} attempts. Response text: {}", &attempts, text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                },
+                                                Err(e) => {
+                                                    log::error!("i116:  coinbase:  Failed to parse outer JSON as str.
+                                                    response text: {}
+                                                    error: {}", &text, &e);
+                                                    if attempts > 3 {
+                                                        panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                        response text: {}", &attempts, text, &e);
+                                                    }
+                                                    //continue ; 
+                                                }
+                                            }
+                                        },
+                                        Err(e) => {
+                                            log::error!("i116:  coinbase:  Failed to get response text.
+                                            error: {}", &e);
+                                            if attempts > 3 {
+                                                panic!("Failed to get response text after {} attempts
+                                                error: {}", &attempts, &e);
+                                            }
+                                            //continue ; 
+                                        }
+                                    }
+                                },
+                                Err(e) => {
+                                    log::error!("i116:  coinbase:  Failed to execute request
+                                    error: {}", &e);
+                                    if attempts > 3 {
+                                        panic!("Failed to execute request after {} attempts
+                                        error: {}", &attempts, &e);
+                                    }
+                                    //continue; 
+                                }
+                            }
+                        },
+                        Err(e) => {
+                            log::error!("i116:  coinbase:  Failed to build request
+                            error: {}", &e);
+                            if attempts > 3 {
+                                panic!("Failed to build request after {} attempts
+                                error: {}", &attempts, &e);
+                            }
+                            //continue; 
+                        }
+                    }
+                    //03/20/24 - unnecessary. just put the break above. but i will do it later. not trying to change the logic rn
+                    if success == true {
+                        break;
+                    }
+                    log::error!("10secwait");
+                    let when = tokio::time::Instant::now() +
+                        tokio::time::Duration::from_secs(10);
+                    tokio::time::sleep_until(when).await;
+                }
 
 
 
@@ -48061,13 +48159,13 @@ use crate::standardization_functions;
                                         match serde_json::from_str::<Value>(&bitstamp_response_text) {
                                             Ok(v) => {
                                                 let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-                                                    (Some(bid_str), Some(ask_str)) => {
-                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
+                                                //let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+    
+                                                match before_parse_bitstamp_sell_price_bid {
+                                                    Some(bid_str) => {
+                                                        match bid_str.parse::<f64>() {
+                                                            Ok(bitstamp_sell_price_bid) => {
+    
                                                                 // Place your calculations and updates here
                                                                 //coinbase calculations to buy
                                                                 let coinbase_taker_fee = 0.008;
@@ -48126,7 +48224,7 @@ use crate::standardization_functions;
                                                                     //03/13/24 - added:
                                                                     return Ok(value_after);
 																}
-																//03/08/24 - removed:
+                                                                //03/08/24 - removed:
                                                                 // //value_after = 56
                                                                 // //coinbase = 57
                                                                 // //bitstamp = 58
@@ -48138,64 +48236,74 @@ use crate::standardization_functions;
                                                                 // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
-
+    
                                                                 //03/13/24 - removed:
                                                                 // success = true;
                                                             },
-															_ => {
-																log::error!("i116: Failed to f64 parse bid or ask price");
-																if attempts > 3 {
-																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-																}
-																continue;
-															}
-														}
-													},
-													_ => {
-														log::error!("i116: Failed to originally parse bid or ask price");
-														if attempts > 3 {
-															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-														}
-														continue;
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i116: Failed to parse JSON");
-												if attempts > 3 {
-													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-												}
-												continue;
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i116: failed to get response text");
-										if attempts > 3 {
-											panic!("Failed to get response text after 3 attempts");
-										}
-										continue;
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i116: Failed to execute request");
-								if attempts > 3 {
-									panic!("Failed to execute request after 3 attempts");
-								}
-								continue;
-							}
-						}
-					},
-					Err(_) => {
-						log::error!("i116: Failed to build request");
-						if attempts > 3 {
-							panic!("Failed to build request after 3 attempts");
-						}
-						continue;
-					}
-				}
-			}
+                                                            Err(e) => {
+                                                                log::error!("i116: Failed to f64 parse bid. response text: {}
+                                                                error: {} ", &bitstamp_response_text, &e);
+                                                                if attempts > 3 {
+                                                                    panic!("Failed to parse f64 bid or ask price after {} attempts. 
+                                                                    response text: {}
+                                                                    error: {}", &attempts, &bitstamp_response_text, &e);
+                                                                }
+                                                                //03/24/24 - removing continues because no point.
+                                                                //continue;
+                                                            }
+                                                        }
+                                                    },
+                                                    None => {
+                                                        log::error!("i116: Failed to originally parse bid or ask price. reponse text: {}", &bitstamp_response_text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get bid or ask price after {} attempts. response text: {}", &attempts, &bitstamp_response_text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                }
+                                            },
+                                            Err(e) => {
+                                                log::error!("i116: Failed to parse JSONresponse text: {}
+                                                error: {} ", &bitstamp_response_text, &e);
+                                                if attempts > 3 {
+                                                    panic!("Failed to parse JSON after {} attempts. response text: {}
+                                                    error: {} ", &attempts, &bitstamp_response_text, &e);
+                                                }
+                                                //continue;
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        log::error!("i116: failed to get response text. error: {}", &e);
+                                        if attempts > 3 {
+                                            panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
+                                        }
+                                        //continue;
+                                    }
+                                }
+                            },
+                            Err(e) => {
+                                log::error!("i116: Failed to execute request. error: {}", &e);
+                                if attempts > 3 {
+                                    panic!("Failed to execute request after {} attemptserror: {}", &attempts, &e);
+                                }
+                                //continue;
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("i116: Failed to build requesterror: {}", &e);
+                        if attempts > 3 {
+                            panic!("Failed to build request after {} attemptserror: {}", &attempts, &e);
+                        }
+                        //continue;
+                    }
+                }
+                log::error!("10secwait");
+                let when = tokio::time::Instant::now() +
+                    tokio::time::Duration::from_secs(10);
+                tokio::time::sleep_until(when).await;
+            }
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -48400,88 +48508,105 @@ use crate::standardization_functions;
                                                 Ok(v) => {
                                                     if let Some(pricebooks) = v["pricebooks"].as_array() {
                                                         for pricebook in pricebooks {
-                                                            //let product_id = pricebook["product_id"].as_str();
-                                                            //let bids = &pricebook["bids"][0];
                                                             let asks = &pricebook["asks"][0];
-                                                            //let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
                                                             let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-															
-                                                            match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-                                                                (/*Some(bid_str),*/ Some(ask_str)) => {
-                                                                    match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-                                                                        (/*Ok(bid_str),*/ Ok(ask_str)) => {
-                                                                            //coinbase_sell_price_bid = Some(bid_str);
+        
+                                                            match before_parse_coinbase_buy_price_ask {
+                                                                Some(ask_str) => {
+                                                                    match ask_str.parse::<f64>() {
+                                                                        Ok(ask_str) => {
+        
                                                                             coinbase_buy_price_ask = Some(ask_str);
-																			
+            
                                                                                 success = true;
-																			},
-																			_ => {
-																				log::error!("i117: coinbase: Failed to parse json into f64");
-																				if attempts > 3 {
-																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																				}
-																				continue ;
-																			}
-																		}
-																	},
-																	_ => {
-																		log::error!("i117: coinbase: Failed to get bid price ");
-																		if attempts > 3 {
-																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-																		}
-																		continue ;
-																	}
-																}
-															}
-														//03/02/24 - added else condition
-														} else {
-															log::error!("i117: coinbase: Failed to get pricebooks as array.");
-															if attempts > 3 {
-																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-															}
-															continue;
-														}
-													},
-													Err(_) => {
-														log::error!("i117: coinbase: Failed to parse JSON to str");
-														if attempts > 3 {
-															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-														}
-														continue ; // Continue to the next iteration if parsing fails
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i117: coinbase: Failed to get response text");
-												if attempts > 3 {
-													panic!("Failed to get response text after 3 attempts");
-												}
-												continue ; // Continue to the next iteration if getting response text fails
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i117: coinbase: Failed to execute request.");
-										if attempts > 3 {
-											panic!("Failed to execute request after 3 attempts");
-										}
-										continue; // Continue to the next iteration if executing request fails
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i117: coinbase: Failed to build request");
-								if attempts > 3 {
-									panic!("Failed to build request after 3 attempts");
-								}
-								continue; // Continue to the next iteration if building request fails
-							}
-						}
-						if success == true {
-							break;
-						}
-					}
+                                                                        },
+                                                                        Err(e) => {
+                                                                            log::error!("i117:  coinbase:  Failed to f64 parse JSON.
+                                                                            response text: {}
+                                                                            error: {}", &text, &e);
+                                                                            if attempts > 3 {
+                                                                                panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                                error: {}", &attempts, text, &e);
+                                                                            }
+                                                                            //03/20/24 - dont see point of all these continues
+                                                                            //continue ;
+                                                                        }
+                                                                    }
+                                                                },
+                                                                None => {
+                                                                    log::error!("i117: coinbase:   Failed to get ask price
+                                                                    response text: {}", &text);
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to get ask price after {} attempts. Ask: {:?}
+                                                                        response text: {}", &attempts, before_parse_coinbase_buy_price_ask, &text);
+                                                                    }
+                                                                    //continue ;
+                                                                }
+                                                            }
+                                                        }
+                                                    //03/02/24 - added else condition
+                                                    } else {
+                                                        log::error!("i117:  coinbase:  Failed to get pricebooks as array.
+                                                        response text: {}", &text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get pricebooks as array after {} attempts. Response text: {}", &attempts, text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                },
+                                                Err(e) => {
+                                                    log::error!("i117:  coinbase:  Failed to parse outer JSON as str.
+                                                    response text: {}
+                                                    error: {}", &text, &e);
+                                                    if attempts > 3 {
+                                                        panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                        response text: {}", &attempts, text, &e);
+                                                    }
+                                                    //continue ; 
+                                                }
+                                            }
+                                        },
+                                        Err(e) => {
+                                            log::error!("i117:  coinbase:  Failed to get response text.
+                                            error: {}", &e);
+                                            if attempts > 3 {
+                                                panic!("Failed to get response text after {} attempts
+                                                error: {}", &attempts, &e);
+                                            }
+                                            //continue ; 
+                                        }
+                                    }
+                                },
+                                Err(e) => {
+                                    log::error!("i117:  coinbase:  Failed to execute request
+                                    error: {}", &e);
+                                    if attempts > 3 {
+                                        panic!("Failed to execute request after {} attempts
+                                        error: {}", &attempts, &e);
+                                    }
+                                    //continue; 
+                                }
+                            }
+                        },
+                        Err(e) => {
+                            log::error!("i117:  coinbase:  Failed to build request
+                            error: {}", &e);
+                            if attempts > 3 {
+                                panic!("Failed to build request after {} attempts
+                                error: {}", &attempts, &e);
+                            }
+                            //continue; 
+                        }
+                    }
+                    //03/20/24 - unnecessary. just put the break above. but i will do it later. not trying to change the logic rn
+                    if success == true {
+                        break;
+                    }
+                    log::error!("10secwait");
+                    let when = tokio::time::Instant::now() +
+                        tokio::time::Duration::from_secs(10);
+                    tokio::time::sleep_until(when).await;
+                }
 
 
 
@@ -48625,13 +48750,13 @@ use crate::standardization_functions;
                                         match serde_json::from_str::<Value>(&bitstamp_response_text) {
                                             Ok(v) => {
                                                 let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-                                                    (Some(bid_str), Some(ask_str)) => {
-                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
+                                                //let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+    
+                                                match before_parse_bitstamp_sell_price_bid {
+                                                    Some(bid_str) => {
+                                                        match bid_str.parse::<f64>() {
+                                                            Ok(bitstamp_sell_price_bid) => {
+    
                                                                 // Place your calculations and updates here
                                                                 //coinbase calculations to buy
                                                                 let coinbase_taker_fee = 0.008;
@@ -48690,7 +48815,7 @@ use crate::standardization_functions;
                                                                     //03/13/24 - added:
                                                                     return Ok(value_after);
 																}
-																//03/08/24 - removed:
+                                                                //03/08/24 - removed:
                                                                 // //value_after = 56
                                                                 // //coinbase = 57
                                                                 // //bitstamp = 58
@@ -48702,64 +48827,74 @@ use crate::standardization_functions;
                                                                 // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
-
+    
                                                                 //03/13/24 - removed:
                                                                 // success = true;
                                                             },
-															_ => {
-																log::error!("i117: Failed to f64 parse bid or ask price");
-																if attempts > 3 {
-																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-																}
-																continue;
-															}
-														}
-													},
-													_ => {
-														log::error!("i117: Failed to originally parse bid or ask price");
-														if attempts > 3 {
-															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-														}
-														continue;
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i117: Failed to parse JSON");
-												if attempts > 3 {
-													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-												}
-												continue;
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i117: failed to get response text");
-										if attempts > 3 {
-											panic!("Failed to get response text after 3 attempts");
-										}
-										continue;
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i117: Failed to execute request");
-								if attempts > 3 {
-									panic!("Failed to execute request after 3 attempts");
-								}
-								continue;
-							}
-						}
-					},
-					Err(_) => {
-						log::error!("i117: Failed to build request");
-						if attempts > 3 {
-							panic!("Failed to build request after 3 attempts");
-						}
-						continue;
-					}
-				}
-			}
+                                                            Err(e) => {
+                                                                log::error!("i117: Failed to f64 parse bid. response text: {}
+                                                                error: {} ", &bitstamp_response_text, &e);
+                                                                if attempts > 3 {
+                                                                    panic!("Failed to parse f64 bid or ask price after {} attempts. 
+                                                                    response text: {}
+                                                                    error: {}", &attempts, &bitstamp_response_text, &e);
+                                                                }
+                                                                //03/24/24 - removing continues because no point.
+                                                                //continue;
+                                                            }
+                                                        }
+                                                    },
+                                                    None => {
+                                                        log::error!("i117: Failed to originally parse bid or ask price. reponse text: {}", &bitstamp_response_text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get bid or ask price after {} attempts. response text: {}", &attempts, &bitstamp_response_text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                }
+                                            },
+                                            Err(e) => {
+                                                log::error!("i117: Failed to parse JSONresponse text: {}
+                                                error: {} ", &bitstamp_response_text, &e);
+                                                if attempts > 3 {
+                                                    panic!("Failed to parse JSON after {} attempts. response text: {}
+                                                    error: {} ", &attempts, &bitstamp_response_text, &e);
+                                                }
+                                                //continue;
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        log::error!("i117: failed to get response text. error: {}", &e);
+                                        if attempts > 3 {
+                                            panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
+                                        }
+                                        //continue;
+                                    }
+                                }
+                            },
+                            Err(e) => {
+                                log::error!("i117: Failed to execute request. error: {}", &e);
+                                if attempts > 3 {
+                                    panic!("Failed to execute request after {} attemptserror: {}", &attempts, &e);
+                                }
+                                //continue;
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("i117: Failed to build requesterror: {}", &e);
+                        if attempts > 3 {
+                            panic!("Failed to build request after {} attemptserror: {}", &attempts, &e);
+                        }
+                        //continue;
+                    }
+                }
+                log::error!("10secwait");
+                let when = tokio::time::Instant::now() +
+                    tokio::time::Duration::from_secs(10);
+                tokio::time::sleep_until(when).await;
+            }
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -48964,87 +49099,104 @@ use crate::standardization_functions;
                                                 Ok(v) => {
                                                     if let Some(pricebooks) = v["pricebooks"].as_array() {
                                                         for pricebook in pricebooks {
-                                                            //let product_id = pricebook["product_id"].as_str();
-                                                            //let bids = &pricebook["bids"][0];
                                                             let asks = &pricebook["asks"][0];
-                                                            //let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
                                                             let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-                
-                                                            match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-                                                                (/*Some(bid_str),*/ Some(ask_str)) => {
-                                                                    match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-                                                                        (/*Ok(bid_str),*/ Ok(ask_str)) => {
-                                                                            //coinbase_sell_price_bid = Some(bid_str);
+        
+                                                            match before_parse_coinbase_buy_price_ask {
+                                                                Some(ask_str) => {
+                                                                    match ask_str.parse::<f64>() {
+                                                                        Ok(ask_str) => {
+        
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
                                                                         },
-                                                                        _ => {
-																			log::error!("i118: coinbase: Failed to parse json into f64");
+                                                                        Err(e) => {
+                                                                            log::error!("i118:  coinbase:  Failed to f64 parse JSON.
+                                                                            response text: {}
+                                                                            error: {}", &text, &e);
                                                                             if attempts > 3 {
-                                                                                panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                                                panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                                error: {}", &attempts, text, &e);
                                                                             }
-                                                                            continue ;
+                                                                            //03/20/24 - dont see point of all these continues
+                                                                            //continue ;
                                                                         }
                                                                     }
                                                                 },
-                                                                _ => {
-																	log::error!("i118: coinbase: Failed to get bid price ");
+                                                                None => {
+                                                                    log::error!("i118: coinbase:   Failed to get ask price
+                                                                    response text: {}", &text);
                                                                     if attempts > 3 {
-                                                                        //panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-                                                                        panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
+                                                                        panic!("Failed to get ask price after {} attempts. Ask: {:?}
+                                                                        response text: {}", &attempts, before_parse_coinbase_buy_price_ask, &text);
                                                                     }
-                                                                    continue ;
+                                                                    //continue ;
                                                                 }
                                                             }
                                                         }
-													//03/02/24 - added else condition
-													} else {
-														log::error!("i118: coinbase: Failed to get pricebooks as array.");
-														if attempts > 3 {
-															panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-														}
-														continue;
-													}
-												},
-                                                Err(_) => {
-													log::error!("i118: coinbase: Failed to parse JSON to str");
-                                                    if attempts > 3 {
-                                                        panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
+                                                    //03/02/24 - added else condition
+                                                    } else {
+                                                        log::error!("i118:  coinbase:  Failed to get pricebooks as array.
+                                                        response text: {}", &text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get pricebooks as array after {} attempts. Response text: {}", &attempts, text);
+                                                        }
+                                                        //continue;
                                                     }
-                                                    continue ; // Continue to the next iteration if parsing fails
+                                                },
+                                                Err(e) => {
+                                                    log::error!("i118:  coinbase:  Failed to parse outer JSON as str.
+                                                    response text: {}
+                                                    error: {}", &text, &e);
+                                                    if attempts > 3 {
+                                                        panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                        response text: {}", &attempts, text, &e);
+                                                    }
+                                                    //continue ; 
                                                 }
                                             }
                                         },
-                                        Err(_) => {
-											log::error!("i118: coinbase: Failed to get response text");
+                                        Err(e) => {
+                                            log::error!("i118:  coinbase:  Failed to get response text.
+                                            error: {}", &e);
                                             if attempts > 3 {
-                                                panic!("Failed to get response text after 3 attempts");
+                                                panic!("Failed to get response text after {} attempts
+                                                error: {}", &attempts, &e);
                                             }
-                                            continue ; // Continue to the next iteration if getting response text fails
+                                            //continue ; 
                                         }
                                     }
                                 },
-                                Err(_) => {
-									log::error!("i118: coinbase: Failed to execute request.");
+                                Err(e) => {
+                                    log::error!("i118:  coinbase:  Failed to execute request
+                                    error: {}", &e);
                                     if attempts > 3 {
-                                        panic!("Failed to execute request after 3 attempts");
+                                        panic!("Failed to execute request after {} attempts
+                                        error: {}", &attempts, &e);
                                     }
-                                    continue; // Continue to the next iteration if executing request fails
+                                    //continue; 
                                 }
                             }
                         },
-                        Err(_) => {
-							log::error!("i118: coinbase: Failed to build request");
+                        Err(e) => {
+                            log::error!("i118:  coinbase:  Failed to build request
+                            error: {}", &e);
                             if attempts > 3 {
-                                panic!("Failed to build request after 3 attempts");
+                                panic!("Failed to build request after {} attempts
+                                error: {}", &attempts, &e);
                             }
-                            continue; // Continue to the next iteration if building request fails
+                            //continue; 
                         }
                     }
+                    //03/20/24 - unnecessary. just put the break above. but i will do it later. not trying to change the logic rn
                     if success == true {
                         break;
                     }
+                    log::error!("10secwait");
+                    let when = tokio::time::Instant::now() +
+                        tokio::time::Duration::from_secs(10);
+                    tokio::time::sleep_until(when).await;
                 }
 
 
@@ -49189,13 +49341,13 @@ use crate::standardization_functions;
                                         match serde_json::from_str::<Value>(&bitstamp_response_text) {
                                             Ok(v) => {
                                                 let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-                                                    (Some(bid_str), Some(ask_str)) => {
-                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
+                                                //let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+    
+                                                match before_parse_bitstamp_sell_price_bid {
+                                                    Some(bid_str) => {
+                                                        match bid_str.parse::<f64>() {
+                                                            Ok(bitstamp_sell_price_bid) => {
+    
                                                                 // Place your calculations and updates here
                                                                 //coinbase calculations to buy
                                                                 let coinbase_taker_fee = 0.008;
@@ -49254,7 +49406,7 @@ use crate::standardization_functions;
                                                                     //03/13/24 - added:
                                                                     return Ok(value_after);
 																}
-																//03/08/24 - removed:
+                                                                //03/08/24 - removed:
                                                                 // //value_after = 56
                                                                 // //coinbase = 57
                                                                 // //bitstamp = 58
@@ -49266,64 +49418,74 @@ use crate::standardization_functions;
                                                                 // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
-
+    
                                                                 //03/13/24 - removed:
                                                                 // success = true;
                                                             },
-															_ => {
-																log::error!("i118: Failed to f64 parse bid or ask price");
-																if attempts > 3 {
-																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-																}
-																continue;
-															}
-														}
-													},
-													_ => {
-														log::error!("i118: Failed to originally parse bid or ask price");
-														if attempts > 3 {
-															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-														}
-														continue;
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i118: Failed to parse JSON");
-												if attempts > 3 {
-													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-												}
-												continue;
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i118: failed to get response text");
-										if attempts > 3 {
-											panic!("Failed to get response text after 3 attempts");
-										}
-										continue;
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i118: Failed to execute request");
-								if attempts > 3 {
-									panic!("Failed to execute request after 3 attempts");
-								}
-								continue;
-							}
-						}
-					},
-					Err(_) => {
-						log::error!("i118: Failed to build request");
-						if attempts > 3 {
-							panic!("Failed to build request after 3 attempts");
-						}
-						continue;
-					}
-				}
-			}
+                                                            Err(e) => {
+                                                                log::error!("i118: Failed to f64 parse bid. response text: {}
+                                                                error: {} ", &bitstamp_response_text, &e);
+                                                                if attempts > 3 {
+                                                                    panic!("Failed to parse f64 bid or ask price after {} attempts. 
+                                                                    response text: {}
+                                                                    error: {}", &attempts, &bitstamp_response_text, &e);
+                                                                }
+                                                                //03/24/24 - removing continues because no point.
+                                                                //continue;
+                                                            }
+                                                        }
+                                                    },
+                                                    None => {
+                                                        log::error!("i118: Failed to originally parse bid or ask price. reponse text: {}", &bitstamp_response_text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get bid or ask price after {} attempts. response text: {}", &attempts, &bitstamp_response_text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                }
+                                            },
+                                            Err(e) => {
+                                                log::error!("i118: Failed to parse JSONresponse text: {}
+                                                error: {} ", &bitstamp_response_text, &e);
+                                                if attempts > 3 {
+                                                    panic!("Failed to parse JSON after {} attempts. response text: {}
+                                                    error: {} ", &attempts, &bitstamp_response_text, &e);
+                                                }
+                                                //continue;
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        log::error!("i118: failed to get response text. error: {}", &e);
+                                        if attempts > 3 {
+                                            panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
+                                        }
+                                        //continue;
+                                    }
+                                }
+                            },
+                            Err(e) => {
+                                log::error!("i118: Failed to execute request. error: {}", &e);
+                                if attempts > 3 {
+                                    panic!("Failed to execute request after {} attemptserror: {}", &attempts, &e);
+                                }
+                                //continue;
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("i118: Failed to build requesterror: {}", &e);
+                        if attempts > 3 {
+                            panic!("Failed to build request after {} attemptserror: {}", &attempts, &e);
+                        }
+                        //continue;
+                    }
+                }
+                log::error!("10secwait");
+                let when = tokio::time::Instant::now() +
+                    tokio::time::Duration::from_secs(10);
+                tokio::time::sleep_until(when).await;
+            }
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -49528,88 +49690,105 @@ use crate::standardization_functions;
                                                 Ok(v) => {
                                                     if let Some(pricebooks) = v["pricebooks"].as_array() {
                                                         for pricebook in pricebooks {
-                                                            //let product_id = pricebook["product_id"].as_str();
-                                                            //let bids = &pricebook["bids"][0];
                                                             let asks = &pricebook["asks"][0];
-                                                            //let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
                                                             let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-                
-                                                            match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-                                                                (/*Some(bid_str),*/ Some(ask_str)) => {
-                                                                    match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-                                                                        (/*Ok(bid_str),*/ Ok(ask_str)) => {
-                                                                            //coinbase_sell_price_bid = Some(bid_str);
+        
+                                                            match before_parse_coinbase_buy_price_ask {
+                                                                Some(ask_str) => {
+                                                                    match ask_str.parse::<f64>() {
+                                                                        Ok(ask_str) => {
+        
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
-																			},
-																			_ => {
-																				log::error!("i119: coinbase: Failed to parse json into f64");
-																				if attempts > 3 {
-																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																				}
-																				continue ;
-																			}
-																		}
-																	},
-																	_ => {
-																		log::error!("i119: coinbase: Failed to get bid price ");
-																		if attempts > 3 {
-																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-																		}
-																		continue ;
-																	}
-																}
-															}
-														//03/02/24 - added else condition
-														} else {
-															log::error!("i119: coinbase: Failed to get pricebooks as array.");
-															if attempts > 3 {
-																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-															}
-															continue;
-														}
-													},
-													Err(_) => {
-														log::error!("i119: coinbase: Failed to parse JSON to str");
-														if attempts > 3 {
-															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-														}
-														continue ; // Continue to the next iteration if parsing fails
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i119: coinbase: Failed to get response text");
-												if attempts > 3 {
-													panic!("Failed to get response text after 3 attempts");
-												}
-												continue ; // Continue to the next iteration if getting response text fails
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i119: coinbase: Failed to execute request.");
-										if attempts > 3 {
-											panic!("Failed to execute request after 3 attempts");
-										}
-										continue; // Continue to the next iteration if executing request fails
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i119: coinbase: Failed to build request");
-								if attempts > 3 {
-									panic!("Failed to build request after 3 attempts");
-								}
-								continue; // Continue to the next iteration if building request fails
-							}
-						}
-						if success == true {
-							break;
-						}
-					}
+                                                                        },
+                                                                        Err(e) => {
+                                                                            log::error!("i119:  coinbase:  Failed to f64 parse JSON.
+                                                                            response text: {}
+                                                                            error: {}", &text, &e);
+                                                                            if attempts > 3 {
+                                                                                panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                                error: {}", &attempts, text, &e);
+                                                                            }
+                                                                            //03/20/24 - dont see point of all these continues
+                                                                            //continue ;
+                                                                        }
+                                                                    }
+                                                                },
+                                                                None => {
+                                                                    log::error!("i119: coinbase:   Failed to get ask price
+                                                                    response text: {}", &text);
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to get ask price after {} attempts. Ask: {:?}
+                                                                        response text: {}", &attempts, before_parse_coinbase_buy_price_ask, &text);
+                                                                    }
+                                                                    //continue ;
+                                                                }
+                                                            }
+                                                        }
+                                                    //03/02/24 - added else condition
+                                                    } else {
+                                                        log::error!("i119:  coinbase:  Failed to get pricebooks as array.
+                                                        response text: {}", &text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get pricebooks as array after {} attempts. Response text: {}", &attempts, text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                },
+                                                Err(e) => {
+                                                    log::error!("i119:  coinbase:  Failed to parse outer JSON as str.
+                                                    response text: {}
+                                                    error: {}", &text, &e);
+                                                    if attempts > 3 {
+                                                        panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                        response text: {}", &attempts, text, &e);
+                                                    }
+                                                    //continue ; 
+                                                }
+                                            }
+                                        },
+                                        Err(e) => {
+                                            log::error!("i119:  coinbase:  Failed to get response text.
+                                            error: {}", &e);
+                                            if attempts > 3 {
+                                                panic!("Failed to get response text after {} attempts
+                                                error: {}", &attempts, &e);
+                                            }
+                                            //continue ; 
+                                        }
+                                    }
+                                },
+                                Err(e) => {
+                                    log::error!("i119:  coinbase:  Failed to execute request
+                                    error: {}", &e);
+                                    if attempts > 3 {
+                                        panic!("Failed to execute request after {} attempts
+                                        error: {}", &attempts, &e);
+                                    }
+                                    //continue; 
+                                }
+                            }
+                        },
+                        Err(e) => {
+                            log::error!("i119:  coinbase:  Failed to build request
+                            error: {}", &e);
+                            if attempts > 3 {
+                                panic!("Failed to build request after {} attempts
+                                error: {}", &attempts, &e);
+                            }
+                            //continue; 
+                        }
+                    }
+                    //03/20/24 - unnecessary. just put the break above. but i will do it later. not trying to change the logic rn
+                    if success == true {
+                        break;
+                    }
+                    log::error!("10secwait");
+                    let when = tokio::time::Instant::now() +
+                        tokio::time::Duration::from_secs(10);
+                    tokio::time::sleep_until(when).await;
+                }
 
 
 
@@ -49753,13 +49932,13 @@ use crate::standardization_functions;
                                         match serde_json::from_str::<Value>(&bitstamp_response_text) {
                                             Ok(v) => {
                                                 let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-                                                    (Some(bid_str), Some(ask_str)) => {
-                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
+                                                //let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+    
+                                                match before_parse_bitstamp_sell_price_bid {
+                                                    Some(bid_str) => {
+                                                        match bid_str.parse::<f64>() {
+                                                            Ok(bitstamp_sell_price_bid) => {
+    
                                                                 // Place your calculations and updates here
                                                                 //coinbase calculations to buy
                                                                 let coinbase_taker_fee = 0.008;
@@ -49818,7 +49997,7 @@ use crate::standardization_functions;
                                                                     //03/13/24 - added:
                                                                     return Ok(value_after);
 																}
-																//03/08/24 - removed:
+                                                                //03/08/24 - removed:
                                                                 // //value_after = 56
                                                                 // //coinbase = 57
                                                                 // //bitstamp = 58
@@ -49830,64 +50009,74 @@ use crate::standardization_functions;
                                                                 // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
-
+    
                                                                 //03/13/24 - removed:
                                                                 // success = true;
                                                             },
-															_ => {
-																log::error!("i119: Failed to f64 parse bid or ask price");
-																if attempts > 3 {
-																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-																}
-																continue;
-															}
-														}
-													},
-													_ => {
-														log::error!("i119: Failed to originally parse bid or ask price");
-														if attempts > 3 {
-															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-														}
-														continue;
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i113: Failed to parse JSON");
-												if attempts > 3 {
-													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-												}
-												continue;
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i119: failed to get response text");
-										if attempts > 3 {
-											panic!("Failed to get response text after 3 attempts");
-										}
-										continue;
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i119: Failed to execute request");
-								if attempts > 3 {
-									panic!("Failed to execute request after 3 attempts");
-								}
-								continue;
-							}
-						}
-					},
-					Err(_) => {
-						log::error!("i119: Failed to build request");
-						if attempts > 3 {
-							panic!("Failed to build request after 3 attempts");
-						}
-						continue;
-					}
-				}
-			}
+                                                            Err(e) => {
+                                                                log::error!("i119: Failed to f64 parse bid. response text: {}
+                                                                error: {} ", &bitstamp_response_text, &e);
+                                                                if attempts > 3 {
+                                                                    panic!("Failed to parse f64 bid or ask price after {} attempts. 
+                                                                    response text: {}
+                                                                    error: {}", &attempts, &bitstamp_response_text, &e);
+                                                                }
+                                                                //03/24/24 - removing continues because no point.
+                                                                //continue;
+                                                            }
+                                                        }
+                                                    },
+                                                    None => {
+                                                        log::error!("i119: Failed to originally parse bid or ask price. reponse text: {}", &bitstamp_response_text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get bid or ask price after {} attempts. response text: {}", &attempts, &bitstamp_response_text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                }
+                                            },
+                                            Err(e) => {
+                                                log::error!("i119: Failed to parse JSONresponse text: {}
+                                                error: {} ", &bitstamp_response_text, &e);
+                                                if attempts > 3 {
+                                                    panic!("Failed to parse JSON after {} attempts. response text: {}
+                                                    error: {} ", &attempts, &bitstamp_response_text, &e);
+                                                }
+                                                //continue;
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        log::error!("i119: failed to get response text. error: {}", &e);
+                                        if attempts > 3 {
+                                            panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
+                                        }
+                                        //continue;
+                                    }
+                                }
+                            },
+                            Err(e) => {
+                                log::error!("i119: Failed to execute request. error: {}", &e);
+                                if attempts > 3 {
+                                    panic!("Failed to execute request after {} attemptserror: {}", &attempts, &e);
+                                }
+                                //continue;
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("i119: Failed to build requesterror: {}", &e);
+                        if attempts > 3 {
+                            panic!("Failed to build request after {} attemptserror: {}", &attempts, &e);
+                        }
+                        //continue;
+                    }
+                }
+                log::error!("10secwait");
+                let when = tokio::time::Instant::now() +
+                    tokio::time::Duration::from_secs(10);
+                tokio::time::sleep_until(when).await;
+            }
 
             match value_after {
                 Some(value) => return Ok(value),
@@ -50092,88 +50281,105 @@ use crate::standardization_functions;
                                                 Ok(v) => {
                                                     if let Some(pricebooks) = v["pricebooks"].as_array() {
                                                         for pricebook in pricebooks {
-                                                            //let product_id = pricebook["product_id"].as_str();
-                                                            //let bids = &pricebook["bids"][0];
                                                             let asks = &pricebook["asks"][0];
-                                                            //let before_parse_coinbase_sell_price_bid = bids["price"].as_str();
                                                             let before_parse_coinbase_buy_price_ask = asks["price"].as_str();
-                
-                                                            match (/*before_parse_coinbase_sell_price_bid,*/ before_parse_coinbase_buy_price_ask) {
-                                                                (/*Some(bid_str),*/ Some(ask_str)) => {
-                                                                    match (/*bid_str.parse::<f64>(),*/ ask_str.parse::<f64>()) {
-                                                                        (/*Ok(bid_str),*/ Ok(ask_str)) => {
-                                                                            //coinbase_sell_price_bid = Some(bid_str);
+        
+                                                            match before_parse_coinbase_buy_price_ask {
+                                                                Some(ask_str) => {
+                                                                    match ask_str.parse::<f64>() {
+                                                                        Ok(ask_str) => {
+        
                                                                             coinbase_buy_price_ask = Some(ask_str);
             
                                                                                 success = true;
-																			},
-																			_ => {
-																				log::error!("i120: coinbase: Failed to parse json into f64");
-																				if attempts > 3 {
-																					panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-																				}
-																				continue ;
-																			}
-																		}
-																	},
-																	_ => {
-																		log::error!("i120: coinbase: Failed to get bid price ");
-																		if attempts > 3 {
-																			//panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}", before_parse_coinbase_sell_price_bid);
-																			panic!("Failed to get bid price after 3 attempts. Ask: {:?}", before_parse_coinbase_buy_price_ask);
-																		}
-																		continue ;
-																	}
-																}
-															}
-														//03/02/24 - added else condition
-														} else {
-															log::error!("i120: coinbase: Failed to get pricebooks as array.");
-															if attempts > 3 {
-																panic!("Failed to get pricebooks as array after 3 attempts. Response text: {}", text);
-															}
-															continue;
-														}
-													},
-													Err(_) => {
-														log::error!("i120: coinbase: Failed to parse JSON to str");
-														if attempts > 3 {
-															panic!("Failed to parse JSON after 3 attempts. Response text: {}", text);
-														}
-														continue ; // Continue to the next iteration if parsing fails
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i120: coinbase: Failed to get response text");
-												if attempts > 3 {
-													panic!("Failed to get response text after 3 attempts");
-												}
-												continue ; // Continue to the next iteration if getting response text fails
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i120: coinbase: Failed to execute request.");
-										if attempts > 3 {
-											panic!("Failed to execute request after 3 attempts");
-										}
-										continue; // Continue to the next iteration if executing request fails
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i120: coinbase: Failed to build request");
-								if attempts > 3 {
-									panic!("Failed to build request after 3 attempts");
-								}
-								continue; // Continue to the next iteration if building request fails
-							}
-						}
-						if success == true {
-							break;
-						}
-					}
+                                                                        },
+                                                                        Err(e) => {
+                                                                            log::error!("i120:  coinbase:  Failed to f64 parse JSON.
+                                                                            response text: {}
+                                                                            error: {}", &text, &e);
+                                                                            if attempts > 3 {
+                                                                                panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                                                error: {}", &attempts, text, &e);
+                                                                            }
+                                                                            //03/20/24 - dont see point of all these continues
+                                                                            //continue ;
+                                                                        }
+                                                                    }
+                                                                },
+                                                                None => {
+                                                                    log::error!("i120: coinbase:   Failed to get ask price
+                                                                    response text: {}", &text);
+                                                                    if attempts > 3 {
+                                                                        panic!("Failed to get ask price after {} attempts. Ask: {:?}
+                                                                        response text: {}", &attempts, before_parse_coinbase_buy_price_ask, &text);
+                                                                    }
+                                                                    //continue ;
+                                                                }
+                                                            }
+                                                        }
+                                                    //03/02/24 - added else condition
+                                                    } else {
+                                                        log::error!("i120:  coinbase:  Failed to get pricebooks as array.
+                                                        response text: {}", &text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get pricebooks as array after {} attempts. Response text: {}", &attempts, text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                },
+                                                Err(e) => {
+                                                    log::error!("i120:  coinbase:  Failed to parse outer JSON as str.
+                                                    response text: {}
+                                                    error: {}", &text, &e);
+                                                    if attempts > 3 {
+                                                        panic!("Failed to parse JSON after {} attempts. Response text: {}
+                                                        response text: {}", &attempts, text, &e);
+                                                    }
+                                                    //continue ; 
+                                                }
+                                            }
+                                        },
+                                        Err(e) => {
+                                            log::error!("i120:  coinbase:  Failed to get response text.
+                                            error: {}", &e);
+                                            if attempts > 3 {
+                                                panic!("Failed to get response text after {} attempts
+                                                error: {}", &attempts, &e);
+                                            }
+                                            //continue ; 
+                                        }
+                                    }
+                                },
+                                Err(e) => {
+                                    log::error!("i120:  coinbase:  Failed to execute request
+                                    error: {}", &e);
+                                    if attempts > 3 {
+                                        panic!("Failed to execute request after {} attempts
+                                        error: {}", &attempts, &e);
+                                    }
+                                    //continue; 
+                                }
+                            }
+                        },
+                        Err(e) => {
+                            log::error!("i120:  coinbase:  Failed to build request
+                            error: {}", &e);
+                            if attempts > 3 {
+                                panic!("Failed to build request after {} attempts
+                                error: {}", &attempts, &e);
+                            }
+                            //continue; 
+                        }
+                    }
+                    //03/20/24 - unnecessary. just put the break above. but i will do it later. not trying to change the logic rn
+                    if success == true {
+                        break;
+                    }
+                    log::error!("10secwait");
+                    let when = tokio::time::Instant::now() +
+                        tokio::time::Duration::from_secs(10);
+                    tokio::time::sleep_until(when).await;
+                }
 
 
 
@@ -50317,13 +50523,13 @@ use crate::standardization_functions;
                                         match serde_json::from_str::<Value>(&bitstamp_response_text) {
                                             Ok(v) => {
                                                 let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-                                                    (Some(bid_str), Some(ask_str)) => {
-                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-
+                                                //let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+    
+                                                match before_parse_bitstamp_sell_price_bid {
+                                                    Some(bid_str) => {
+                                                        match bid_str.parse::<f64>() {
+                                                            Ok(bitstamp_sell_price_bid) => {
+    
                                                                 // Place your calculations and updates here
                                                                 //coinbase calculations to buy
                                                                 let coinbase_taker_fee = 0.008;
@@ -50382,7 +50588,7 @@ use crate::standardization_functions;
                                                                     //03/13/24 - added:
                                                                     return Ok(value_after);
 																}
-																//03/08/24 - removed:
+                                                                //03/08/24 - removed:
                                                                 // //value_after = 56
                                                                 // //coinbase = 57
                                                                 // //bitstamp = 58
@@ -50394,64 +50600,74 @@ use crate::standardization_functions;
                                                                 // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
-
+    
                                                                 //03/13/24 - removed:
-                                                                success = true;
+                                                                // success = true;
                                                             },
-															_ => {
-																log::error!("i120: Failed to f64 parse bid or ask price");
-																if attempts > 3 {
-																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-																}
-																continue;
-															}
-														}
-													},
-													_ => {
-														log::error!("i120: Failed to originally parse bid or ask price");
-														if attempts > 3 {
-															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-														}
-														continue;
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i120: Failed to parse JSON");
-												if attempts > 3 {
-													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-												}
-												continue;
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i120: failed to get response text");
-										if attempts > 3 {
-											panic!("Failed to get response text after 3 attempts");
-										}
-										continue;
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i120: Failed to execute request");
-								if attempts > 3 {
-									panic!("Failed to execute request after 3 attempts");
-								}
-								continue;
-							}
-						}
-					},
-					Err(_) => {
-						log::error!("i120: Failed to build request");
-						if attempts > 3 {
-							panic!("Failed to build request after 3 attempts");
-						}
-						continue;
-					}
-				}
-			}
+                                                            Err(e) => {
+                                                                log::error!("i120: Failed to f64 parse bid. response text: {}
+                                                                error: {} ", &bitstamp_response_text, &e);
+                                                                if attempts > 3 {
+                                                                    panic!("Failed to parse f64 bid or ask price after {} attempts. 
+                                                                    response text: {}
+                                                                    error: {}", &attempts, &bitstamp_response_text, &e);
+                                                                }
+                                                                //03/24/24 - removing continues because no point.
+                                                                //continue;
+                                                            }
+                                                        }
+                                                    },
+                                                    None => {
+                                                        log::error!("i120: Failed to originally parse bid or ask price. reponse text: {}", &bitstamp_response_text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get bid or ask price after {} attempts. response text: {}", &attempts, &bitstamp_response_text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                }
+                                            },
+                                            Err(e) => {
+                                                log::error!("i120: Failed to parse JSONresponse text: {}
+                                                error: {} ", &bitstamp_response_text, &e);
+                                                if attempts > 3 {
+                                                    panic!("Failed to parse JSON after {} attempts. response text: {}
+                                                    error: {} ", &attempts, &bitstamp_response_text, &e);
+                                                }
+                                                //continue;
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        log::error!("i120: failed to get response text. error: {}", &e);
+                                        if attempts > 3 {
+                                            panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
+                                        }
+                                        //continue;
+                                    }
+                                }
+                            },
+                            Err(e) => {
+                                log::error!("i120: Failed to execute request. error: {}", &e);
+                                if attempts > 3 {
+                                    panic!("Failed to execute request after {} attemptserror: {}", &attempts, &e);
+                                }
+                                //continue;
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("i120: Failed to build requesterror: {}", &e);
+                        if attempts > 3 {
+                            panic!("Failed to build request after {} attemptserror: {}", &attempts, &e);
+                        }
+                        //continue;
+                    }
+                }
+                log::error!("10secwait");
+                let when = tokio::time::Instant::now() +
+                    tokio::time::Duration::from_secs(10);
+                tokio::time::sleep_until(when).await;
+            }
 
             match value_after {
                 Some(value) => return Ok(value),

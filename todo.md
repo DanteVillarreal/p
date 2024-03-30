@@ -436,3 +436,5 @@ gamma = 0.99, gradient cap = +-5, learning rate = 0.0001, delta = 1, epsilon = 0
 03/27/24 - redo since websocket client glitched out at very beginning. iteration = 21651. saved state = 1711409060583 gamma = 0.9, gradient cap = +-5, learning rate = 0.00001, delta = 1, epsilon = 0.891745. epsilon decay = -0.000005. learning_rate = 0.00001.               JESUS IS GOOD. With his strength, we got this!
 03/28/24 - revamped up to i110.         JESUS IS GOOD.
 03/29/24 - revamped up to i120.         JESUS IS GOOD. With his strength, we got this!
+03/30/24 - restarting from iteration 60307. removing last 20 saved states and replay buffers. iteration = 60307. saved state = 1711778518447. gamma = 0.9, gradient cap += 5, learning rate = 0.00001, delta = 1, epsilon = 0.6985. epsilon decay = -0.000005.          JESUS IS GOOD. With his strength, we got this!
+03/30/24 - revamped up to i130.         JESUS IS GOOD. With his strength, we got this!

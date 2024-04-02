@@ -55063,45 +55063,53 @@ use crate::standardization_functions;
 											Ok(value) => {
 												if let Some(xrpusd) = value["result"]["XXRPZUSD"].as_object() {
 
-													match (xrpusd["a"][0].as_str(), /*solusd["b"][0].as_str()*/) {
-														(Some(ask_str), /*Some(bid_str)*/) => {
-															match (ask_str.parse::<f64>(), /*bid_str.parse::<f64>()*/) {
-																(Ok(ask), /*Ok(bid)*/) => {
-																	kraken_buy_price_ask = Some(ask);
-																	//kraken_sell_price_bid = Some(bid);
-																	//03/05/24 - dont think this break is necessary
-																	//break; // Exit the loop if everything is successful
-																},
-																_ => log::error!("i135: Kraken: Failed to parse ask or bid as f64"),
-															}
-														},
-														_ => log::error!("i135: Kraken: Failed to get ask or bid as string"),
-													}										
-												}
-												else {
-													log::error!("i135: Kraken: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
-												}
-											},
-											Err(e) => log::error!("i135: Kraken: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
-										}
-									},
-									Err(e) => log::error!("i135: Kraken: Failed to read response text. Error was: {}", e),
-								}
-							},
-							Err(e) => log::error!("i135: Kraken: Failed to execute Kraken request. Error was: {}", e),
-						}
-					},
-					Err(e) => log::error!("i135: Kraken: Failed to build kraken request. Error was: {}", e),
-				}
-				if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
-					break; // Exit the loop if everything is successful
-				}
-
-				attempts += 1;
-				if attempts >= 3 {
-					panic!("Failed after 3 attempts");
-				}
-			}
+													match xrpusd["a"][0].as_str() {
+                                                        Some(ask_str) => {
+                                                            match ask_str.parse::<f64>() {
+                                                                Ok(ask)=> {
+                                                                    kraken_buy_price_ask = Some(ask);
+                                                                    //kraken_sell_price_bid = Some(bid);
+    
+                                                                    //03/05/24 - dont think this break is necessary
+                                                                    //break; // Exit the loop if everything is successful
+                                                                },
+                                                                //03/26/24 - revamped
+                                                                Err(e) => log::error!("i135: Kraken: Failed to parse ask or bid as f64. response text: {}
+                                                                error: {}", &kraken_response_text, &e),
+                                                            }
+                                                        },
+                                                        None => log::error!("i135: Kraken: Failed to get ask or bid as string. response text: {}", &kraken_response_text),
+                                                    }										
+                                                }
+                                                else {
+                                                    log::error!("i135: Kraken: Didn't parse Kraken correctly. Response text was: {}", kraken_response_text);
+                                                }
+                                            },
+                                            Err(e) => log::error!("i135: Kraken: Failed to parse JSON. Error was: {}. Response text was: {}", e, kraken_response_text),
+                                        }
+                                    },
+                                    Err(e) => log::error!("i135: Kraken: Failed to read response text. Error was: {}", e),
+                                }
+                            },
+                            Err(e) => log::error!("i135: Kraken: Failed to execute Kraken request. Error was: {}", e),
+                        }
+                    },
+                    Err(e) => log::error!("i135: Kraken: Failed to build kraken request. Error was: {}", e),
+                }
+                if /*kraken_sell_price_bid.is_some() &&*/ kraken_buy_price_ask.is_some() {
+                    break; // Exit the loop if everything is successful
+                }
+                //03/26/24 - added:
+                log::error!("10secwait");
+                let when = tokio::time::Instant::now() +
+                    tokio::time::Duration::from_secs(10);
+                tokio::time::sleep_until(when).await;
+    
+                attempts += 1;
+                if attempts >= 3 {
+                    panic!("Failed after {} attempts", &attempts);
+                }
+            }
 
 
 
@@ -55218,13 +55226,13 @@ use crate::standardization_functions;
                                         match serde_json::from_str::<Value>(&bitstamp_response_text) {
                                             Ok(v) => {
                                                 let before_parse_bitstamp_sell_price_bid = v["bid"].as_str();
-                                                let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
-
-                                                match (before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask) {
-                                                    (Some(bid_str), Some(ask_str)) => {
-                                                        match (bid_str.parse::<f64>(), ask_str.parse::<f64>()) {
-                                                            (Ok(bitstamp_sell_price_bid), Ok(bitstamp_buy_price_ask)) => {
-																let kraken_taker_fee = 0.0026;
+                                                //let before_parse_bitstamp_buy_price_ask = v["ask"].as_str();
+    
+                                                match before_parse_bitstamp_sell_price_bid {
+                                                    Some(bid_str) => {
+                                                        match bid_str.parse::<f64>() {
+                                                            Ok(bitstamp_sell_price_bid) => {
+                                                                let kraken_taker_fee = 0.0026;
 																let fraction_of_wallet_im_using = 0.05;  //aka 5 percent
 																let total_spent = fraction_of_wallet_im_using*(*kraken_wallet);
 																let fee_for_purchase = total_spent*kraken_taker_fee;
@@ -55284,76 +55292,86 @@ use crate::standardization_functions;
                                                                     //03/13/24 - added:
                                                                     return Ok(value_after);
 																}
-																//03/08/24 - removed:
+                                                                //03/08/24 - removed:
                                                                 // //value_after = 56
                                                                 // //coinbase = 57
                                                                 // //bitstamp = 58
                                                                 // //kraken = 59
                                                                 // //gemini = 60
-                                                                // //since this is kraken and bitstamp being updated, I will update:
-                                                                // //  56, 59, 58
-                                                                // let indices = [56, 59, 58];
-                                                                // let new_values = [value_after, Some(*kraken_wallet), Some(*bitstamp_wallet)];
+                                                                // //since this is coinbase and gemini being updated, I will update:
+                                                                // //  56, 57, 60
+                                                                // let indices = [56, 57, 58];
+                                                                // let new_values = [value_after, Some(*coinbase_wallet), Some(*bitstamp_wallet)];
                                                                 // let scaled_values: Vec<f64> = new_values.iter().map(|&x| x.unwrap() / divisor).collect();
                                                                 // neural_network.update_input(&indices, &scaled_values).await;
-
+    
                                                                 //03/13/24 - removed:
                                                                 // success = true;
                                                             },
-															_ => {
-																log::error!("i135: Failed to f64 parse bid or ask price");
-																if attempts > 3 {
-																	panic!("Failed to parse f64 bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-																}
-																continue;
-															}
-														}
-													},
-													_ => {
-														log::error!("i135: Failed to originally parse bid or ask price");
-														if attempts > 3 {
-															panic!("Failed to get bid or ask price after 3 attempts. Bid: {:?}, Ask: {:?}", before_parse_bitstamp_sell_price_bid, before_parse_bitstamp_buy_price_ask);
-														}
-														continue;
-													}
-												}
-											},
-											Err(_) => {
-												log::error!("i135: Failed to parse JSON");
-												if attempts > 3 {
-													panic!("Failed to parse JSON after 3 attempts. Response text: {}", bitstamp_response_text);
-												}
-												continue;
-											}
-										}
-									},
-									Err(_) => {
-										log::error!("i135: failed to get response text");
-										if attempts > 3 {
-											panic!("Failed to get response text after 3 attempts");
-										}
-										continue;
-									}
-								}
-							},
-							Err(_) => {
-								log::error!("i135: Failed to execute request");
-								if attempts > 3 {
-									panic!("Failed to execute request after 3 attempts");
-								}
-								continue;
-							}
-						}
-					},
-					Err(_) => {
-						log::error!("i135: Failed to build request");
-						if attempts > 3 {
-							panic!("Failed to build request after 3 attempts");
-						}
-						continue;
-					}
-				}
-			}
+                                                            Err(e) => {
+                                                                log::error!("i135: Failed to f64 parse bid. response text: {}
+                                                                error: {} ", &bitstamp_response_text, &e);
+                                                                if attempts > 3 {
+                                                                    panic!("Failed to parse f64 bid or ask price after 3 attempts. 
+                                                                    response text: {}
+                                                                    error: {}", &bitstamp_response_text, &e);
+                                                                }
+                                                                //03/24/24 - removing continues because no point.
+                                                                //continue;
+                                                            }
+                                                        }
+                                                    },
+                                                    None => {
+                                                        log::error!("i135: Failed to originally parse bid or ask price. reponse text: {}", &bitstamp_response_text);
+                                                        if attempts > 3 {
+                                                            panic!("Failed to get bid or ask price after {} attempts. response text: {}", &attempts, &bitstamp_response_text);
+                                                        }
+                                                        //continue;
+                                                    }
+                                                }
+                                            },
+                                            Err(e) => {
+                                                log::error!("i135: Failed to parse JSONresponse text: {}
+                                                error: {} ", &bitstamp_response_text, &e);
+                                                if attempts > 3 {
+                                                    panic!("Failed to parse JSON after {} attempts. response text: {}
+                                                    error: {} ", &attempts, &bitstamp_response_text, &e);
+                                                }
+                                                //continue;
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        log::error!("i135: failed to get response text. error: {}", &e);
+                                        if attempts > 3 {
+                                            panic!("Failed to get response text after {} attempts. error: {}", &attempts, &e);
+                                        }
+                                        //continue;
+                                    }
+                                }
+                            },
+                            Err(e) => {
+                                log::error!("i135: Failed to execute request. error: {}", &e);
+                                if attempts > 3 {
+                                    panic!("Failed to execute request after {} attemptserror: {}", &attempts, &e);
+                                }
+                                //continue;
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        log::error!("i135: Failed to build requesterror: {}", &e);
+                        if attempts > 3 {
+                            panic!("Failed to build request after {} attemptserror: {}", &attempts, &e);
+                        }
+                        //continue;
+                    }
+                }
+                log::error!("10secwait");
+                let when = tokio::time::Instant::now() +
+                    tokio::time::Duration::from_secs(10);
+                tokio::time::sleep_until(when).await;
+            }
 
             match value_after {
                 Some(value) => return Ok(value),
